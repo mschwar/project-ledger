@@ -1,0 +1,19 @@
+{
+  "project_key": "example-stable-slug",
+  "display_name": "Example Project",
+  "description": "One-line description of what this project actually is.",
+  "status": "active",
+  "tags": [
+    "idea",
+    "obsidian",
+    "python"
+  ],
+  "canonical_url": "",
+  "repo_name": "example-project",
+  "shared": false,
+  "storage_scope": "local",
+  "last_session_at": "2026-03-08T12:00:00-07:00",
+  "last_session_summary": "Summarize the concrete work completed in the latest session.",
+  "next_step": "State one clear next action.",
+  "last_push_at": ""
+}

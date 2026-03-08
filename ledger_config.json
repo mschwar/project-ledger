@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "exclude_names": [
+      ".git",
+      ".idea",
+      ".mypy_cache",
+      ".obsidian",
+      ".pytest_cache",
+      ".ruff_cache",
+      ".venv",
+      ".vscode",
+      "__pycache__",
+      "node_modules",
+      "venv"
+    ],
+    "min_score": 2,
+    "tree_scan_max_entries": 5000,
+    "tree_scan_max_depth": 8,
+    "git_repo_max_depth": 6
+  },
+  "roots": [
+    {
+      "path": "..",
+      "label": "documents-top",
+      "discovery": "children",
+      "exclude_names": [
+        ".tmp.driveupload",
+        "Custom Office Templates",
+        "My Data Sources",
+        "My Games",
+        "Outlook Files",
+        "Saved Games",
+        "WindowsPowerShell",
+        "project-ledger",
+        "repos"
+      ],
+      "min_score": 2
+    },
+    {
+      "path": "../repos",
+      "label": "repos",
+      "discovery": "git_repos",
+      "max_depth": 6
+    }
+  ]
+}
