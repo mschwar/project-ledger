@@ -20,25 +20,46 @@
   },
   "roots": [
     {
-      "path": "..",
-      "label": "documents-top",
-      "discovery": "children",
-      "exclude_names": [
-        ".tmp.driveupload",
-        "Custom Office Templates",
-        "My Data Sources",
-        "My Games",
-        "Outlook Files",
-        "Saved Games",
-        "WindowsPowerShell",
-        "project-ledger",
-        "repos"
-      ],
-      "min_score": 2
+      "path": "/central/repos/apps",
+      "label": "central-apps",
+      "discovery": "git_repos",
+      "max_depth": 6
     },
     {
-      "path": "../repos",
-      "label": "repos",
+      "path": "/central/repos/infra",
+      "label": "central-infra",
+      "discovery": "git_repos",
+      "max_depth": 6
+    },
+    {
+      "path": "/central/services",
+      "label": "central-services",
+      "discovery": "children"
+    },
+    {
+      "path": "/central/git",
+      "label": "central-git",
+      "discovery": "git_repos",
+      "max_depth": 6
+    },
+    {
+      "path": "/central/proxy-lead",
+      "label": "proxy-lead",
+      "discovery": "self"
+    },
+    {
+      "path": "/central/white-rabbit",
+      "label": "white-rabbit",
+      "discovery": "self"
+    },
+    {
+      "path": "/opt/homelab",
+      "label": "opt-homelab",
+      "discovery": "children"
+    },
+    {
+      "path": "/central/archive/root-backups/central.root-backup-20260416T012657Z/repos",
+      "label": "backup-20260416-repos",
       "discovery": "git_repos",
       "max_depth": 6
     }

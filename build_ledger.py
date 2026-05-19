@@ -5,6 +5,7 @@ import argparse
 import csv
 import hashlib
 import json
+import ntpath
 import os
 import platform
 import re
@@ -227,6 +228,11 @@ def repo_name_from_remote(remote_url: str) -> str:
 
 
 def markdown_target(target: Path, base_dir: Path) -> str:
+    target_text = str(target)
+    base_text = str(base_dir)
+    if re.match(r"^[A-Za-z]:[\\/]", target_text) and re.match(r"^[A-Za-z]:[\\/]", base_text):
+        relative = ntpath.relpath(target_text, base_text)
+        return quote(relative.replace("\\", "/"), safe="/-_.()")
     relative = os.path.relpath(target, base_dir)
     return quote(Path(relative).as_posix(), safe="/-_.()")
 
