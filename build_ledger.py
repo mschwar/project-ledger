@@ -449,13 +449,16 @@ def load_sidecar(sidecar_path: Path | None) -> dict:
 
 
 def git_output(directory: Path, *args: str) -> str:
-    proc = subprocess.run(
-        ["git", "-C", str(directory), *args],
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=10,
-    )
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(directory), *args],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=30,
+        )
+    except subprocess.TimeoutExpired:
+        return ""
     if proc.returncode != 0:
         return ""
     return proc.stdout.strip()

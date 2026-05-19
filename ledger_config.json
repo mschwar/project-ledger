@@ -22,8 +22,7 @@
     {
       "path": "/central/repos/apps",
       "label": "central-apps",
-      "discovery": "git_repos",
-      "max_depth": 6
+      "discovery": "children"
     },
     {
       "path": "/central/repos/infra",
@@ -43,6 +42,16 @@
       "max_depth": 6
     },
     {
+      "path": "/central/projects",
+      "label": "central-projects",
+      "discovery": "children"
+    },
+    {
+      "path": "/central/repos/active",
+      "label": "central-active",
+      "discovery": "children"
+    },
+    {
       "path": "/central/proxy-lead",
       "label": "proxy-lead",
       "discovery": "self"
@@ -51,6 +60,31 @@
       "path": "/central/white-rabbit",
       "label": "white-rabbit",
       "discovery": "self"
+    },
+    {
+      "path": "/home/matt/project-ledger",
+      "label": "project-ledger",
+      "discovery": "self"
+    },
+    {
+      "path": "/home/matt/GoogleDrive/Projects",
+      "label": "gdrive-projects",
+      "discovery": "children"
+    },
+    {
+      "path": "/home/matt/GoogleDrive/repos-MS",
+      "label": "gdrive-repos-ms",
+      "discovery": "children"
+    },
+    {
+      "path": "/home/matt/GoogleDrive/repos-other",
+      "label": "gdrive-repos-other",
+      "discovery": "children"
+    },
+    {
+      "path": "/home/matt/GoogleDrive/backups",
+      "label": "gdrive-backups",
+      "discovery": "children"
     },
     {
       "path": "/opt/homelab",
