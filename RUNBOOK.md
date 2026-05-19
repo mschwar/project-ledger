@@ -36,6 +36,14 @@ python -m unittest tests\test_build_ledger.py
 5. Add `force_include_names` if important directories are low-signal.
 6. Run the scanner and inspect the Markdown output before trusting the results.
 
+For inventory-backed cloud roots:
+1. Keep `path` pointed at the mounted folder only for operator navigation.
+2. Set `discovery` to `inventory_policy`.
+3. Point `inventory_jsonl` at the durable inventory artifact.
+4. Point `policy_path` at the matching root-policy file.
+5. Restrict `policy_crawl_treatments` to the intended promotion set, usually `project_discovery`.
+6. Verify the resulting entries carry `google-drive:` style project keys and a source label that preserves the policy root.
+
 ## When A Project Is Missing
 
 Check in this order:

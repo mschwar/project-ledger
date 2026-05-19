@@ -52,13 +52,21 @@ python build_ledger.py --config ledger_config.json --output-dir output
 - `children`: inspect each direct child directory and keep the ones that look project-like
 - `git_repos`: recursively find directories that contain `.git`
 - `self`: treat the root itself as one ledger entry
+- `inventory_policy`: read a durable inventory artifact plus a policy file, then promote only the roots marked for ledger ingestion
 
 The default config scans:
 
 - the top-level children of `Documents`
 - nested git repos under `Documents/repos`
 
-Adjust the roots and excludes as needed for other machines, synced folders, or backup dumps.
+Adjust the roots and excludes as needed for other machines, synced folders, backup dumps, or inventory-backed cloud surfaces.
+
+For Google Drive or similar cloud-drive inventories, prefer a policy-backed root instead of recursive mount discovery. Point one root at the mounted folder for operator navigation, but drive candidate selection from:
+- `inventory_jsonl`: durable metadata inventory
+- `policy_path`: root classification policy
+- `policy_crawl_treatments`: usually `["project_discovery"]`
+
+That keeps project-ledger ingestion aligned with the homelab control-plane rule: inventory first, policy second, project promotion third.
 
 If a directory matters but does not have enough obvious signals, add it under `force_include_names` for that root.
 

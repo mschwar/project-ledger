@@ -67,24 +67,17 @@
       "discovery": "self"
     },
     {
-      "path": "/home/matt/GoogleDrive/Projects",
-      "label": "gdrive-projects",
-      "discovery": "children"
-    },
-    {
-      "path": "/home/matt/GoogleDrive/repos-MS",
-      "label": "gdrive-repos-ms",
-      "discovery": "children"
-    },
-    {
-      "path": "/home/matt/GoogleDrive/repos-other",
-      "label": "gdrive-repos-other",
-      "discovery": "children"
-    },
-    {
-      "path": "/home/matt/GoogleDrive/backups",
-      "label": "gdrive-backups",
-      "discovery": "children"
+      "path": "/home/matt/GoogleDrive",
+      "label": "google-drive-policy",
+      "discovery": "inventory_policy",
+      "inventory_jsonl": "/central/registry/inventories/google_drive_inventory_latest.jsonl",
+      "policy_path": "/central/registry/inventories/google_drive_roots_policy.json",
+      "policy_crawl_treatments": [
+        "project_discovery"
+      ],
+      "require_project_ledger_candidate": true,
+      "remote_name": "googledrive",
+      "storage_scope": "shared"
     },
     {
       "path": "/opt/homelab",
