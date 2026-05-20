@@ -67,6 +67,20 @@
       "discovery": "self"
     },
     {
+      "path": "/central/registry/inventories/matty-pc-documents",
+      "label": "matty-pc",
+      "discovery": "inventory_policy",
+      "inventory_jsonl": "/central/registry/inventories/matty-pc-documents/matty_pc_documents_inventory_latest.jsonl",
+      "policy_path": "/central/registry/inventories/matty-pc-documents/matty_pc_documents_roots_policy.json",
+      "policy_crawl_treatments": [
+        "project_discovery"
+      ],
+      "require_project_ledger_candidate": true,
+      "remote_name": "matty-pc",
+      "machine_name": "matty-pc",
+      "storage_scope": "local"
+    },
+    {
       "path": "/home/matt/GoogleDrive",
       "label": "google-drive-policy",
       "discovery": "inventory_policy",
