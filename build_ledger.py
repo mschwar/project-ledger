@@ -1052,6 +1052,22 @@ def collect_entries(config: dict, config_dir: Path, output_dir: Path) -> list[di
     return entries
 
 
+def summarize_roots(config: dict, config_dir: Path) -> list[dict]:
+    summaries: list[dict] = []
+    for root_cfg_raw in config.get("roots", []):
+        root_cfg = dict(root_cfg_raw)
+        root_path = resolve_path(root_cfg["path"], config_dir)
+        summaries.append(
+            {
+                "label": str(root_cfg.get("label", "")).strip() or root_path.name,
+                "path": str(root_path),
+                "discovery": str(root_cfg.get("discovery", "children")).strip() or "children",
+                "exists": root_path.exists(),
+            }
+        )
+    return summaries
+
+
 def write_csv(entries: list[dict], output_path: Path) -> None:
     with output_path.open("w", encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=CSV_FIELDS)
@@ -1083,7 +1099,7 @@ def render_last_push(entry: dict) -> str:
     return entry["last_push_at"] or entry["last_remote_ref_at"]
 
 
-def write_markdown(entries: list[dict], output_path: Path) -> None:
+def write_markdown(entries: list[dict], output_path: Path, root_summaries: list[dict] | None = None) -> None:
     git_count = sum(1 for entry in entries if entry["git"])
     obsidian_count = sum(1 for entry in entries if entry["obsidian"])
     shared_count = sum(1 for entry in entries if entry["shared"])
@@ -1100,9 +1116,38 @@ def write_markdown(entries: list[dict], output_path: Path) -> None:
         "",
         "> `Last Push` uses `last_push_at` from the sidecar when available; otherwise it falls back to the newest local remote-ref timestamp.",
         "",
+    ]
+
+    if root_summaries is not None:
+        mirror_roots = [root for root in root_summaries if "/central/registry/mirrors/matthews-macbook-air-2/" in root["path"]]
+        missing_roots = [root for root in root_summaries if not root["exists"]]
+        lines.extend([
+            "## Scan coverage and gaps",
+            "",
+        ])
+        if mirror_roots:
+            lines.append("**MacBook mirror roots scanned this refresh:**")
+            for root in mirror_roots:
+                lines.append(f"- `{root['label']}` — `{root['path']}`")
+            lines.append("")
+        lines.append("**Configured roots:**")
+        for root in root_summaries:
+            status = "missing" if not root["exists"] else "present"
+            lines.append(f"- `{root['label']}` — `{root['path']}` — {status} ({root['discovery']})")
+        lines.append("")
+        if missing_roots:
+            lines.append("**Known gaps / inaccessible roots:**")
+            for root in missing_roots:
+                lines.append(f"- `{root['path']}` ({root['label']})")
+            lines.append("")
+        else:
+            lines.append("**Known gaps / inaccessible roots:** none detected in configured scan roots.")
+            lines.append("")
+
+    lines.extend([
         "| Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |",
         "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-    ]
+    ])
 
     for entry in entries:
         location_cell = render_location_cell(entry, output_path)
@@ -1137,6 +1182,7 @@ def main() -> int:
     output_dir = ensure_output_dir(resolve_path(args.output_dir, script_dir))
     config = read_json(config_path)
     entries = collect_entries(config, config_path.parent, output_dir)
+    root_summaries = summarize_roots(config, config_path.parent)
 
     csv_path = output_dir / "projects.csv"
     json_path = output_dir / "projects.json"
@@ -1144,7 +1190,7 @@ def main() -> int:
 
     write_csv(entries, csv_path)
     write_json(entries, json_path, config_path)
-    write_markdown(entries, md_path)
+    write_markdown(entries, md_path, root_summaries)
 
     print(f"Wrote {len(entries)} entries")
     print(f"  CSV:  {csv_path}")

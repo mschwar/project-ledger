@@ -67,6 +67,30 @@
       "discovery": "self"
     },
     {
+      "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter",
+      "label": "matthews-macbook-air-2:hermes-paperclip-adapter",
+      "discovery": "self",
+      "machine_name": "matthews-macbook-air-2"
+    },
+    {
+      "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project",
+      "label": "matthews-macbook-air-2:higgsfield-agent-project",
+      "discovery": "self",
+      "machine_name": "matthews-macbook-air-2"
+    },
+    {
+      "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/homelab",
+      "label": "matthews-macbook-air-2:homelab",
+      "discovery": "self",
+      "machine_name": "matthews-macbook-air-2"
+    },
+    {
+      "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research",
+      "label": "matthews-macbook-air-2:local-deep-research",
+      "discovery": "self",
+      "machine_name": "matthews-macbook-air-2"
+    },
+    {
       "path": "/central/registry/inventories/matty-pc-documents",
       "label": "matty-pc",
       "discovery": "inventory_policy",
