@@ -7,6 +7,7 @@ The scanner is config-driven and emits:
 - `output/projects.csv`
 - `output/projects.json`
 - `output/projects.md`
+- `docs/ledgers/projects-ledger.md` (canonical human-facing ledger mirror)
 
 ## Handoff Docs
 
