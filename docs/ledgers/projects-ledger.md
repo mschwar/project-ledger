@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-05-22T17:01:57+00:00
+Generated: 2026-05-22T23:07:53+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -40,8 +40,8 @@ Generated: 2026-05-22T17:01:57+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Project Ledger | git | shared | yes |  | 2026-05-22T16:56:40+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-05-21T22:30:38+00:00 |
-| Homelab Agent Platform | git | shared | yes |  | 2026-05-22T12:01:17+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-05-22T00:56:40-06:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-05-22T18:00:57+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-05-22T11:28:24-06:00 |
+| Project Ledger | git | shared | yes |  | 2026-05-22T17:02:30+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-05-22T17:03:35+00:00 |
 | README.md - White Rabbit | git | shared | yes |  | 2026-05-22T06:35:46+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
 | Higgsfield Agent Project | directory | local |  |  | 2026-05-21T22:23:02+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project/README.md) | [higgsfield-agent-project](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project) | higgsfield-agent-project |  |
 | Local Deep Research | git | shared | yes |  | 2026-05-21T21:48:35+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research/README.md) | [url](https://github.com/LearningCircuit/local-deep-research.git) | local-deep-research | 2026-05-08T00:31:16+00:00 |
