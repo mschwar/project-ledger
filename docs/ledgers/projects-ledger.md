@@ -1,6 +1,6 @@
 # Project Ledger
 
-Last refreshed: 2026-05-23T11:19:56+00:00
+Last refreshed: 2026-05-23T17:30:55+00:00
 
 ## Scope and coverage
 
@@ -15,7 +15,7 @@ Last refreshed: 2026-05-23T11:19:56+00:00
 - Unique project keys: 160
 - Machines covered: 3 (ai-server, matthews-macbook-air-2, matty-pc)
 - Shared/synced: 104
-- Local: 92
+- Local: 59
 - Git repos: 61
 - Obsidian vaults: 42
 - Git + Obsidian: 27
@@ -24,7 +24,7 @@ Last refreshed: 2026-05-23T11:19:56+00:00
 
 ## What changed in this refresh
 
-- Refreshed the project-ledger scan at 2026-05-23T11:19:56+00:00 from live ai-server, matthews-macbook-air-2, and matty-pc evidence.
+- Refreshed the project-ledger scan at 2026-05-23T17:30:55+00:00 from live ai-server, matthews-macbook-air-2, and matty-pc evidence.
 - No new project roots or repo families surfaced in this pass; the refresh updated live timestamps and preserved the existing coverage set.
 - The four MacBook mirror roots remain in the canonical scan set.
 
@@ -36,9 +36,9 @@ Last refreshed: 2026-05-23T11:19:56+00:00
 
 | project_key | display_name | tags | status | notes | path | node/source | last touch |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-23T06:00:55+00:00 |
+| homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-23T12:00:55+00:00 |
+| github.com/mschwar/project-ledger | Project Ledger |  |  | This project builds a ledger for mixed project roots: plain directories, git repos, and Obsidian vaults. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-23T11:23:29+00:00 |
 | openclaw-meta-research | OpenClaw Meta Research | openclaw, project | active | Next.js app + collection pipeline to discover OpenClaw usage patterns from web sources every 48h. | /central/projects/openclaw-meta-research | ai-server / central-projects | 2026-05-23T06:00:24+00:00 |
-| github.com/mschwar/project-ledger | Project Ledger |  |  | This project builds a ledger for mixed project roots: plain directories, git repos, and Obsidian vaults. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-23T05:12:54+00:00 |
 | github.com/mschwar/proxy-lead | README.md - White Rabbit |  |  | B2B AI lead generation tool for Account Executives and SDRs at telecom/VoIP providers. Searches live web sources to surface IT directors and network managers at K-12 school districts and local governments — faster and more accurately than b | /central/proxy-lead | ai-server / proxy-lead | 2026-05-22T06:35:46+00:00 |
 | higgsfield-agent-project | Higgsfield Agent Project | higgsfield, agent-workspace, pipeline | active | Agent-managed Higgsfield production pipeline with inbox-driven ingestion and dated batch processing. | /central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project | matthews-macbook-air-2 / matthews-macbook-air-2:higgsfield-agent-project | 2026-05-21T22:23:02+00:00 |
 | github.com/LearningCircuit/local-deep-research | Local Deep Research |  |  | <div align="center"> | /central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research | matthews-macbook-air-2 / matthews-macbook-air-2:local-deep-research | 2026-05-21T21:48:35+00:00 |
@@ -82,58 +82,58 @@ Last refreshed: 2026-05-23T11:19:56+00:00
 | llm-council | LLM Council |  |  | ![llmcouncil](header.jpg) | /central/repos/apps/llm-council-master | ai-server / central-apps | 2026-05-19T16:25:04+00:00 |
 | github.com/mschwar/homelab | Homelab Agent Platform |  |  | A local-first AI platform running across 7 machines (2 Mac laptops, 4 Windows desktops, 1 Ubuntu Linux hub), unified by Tailscale into a private mesh network with centralized storage, compute routing, and LLM inference. | /central/registry/mirrors/matthews-macbook-air-2/Documents/homelab | matthews-macbook-air-2 / matthews-macbook-air-2:homelab | 2026-05-19T03:14:59+00:00 |
 | github.com/modelcontextprotocol/servers | Model Context Protocol servers | git, shared, mcp | active | This repository is a collection of reference implementations for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), as well as references to community-built servers and additional resources. | /central/services/mcp-servers | ai-server / central-services | 2026-05-19T00:43:20+00:00 |
-| common-project | ﻿# Common Project: One Concept a Day | dirty, git | active | [Visit the Website](https://mschwar.github.io/common-project/) \| Progress: 5 of 50 concepts completed | /central/repos/active/common-project | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
+| common-project | # Common Project: One Concept a Day | dirty, git | active | [Visit the Website](https://mschwar.github.io/common-project/) \| Progress: 5 of 50 concepts completed | /central/repos/active/common-project | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | white-rabbit | White Rabbit | clean, git | active | Internal-first B2B prospecting workbench. Three operators (Matt, Thomas, Lee). Self-serve from day 1. Recipes, not lists. | /central/white-rabbit | ai-server / white-rabbit | 2026-05-19T00:19:56+00:00 |
 | vibecoding | VibeCoding | dirty, git, vibe | active | A comprehensive AI-driven development framework for building projects with agentic AI assistance. Provides project-agnostic agents, workflows, context graphs, protocols, and templates. | /central/repos/active/VibeCoding | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | counterweight-tim | Turborepo starter | dirty, git | active | This Turborepo starter is maintained by the Turborepo core team. | /central/repos/active/counterweight-tim | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | data-visualization | Tsimane Oral Health Heatmap: A Data Visualization Project | data, dirty, git | active | This repository showcases a data visualization project designed to represent the complete oral health status of the Tsimane population of Bolivia. The heatmap synthesizes over 32,000 data points from 1,176 individuals into a single, intuiti | /central/repos/active/data-visualization | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| the-garden | The Garden | dirty, garden, git | active | git, markdown:7, project-files, sidecar | /central/git/the_garden | ai-server / central-git | 2026-05-19T00:19:56+00:00 |
-| substrate | Substrate | dirty, git | active | code:25, docs+code, git, markdown:13, obsidian, project-files, readme, sidecar | /central/repos/active/substrate | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| song-clean | Song Clean | project | active | sidecar | /central/projects/song-clean | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| sigil | Sigil | project, sigil | active | sidecar | /central/projects/sigil | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| scratch | Scratch | collection | active | markdown:8, sidecar | /central/projects/scratch | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| repos | Repos | collection | active | markdown:33, project-files, readme, sidecar | /central/projects/repos | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| reality-ledger | Reality Ledger | dirty, git, ledger, reality | active | git, sidecar | /central/repos/active/reality-ledger | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
+| the-garden | The Garden | dirty, garden, git | active |  | /central/git/the_garden | ai-server / central-git | 2026-05-19T00:19:56+00:00 |
+| substrate | Substrate | dirty, git | active |  | /central/repos/active/substrate | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
+| song-clean | Song Clean | project | active |  | /central/projects/song-clean | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| sigil | Sigil | project, sigil | active |  | /central/projects/sigil | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| scratch | Scratch | collection | active |  | /central/projects/scratch | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| repos | Repos | collection | active |  | /central/projects/repos | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| reality-ledger | Reality Ledger | dirty, git, ledger, reality | active |  | /central/repos/active/reality-ledger | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | plots | Plots | dirty, git, plot | active | Interactive timelines of exponential tech progress – showing growth, compression, and scaling laws enabling modern AI. | /central/repos/active/plots | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | paper-repo | Paper Repo | paper, project | active | Flat markdown repository for scientific/white papers with linked metadata in SQLite. | /central/projects/paper-repo | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| notes | Notes | collection, notes | active | markdown:3014, obsidian, sidecar | /central/projects/notes | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| northstar | Northstar | northstar, project | active | sidecar | /central/projects/northstar | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| mnemosyne | Mnemosyne | mnemosyne, project | active | sidecar | /central/projects/mnemosyne | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| lit | Lit | project | active | sidecar | /central/projects/lit | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| lifestream | Lifestream | project | active | sidecar | /central/projects/lifestream | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| notes | Notes | collection, notes | active |  | /central/projects/notes | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| northstar | Northstar | northstar, project | active |  | /central/projects/northstar | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| mnemosyne | Mnemosyne | mnemosyne, project | active |  | /central/projects/mnemosyne | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| lit | Lit | project | active |  | /central/projects/lit | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| lifestream | Lifestream | project | active |  | /central/projects/lifestream | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | letters | LetterOps | dirty, git | active | Local-first document intelligence system for managing Bahá’í letters. See canonical-docs-v2.md for the authoritative PRD, flows, tech stack, and operating rules. | /central/repos/active/letters | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| isabel | Isabel | project | active | sidecar | /central/projects/isabel | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| isabel | Isabel | project | active |  | /central/projects/isabel | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | interpret | Interpret | interpret, project | active | Local-first prompt interpretation and delegation system for analyzing codebases at scale. | /central/projects/interpret | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| incubating | Incubating | collection | active | sidecar | /central/projects/incubating | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| incubating | Incubating | collection | active |  | /central/projects/incubating | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | foundation | Horizon Foundation Toolkit | project | active | This repository contains the Horizon protocol, workflow docs, and supporting scripts for multi-agent prompt runs. | /central/projects/foundation | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| hermes-maximization | Hermes Maximization | project | active | sidecar | /central/projects/hermes-maximization | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| greymatter | Greymatter | greymatter, project | active | sidecar | /central/projects/greymatter | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| entropy-project | Entropy Project | project | active | sidecar | /central/projects/entropy_project | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| transcript-processing | Directory Crawl: transcript_processing | project, transcript | active | code:4, docs+code, sidecar | /central/projects/transcript_processing | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| reality-ledger | Directory Crawl: reality-ledger | dirty, git, ledger, reality | active | git, markdown:10, project-files, readme, sidecar | /central/projects/reality-ledger | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| email-processing | Directory Crawl: email_processing | email, project | active | docs+code, markdown:206, sidecar | /central/projects/email_processing | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| context-graph-engine | Directory Crawl: context-graph-engine | graph, project | active | markdown:16, obsidian, project-files, sidecar | /central/projects/context-graph-engine | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| hermes-maximization | Hermes Maximization | project | active |  | /central/projects/hermes-maximization | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| greymatter | Greymatter | greymatter, project | active |  | /central/projects/greymatter | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| entropy-project | Entropy Project | project | active |  | /central/projects/entropy_project | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| transcript-processing | Directory Crawl: transcript_processing | project, transcript | active |  | /central/projects/transcript_processing | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| reality-ledger | Directory Crawl: reality-ledger | dirty, git, ledger, reality | active |  | /central/projects/reality-ledger | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| email-processing | Directory Crawl: email_processing | email, project | active |  | /central/projects/email_processing | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| context-graph-engine | Directory Crawl: context-graph-engine | graph, project | active |  | /central/projects/context-graph-engine | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | context-project | ctx | dirty, git | active | Filesystem-native context layer for AI agents. | /central/repos/active/context-project | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| csf | Csf | project | active | sidecar | /central/projects/csf | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| convertwordto-pdf-1 | Convertwordto Pdf 1 | project | active | sidecar | /central/projects/convertwordto-pdf-1 | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| constructive-understanding | Constructive Understanding | project | active | sidecar | /central/projects/constructive-understanding | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| completed | Completed | collection | active | sidecar | /central/projects/completed | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| common-projects | Common Projects | project | active | docs+code, markdown:7, project-files, readme, sidecar | /central/projects/common-projects | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| csf | Csf | project | active |  | /central/projects/csf | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| convertwordto-pdf-1 | Convertwordto Pdf 1 | project | active |  | /central/projects/convertwordto-pdf-1 | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| constructive-understanding | Constructive Understanding | project | active |  | /central/projects/constructive-understanding | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| completed | Completed | collection | active |  | /central/projects/completed | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| common-projects | Common Projects | project | active |  | /central/projects/common-projects | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | coherence | Coherence-Refinement Physics | coherence, project | active | Axiom Framework: v5.2 (AXIOMS.txt) | /central/projects/coherence | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | coherence-antigravity | Coherence-Antigravity (Generative Physics) | coherence, project | active | Status: Experimental (v5.1 "TikTok v3 Aligned") | /central/projects/coherence-antigravity | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | cohere-dump | Cohere: CFF Validation Framework | project | active | A production-grade theoretical physics research framework for validating the Causal Futures Framework (CFF) hypothesis on measure collapse and quantum-like phase transitions. | /central/projects/cohere-dump | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| structure | Codex Agent Visibility (Hardcoded) | project | active | code:3, docs+code, markdown:9, obsidian, project-files, readme, sidecar | /central/projects/structure | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| structure | Codex Agent Visibility (Hardcoded) | project | active |  | /central/projects/structure | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | claw-code | Claw Code | dirty, git | active | <p align="center"> | /central/repos/active/claw-code | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| calc | Calc | calc, project | active | sidecar | /central/projects/calc | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| test-repo | Central Git test from Windows | clean, git | active |  | /central/repos/active/test-repo | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
+| calc | Calc | calc, project | active |  | /central/projects/calc | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| test-repo | C e n t r a l   G i t   t e s t   f r o m   W i n d o w s  | clean, git | active |   | /central/repos/active/test-repo | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | bible-homepage | bible-homepage | bible, dirty, git | active | A minimalist personal homepage that displays a daily Bible verse each time you open your browser. It is designed to support scriptural reflection and a centered start to your day. | /central/repos/active/bible-homepage | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | bahai-homepage | Bahá’í Daily Homepage | bahai, dirty, git | active | A minimalist personal homepage that displays the current Badíʿ date and a daily selection from The Hidden Words by Bahá’u’lláh. It is designed to support spiritual reflection and a centered start to digital interactions. | /central/repos/active/bahai-homepage | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | braindump | AI_SYSTEM_SPEC | brain, project | active | A project-agnostic, auditable, agent-based AI system specification designed for clarity, scalability, and epistemic hygiene. | /central/projects/braindump | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | scrollytelling | AI Compute "Phase Shift" Scrollytelling Visualization | dirty, git | active | > An interactive data visualization proving AI training compute broke Moore's Law in 2012. | /central/repos/active/scrollytelling | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | bridgeai | AI Companion | dirty, git | active | A mobile app that onboards professionals into practical AI usage through quick actions, a guided chatbot, and a lightweight library. | /central/repos/active/bridgeai | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| the-garden | AGENTS.md - Your Workspace | dirty, garden, git | active | git, markdown:8, project-files, sidecar | /central/repos/active/the_garden | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
+| the-garden | AGENTS.md - Your Workspace | dirty, garden, git | active |  | /central/repos/active/the_garden | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | agent-master-dump | Agent Master Repository | project | active | A comprehensive collection of 99 specialized AI agents organized into 69 plugins across 21 categories, with 112 modular skills for Claude Code workflow orchestration. | /central/projects/agent-master-dump | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| active | Active | collection | active | sidecar | /central/projects/active | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
+| active | Active | collection | active |  | /central/projects/active | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | bahai-consultation-guide | A Practical Guide to Baha'i Consultation | bahai, dirty, git | active | Welcome to the Baha'i Consultation Guide! | /central/repos/active/bahai-consultation-guide | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | garden-of-wisdom | A Garden of Wisdom | dirty, garden, git | active | This is a personal collection of impactful quotes from various world religions and philosophies, curated for memorization and reflection. | /central/repos/active/Garden-of-Wisdom | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | google-drive:paperclip | paperclip | google-drive, paperclip, project_roots | active | Named project root that should surface in project-ledger ingestion before broader content extraction. | /home/matt/GoogleDrive/paperclip | ai-server / google-drive-policy:paperclip | 2026-05-11T20:47:40+00:00 |
@@ -181,15 +181,15 @@ Last refreshed: 2026-05-23T11:19:56+00:00
 | google-drive:edi/corporate & legal | Corporate & Legal | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Corporate & Legal | ai-server / google-drive-policy:EDI | 2026-01-22T19:59:57+00:00 |
 | prompts | Prompts |  |  | Project-agnostic prompts that apply across all VibeCoding projects. | /central/repos/active/prompts | ai-server / central-active | 2026-01-14T01:42:10+00:00 |
 | agents | Agents |  |  | Project-agnostic agent definitions for VibeCoding. | /central/repos/active/agents | ai-server / central-active | 2026-01-13T16:40:38+00:00 |
-| vibe_brain | vibe_brain |  |  | obsidian | /central/repos/active/vibe_brain | ai-server / central-active | 2026-01-13T16:33:47+00:00 |
-| projects | projects |  |  | docs+code, project-files, readme | /central/repos/active/projects | ai-server / central-active | 2026-01-13T16:33:43+00:00 |
+| vibe_brain | vibe_brain |  |  |  | /central/repos/active/vibe_brain | ai-server / central-active | 2026-01-13T16:33:47+00:00 |
+| projects | projects |  |  |  | /central/repos/active/projects | ai-server / central-active | 2026-01-13T16:33:43+00:00 |
 | templates | Templates |  |  | Project-agnostic file templates for consistent documentation and workflows. | /central/repos/active/templates | ai-server / central-active | 2026-01-13T16:32:44+00:00 |
 | protocols | Protocols |  |  | Project-agnostic standards and conventions for consistent development practices. | /central/repos/active/protocols | ai-server / central-active | 2026-01-13T16:32:44+00:00 |
 | workflows | Workflows |  |  | Project-agnostic workflow phases for the Vibe Coding methodology. | /central/repos/active/workflows | ai-server / central-active | 2026-01-13T16:32:06+00:00 |
 | tools | Tools |  |  | CLI utilities for managing VibeCoding projects. | /central/repos/active/tools | ai-server / central-active | 2026-01-13T16:30:05+00:00 |
 | contexts | Contexts |  |  | Project-agnostic context documents and knowledge graph patterns for AI-assisted development. | /central/repos/active/contexts | ai-server / central-active | 2026-01-13T16:30:05+00:00 |
 | blueprints | Blueprints |  |  | Project Requirements Documents (PRDs) and architectural blueprints for VibeCoding projects. | /central/repos/active/blueprints | ai-server / central-active | 2026-01-13T16:30:05+00:00 |
-| agent-runtime | agent runtime |  |  | obsidian | /central/repos/active/agent runtime | ai-server / central-active | 2026-01-13T01:10:59+00:00 |
+| agent-runtime | agent runtime |  |  |  | /central/repos/active/agent runtime | ai-server / central-active | 2026-01-13T01:10:59+00:00 |
 | google-drive:edi/edi - ai dumps | EDI - AI dumps | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/EDI - AI dumps | ai-server / google-drive-policy:EDI | 2025-08-09T00:45:46+00:00 |
 | google-drive:edi/customer database | Customer Database | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Customer Database | ai-server / google-drive-policy:EDI | 2025-08-09T00:45:46+00:00 |
 | google-drive:edi/testimonials | testimonials | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/testimonials | ai-server / google-drive-policy:EDI | 2025-06-11T20:25:01+00:00 |
