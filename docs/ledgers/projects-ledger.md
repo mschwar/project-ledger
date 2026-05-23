@@ -1,6 +1,6 @@
 # Project Ledger
 
-Last refreshed: 2026-05-23T23:38:57+00:00
+Last refreshed: 2026-05-23T23:45:52+00:00
 
 ## Scope and coverage
 
@@ -24,8 +24,9 @@ Last refreshed: 2026-05-23T23:38:57+00:00
 
 ## What changed in this refresh
 
-- Refreshed the project-ledger scan at 2026-05-23T23:38:57+00:00 from live ai-server, matthews-macbook-air-2, and matty-pc evidence.
+- Refreshed the project-ledger scan at 2026-05-23T23:45:52+00:00 from live ai-server, matthews-macbook-air-2, and matty-pc evidence.
 - No new project roots or repo families surfaced in this pass; the refresh updated live timestamps and preserved the existing coverage set.
+- Added a stable `.project-ledger.json` sidecar for `/home/matt/project-ledger` so future refreshes can preserve the repository's identity without relying only on the remote URL.
 - The four MacBook mirror roots remain in the canonical scan set.
 
 ## Known gaps / unscanned roots
@@ -36,8 +37,8 @@ Last refreshed: 2026-05-23T23:38:57+00:00
 
 | project_key | display_name | tags | status | notes | path | node/source | last touch |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-23T18:00:57+00:00 |
-| github.com/mschwar/project-ledger | Project Ledger |  |  | This project builds a ledger for mixed project roots: plain directories, git repos, and Obsidian vaults. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-23T17:33:59+00:00 |
+| github.com/mschwar/project-ledger | Project Ledger | ledger, git, tooling | active | Ledger scanner for mixed project roots across machines and storage surfaces. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-23T23:43:51+00:00 |
+| homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-23T23:42:26+00:00 |
 | openclaw-meta-research | OpenClaw Meta Research | openclaw, project | active | Next.js app + collection pipeline to discover OpenClaw usage patterns from web sources every 48h. | /central/projects/openclaw-meta-research | ai-server / central-projects | 2026-05-23T06:00:24+00:00 |
 | github.com/mschwar/proxy-lead | README.md - White Rabbit |  |  | B2B AI lead generation tool for Account Executives and SDRs at telecom/VoIP providers. Searches live web sources to surface IT directors and network managers at K-12 school districts and local governments — faster and more accurately than b | /central/proxy-lead | ai-server / proxy-lead | 2026-05-22T06:35:46+00:00 |
 | higgsfield-agent-project | Higgsfield Agent Project | higgsfield, agent-workspace, pipeline | active | Agent-managed Higgsfield production pipeline with inbox-driven ingestion and dated batch processing. | /central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project | matthews-macbook-air-2 / matthews-macbook-air-2:higgsfield-agent-project | 2026-05-21T22:23:02+00:00 |
@@ -143,7 +144,7 @@ Last refreshed: 2026-05-23T23:38:57+00:00
 | hermes-ops-workflows | Hermes ops workflows |  |  | Small durable wrappers for repeated Hermes/local-ops workflows. | /central/repos/active/hermes-ops-workflows | ai-server / central-active | 2026-04-25T04:21:00+00:00 |
 | google-drive:repos-other | repos-other | google-drive, repos-other, repo_like |  | Repository-like collection; best first use is durable project/repo discovery rather than document extraction. | /home/matt/GoogleDrive/repos-other | ai-server / google-drive-policy:repos-other | 2026-04-20T23:24:24+00:00 |
 | google-drive:repos-ms | repos-MS | google-drive, repos-MS, repo_like |  | Repository-like root; classify and promote repo/project subroots before any expensive content ingestion. | /home/matt/GoogleDrive/repos-MS | ai-server / google-drive-policy:repos-MS | 2026-04-20T22:15:24+00:00 |
-| github.com/mschwar/claude-overhaul | What this is | google-drive, repos-other, repo_like |  | A versioned, deployable configuration for Claude Code's global ~/.claude/ directory. Every file in this repo maps to a file that gets deployed to ~/.claude/. The goal: every Claude Code session — regardless of project, language, or task — s | /home/matt/GoogleDrive/repos-other/claude-overhaul | ai-server / google-drive-policy:repos-other | 2026-04-20T18:54:38+00:00 |
+| google-drive:repos-other/claude-overhaul | What this is | google-drive, repos-other, repo_like |  | A versioned, deployable configuration for Claude Code's global ~/.claude/ directory. Every file in this repo maps to a file that gets deployed to ~/.claude/. The goal: every Claude Code session — regardless of project, language, or task — s | /home/matt/GoogleDrive/repos-other/claude-overhaul | ai-server / google-drive-policy:repos-other | 2026-04-20T18:54:38+00:00 |
 | google-drive:projects | Projects | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |
 | google-drive:projects/lmntl | LMNTL | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects/LMNTL | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |
 | google-drive:projects/legal | legal | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects/legal | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |

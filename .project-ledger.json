@@ -1,0 +1,19 @@
+{
+  "project_key": "github.com/mschwar/project-ledger",
+  "display_name": "Project Ledger",
+  "description": "Ledger scanner for mixed project roots across machines and storage surfaces.",
+  "status": "active",
+  "tags": [
+    "ledger",
+    "git",
+    "tooling"
+  ],
+  "canonical_url": "https://github.com/mschwar/project-ledger.git",
+  "repo_name": "project-ledger",
+  "shared": true,
+  "storage_scope": "shared",
+  "last_session_at": "2026-05-23T23:38:57+00:00",
+  "last_session_summary": "Refreshed project-ledger outputs and canonical ledger mirror.",
+  "next_step": "Keep the scanner synced with new roots and identity sidecars.",
+  "last_push_at": ""
+}
