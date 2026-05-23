@@ -1,6 +1,6 @@
 # Project Ledger
 
-Last refreshed: 2026-05-23T17:30:55+00:00
+Last refreshed: 2026-05-23T23:38:57+00:00
 
 ## Scope and coverage
 
@@ -14,8 +14,8 @@ Last refreshed: 2026-05-23T17:30:55+00:00
 - Entries: 163
 - Unique project keys: 160
 - Machines covered: 3 (ai-server, matthews-macbook-air-2, matty-pc)
-- Shared/synced: 104
-- Local: 59
+- Shared/synced: 71
+- Local: 92
 - Git repos: 61
 - Obsidian vaults: 42
 - Git + Obsidian: 27
@@ -24,7 +24,7 @@ Last refreshed: 2026-05-23T17:30:55+00:00
 
 ## What changed in this refresh
 
-- Refreshed the project-ledger scan at 2026-05-23T17:30:55+00:00 from live ai-server, matthews-macbook-air-2, and matty-pc evidence.
+- Refreshed the project-ledger scan at 2026-05-23T23:38:57+00:00 from live ai-server, matthews-macbook-air-2, and matty-pc evidence.
 - No new project roots or repo families surfaced in this pass; the refresh updated live timestamps and preserved the existing coverage set.
 - The four MacBook mirror roots remain in the canonical scan set.
 
@@ -36,8 +36,8 @@ Last refreshed: 2026-05-23T17:30:55+00:00
 
 | project_key | display_name | tags | status | notes | path | node/source | last touch |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-23T12:00:55+00:00 |
-| github.com/mschwar/project-ledger | Project Ledger |  |  | This project builds a ledger for mixed project roots: plain directories, git repos, and Obsidian vaults. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-23T11:23:29+00:00 |
+| homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-23T18:00:57+00:00 |
+| github.com/mschwar/project-ledger | Project Ledger |  |  | This project builds a ledger for mixed project roots: plain directories, git repos, and Obsidian vaults. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-23T17:33:59+00:00 |
 | openclaw-meta-research | OpenClaw Meta Research | openclaw, project | active | Next.js app + collection pipeline to discover OpenClaw usage patterns from web sources every 48h. | /central/projects/openclaw-meta-research | ai-server / central-projects | 2026-05-23T06:00:24+00:00 |
 | github.com/mschwar/proxy-lead | README.md - White Rabbit |  |  | B2B AI lead generation tool for Account Executives and SDRs at telecom/VoIP providers. Searches live web sources to surface IT directors and network managers at K-12 school districts and local governments — faster and more accurately than b | /central/proxy-lead | ai-server / proxy-lead | 2026-05-22T06:35:46+00:00 |
 | higgsfield-agent-project | Higgsfield Agent Project | higgsfield, agent-workspace, pipeline | active | Agent-managed Higgsfield production pipeline with inbox-driven ingestion and dated batch processing. | /central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project | matthews-macbook-air-2 / matthews-macbook-air-2:higgsfield-agent-project | 2026-05-21T22:23:02+00:00 |
@@ -82,7 +82,7 @@ Last refreshed: 2026-05-23T17:30:55+00:00
 | llm-council | LLM Council |  |  | ![llmcouncil](header.jpg) | /central/repos/apps/llm-council-master | ai-server / central-apps | 2026-05-19T16:25:04+00:00 |
 | github.com/mschwar/homelab | Homelab Agent Platform |  |  | A local-first AI platform running across 7 machines (2 Mac laptops, 4 Windows desktops, 1 Ubuntu Linux hub), unified by Tailscale into a private mesh network with centralized storage, compute routing, and LLM inference. | /central/registry/mirrors/matthews-macbook-air-2/Documents/homelab | matthews-macbook-air-2 / matthews-macbook-air-2:homelab | 2026-05-19T03:14:59+00:00 |
 | github.com/modelcontextprotocol/servers | Model Context Protocol servers | git, shared, mcp | active | This repository is a collection of reference implementations for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), as well as references to community-built servers and additional resources. | /central/services/mcp-servers | ai-server / central-services | 2026-05-19T00:43:20+00:00 |
-| common-project | # Common Project: One Concept a Day | dirty, git | active | [Visit the Website](https://mschwar.github.io/common-project/) \| Progress: 5 of 50 concepts completed | /central/repos/active/common-project | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
+| common-project | ﻿# Common Project: One Concept a Day | dirty, git | active | [Visit the Website](https://mschwar.github.io/common-project/) \| Progress: 5 of 50 concepts completed | /central/repos/active/common-project | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | white-rabbit | White Rabbit | clean, git | active | Internal-first B2B prospecting workbench. Three operators (Matt, Thomas, Lee). Self-serve from day 1. Recipes, not lists. | /central/white-rabbit | ai-server / white-rabbit | 2026-05-19T00:19:56+00:00 |
 | vibecoding | VibeCoding | dirty, git, vibe | active | A comprehensive AI-driven development framework for building projects with agentic AI assistance. Provides project-agnostic agents, workflows, context graphs, protocols, and templates. | /central/repos/active/VibeCoding | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | counterweight-tim | Turborepo starter | dirty, git | active | This Turborepo starter is maintained by the Turborepo core team. | /central/repos/active/counterweight-tim | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
