@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-05-23T23:38:57+00:00",
-  "last_session_summary": "Refreshed project-ledger outputs and canonical ledger mirror.",
+  "last_session_at": "2026-05-24T05:51:03+00:00",
+  "last_session_summary": "Refreshed project-ledger outputs, regenerated the canonical ledger, and verified the live coverage set.",
   "next_step": "Keep the scanner synced with new roots and identity sidecars.",
   "last_push_at": ""
 }
