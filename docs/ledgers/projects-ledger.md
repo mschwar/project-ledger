@@ -1,6 +1,6 @@
 # Project Ledger
 
-Last refreshed: 2026-05-23T23:45:52+00:00
+Last refreshed: 2026-05-25T06:29:42+00:00
 
 ## Scope and coverage
 
@@ -24,20 +24,20 @@ Last refreshed: 2026-05-23T23:45:52+00:00
 
 ## What changed in this refresh
 
-- Refreshed the project-ledger scan at 2026-05-23T23:45:52+00:00 from live ai-server, matthews-macbook-air-2, and matty-pc evidence.
-- No new project roots or repo families surfaced in this pass; the refresh updated live timestamps and preserved the existing coverage set.
-- Added a stable `.project-ledger.json` sidecar for `/home/matt/project-ledger` so future refreshes can preserve the repository's identity without relying only on the remote URL.
+- Refreshed the project-ledger scan at 2026-05-25T06:29:42+00:00 from live ai-server and matthews-macbook-air-2 evidence plus matty-pc inventory artifacts.
+- No new project roots or repo families surfaced in this pass; the refresh updated the repository's own sidecar and preserved the existing coverage set.
 - The four MacBook mirror roots remain in the canonical scan set.
+- Direct SSH probing of the MacBook from ai-server timed out during this pass, so live filesystem validation on that peer was not re-run.
 
 ## Known gaps / unscanned roots
 
-- None detected in the configured scan roots.
+- Direct SSH validation of `matthews-macbook-air-2` timed out from ai-server during this pass; the mirrored Documents roots were still covered through `/central/registry/mirrors/...`.
 
 ## Project index
 
 | project_key | display_name | tags | status | notes | path | node/source | last touch |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| github.com/mschwar/project-ledger | Project Ledger | ledger, git, tooling | active | Ledger scanner for mixed project roots across machines and storage surfaces. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-23T23:43:51+00:00 |
+| github.com/mschwar/project-ledger | Project Ledger | ledger, git, tooling | active | Ledger scanner for mixed project roots across machines and storage surfaces. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-25T06:29:16+00:00 |
 | homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-23T23:42:26+00:00 |
 | openclaw-meta-research | OpenClaw Meta Research | openclaw, project | active | Next.js app + collection pipeline to discover OpenClaw usage patterns from web sources every 48h. | /central/projects/openclaw-meta-research | ai-server / central-projects | 2026-05-23T06:00:24+00:00 |
 | github.com/mschwar/proxy-lead | README.md - White Rabbit |  |  | B2B AI lead generation tool for Account Executives and SDRs at telecom/VoIP providers. Searches live web sources to surface IT directors and network managers at K-12 school districts and local governments — faster and more accurately than b | /central/proxy-lead | ai-server / proxy-lead | 2026-05-22T06:35:46+00:00 |
