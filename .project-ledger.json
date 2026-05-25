@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-05-25T06:29:11+00:00",
-  "last_session_summary": "Refreshed project-ledger outputs after a live tailnet poll; no new projects found, and Mac SSH access still needs follow-up.",
+  "last_session_at": "2026-05-25T18:45:52+00:00",
+  "last_session_summary": "Refreshed project-ledger outputs after a live scan; no new projects found.",
   "next_step": "Keep the scanner synced with new roots and identity sidecars.",
   "last_push_at": ""
 }
