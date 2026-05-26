@@ -1,11 +1,11 @@
 # Project Ledger
 
-Last refreshed: 2026-05-26T00:55:53+00:00
+Last refreshed: 2026-05-26T19:29:57+00:00
 
 ## Scope and coverage
 
 - Source of truth: live build from `/home/matt/project-ledger/output/projects.json`.
-- Coverage: 3 machine sources covered — ai-server, matthews-macbook-air-2, matty-pc.
+- Coverage: 3 machine sources covered — ai-server live, matthews-macbook-air-2 live, matty-pc inventory-backed only.
 - Durable mirrors: `/home/matt/project-ledger/output/` and `/central/repos/active/homelab/docs/ledgers/projects-ledger.md`.
 - Canonical mirror: `/central/repos/active/homelab/docs/ledgers/projects-ledger.md`.
 
@@ -13,7 +13,7 @@ Last refreshed: 2026-05-26T00:55:53+00:00
 
 - Entries: 163
 - Unique project keys: 160
-- Machines covered: 3 (ai-server, matthews-macbook-air-2, matty-pc)
+- Machines covered: 3 (ai-server live, matthews-macbook-air-2 live, matty-pc inventory-backed only)
 - Shared/synced: 104
 - Local: 59
 - Git repos: 61
@@ -24,7 +24,7 @@ Last refreshed: 2026-05-26T00:55:53+00:00
 
 ## What changed in this refresh
 
-- Refreshed the project-ledger scan at 2026-05-26T00:55:53+00:00 from live ai-server and matthews-macbook-air-2 evidence plus matty-pc inventory artifacts.
+- Refreshed the project-ledger scan at 2026-05-26T19:29:57+00:00 from live ai-server and matthews-macbook-air-2 evidence plus matty-pc inventory artifacts.
 - MacBook SSH/tailscale were reachable in this pass.
 - matty-pc tailnet/SSH probes timed out during this pass, so that machine's latest project coverage continues to rely on the durable inventory-backed roots under `/central/registry/inventories/matty-pc-documents`.
 - No new project roots or repo families surfaced; the project set remained at 163 entries.
