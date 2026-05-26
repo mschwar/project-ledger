@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-05-25T18:45:52+00:00",
-  "last_session_summary": "Refreshed project-ledger outputs after a live scan; no new projects found.",
+  "last_session_at": "2026-05-26T00:53:07Z",
+  "last_session_summary": "Refreshed the live project-ledger scan; MacBook SSH was reachable, matty-pc timed out, and no new project roots surfaced.",
   "next_step": "Keep the scanner synced with new roots and identity sidecars.",
   "last_push_at": ""
 }

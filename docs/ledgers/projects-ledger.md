@@ -1,6 +1,6 @@
 # Project Ledger
 
-Last refreshed: 2026-05-25T06:29:42+00:00
+Last refreshed: 2026-05-26T00:55:53+00:00
 
 ## Scope and coverage
 
@@ -14,8 +14,8 @@ Last refreshed: 2026-05-25T06:29:42+00:00
 - Entries: 163
 - Unique project keys: 160
 - Machines covered: 3 (ai-server, matthews-macbook-air-2, matty-pc)
-- Shared/synced: 71
-- Local: 92
+- Shared/synced: 104
+- Local: 59
 - Git repos: 61
 - Obsidian vaults: 42
 - Git + Obsidian: 27
@@ -24,22 +24,23 @@ Last refreshed: 2026-05-25T06:29:42+00:00
 
 ## What changed in this refresh
 
-- Refreshed the project-ledger scan at 2026-05-25T06:29:42+00:00 from live ai-server and matthews-macbook-air-2 evidence plus matty-pc inventory artifacts.
-- No new project roots or repo families surfaced in this pass; the refresh updated the repository's own sidecar and preserved the existing coverage set.
-- The four MacBook mirror roots remain in the canonical scan set.
-- Direct SSH probing of the MacBook from ai-server timed out during this pass, so live filesystem validation on that peer was not re-run.
+- Refreshed the project-ledger scan at 2026-05-26T00:55:53+00:00 from live ai-server and matthews-macbook-air-2 evidence plus matty-pc inventory artifacts.
+- MacBook SSH/tailscale were reachable in this pass.
+- matty-pc tailnet/SSH probes timed out during this pass, so that machine's latest project coverage continues to rely on the durable inventory-backed roots under `/central/registry/inventories/matty-pc-documents`.
+- No new project roots or repo families surfaced; the project set remained at 163 entries.
+- Updated `/home/matt/project-ledger/.project-ledger.json` so the repository sidecar tracks the current session.
 
 ## Known gaps / unscanned roots
 
-- Direct SSH validation of `matthews-macbook-air-2` timed out from ai-server during this pass; the mirrored Documents roots were still covered through `/central/registry/mirrors/...`.
+- `matty-pc` live probe timed out from ai-server during this pass (`tailscale ping`/SSH), but the inventory-backed root coverage remained available through `/central/registry/inventories/matty-pc-documents`.
 
 ## Project index
 
 | project_key | display_name | tags | status | notes | path | node/source | last touch |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| github.com/mschwar/project-ledger | Project Ledger | ledger, git, tooling | active | Ledger scanner for mixed project roots across machines and storage surfaces. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-25T06:29:16+00:00 |
-| homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-23T23:42:26+00:00 |
-| openclaw-meta-research | OpenClaw Meta Research | openclaw, project | active | Next.js app + collection pipeline to discover OpenClaw usage patterns from web sources every 48h. | /central/projects/openclaw-meta-research | ai-server / central-projects | 2026-05-23T06:00:24+00:00 |
+| github.com/mschwar/project-ledger | Project Ledger | ledger, git, tooling | active | Ledger scanner for mixed project roots across machines and storage surfaces. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-26T00:53:12+00:00 |
+| homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-26T00:30:26+00:00 |
+| openclaw-meta-research | OpenClaw Meta Research | openclaw, project | active | Next.js app + collection pipeline to discover OpenClaw usage patterns from web sources every 48h. | /central/projects/openclaw-meta-research | ai-server / central-projects | 2026-05-25T06:00:06+00:00 |
 | github.com/mschwar/proxy-lead | README.md - White Rabbit |  |  | B2B AI lead generation tool for Account Executives and SDRs at telecom/VoIP providers. Searches live web sources to surface IT directors and network managers at K-12 school districts and local governments — faster and more accurately than b | /central/proxy-lead | ai-server / proxy-lead | 2026-05-22T06:35:46+00:00 |
 | higgsfield-agent-project | Higgsfield Agent Project | higgsfield, agent-workspace, pipeline | active | Agent-managed Higgsfield production pipeline with inbox-driven ingestion and dated batch processing. | /central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project | matthews-macbook-air-2 / matthews-macbook-air-2:higgsfield-agent-project | 2026-05-21T22:23:02+00:00 |
 | github.com/LearningCircuit/local-deep-research | Local Deep Research |  |  | <div align="center"> | /central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research | matthews-macbook-air-2 / matthews-macbook-air-2:local-deep-research | 2026-05-21T21:48:35+00:00 |
@@ -126,7 +127,7 @@ Last refreshed: 2026-05-25T06:29:42+00:00
 | structure | Codex Agent Visibility (Hardcoded) | project | active |  | /central/projects/structure | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
 | claw-code | Claw Code | dirty, git | active | <p align="center"> | /central/repos/active/claw-code | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | calc | Calc | calc, project | active |  | /central/projects/calc | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| test-repo | C e n t r a l   G i t   t e s t   f r o m   W i n d o w s  | clean, git | active |   | /central/repos/active/test-repo | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
+| test-repo | Central Git test from Windows | clean, git | active |  | /central/repos/active/test-repo | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | bible-homepage | bible-homepage | bible, dirty, git | active | A minimalist personal homepage that displays a daily Bible verse each time you open your browser. It is designed to support scriptural reflection and a centered start to your day. | /central/repos/active/bible-homepage | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | bahai-homepage | Bahá’í Daily Homepage | bahai, dirty, git | active | A minimalist personal homepage that displays the current Badíʿ date and a daily selection from The Hidden Words by Bahá’u’lláh. It is designed to support spiritual reflection and a centered start to digital interactions. | /central/repos/active/bahai-homepage | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
 | braindump | AI_SYSTEM_SPEC | brain, project | active | A project-agnostic, auditable, agent-based AI system specification designed for clarity, scalability, and epistemic hygiene. | /central/projects/braindump | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
@@ -144,7 +145,7 @@ Last refreshed: 2026-05-25T06:29:42+00:00
 | hermes-ops-workflows | Hermes ops workflows |  |  | Small durable wrappers for repeated Hermes/local-ops workflows. | /central/repos/active/hermes-ops-workflows | ai-server / central-active | 2026-04-25T04:21:00+00:00 |
 | google-drive:repos-other | repos-other | google-drive, repos-other, repo_like |  | Repository-like collection; best first use is durable project/repo discovery rather than document extraction. | /home/matt/GoogleDrive/repos-other | ai-server / google-drive-policy:repos-other | 2026-04-20T23:24:24+00:00 |
 | google-drive:repos-ms | repos-MS | google-drive, repos-MS, repo_like |  | Repository-like root; classify and promote repo/project subroots before any expensive content ingestion. | /home/matt/GoogleDrive/repos-MS | ai-server / google-drive-policy:repos-MS | 2026-04-20T22:15:24+00:00 |
-| google-drive:repos-other/claude-overhaul | What this is | google-drive, repos-other, repo_like |  | A versioned, deployable configuration for Claude Code's global ~/.claude/ directory. Every file in this repo maps to a file that gets deployed to ~/.claude/. The goal: every Claude Code session — regardless of project, language, or task — s | /home/matt/GoogleDrive/repos-other/claude-overhaul | ai-server / google-drive-policy:repos-other | 2026-04-20T18:54:38+00:00 |
+| github.com/mschwar/claude-overhaul | What this is | google-drive, repos-other, repo_like |  | A versioned, deployable configuration for Claude Code's global ~/.claude/ directory. Every file in this repo maps to a file that gets deployed to ~/.claude/. The goal: every Claude Code session — regardless of project, language, or task — s | /home/matt/GoogleDrive/repos-other/claude-overhaul | ai-server / google-drive-policy:repos-other | 2026-04-20T18:54:38+00:00 |
 | google-drive:projects | Projects | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |
 | google-drive:projects/lmntl | LMNTL | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects/LMNTL | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |
 | google-drive:projects/legal | legal | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects/legal | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |
