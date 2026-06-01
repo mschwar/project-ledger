@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-05-26T19:29:35Z",
-  "last_session_summary": "Refreshed the live project-ledger scan; macOS peer access is live again, matty-pc ping/SSH still timed out during this pass, and no new project roots surfaced; canonical outputs were regenerated.",
+  "last_session_at": "2026-06-01T19:55:40Z",
+  "last_session_summary": "Refreshed the live project-ledger scan; all configured roots were readable in this pass, the project set stayed at 163 entries with 160 unique keys, and no new project roots surfaced.",
   "next_step": "Keep the scanner synced with new roots and identity sidecars.",
   "last_push_at": ""
 }

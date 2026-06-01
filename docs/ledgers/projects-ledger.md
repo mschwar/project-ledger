@@ -1,203 +1,211 @@
 # Project Ledger
 
-Last refreshed: 2026-05-26T19:29:57+00:00
-
-## Scope and coverage
-
-- Source of truth: live build from `/home/matt/project-ledger/output/projects.json`.
-- Coverage: 3 machine sources covered — ai-server live, matthews-macbook-air-2 live, matty-pc inventory-backed only.
-- Durable mirrors: `/home/matt/project-ledger/output/` and `/central/repos/active/homelab/docs/ledgers/projects-ledger.md`.
-- Canonical mirror: `/central/repos/active/homelab/docs/ledgers/projects-ledger.md`.
-
-## Summary
+Generated: 2026-06-01T19:55:40+00:00
 
 - Entries: 163
-- Unique project keys: 160
-- Machines covered: 3 (ai-server live, matthews-macbook-air-2 live, matty-pc inventory-backed only)
-- Shared/synced: 104
-- Local: 59
 - Git repos: 61
 - Obsidian vaults: 42
-- Git + Obsidian: 27
-
-> `Last Push` uses `last_push_at` from the sidecar when available; otherwise it falls back to the newest local remote-ref timestamp.
+- Shared/synced: 104
 
 ## What changed in this refresh
 
-- Refreshed the project-ledger scan at 2026-05-26T19:29:57+00:00 from live ai-server and matthews-macbook-air-2 evidence plus matty-pc inventory artifacts.
-- MacBook SSH/tailscale were reachable in this pass.
-- matty-pc tailnet/SSH probes timed out during this pass, so that machine's latest project coverage continues to rely on the durable inventory-backed roots under `/central/registry/inventories/matty-pc-documents`.
-- No new project roots or repo families surfaced; the project set remained at 163 entries.
-- Updated `/home/matt/project-ledger/.project-ledger.json` so the repository sidecar tracks the current session.
+- Refreshed the project-ledger scan at 2026-06-01T19:55:40+00:00 from live ai-server, matthews-macbook-air-2, and inventory-backed matty-pc roots.
+- No configured roots were inaccessible in this pass.
+- The project set stayed at 163 entries and 160 unique keys; no new project roots or repo families surfaced.
 
-## Known gaps / unscanned roots
+> `Last Push` uses `last_push_at` from the sidecar when available; otherwise it falls back to the newest local remote-ref timestamp.
 
-- `matty-pc` live probe timed out from ai-server during this pass (`tailscale ping`/SSH), but the inventory-backed root coverage remained available through `/central/registry/inventories/matty-pc-documents`.
+## Scan coverage and gaps
 
-## Project index
+**MacBook mirror roots scanned this refresh:**
+- `matthews-macbook-air-2:hermes-paperclip-adapter` — `/central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter`
+- `matthews-macbook-air-2:higgsfield-agent-project` — `/central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project`
+- `matthews-macbook-air-2:homelab` — `/central/registry/mirrors/matthews-macbook-air-2/Documents/homelab`
+- `matthews-macbook-air-2:local-deep-research` — `/central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research`
 
-| project_key | display_name | tags | status | notes | path | node/source | last touch |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| github.com/mschwar/project-ledger | Project Ledger | ledger, git, tooling | active | Ledger scanner for mixed project roots across machines and storage surfaces. | /home/matt/project-ledger | ai-server / project-ledger | 2026-05-26T00:53:12+00:00 |
-| homelab | Homelab Agent Platform | dirty, git, homelab | active | A local-first AI homelab control-plane repo centered on the real ai-server Ubuntu node and its Tailscale-connected peers. | /central/repos/active/homelab | ai-server / central-active | 2026-05-26T00:30:26+00:00 |
-| openclaw-meta-research | OpenClaw Meta Research | openclaw, project | active | Next.js app + collection pipeline to discover OpenClaw usage patterns from web sources every 48h. | /central/projects/openclaw-meta-research | ai-server / central-projects | 2026-05-25T06:00:06+00:00 |
-| github.com/mschwar/proxy-lead | README.md - White Rabbit |  |  | B2B AI lead generation tool for Account Executives and SDRs at telecom/VoIP providers. Searches live web sources to surface IT directors and network managers at K-12 school districts and local governments — faster and more accurately than b | /central/proxy-lead | ai-server / proxy-lead | 2026-05-22T06:35:46+00:00 |
-| higgsfield-agent-project | Higgsfield Agent Project | higgsfield, agent-workspace, pipeline | active | Agent-managed Higgsfield production pipeline with inbox-driven ingestion and dated batch processing. | /central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project | matthews-macbook-air-2 / matthews-macbook-air-2:higgsfield-agent-project | 2026-05-21T22:23:02+00:00 |
-| github.com/LearningCircuit/local-deep-research | Local Deep Research |  |  | <div align="center"> | /central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research | matthews-macbook-air-2 / matthews-macbook-air-2:local-deep-research | 2026-05-21T21:48:35+00:00 |
-| open-higgsfield-ai-open-source-alternative-to-higgsfield-ai | Open Higgsfield AI — Open-Source Alternative to Higgsfield AI |  |  | > The free, open-source alternative to Higgsfield AI. Generate AI images and videos using 200+ state-of-the-art models — without the closed ecosystem or subscription fees. | /central/repos/apps/Open-Higgsfield-AI-main | ai-server / central-apps | 2026-05-21T05:44:44+00:00 |
-| homelab | Homelab Agent Platform | git, shared, homelab | active | A local-first AI platform running across 7 machines (2 Mac laptops, 4 Windows desktops, 1 Ubuntu Linux hub), unified by Tailscale into a private mesh network with centralized storage, compute routing, and LLM inference. | /central/repos/infra/homelab-repo | ai-server / central-infra | 2026-05-21T05:40:28+00:00 |
-| github.com/mschwar/agent-os | Slop Cannon Agent OS |  |  | Slop Cannon is a repo-local operating system for agent-first feature buildout. | /central/repos/active/agent-os | ai-server / central-active | 2026-05-21T00:32:26+00:00 |
-| google-drive:white-rabbit | white-rabbit | google-drive, white-rabbit, repo_like |  | Repository with git, README, and Obsidian signals. | matty-pc:white-rabbit | matty-pc / matty-pc:white-rabbit | 2026-05-20T01:57:31+00:00 |
-| google-drive:url-collection | url-collection | google-drive, url-collection, project_roots |  | Collection workspace with README signal. | matty-pc:url-collection | matty-pc / matty-pc:url-collection | 2026-05-20T01:57:31+00:00 |
-| google-drive:toned | toned | google-drive, toned, repo_like |  | Project repository with git and README signals. | matty-pc:toned | matty-pc / matty-pc:toned | 2026-05-20T01:57:31+00:00 |
-| google-drive:substrate | substrate | google-drive, substrate, repo_like |  | Repository with git, README, and Obsidian signals. | matty-pc:substrate | matty-pc / matty-pc:substrate | 2026-05-20T01:57:31+00:00 |
-| google-drive:song-clean | song-clean | google-drive, song-clean, repo_like |  | Project repository with git and README signals. | matty-pc:song-clean | matty-pc / matty-pc:song-clean | 2026-05-20T01:57:31+00:00 |
-| google-drive:slopvault-sessions | slopvault-sessions | google-drive, slopvault-sessions, repo_like |  | Session workspace with git and README signals. | matty-pc:slopvault-sessions | matty-pc / matty-pc:slopvault-sessions | 2026-05-20T01:57:31+00:00 |
-| google-drive:slopvault | slopvault | google-drive, slopvault, repo_like |  | Project repository with git, README, and Obsidian signals. | matty-pc:slopvault | matty-pc / matty-pc:slopvault | 2026-05-20T01:57:31+00:00 |
-| google-drive:scrollytelling | scrollytelling | google-drive, scrollytelling, repo_like |  | Repository with git, README, and Obsidian signals. | matty-pc:scrollytelling | matty-pc / matty-pc:scrollytelling | 2026-05-20T01:57:31+00:00 |
-| google-drive:reality-ledger | reality-ledger | google-drive, reality-ledger, repo_like |  | Repository with git signal. | matty-pc:reality-ledger | matty-pc / matty-pc:reality-ledger | 2026-05-20T01:57:31+00:00 |
-| google-drive:prompt-refinery | prompt-refinery | google-drive, prompt-refinery, repo_like |  | Project repository with git, README, and Obsidian signals. | matty-pc:prompt-refinery | matty-pc / matty-pc:prompt-refinery | 2026-05-20T01:57:31+00:00 |
-| google-drive:project-ledger | project-ledger | google-drive, project-ledger, repo_like |  | Project-ledger repository with git and README signals. | matty-pc:project-ledger | matty-pc / matty-pc:project-ledger | 2026-05-20T01:57:31+00:00 |
-| google-drive:project-eidos | project-eidos | google-drive, project-eidos, repo_like |  | Project repository with git, README, and Obsidian signals. | matty-pc:project-eidos | matty-pc / matty-pc:project-eidos | 2026-05-20T01:57:31+00:00 |
-| google-drive:orgatlas | orgatlas | google-drive, orgatlas, repo_like |  | Org atlas repository with git, README, and Obsidian signals. | matty-pc:orgatlas | matty-pc / matty-pc:orgatlas | 2026-05-20T01:57:31+00:00 |
-| google-drive:open-higgsfield-ai | Open-Higgsfield-AI | google-drive, Open-Higgsfield-AI, repo_like |  | Project repository with git and README signals. | matty-pc:Open-Higgsfield-AI | matty-pc / matty-pc:Open-Higgsfield-AI | 2026-05-20T01:57:31+00:00 |
-| google-drive:obsidian vault | Obsidian Vault | google-drive, Obsidian Vault, project_roots |  | Obsidian vault with notes-only signals. | matty-pc:Obsidian Vault | matty-pc / matty-pc:Obsidian Vault | 2026-05-20T01:57:31+00:00 |
-| google-drive:misc-docs | misc-docs | google-drive, misc-docs, project_roots |  | Documentation vault signal without git metadata. | matty-pc:misc-docs | matty-pc / matty-pc:misc-docs | 2026-05-20T01:57:31+00:00 |
-| google-drive:lee-grapple-hook | lee-grapple-hook | google-drive, lee-grapple-hook, repo_like |  | Repository with git and README signals. | matty-pc:lee-grapple-hook | matty-pc / matty-pc:lee-grapple-hook | 2026-05-20T01:57:31+00:00 |
-| google-drive:lee-ai-learning | lee-ai-learning | google-drive, lee-ai-learning, project_roots |  | Learning workspace with README signal. | matty-pc:lee-ai-learning | matty-pc / matty-pc:lee-ai-learning | 2026-05-20T01:57:31+00:00 |
-| google-drive:ledger | ledger | google-drive, ledger, repo_like |  | Ledger repository with git, README, and Obsidian signals. | matty-pc:ledger | matty-pc / matty-pc:ledger | 2026-05-20T01:57:31+00:00 |
-| google-drive:homelab | homelab | google-drive, homelab, repo_like |  | Homelab repository with git, README, and Obsidian signals. | matty-pc:homelab | matty-pc / matty-pc:homelab | 2026-05-20T01:57:31+00:00 |
-| google-drive:gstack-main | gstack-main | google-drive, gstack-main, project_roots |  | Repository-like project folder with README signal. | matty-pc:gstack-main | matty-pc / matty-pc:gstack-main | 2026-05-20T01:57:31+00:00 |
-| google-drive:flow | flow | google-drive, flow, repo_like |  | Project repository with git, README, and Obsidian signals. | matty-pc:flow | matty-pc / matty-pc:flow | 2026-05-20T01:57:31+00:00 |
-| google-drive:elemental-inc | elemental-inc | google-drive, elemental-inc, repo_like |  | Project repository with git, README, and Obsidian signals. | matty-pc:elemental-inc | matty-pc / matty-pc:elemental-inc | 2026-05-20T01:57:31+00:00 |
-| google-drive:cpr | cpr | google-drive, cpr, repo_like |  | Project repository with git, README, and Obsidian signals. | matty-pc:cpr | matty-pc / matty-pc:cpr | 2026-05-20T01:57:31+00:00 |
-| google-drive:context-project | context-project | google-drive, context-project, repo_like |  | Context project repository with git, README, and Obsidian signals. | matty-pc:context-project | matty-pc / matty-pc:context-project | 2026-05-20T01:57:31+00:00 |
-| google-drive:common-project | common-project | google-drive, common-project, repo_like |  | Common project repository with git, README, and Obsidian signals. | matty-pc:common-project | matty-pc / matty-pc:common-project | 2026-05-20T01:57:31+00:00 |
-| google-drive:civstrate | civstrate | google-drive, civstrate, repo_like |  | Project repository with git, README, and Obsidian signals. | matty-pc:civstrate | matty-pc / matty-pc:civstrate | 2026-05-20T01:57:31+00:00 |
-| google-drive:bitnet | BitNet | google-drive, BitNet, project_roots |  | Project root with git and README signals. | matty-pc:BitNet | matty-pc / matty-pc:BitNet | 2026-05-20T01:57:31+00:00 |
-| google-drive:bahai-consultation-guide | bahai-consultation-guide | google-drive, bahai-consultation-guide, repo_like |  | Consultation guide repository with git and Obsidian signals. | matty-pc:bahai-consultation-guide | matty-pc / matty-pc:bahai-consultation-guide | 2026-05-20T01:57:31+00:00 |
-| google-drive:bahai-9yr-plan-kb | bahai-9yr-plan-kb | google-drive, bahai-9yr-plan-kb, project_roots |  | Named knowledge/project root with README signal. | matty-pc:bahai-9yr-plan-kb | matty-pc / matty-pc:bahai-9yr-plan-kb | 2026-05-20T01:57:31+00:00 |
-| google-drive:ai-field-briefing | ai-field-briefing | google-drive, ai-field-briefing, repo_like |  | Briefing workspace with git, README, and Obsidian signals. | matty-pc:ai-field-briefing | matty-pc / matty-pc:ai-field-briefing | 2026-05-20T01:57:31+00:00 |
-| google-drive:agent-os | agent-os | google-drive, agent-os, repo_like |  | Agent operating-system style workspace with git, README, and Obsidian signals. | matty-pc:agent-os | matty-pc / matty-pc:agent-os | 2026-05-20T01:57:31+00:00 |
-| google-drive:2026.tsle.team_internal-ms | 2026.TSLE.TEAM_internal-MS | google-drive, 2026.TSLE.TEAM_internal-MS, repo_like |  | Internal team workspace with git and Obsidian signals. | matty-pc:2026.TSLE.TEAM_internal-MS | matty-pc / matty-pc:2026.TSLE.TEAM_internal-MS | 2026-05-20T01:57:31+00:00 |
-| github.com/mschwar/white-rabbit | White Rabbit v2 |  |  | Internal-first B2B lead research tool for Matt, Thomas, and Lee. | /central/repos/active/white-rabbit | ai-server / central-active | 2026-05-19T20:17:42+00:00 |
-| llm-council | LLM Council |  |  | ![llmcouncil](header.jpg) | /central/repos/apps/llm-council-master | ai-server / central-apps | 2026-05-19T16:25:04+00:00 |
-| github.com/mschwar/homelab | Homelab Agent Platform |  |  | A local-first AI platform running across 7 machines (2 Mac laptops, 4 Windows desktops, 1 Ubuntu Linux hub), unified by Tailscale into a private mesh network with centralized storage, compute routing, and LLM inference. | /central/registry/mirrors/matthews-macbook-air-2/Documents/homelab | matthews-macbook-air-2 / matthews-macbook-air-2:homelab | 2026-05-19T03:14:59+00:00 |
-| github.com/modelcontextprotocol/servers | Model Context Protocol servers | git, shared, mcp | active | This repository is a collection of reference implementations for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), as well as references to community-built servers and additional resources. | /central/services/mcp-servers | ai-server / central-services | 2026-05-19T00:43:20+00:00 |
-| common-project | ﻿# Common Project: One Concept a Day | dirty, git | active | [Visit the Website](https://mschwar.github.io/common-project/) \| Progress: 5 of 50 concepts completed | /central/repos/active/common-project | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| white-rabbit | White Rabbit | clean, git | active | Internal-first B2B prospecting workbench. Three operators (Matt, Thomas, Lee). Self-serve from day 1. Recipes, not lists. | /central/white-rabbit | ai-server / white-rabbit | 2026-05-19T00:19:56+00:00 |
-| vibecoding | VibeCoding | dirty, git, vibe | active | A comprehensive AI-driven development framework for building projects with agentic AI assistance. Provides project-agnostic agents, workflows, context graphs, protocols, and templates. | /central/repos/active/VibeCoding | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| counterweight-tim | Turborepo starter | dirty, git | active | This Turborepo starter is maintained by the Turborepo core team. | /central/repos/active/counterweight-tim | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| data-visualization | Tsimane Oral Health Heatmap: A Data Visualization Project | data, dirty, git | active | This repository showcases a data visualization project designed to represent the complete oral health status of the Tsimane population of Bolivia. The heatmap synthesizes over 32,000 data points from 1,176 individuals into a single, intuiti | /central/repos/active/data-visualization | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| the-garden | The Garden | dirty, garden, git | active |  | /central/git/the_garden | ai-server / central-git | 2026-05-19T00:19:56+00:00 |
-| substrate | Substrate | dirty, git | active |  | /central/repos/active/substrate | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| song-clean | Song Clean | project | active |  | /central/projects/song-clean | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| sigil | Sigil | project, sigil | active |  | /central/projects/sigil | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| scratch | Scratch | collection | active |  | /central/projects/scratch | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| repos | Repos | collection | active |  | /central/projects/repos | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| reality-ledger | Reality Ledger | dirty, git, ledger, reality | active |  | /central/repos/active/reality-ledger | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| plots | Plots | dirty, git, plot | active | Interactive timelines of exponential tech progress – showing growth, compression, and scaling laws enabling modern AI. | /central/repos/active/plots | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| paper-repo | Paper Repo | paper, project | active | Flat markdown repository for scientific/white papers with linked metadata in SQLite. | /central/projects/paper-repo | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| notes | Notes | collection, notes | active |  | /central/projects/notes | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| northstar | Northstar | northstar, project | active |  | /central/projects/northstar | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| mnemosyne | Mnemosyne | mnemosyne, project | active |  | /central/projects/mnemosyne | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| lit | Lit | project | active |  | /central/projects/lit | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| lifestream | Lifestream | project | active |  | /central/projects/lifestream | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| letters | LetterOps | dirty, git | active | Local-first document intelligence system for managing Bahá’í letters. See canonical-docs-v2.md for the authoritative PRD, flows, tech stack, and operating rules. | /central/repos/active/letters | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| isabel | Isabel | project | active |  | /central/projects/isabel | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| interpret | Interpret | interpret, project | active | Local-first prompt interpretation and delegation system for analyzing codebases at scale. | /central/projects/interpret | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| incubating | Incubating | collection | active |  | /central/projects/incubating | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| foundation | Horizon Foundation Toolkit | project | active | This repository contains the Horizon protocol, workflow docs, and supporting scripts for multi-agent prompt runs. | /central/projects/foundation | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| hermes-maximization | Hermes Maximization | project | active |  | /central/projects/hermes-maximization | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| greymatter | Greymatter | greymatter, project | active |  | /central/projects/greymatter | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| entropy-project | Entropy Project | project | active |  | /central/projects/entropy_project | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| transcript-processing | Directory Crawl: transcript_processing | project, transcript | active |  | /central/projects/transcript_processing | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| reality-ledger | Directory Crawl: reality-ledger | dirty, git, ledger, reality | active |  | /central/projects/reality-ledger | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| email-processing | Directory Crawl: email_processing | email, project | active |  | /central/projects/email_processing | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| context-graph-engine | Directory Crawl: context-graph-engine | graph, project | active |  | /central/projects/context-graph-engine | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| context-project | ctx | dirty, git | active | Filesystem-native context layer for AI agents. | /central/repos/active/context-project | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| csf | Csf | project | active |  | /central/projects/csf | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| convertwordto-pdf-1 | Convertwordto Pdf 1 | project | active |  | /central/projects/convertwordto-pdf-1 | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| constructive-understanding | Constructive Understanding | project | active |  | /central/projects/constructive-understanding | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| completed | Completed | collection | active |  | /central/projects/completed | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| common-projects | Common Projects | project | active |  | /central/projects/common-projects | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| coherence | Coherence-Refinement Physics | coherence, project | active | Axiom Framework: v5.2 (AXIOMS.txt) | /central/projects/coherence | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| coherence-antigravity | Coherence-Antigravity (Generative Physics) | coherence, project | active | Status: Experimental (v5.1 "TikTok v3 Aligned") | /central/projects/coherence-antigravity | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| cohere-dump | Cohere: CFF Validation Framework | project | active | A production-grade theoretical physics research framework for validating the Causal Futures Framework (CFF) hypothesis on measure collapse and quantum-like phase transitions. | /central/projects/cohere-dump | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| structure | Codex Agent Visibility (Hardcoded) | project | active |  | /central/projects/structure | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| claw-code | Claw Code | dirty, git | active | <p align="center"> | /central/repos/active/claw-code | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| calc | Calc | calc, project | active |  | /central/projects/calc | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| test-repo | Central Git test from Windows | clean, git | active |  | /central/repos/active/test-repo | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| bible-homepage | bible-homepage | bible, dirty, git | active | A minimalist personal homepage that displays a daily Bible verse each time you open your browser. It is designed to support scriptural reflection and a centered start to your day. | /central/repos/active/bible-homepage | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| bahai-homepage | Bahá’í Daily Homepage | bahai, dirty, git | active | A minimalist personal homepage that displays the current Badíʿ date and a daily selection from The Hidden Words by Bahá’u’lláh. It is designed to support spiritual reflection and a centered start to digital interactions. | /central/repos/active/bahai-homepage | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| braindump | AI_SYSTEM_SPEC | brain, project | active | A project-agnostic, auditable, agent-based AI system specification designed for clarity, scalability, and epistemic hygiene. | /central/projects/braindump | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| scrollytelling | AI Compute "Phase Shift" Scrollytelling Visualization | dirty, git | active | > An interactive data visualization proving AI training compute broke Moore's Law in 2012. | /central/repos/active/scrollytelling | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| bridgeai | AI Companion | dirty, git | active | A mobile app that onboards professionals into practical AI usage through quick actions, a guided chatbot, and a lightweight library. | /central/repos/active/bridgeai | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| the-garden | AGENTS.md - Your Workspace | dirty, garden, git | active |  | /central/repos/active/the_garden | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| agent-master-dump | Agent Master Repository | project | active | A comprehensive collection of 99 specialized AI agents organized into 69 plugins across 21 categories, with 112 modular skills for Claude Code workflow orchestration. | /central/projects/agent-master-dump | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| active | Active | collection | active |  | /central/projects/active | ai-server / central-projects | 2026-05-19T00:19:56+00:00 |
-| bahai-consultation-guide | A Practical Guide to Baha'i Consultation | bahai, dirty, git | active | Welcome to the Baha'i Consultation Guide! | /central/repos/active/bahai-consultation-guide | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| garden-of-wisdom | A Garden of Wisdom | dirty, garden, git | active | This is a personal collection of impactful quotes from various world religions and philosophies, curated for memorization and reflection. | /central/repos/active/Garden-of-Wisdom | ai-server / central-active | 2026-05-19T00:19:56+00:00 |
-| google-drive:paperclip | paperclip | google-drive, paperclip, project_roots | active | Named project root that should surface in project-ledger ingestion before broader content extraction. | /home/matt/GoogleDrive/paperclip | ai-server / google-drive-policy:paperclip | 2026-05-11T20:47:40+00:00 |
-| google-drive:paperclip/backups | backups | google-drive, paperclip, project_roots |  | Named project root that should surface in project-ledger ingestion before broader content extraction. | /home/matt/GoogleDrive/paperclip/backups | ai-server / google-drive-policy:paperclip | 2026-05-11T20:47:40+00:00 |
-| github.com/NousResearch/hermes-paperclip-adapter | Paperclip Adapter for Hermes Agent |  |  | A [Paperclip](https://paperclip.ing) adapter that lets you run [Hermes Agent](https://github.com/NousResearch/hermes-agent) as a managed employee in a Paperclip company. | /central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter | matthews-macbook-air-2 / matthews-macbook-air-2:hermes-paperclip-adapter | 2026-05-07T06:58:56+00:00 |
-| google-drive:omi | OMI | google-drive, OMI, project_roots, timed-out-crawl | active | Named initiative root; treat as a project surface even though the first bounded crawl timed out. | /home/matt/GoogleDrive/OMI | ai-server / google-drive-policy:OMI | 2026-04-26T00:00:26+00:00 |
-| hermes-ops-workflows | Hermes ops workflows |  |  | Small durable wrappers for repeated Hermes/local-ops workflows. | /central/repos/active/hermes-ops-workflows | ai-server / central-active | 2026-04-25T04:21:00+00:00 |
-| google-drive:repos-other | repos-other | google-drive, repos-other, repo_like |  | Repository-like collection; best first use is durable project/repo discovery rather than document extraction. | /home/matt/GoogleDrive/repos-other | ai-server / google-drive-policy:repos-other | 2026-04-20T23:24:24+00:00 |
-| google-drive:repos-ms | repos-MS | google-drive, repos-MS, repo_like |  | Repository-like root; classify and promote repo/project subroots before any expensive content ingestion. | /home/matt/GoogleDrive/repos-MS | ai-server / google-drive-policy:repos-MS | 2026-04-20T22:15:24+00:00 |
-| github.com/mschwar/claude-overhaul | What this is | google-drive, repos-other, repo_like |  | A versioned, deployable configuration for Claude Code's global ~/.claude/ directory. Every file in this repo maps to a file that gets deployed to ~/.claude/. The goal: every Claude Code session — regardless of project, language, or task — s | /home/matt/GoogleDrive/repos-other/claude-overhaul | ai-server / google-drive-policy:repos-other | 2026-04-20T18:54:38+00:00 |
-| google-drive:projects | Projects | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |
-| google-drive:projects/lmntl | LMNTL | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects/LMNTL | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |
-| google-drive:projects/legal | legal | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects/legal | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |
-| google-drive:projects/cv-resume | CV-Resume | google-drive, Projects, project_roots |  | Primary project bucket; highest-value source for Drive-backed project discovery and later selective extraction. | /home/matt/GoogleDrive/Projects/CV-Resume | ai-server / google-drive-policy:Projects | 2026-04-20T18:48:31+00:00 |
-| google-drive:edi | EDI | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI | ai-server / google-drive-policy:EDI | 2026-04-20T18:38:33+00:00 |
-| google-drive:edi/_edi-stuff | _EDI-stuff | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/_EDI-stuff | ai-server / google-drive-policy:EDI | 2026-04-20T18:37:55+00:00 |
-| google-drive:edi/email-marketing | README.md | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/email-marketing | ai-server / google-drive-policy:EDI | 2026-04-20T18:37:50+00:00 |
-| google-drive:edi/karina_share | Karina_Share | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Karina_Share | ai-server / google-drive-policy:EDI | 2026-04-20T18:37:50+00:00 |
-| google-drive:edi/docs | docs | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/docs | ai-server / google-drive-policy:EDI | 2026-04-20T18:37:50+00:00 |
-| google-drive:edi/assets | assets | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/assets | ai-server / google-drive-policy:EDI | 2026-04-20T18:37:50+00:00 |
-| google-drive:edi/accounting | accounting | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/accounting | ai-server / google-drive-policy:EDI | 2026-04-20T18:37:50+00:00 |
-| google-drive:edi/_archive | _archive | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/_archive | ai-server / google-drive-policy:EDI | 2026-04-20T18:37:50+00:00 |
-| google-drive:repos-other/nano-build | nano-build | google-drive, repos-other, repo_like |  | Personal learning vault for ML/deep learning, centered on Andrej Karpathy's | /home/matt/GoogleDrive/repos-other/nano-build | ai-server / google-drive-policy:repos-other | 2026-04-20T02:51:28+00:00 |
-| google-drive:repos-other/marketing-skills-main | marketing-skills-main | google-drive, repos-other, repo_like |  | Repository-like collection; best first use is durable project/repo discovery rather than document extraction. | /home/matt/GoogleDrive/repos-other/marketing-skills-main | ai-server / google-drive-policy:repos-other | 2026-04-17T01:43:54+00:00 |
-| google-drive:repos-other/gstack-main | gstack-main | google-drive, repos-other, repo_like |  | Repository-like collection; best first use is durable project/repo discovery rather than document extraction. | /home/matt/GoogleDrive/repos-other/gstack-main | ai-server / google-drive-policy:repos-other | 2026-04-17T01:43:54+00:00 |
-| ai-agents-platform | AI Agents Platform |  |  | A unified deployment platform for LangGraph and CrewAI agents, exposed via a FastAPI service and containerized with Docker. | /central/repos/apps/ai-agents-platform | ai-server / central-apps | 2026-04-16T16:32:29+00:00 |
-| google-drive:edi/elemental | ELEMENTAL | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/ELEMENTAL | ai-server / google-drive-policy:EDI | 2026-04-12T01:39:33+00:00 |
-| google-drive:edi/edi | EDI | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/EDI | ai-server / google-drive-policy:EDI | 2026-03-24T02:58:56+00:00 |
-| google-drive:edi/content | Content | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Content | ai-server / google-drive-policy:EDI | 2026-03-24T02:58:56+00:00 |
-| google-drive:edi/meetings | meetings | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/meetings | ai-server / google-drive-policy:EDI | 2026-03-18T23:04:54+00:00 |
-| google-drive:repos-other/sensiblewords-master | sensiblewords-master | google-drive, repos-other, repo_like |  | Repository-like collection; best first use is durable project/repo discovery rather than document extraction. | /home/matt/GoogleDrive/repos-other/sensiblewords-master | ai-server / google-drive-policy:repos-other | 2026-03-11T03:28:39+00:00 |
-| a-id-readme-top-a | <a id="readme-top"></a> |  |  | <!-- [![Contributors][contributors-shield]][contributors-url] --> | /central/repos/apps/open-notebook-main | ai-server / central-apps | 2026-03-03T14:50:16+00:00 |
-| google-drive:edi/_empty | _empty | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/_empty | ai-server / google-drive-policy:EDI | 2026-02-27T17:32:34+00:00 |
-| google-drive:repos-other/fem_mesh_matlab-master | MATLAB Toolbox for Handling 2D and 3D FEM Meshes | google-drive, repos-other, repo_like |  | ![license - BSD](https://img.shields.io/badge/license-BSD-green) | /home/matt/GoogleDrive/repos-other/fem_mesh_matlab-master | ai-server / google-drive-policy:repos-other | 2026-02-27T00:46:36+00:00 |
-| bahaiwritings | bahaiwritings |  |  | The Bahá'í Writings in JSON format with supporting JSON Schema | /central/repos/active/bahaiwritings-main | ai-server / central-active | 2026-02-20T18:19:22+00:00 |
-| div-align-center | <div align="center"> |  |  | <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" /> | /central/repos/active/consultlink---baha'i-consultation-guide | ai-server / central-active | 2026-02-19T06:41:32+00:00 |
-| google-drive:edi/design & assets | Design & Assets | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Design & Assets | ai-server / google-drive-policy:EDI | 2026-01-22T20:01:58+00:00 |
-| google-drive:edi/business development & partners | Business Development & Partners | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Business Development & Partners | ai-server / google-drive-policy:EDI | 2026-01-22T20:01:58+00:00 |
-| google-drive:edi/strategy & brand | Strategy & Brand | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Strategy & Brand | ai-server / google-drive-policy:EDI | 2026-01-22T20:00:54+00:00 |
-| google-drive:edi/product testing & compliance | Product Testing & Compliance | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Product Testing & Compliance | ai-server / google-drive-policy:EDI | 2026-01-22T20:00:54+00:00 |
-| google-drive:edi/hr & internships | HR & Internships | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/HR & Internships | ai-server / google-drive-policy:EDI | 2026-01-22T20:00:54+00:00 |
-| google-drive:edi/sourcing & cogs | Sourcing & COGS | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Sourcing & COGS | ai-server / google-drive-policy:EDI | 2026-01-22T19:59:57+00:00 |
-| google-drive:edi/operations & culture | Operations & Culture | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Operations & Culture | ai-server / google-drive-policy:EDI | 2026-01-22T19:59:57+00:00 |
-| google-drive:edi/customer service | Customer Service | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Customer Service | ai-server / google-drive-policy:EDI | 2026-01-22T19:59:57+00:00 |
-| google-drive:edi/corporate & legal | Corporate & Legal | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Corporate & Legal | ai-server / google-drive-policy:EDI | 2026-01-22T19:59:57+00:00 |
-| prompts | Prompts |  |  | Project-agnostic prompts that apply across all VibeCoding projects. | /central/repos/active/prompts | ai-server / central-active | 2026-01-14T01:42:10+00:00 |
-| agents | Agents |  |  | Project-agnostic agent definitions for VibeCoding. | /central/repos/active/agents | ai-server / central-active | 2026-01-13T16:40:38+00:00 |
-| vibe_brain | vibe_brain |  |  |  | /central/repos/active/vibe_brain | ai-server / central-active | 2026-01-13T16:33:47+00:00 |
-| projects | projects |  |  |  | /central/repos/active/projects | ai-server / central-active | 2026-01-13T16:33:43+00:00 |
-| templates | Templates |  |  | Project-agnostic file templates for consistent documentation and workflows. | /central/repos/active/templates | ai-server / central-active | 2026-01-13T16:32:44+00:00 |
-| protocols | Protocols |  |  | Project-agnostic standards and conventions for consistent development practices. | /central/repos/active/protocols | ai-server / central-active | 2026-01-13T16:32:44+00:00 |
-| workflows | Workflows |  |  | Project-agnostic workflow phases for the Vibe Coding methodology. | /central/repos/active/workflows | ai-server / central-active | 2026-01-13T16:32:06+00:00 |
-| tools | Tools |  |  | CLI utilities for managing VibeCoding projects. | /central/repos/active/tools | ai-server / central-active | 2026-01-13T16:30:05+00:00 |
-| contexts | Contexts |  |  | Project-agnostic context documents and knowledge graph patterns for AI-assisted development. | /central/repos/active/contexts | ai-server / central-active | 2026-01-13T16:30:05+00:00 |
-| blueprints | Blueprints |  |  | Project Requirements Documents (PRDs) and architectural blueprints for VibeCoding projects. | /central/repos/active/blueprints | ai-server / central-active | 2026-01-13T16:30:05+00:00 |
-| agent-runtime | agent runtime |  |  |  | /central/repos/active/agent runtime | ai-server / central-active | 2026-01-13T01:10:59+00:00 |
-| google-drive:edi/edi - ai dumps | EDI - AI dumps | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/EDI - AI dumps | ai-server / google-drive-policy:EDI | 2025-08-09T00:45:46+00:00 |
-| google-drive:edi/customer database | Customer Database | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Customer Database | ai-server / google-drive-policy:EDI | 2025-08-09T00:45:46+00:00 |
-| google-drive:edi/testimonials | testimonials | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/testimonials | ai-server / google-drive-policy:EDI | 2025-06-11T20:25:01+00:00 |
-| google-drive:edi/sales | sales | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/sales | ai-server / google-drive-policy:EDI | 2025-06-11T20:22:14+00:00 |
-| google-drive:edi/qc | QC | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/QC | ai-server / google-drive-policy:EDI | 2025-06-10T01:59:02+00:00 |
-| google-drive:edi/tracking | tracking | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/tracking | ai-server / google-drive-policy:EDI | 2025-06-10T01:57:31+00:00 |
-| google-drive:edi/market-research | market-research | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/market-research | ai-server / google-drive-policy:EDI | 2025-06-10T01:54:56+00:00 |
-| google-drive:edi/financials | Financials | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Financials | ai-server / google-drive-policy:EDI | 2024-11-12T15:43:43+00:00 |
-| google-drive:edi/elemental x fff docs | Elemental x FFF docs | google-drive, EDI, project_roots |  | Known project/document area with substantial structure; promote project-like subroots first, then extract eligible text selectively. | /home/matt/GoogleDrive/EDI/Elemental x FFF docs | ai-server / google-drive-policy:EDI | 2024-05-18T20:12:09+00:00 |
+**Configured roots:**
+- `central-apps` — `/central/repos/apps` — present (children)
+- `central-infra` — `/central/repos/infra` — present (git_repos)
+- `central-services` — `/central/services` — present (children)
+- `central-git` — `/central/git` — present (git_repos)
+- `central-projects` — `/central/projects` — present (children)
+- `central-active` — `/central/repos/active` — present (children)
+- `proxy-lead` — `/central/proxy-lead` — present (self)
+- `white-rabbit` — `/central/white-rabbit` — present (self)
+- `project-ledger` — `/home/matt/project-ledger` — present (self)
+- `matthews-macbook-air-2:hermes-paperclip-adapter` — `/central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter` — present (self)
+- `matthews-macbook-air-2:higgsfield-agent-project` — `/central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project` — present (self)
+- `matthews-macbook-air-2:homelab` — `/central/registry/mirrors/matthews-macbook-air-2/Documents/homelab` — present (self)
+- `matthews-macbook-air-2:local-deep-research` — `/central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research` — present (self)
+- `matty-pc` — `/central/registry/inventories/matty-pc-documents` — present (inventory_policy)
+- `google-drive-policy` — `/home/matt/GoogleDrive` — present (inventory_policy)
+- `opt-homelab` — `/opt/homelab` — present (children)
+- `backup-20260416-repos` — `/central/archive/root-backups/central.root-backup-20260416T012657Z/repos` — present (git_repos)
+
+**Known gaps / inaccessible roots:** none detected in configured scan roots.
+
+| Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Homelab Agent Platform | git | shared | yes |  | 2026-06-01T18:00:30+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-05-27T00:01:06+00:00 |
+| OpenClaw Meta Research | notes | local |  |  | 2026-06-01T06:00:04+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Project Ledger | git | shared | yes |  | 2026-05-26T19:30:37+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-05-26T19:31:10+00:00 |
+| README.md - White Rabbit | git | shared | yes |  | 2026-05-22T06:35:46+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
+| Higgsfield Agent Project | directory | local |  |  | 2026-05-21T22:23:02+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project/README.md) | [higgsfield-agent-project](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project) | higgsfield-agent-project |  |
+| Local Deep Research | git | shared | yes |  | 2026-05-21T21:48:35+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research/README.md) | [url](https://github.com/LearningCircuit/local-deep-research.git) | local-deep-research | 2026-05-08T00:31:16+00:00 |
+| Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-05-21T05:44:44+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
+| Homelab Agent Platform | git | shared | yes |  | 2026-05-21T05:40:28+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
+| Slop Cannon Agent OS | git | shared | yes |  | 2026-05-21T00:32:26+00:00 | [README](../../../../central/repos/active/agent-os/README.md) | [url](https://github.com/mschwar/agent-os.git) | agent-os | 2026-05-21T00:33:26+00:00 |
+| white-rabbit | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/white-rabbit) | white-rabbit |  |
+| url-collection | directory | local |  |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/url-collection) | url-collection |  |
+| toned | git | local | yes |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/toned) | toned |  |
+| substrate | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/substrate) | substrate |  |
+| song-clean | git | local | yes |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/song-clean) | song-clean |  |
+| slopvault-sessions | git | local | yes |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/slopvault-sessions) | slopvault-sessions |  |
+| slopvault | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/slopvault) | slopvault |  |
+| scrollytelling | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/scrollytelling) | scrollytelling |  |
+| reality-ledger | git | local | yes |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/reality-ledger) | reality-ledger |  |
+| prompt-refinery | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/prompt-refinery) | prompt-refinery |  |
+| project-ledger | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/project-ledger) | project-ledger |  |
+| project-eidos | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/project-eidos) | project-eidos |  |
+| orgatlas | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/orgatlas) | orgatlas |  |
+| Open-Higgsfield-AI | git | local | yes |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/Open-Higgsfield-AI) | Open-Higgsfield-AI |  |
+| Obsidian Vault | obsidian | local |  | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/Obsidian%20Vault) | Obsidian Vault |  |
+| misc-docs | obsidian | local |  | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/misc-docs) | misc-docs |  |
+| lee-grapple-hook | git | local | yes |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/lee-grapple-hook) | lee-grapple-hook |  |
+| lee-ai-learning | directory | local |  |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/lee-ai-learning) | lee-ai-learning |  |
+| ledger | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/ledger) | ledger |  |
+| homelab | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/homelab) | homelab |  |
+| gstack-main | directory | local |  |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/gstack-main) | gstack-main |  |
+| flow | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/flow) | flow |  |
+| elemental-inc | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/elemental-inc) | elemental-inc |  |
+| cpr | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/cpr) | cpr |  |
+| context-project | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/context-project) | context-project |  |
+| common-project | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/common-project) | common-project |  |
+| civstrate | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/civstrate) | civstrate |  |
+| BitNet | git | local | yes |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/BitNet) | BitNet |  |
+| bahai-consultation-guide | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/bahai-consultation-guide) | bahai-consultation-guide |  |
+| bahai-9yr-plan-kb | git | local | yes |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/bahai-9yr-plan-kb) | bahai-9yr-plan-kb |  |
+| ai-field-briefing | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/ai-field-briefing) | ai-field-briefing |  |
+| agent-os | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/agent-os) | agent-os |  |
+| 2026.TSLE.TEAM_internal-MS | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/2026.TSLE.TEAM_internal-MS) | 2026.TSLE.TEAM_internal-MS |  |
+| White Rabbit v2 | git | shared | yes |  | 2026-05-19T20:17:42+00:00 | [README](../../../../central/repos/active/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-19T13:24:27-06:00 |
+| LLM Council | directory | local |  |  | 2026-05-19T16:25:04+00:00 | [README](../../../../central/repos/apps/llm-council-master/README.md) | [llm-council-master](../../../../central/repos/apps/llm-council-master) | llm-council-master |  |
+| Homelab Agent Platform | git | shared | yes |  | 2026-05-19T03:14:59+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-20T23:27:22-06:00 |
+| Model Context Protocol servers | git | shared | yes |  | 2026-05-19T00:43:20+00:00 | [README](../../../../central/services/mcp-servers/README.md) | [url](https://github.com/modelcontextprotocol/servers.git) | servers | 2026-04-14T11:12:18-04:00 |
+| ﻿# Common Project: One Concept a Day | git+obsidian | shared | yes | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/common-project/README.md) | [url](https://github.com/mschwar/common-project.git) | common-project | 2026-01-31T23:16:16-07:00 |
+| White Rabbit | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-09T13:21:28-06:00 |
+| VibeCoding | git | local | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/VibeCoding/README.md) | [VibeCoding](../../../../central/repos/active/VibeCoding) | VibeCoding |  |
+| Turborepo starter | git | local | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/counterweight-tim/README.md) | [counterweight-tim](../../../../central/repos/active/counterweight-tim) | counterweight-tim |  |
+| Tsimane Oral Health Heatmap: A Data Visualization Project | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/data-visualization/README.md) | [url](https://github.com/mschwar/data-visualization.git) | data-visualization | 2026-02-16T13:50:17-07:00 |
+| The Garden | git | local | yes |  | 2026-05-19T00:19:56+00:00 |  | [the_garden](../../../../central/git/the_garden) | the_garden |  |
+| Substrate | git+obsidian | shared | yes | yes | 2026-05-19T00:19:56+00:00 |  | [url](https://github.com/mschwar/substrate.git) | substrate | 2026-02-16T13:50:23-07:00 |
+| Song Clean | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [song-clean](../../../../central/projects/song-clean) | song-clean |  |
+| Sigil | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [sigil](../../../../central/projects/sigil) | sigil |  |
+| Scratch | notes | local |  |  | 2026-05-19T00:19:56+00:00 |  | [scratch](../../../../central/projects/scratch) | scratch |  |
+| Repos | notes | local |  |  | 2026-05-19T00:19:56+00:00 |  | [repos](../../../../central/projects/repos) | repos |  |
+| Reality Ledger | git | shared | yes |  | 2026-05-19T00:19:56+00:00 |  | [url](https://github.com/mschwar/reality-ledger.git) | reality-ledger |  |
+| Plots | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/plots/README.md) | [url](https://github.com/mschwar/plots.git) | plots | 2026-05-19T14:54:22-06:00 |
+| Paper Repo | directory | local |  |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/projects/paper-repo/README.md) | [paper-repo](../../../../central/projects/paper-repo) | paper-repo |  |
+| Notes | obsidian | local |  | yes | 2026-05-19T00:19:56+00:00 |  | [notes](../../../../central/projects/notes) | notes |  |
+| Northstar | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [northstar](../../../../central/projects/northstar) | northstar |  |
+| Mnemosyne | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [mnemosyne](../../../../central/projects/mnemosyne) | mnemosyne |  |
+| Lit | notes | local |  |  | 2026-05-19T00:19:56+00:00 |  | [lit](../../../../central/projects/lit) | lit |  |
+| Lifestream | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [lifestream](../../../../central/projects/lifestream) | lifestream |  |
+| LetterOps | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/letters/README.md) | [url](https://github.com/mschwar/letters.git) | letters | 2026-02-16T13:50:31-07:00 |
+| Isabel | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [isabel](../../../../central/projects/isabel) | isabel |  |
+| Interpret | directory | local |  |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/projects/interpret/README.md) | [interpret](../../../../central/projects/interpret) | interpret |  |
+| Incubating | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [incubating](../../../../central/projects/incubating) | incubating |  |
+| Horizon Foundation Toolkit | obsidian | local |  | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/projects/foundation/README.md) | [foundation](../../../../central/projects/foundation) | foundation |  |
+| Hermes Maximization | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [hermes-maximization](../../../../central/projects/hermes-maximization) | hermes-maximization |  |
+| Greymatter | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [greymatter](../../../../central/projects/greymatter) | greymatter |  |
+| Entropy Project | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [entropy_project](../../../../central/projects/entropy_project) | entropy_project |  |
+| Directory Crawl: transcript_processing | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [transcript_processing](../../../../central/projects/transcript_processing) | transcript_processing |  |
+| Directory Crawl: reality-ledger | git | shared | yes |  | 2026-05-19T00:19:56+00:00 |  | [url](https://github.com/mschwar/reality-ledger.git) | reality-ledger |  |
+| Directory Crawl: email_processing | notes | local |  |  | 2026-05-19T00:19:56+00:00 |  | [email_processing](../../../../central/projects/email_processing) | email_processing |  |
+| Directory Crawl: context-graph-engine | obsidian | local |  | yes | 2026-05-19T00:19:56+00:00 |  | [context-graph-engine](../../../../central/projects/context-graph-engine) | context-graph-engine |  |
+| ctx | git+obsidian | shared | yes | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/context-project/README.md) | [url](https://github.com/mschwar/context-project.git) | context-project | 2026-03-22T16:08:27-06:00 |
+| Csf | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [csf](../../../../central/projects/csf) | csf |  |
+| Convertwordto Pdf 1 | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [convertwordto-pdf-1](../../../../central/projects/convertwordto-pdf-1) | convertwordto-pdf-1 |  |
+| Constructive Understanding | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [constructive-understanding](../../../../central/projects/constructive-understanding) | constructive-understanding |  |
+| Completed | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [completed](../../../../central/projects/completed) | completed |  |
+| Common Projects | notes | local |  |  | 2026-05-19T00:19:56+00:00 |  | [common-projects](../../../../central/projects/common-projects) | common-projects |  |
+| Coherence-Refinement Physics | notes | local |  |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/projects/coherence/README.md) | [coherence](../../../../central/projects/coherence) | coherence |  |
+| Coherence-Antigravity (Generative Physics) | obsidian | local |  | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/projects/coherence-antigravity/README.md) | [coherence-antigravity](../../../../central/projects/coherence-antigravity) | coherence-antigravity |  |
+| Cohere: CFF Validation Framework | notes | local |  |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/projects/cohere-dump/README.md) | [cohere-dump](../../../../central/projects/cohere-dump) | cohere-dump |  |
+| Codex Agent Visibility (Hardcoded) | obsidian | local |  | yes | 2026-05-19T00:19:56+00:00 |  | [structure](../../../../central/projects/structure) | structure |  |
+| Claw Code | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/claw-code/README.md) | [url](https://github.com/ultraworkers/claw-code.git) | claw-code | 2026-05-06T15:41:25+09:00 |
+| Calc | notes | local |  |  | 2026-05-19T00:19:56+00:00 |  | [calc](../../../../central/projects/calc) | calc |  |
+| C e n t r a l   G i t   t e s t   f r o m   W i n d o w s  | git | local | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/test-repo/README.md) | [test-repo](../../../../central/repos/active/test-repo) | test-repo |  |
+| bible-homepage | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/bible-homepage/README.md) | [url](https://github.com/mschwar/bible-homepage.git) | bible-homepage | 2026-02-16T13:50:12-07:00 |
+| Bahá’í Daily Homepage | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/bahai-homepage/README.md) | [url](https://github.com/mschwar/bahai-homepage.git) | bahai-homepage | 2026-02-07T19:15:10-06:00 |
+| AI_SYSTEM_SPEC | obsidian | local |  | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/projects/braindump/README.md) | [braindump](../../../../central/projects/braindump) | braindump |  |
+| AI Compute "Phase Shift" Scrollytelling Visualization | git+obsidian | shared | yes | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/scrollytelling/README.md) | [url](https://github.com/mschwar/scrollytelling.git) | scrollytelling | 2026-02-01T02:00:41-07:00 |
+| AI Companion | git+obsidian | local | yes | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/bridgeai/README.md) | [bridgeai](../../../../central/repos/active/bridgeai) | bridgeai |  |
+| AGENTS.md - Your Workspace | git | local | yes |  | 2026-05-19T00:19:56+00:00 |  | [the_garden](../../../../central/repos/active/the_garden) | the_garden |  |
+| Agent Master Repository | notes | local |  |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/projects/agent-master-dump/README.md) | [agent-master-dump](../../../../central/projects/agent-master-dump) | agent-master-dump |  |
+| Active | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [active](../../../../central/projects/active) | active |  |
+| A Practical Guide to Baha'i Consultation | git+obsidian | shared | yes | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/bahai-consultation-guide/README.md) | [url](https://github.com/mschwar/bahai-consultation-guide.git) | bahai-consultation-guide | 2026-02-16T13:50:04-07:00 |
+| A Garden of Wisdom | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/Garden-of-Wisdom/README.md) | [url](https://github.com/mschwar/Garden-of-Wisdom.git) | Garden-of-Wisdom | 2025-07-09T00:17:30-06:00 |
+| paperclip | directory | shared |  |  | 2026-05-11T20:47:40+00:00 |  | [url](gdrive://googledrive/paperclip) | paperclip |  |
+| backups | directory | shared |  |  | 2026-05-11T20:47:40+00:00 |  | [url](gdrive://googledrive/paperclip/backups) | backups |  |
+| Paperclip Adapter for Hermes Agent | git | shared | yes |  | 2026-05-07T06:58:56+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter/README.md) | [url](https://github.com/NousResearch/hermes-paperclip-adapter.git) | hermes-paperclip-adapter | 2026-04-03T22:44:23-07:00 |
+| OMI | directory | shared |  |  | 2026-04-26T00:00:26+00:00 |  | [url](gdrive://googledrive/OMI) | OMI |  |
+| Hermes ops workflows | directory | local |  |  | 2026-04-25T04:21:00+00:00 | [README](../../../../central/repos/active/hermes-ops-workflows/README.md) | [hermes-ops-workflows](../../../../central/repos/active/hermes-ops-workflows) | hermes-ops-workflows |  |
+| repos-other | git+obsidian | shared | yes | yes | 2026-04-20T23:24:24+00:00 |  | [url](gdrive://googledrive/repos-other) | repos-other |  |
+| repos-MS | directory | shared |  |  | 2026-04-20T22:15:24+00:00 |  | [url](gdrive://googledrive/repos-MS) | repos-MS |  |
+| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul |  |
+| Projects | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects) | Projects |  |
+| LMNTL | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/LMNTL) | LMNTL |  |
+| legal | directory | shared |  |  | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/legal) | legal |  |
+| CV-Resume | directory | shared |  |  | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/CV-Resume) | CV-Resume |  |
+| EDI | obsidian | shared |  | yes | 2026-04-20T18:38:33+00:00 |  | [url](gdrive://googledrive/EDI) | EDI |  |
+| _EDI-stuff | directory | shared |  |  | 2026-04-20T18:37:55+00:00 |  | [url](gdrive://googledrive/EDI/_EDI-stuff) | _EDI-stuff |  |
+| README.md | directory | shared |  |  | 2026-04-20T18:37:50+00:00 | [README](../../GoogleDrive/EDI/email-marketing/readme.md) | [url](gdrive://googledrive/EDI/email-marketing) | email-marketing |  |
+| Karina_Share | directory | shared |  |  | 2026-04-20T18:37:50+00:00 |  | [url](gdrive://googledrive/EDI/Karina_Share) | Karina_Share |  |
+| docs | directory | shared |  |  | 2026-04-20T18:37:50+00:00 |  | [url](gdrive://googledrive/EDI/docs) | docs |  |
+| assets | directory | shared |  |  | 2026-04-20T18:37:50+00:00 |  | [url](gdrive://googledrive/EDI/assets) | assets |  |
+| accounting | directory | shared |  |  | 2026-04-20T18:37:50+00:00 |  | [url](gdrive://googledrive/EDI/accounting) | accounting |  |
+| _archive | directory | shared |  |  | 2026-04-20T18:37:50+00:00 |  | [url](gdrive://googledrive/EDI/_archive) | _archive |  |
+| nano-build | obsidian | shared |  | yes | 2026-04-20T02:51:28+00:00 | [README](../../GoogleDrive/repos-other/nano-build/README.md) | [url](gdrive://googledrive/repos-other/nano-build) | nano-build |  |
+| marketing-skills-main | directory | shared |  |  | 2026-04-17T01:43:54+00:00 |  | [url](gdrive://googledrive/repos-other/marketing-skills-main) | marketing-skills-main |  |
+| gstack-main | directory | shared |  |  | 2026-04-17T01:43:54+00:00 |  | [url](gdrive://googledrive/repos-other/gstack-main) | gstack-main |  |
+| AI Agents Platform | directory | local |  |  | 2026-04-16T16:32:29+00:00 | [README](../../../../central/repos/apps/ai-agents-platform/README.md) | [ai-agents-platform](../../../../central/repos/apps/ai-agents-platform) | ai-agents-platform |  |
+| ELEMENTAL | directory | shared |  |  | 2026-04-12T01:39:33+00:00 |  | [url](gdrive://googledrive/EDI/ELEMENTAL) | ELEMENTAL |  |
+| EDI | obsidian | shared |  | yes | 2026-03-24T02:58:56+00:00 |  | [url](gdrive://googledrive/EDI/EDI) | EDI |  |
+| Content | directory | shared |  |  | 2026-03-24T02:58:56+00:00 |  | [url](gdrive://googledrive/EDI/Content) | Content |  |
+| meetings | directory | shared |  |  | 2026-03-18T23:04:54+00:00 |  | [url](gdrive://googledrive/EDI/meetings) | meetings |  |
+| sensiblewords-master | directory | shared |  |  | 2026-03-11T03:28:39+00:00 | [README](../../GoogleDrive/repos-other/sensiblewords-master/README.md) | [url](gdrive://googledrive/repos-other/sensiblewords-master) | sensiblewords-master |  |
+| <a id="readme-top"></a> | notes | local |  |  | 2026-03-03T14:50:16+00:00 | [README](../../../../central/repos/apps/open-notebook-main/README.md) | [open-notebook-main](../../../../central/repos/apps/open-notebook-main) | open-notebook-main |  |
+| _empty | notes | shared |  |  | 2026-02-27T17:32:34+00:00 |  | [url](gdrive://googledrive/EDI/_empty) | _empty |  |
+| MATLAB Toolbox for Handling 2D and 3D FEM Meshes | directory | shared |  |  | 2026-02-27T00:46:36+00:00 | [README](../../GoogleDrive/repos-other/fem_mesh_matlab-master/README.md) | [url](gdrive://googledrive/repos-other/fem_mesh_matlab-master) | fem_mesh_matlab-master |  |
+| bahaiwritings | directory | local |  |  | 2026-02-20T18:19:22+00:00 | [README](../../../../central/repos/active/bahaiwritings-main/README.md) | [bahaiwritings-main](../../../../central/repos/active/bahaiwritings-main) | bahaiwritings-main |  |
+| <div align="center"> | directory | local |  |  | 2026-02-19T06:41:32+00:00 | [README](../../../../central/repos/active/consultlink---baha%27i-consultation-guide/README.md) | [consultlink---baha'i-consultation-guide](../../../../central/repos/active/consultlink---baha%27i-consultation-guide) | consultlink---baha'i-consultation-guide |  |
+| Design & Assets | directory | shared |  |  | 2026-01-22T20:01:58+00:00 |  | [url](gdrive://googledrive/EDI/Design%20%26%20Assets) | Design & Assets |  |
+| Business Development & Partners | directory | shared |  |  | 2026-01-22T20:01:58+00:00 |  | [url](gdrive://googledrive/EDI/Business%20Development%20%26%20Partners) | Business Development & Partners |  |
+| Strategy & Brand | directory | shared |  |  | 2026-01-22T20:00:54+00:00 |  | [url](gdrive://googledrive/EDI/Strategy%20%26%20Brand) | Strategy & Brand |  |
+| Product Testing & Compliance | directory | shared |  |  | 2026-01-22T20:00:54+00:00 |  | [url](gdrive://googledrive/EDI/Product%20Testing%20%26%20Compliance) | Product Testing & Compliance |  |
+| HR & Internships | directory | shared |  |  | 2026-01-22T20:00:54+00:00 |  | [url](gdrive://googledrive/EDI/HR%20%26%20Internships) | HR & Internships |  |
+| Sourcing & COGS | directory | shared |  |  | 2026-01-22T19:59:57+00:00 |  | [url](gdrive://googledrive/EDI/Sourcing%20%26%20COGS) | Sourcing & COGS |  |
+| Operations & Culture | directory | shared |  |  | 2026-01-22T19:59:57+00:00 |  | [url](gdrive://googledrive/EDI/Operations%20%26%20Culture) | Operations & Culture |  |
+| Customer Service | directory | shared |  |  | 2026-01-22T19:59:57+00:00 |  | [url](gdrive://googledrive/EDI/Customer%20Service) | Customer Service |  |
+| Corporate & Legal | directory | shared |  |  | 2026-01-22T19:59:57+00:00 |  | [url](gdrive://googledrive/EDI/Corporate%20%26%20Legal) | Corporate & Legal |  |
+| Prompts | directory | local |  |  | 2026-01-14T01:42:10+00:00 | [README](../../../../central/repos/active/prompts/README.md) | [prompts](../../../../central/repos/active/prompts) | prompts |  |
+| Agents | notes | local |  |  | 2026-01-13T16:40:38+00:00 | [README](../../../../central/repos/active/agents/README.md) | [agents](../../../../central/repos/active/agents) | agents |  |
+| vibe_brain | obsidian | local |  | yes | 2026-01-13T16:33:47+00:00 |  | [vibe_brain](../../../../central/repos/active/vibe_brain) | vibe_brain |  |
+| projects | notes | local |  |  | 2026-01-13T16:33:43+00:00 |  | [projects](../../../../central/repos/active/projects) | projects |  |
+| Templates | directory | local |  |  | 2026-01-13T16:32:44+00:00 | [README](../../../../central/repos/active/templates/README.md) | [templates](../../../../central/repos/active/templates) | templates |  |
+| Protocols | directory | local |  |  | 2026-01-13T16:32:44+00:00 | [README](../../../../central/repos/active/protocols/README.md) | [protocols](../../../../central/repos/active/protocols) | protocols |  |
+| Workflows | notes | local |  |  | 2026-01-13T16:32:06+00:00 | [README](../../../../central/repos/active/workflows/README.md) | [workflows](../../../../central/repos/active/workflows) | workflows |  |
+| Tools | directory | local |  |  | 2026-01-13T16:30:05+00:00 | [README](../../../../central/repos/active/tools/README.md) | [tools](../../../../central/repos/active/tools) | tools |  |
+| Contexts | notes | local |  |  | 2026-01-13T16:30:05+00:00 | [README](../../../../central/repos/active/contexts/README.md) | [contexts](../../../../central/repos/active/contexts) | contexts |  |
+| Blueprints | directory | local |  |  | 2026-01-13T16:30:05+00:00 | [README](../../../../central/repos/active/blueprints/README.md) | [blueprints](../../../../central/repos/active/blueprints) | blueprints |  |
+| agent runtime | obsidian | local |  | yes | 2026-01-13T01:10:59+00:00 |  | [agent runtime](../../../../central/repos/active/agent%20runtime) | agent runtime |  |
+| EDI - AI dumps | directory | shared |  |  | 2025-08-09T00:45:46+00:00 |  | [url](gdrive://googledrive/EDI/EDI%20-%20AI%20dumps) | EDI - AI dumps |  |
+| Customer Database | directory | shared |  |  | 2025-08-09T00:45:46+00:00 |  | [url](gdrive://googledrive/EDI/Customer%20Database) | Customer Database |  |
+| testimonials | directory | shared |  |  | 2025-06-11T20:25:01+00:00 |  | [url](gdrive://googledrive/EDI/testimonials) | testimonials |  |
+| sales | directory | shared |  |  | 2025-06-11T20:22:14+00:00 |  | [url](gdrive://googledrive/EDI/sales) | sales |  |
+| QC | directory | shared |  |  | 2025-06-10T01:59:02+00:00 |  | [url](gdrive://googledrive/EDI/QC) | QC |  |
+| tracking | directory | shared |  |  | 2025-06-10T01:57:31+00:00 |  | [url](gdrive://googledrive/EDI/tracking) | tracking |  |
+| market-research | directory | shared |  |  | 2025-06-10T01:54:56+00:00 |  | [url](gdrive://googledrive/EDI/market-research) | market-research |  |
+| Financials | directory | shared |  |  | 2024-11-12T15:43:43+00:00 |  | [url](gdrive://googledrive/EDI/Financials) | Financials |  |
+| Elemental x FFF docs | directory | shared |  |  | 2024-05-18T20:12:09+00:00 |  | [url](gdrive://googledrive/EDI/Elemental%20x%20FFF%20docs) | Elemental x FFF docs |  |
