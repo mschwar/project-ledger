@@ -1,17 +1,11 @@
 # Project Ledger
 
-Generated: 2026-06-01T19:55:40+00:00
+Generated: 2026-06-02T02:05:06+00:00
 
 - Entries: 163
 - Git repos: 61
 - Obsidian vaults: 42
 - Shared/synced: 104
-
-## What changed in this refresh
-
-- Refreshed the project-ledger scan at 2026-06-01T19:55:40+00:00 from live ai-server, matthews-macbook-air-2, and inventory-backed matty-pc roots.
-- No configured roots were inaccessible in this pass.
-- The project set stayed at 163 entries and 160 unique keys; no new project roots or repo families surfaced.
 
 > `Last Push` uses `last_push_at` from the sidecar when available; otherwise it falls back to the newest local remote-ref timestamp.
 
@@ -46,9 +40,9 @@ Generated: 2026-06-01T19:55:40+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-06-01T18:00:30+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-05-27T00:01:06+00:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-06-02T00:00:34+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-05-27T00:01:06+00:00 |
+| Project Ledger | git | shared | yes |  | 2026-06-01T19:58:33+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-05-26T19:31:10+00:00 |
 | OpenClaw Meta Research | notes | local |  |  | 2026-06-01T06:00:04+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
-| Project Ledger | git | shared | yes |  | 2026-05-26T19:30:37+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-05-26T19:31:10+00:00 |
 | README.md - White Rabbit | git | shared | yes |  | 2026-05-22T06:35:46+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
 | Higgsfield Agent Project | directory | local |  |  | 2026-05-21T22:23:02+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project/README.md) | [higgsfield-agent-project](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project) | higgsfield-agent-project |  |
 | Local Deep Research | git | shared | yes |  | 2026-05-21T21:48:35+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research/README.md) | [url](https://github.com/LearningCircuit/local-deep-research.git) | local-deep-research | 2026-05-08T00:31:16+00:00 |
@@ -153,7 +147,7 @@ Generated: 2026-06-01T19:55:40+00:00
 | Hermes ops workflows | directory | local |  |  | 2026-04-25T04:21:00+00:00 | [README](../../../../central/repos/active/hermes-ops-workflows/README.md) | [hermes-ops-workflows](../../../../central/repos/active/hermes-ops-workflows) | hermes-ops-workflows |  |
 | repos-other | git+obsidian | shared | yes | yes | 2026-04-20T23:24:24+00:00 |  | [url](gdrive://googledrive/repos-other) | repos-other |  |
 | repos-MS | directory | shared |  |  | 2026-04-20T22:15:24+00:00 |  | [url](gdrive://googledrive/repos-MS) | repos-MS |  |
-| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul |  |
+| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul | 2026-03-24T00:51:41-06:00 |
 | Projects | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects) | Projects |  |
 | LMNTL | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/LMNTL) | LMNTL |  |
 | legal | directory | shared |  |  | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/legal) | legal |  |
