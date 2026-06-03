@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-06-03T08:40:19Z",
-  "last_session_summary": "Refreshed the project-ledger scan, regenerated the raw outputs, and synced the canonical homelab ledger mirror; all configured roots stayed readable and no new gaps appeared.",
+  "last_session_at": "2026-06-03T20:55:55Z",
+  "last_session_summary": "Refreshed the project-ledger scan, regenerated the raw outputs, synced the canonical homelab ledger mirror, and verified the MacBook peer was reachable while matty-pc SSH timed out; inventory-backed roots remained readable.",
   "next_step": "Keep the scanner synced with new roots, stable identity sidecars, and the homelab ledger mirror.",
   "last_push_at": ""
 }
