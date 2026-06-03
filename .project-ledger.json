@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-06-02T20:26:18Z",
-  "last_session_summary": "Refreshed the project-ledger scan and synchronized the canonical homelab ledger; the configured roots stayed readable and no new gaps appeared.",
-  "next_step": "Keep the scanner synced with new roots and identity sidecars.",
+  "last_session_at": "2026-06-03T02:32:52Z",
+  "last_session_summary": "Refreshed the project-ledger scan, regenerated the raw outputs, and synced the canonical homelab ledger; the configured roots stayed readable and no new gaps appeared.",
+  "next_step": "Keep the scanner synced with new roots, stable identity sidecars, and the homelab ledger mirror.",
   "last_push_at": ""
 }

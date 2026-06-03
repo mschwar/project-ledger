@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-06-02T02:05:06+00:00
+Generated: 2026-06-03T02:32:02+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -40,8 +40,8 @@ Generated: 2026-06-02T02:05:06+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-06-02T00:00:34+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-05-27T00:01:06+00:00 |
-| Project Ledger | git | shared | yes |  | 2026-06-01T19:58:33+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-05-26T19:31:10+00:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-06-03T00:01:03+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-05-27T00:01:06+00:00 |
+| Project Ledger | git | shared | yes |  | 2026-06-02T20:26:27+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-02T02:06:54+00:00 |
 | OpenClaw Meta Research | notes | local |  |  | 2026-06-01T06:00:04+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | README.md - White Rabbit | git | shared | yes |  | 2026-05-22T06:35:46+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
 | Higgsfield Agent Project | directory | local |  |  | 2026-05-21T22:23:02+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project/README.md) | [higgsfield-agent-project](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project) | higgsfield-agent-project |  |
