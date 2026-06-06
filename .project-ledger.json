@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-06-05T15:08:23Z",
-  "last_session_summary": "Refreshed the ledger scan, regenerated CSV/JSON/Markdown outputs, and synchronized the canonical markdown mirror in the homelab docs tree.",
+  "last_session_at": "2026-06-06T03:16:50Z",
+  "last_session_summary": "Refreshed the live project scan, regenerated CSV/JSON/Markdown outputs, synchronized the canonical markdown mirror, and verified no new projects or gaps in the configured roots.",
   "next_step": "Keep the scanner synced with live inventory changes, stable identity sidecars, and the mirrored canonical ledger docs.",
   "last_push_at": ""
 }
