@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-06-08T03:42:39+00:00
+Generated: 2026-06-11T04:01:50+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -40,9 +40,10 @@ Generated: 2026-06-08T03:42:39+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-06-08T00:30:24+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-07T17:49:17-06:00 |
-| Project Ledger | git | shared | yes |  | 2026-06-07T15:35:47+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-06T15:26:00+00:00 |
-| OpenClaw Meta Research | notes | local |  |  | 2026-06-07T06:00:05+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Project Ledger | git | shared | yes |  | 2026-06-11T04:01:27+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-08T03:47:14+00:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-06-11T01:03:26+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-08T17:43:17-06:00 |
+| OpenClaw Meta Research | notes | local |  |  | 2026-06-09T06:00:03+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| The Garden | git | local | yes |  | 2026-06-08T20:35:04+00:00 |  | [the_garden](../../../../central/git/the_garden) | the_garden |  |
 | Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-06-03T03:51:38+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
 | Homelab Agent Platform | git | shared | yes |  | 2026-06-03T03:46:06+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
 | README.md - White Rabbit | git | shared | yes |  | 2026-05-22T06:35:46+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
@@ -91,7 +92,6 @@ Generated: 2026-06-08T03:42:39+00:00
 | VibeCoding | git | local | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/VibeCoding/README.md) | [VibeCoding](../../../../central/repos/active/VibeCoding) | VibeCoding |  |
 | Turborepo starter | git | local | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/counterweight-tim/README.md) | [counterweight-tim](../../../../central/repos/active/counterweight-tim) | counterweight-tim |  |
 | Tsimane Oral Health Heatmap: A Data Visualization Project | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/data-visualization/README.md) | [url](https://github.com/mschwar/data-visualization.git) | data-visualization | 2026-02-16T13:50:17-07:00 |
-| The Garden | git | local | yes |  | 2026-05-19T00:19:56+00:00 |  | [the_garden](../../../../central/git/the_garden) | the_garden |  |
 | Substrate | git+obsidian | shared | yes | yes | 2026-05-19T00:19:56+00:00 |  | [url](https://github.com/mschwar/substrate.git) | substrate | 2026-02-16T13:50:23-07:00 |
 | Song Clean | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [song-clean](../../../../central/projects/song-clean) | song-clean |  |
 | Sigil | directory | local |  |  | 2026-05-19T00:19:56+00:00 |  | [sigil](../../../../central/projects/sigil) | sigil |  |
