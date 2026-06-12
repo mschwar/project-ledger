@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-06-11T16:06:03+00:00",
-  "last_session_summary": "Refreshed the live project scan, regenerated CSV/JSON/Markdown outputs, synchronized the canonical markdown mirror, and confirmed the configured scan roots still report no gaps; direct Tailscale pings to matty-pc and the MacBook timed out during this pass.",
+  "last_session_at": "2026-06-12T04:16:04Z",
+  "last_session_summary": "Refreshed the live project scan, regenerated CSV/JSON/Markdown outputs, and synchronized the canonical homelab ledger mirror with the latest live state; no new project roots or scan gaps were detected, but a few last-touch timestamps and row ordering changed.",
   "next_step": "Keep the scanner synced with live inventory changes, stable identity sidecars, and the mirrored canonical ledger docs.",
   "last_push_at": ""
 }
