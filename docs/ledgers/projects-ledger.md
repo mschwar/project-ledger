@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-06-12T16:20:17+00:00
+Generated: 2026-06-13T16:27:03+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -40,9 +40,9 @@ Generated: 2026-06-12T16:20:17+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-06-12T12:30:04+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-12T01:15:58-06:00 |
-| Project Ledger | git | shared | yes |  | 2026-06-12T04:16:14+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-11T16:08:18+00:00 |
-| OpenClaw Meta Research | notes | local |  |  | 2026-06-11T06:00:04+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Homelab Agent Platform | git | shared | yes |  | 2026-06-13T12:30:41+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-12T18:02:57-06:00 |
+| OpenClaw Meta Research | notes | local |  |  | 2026-06-13T06:00:01+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Project Ledger | git | shared | yes |  | 2026-06-12T16:21:16+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-11T16:08:18+00:00 |
 | The Garden | git | local | yes |  | 2026-06-08T20:35:04+00:00 |  | [the_garden](../../../../central/git/the_garden) | the_garden |  |
 | Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-06-03T03:51:38+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
 | Homelab Agent Platform | git | shared | yes |  | 2026-06-03T03:46:06+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
