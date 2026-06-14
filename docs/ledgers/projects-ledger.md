@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-06-13T16:27:03+00:00
+Generated: 2026-06-14T16:41:02+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -40,16 +40,18 @@ Generated: 2026-06-13T16:27:03+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-06-13T12:30:41+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-12T18:02:57-06:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-06-14T12:30:20+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-13T17:20:11-06:00 |
+| Project Ledger | git | shared | yes |  | 2026-06-14T04:33:49+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-13T16:28:19+00:00 |
+| White Rabbit v2 | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-19T13:24:27-06:00 |
+| White Rabbit (proxy-lead checkout) | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
+| Slop Cannon Agent OS | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/agent-os/README.md) | [url](https://github.com/mschwar/agent-os.git) | agent-os | 2026-05-21T00:33:26+00:00 |
+| Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
+| LLM Council | directory | local |  |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/apps/llm-council-master/README.md) | [llm-council-master](../../../../central/repos/apps/llm-council-master) | llm-council-master |  |
 | OpenClaw Meta Research | notes | local |  |  | 2026-06-13T06:00:01+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
-| Project Ledger | git | shared | yes |  | 2026-06-12T16:21:16+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-11T16:08:18+00:00 |
 | The Garden | git | local | yes |  | 2026-06-08T20:35:04+00:00 |  | [the_garden](../../../../central/git/the_garden) | the_garden |  |
-| Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-06-03T03:51:38+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
 | Homelab Agent Platform | git | shared | yes |  | 2026-06-03T03:46:06+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
-| README.md - White Rabbit | git | shared | yes |  | 2026-05-22T06:35:46+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
 | Higgsfield Agent Project | directory | local |  |  | 2026-05-21T22:23:02+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project/README.md) | [higgsfield-agent-project](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project) | higgsfield-agent-project |  |
 | Local Deep Research | git | shared | yes |  | 2026-05-21T21:48:35+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research/README.md) | [url](https://github.com/LearningCircuit/local-deep-research.git) | local-deep-research | 2026-05-08T00:31:16+00:00 |
-| Slop Cannon Agent OS | git | shared | yes |  | 2026-05-21T00:32:26+00:00 | [README](../../../../central/repos/active/agent-os/README.md) | [url](https://github.com/mschwar/agent-os.git) | agent-os | 2026-05-21T00:33:26+00:00 |
 | white-rabbit | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/white-rabbit) | white-rabbit |  |
 | url-collection | directory | local |  |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/url-collection) | url-collection |  |
 | toned | git | local | yes |  | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/toned) | toned |  |
@@ -83,8 +85,6 @@ Generated: 2026-06-13T16:27:03+00:00
 | ai-field-briefing | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/ai-field-briefing) | ai-field-briefing |  |
 | agent-os | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/agent-os) | agent-os |  |
 | 2026.TSLE.TEAM_internal-MS | git+obsidian | local | yes | yes | 2026-05-20T01:57:31+00:00 |  | [url](gdrive://matty-pc/2026.TSLE.TEAM_internal-MS) | 2026.TSLE.TEAM_internal-MS |  |
-| White Rabbit v2 | git | shared | yes |  | 2026-05-19T20:17:42+00:00 | [README](../../../../central/repos/active/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-19T13:24:27-06:00 |
-| LLM Council | directory | local |  |  | 2026-05-19T16:25:04+00:00 | [README](../../../../central/repos/apps/llm-council-master/README.md) | [llm-council-master](../../../../central/repos/apps/llm-council-master) | llm-council-master |  |
 | Homelab Agent Platform | git | shared | yes |  | 2026-05-19T03:14:59+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-20T23:27:22-06:00 |
 | Model Context Protocol servers | git | shared | yes |  | 2026-05-19T00:43:20+00:00 | [README](../../../../central/services/mcp-servers/README.md) | [url](https://github.com/modelcontextprotocol/servers.git) | servers | 2026-04-14T11:12:18-04:00 |
 | ﻿# Common Project: One Concept a Day | git+obsidian | shared | yes | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/common-project/README.md) | [url](https://github.com/mschwar/common-project.git) | common-project | 2026-01-31T23:16:16-07:00 |
