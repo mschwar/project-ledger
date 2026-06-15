@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-06-14T16:42:06Z",
-  "last_session_summary": "Refreshed the live project scan, regenerated CSV/JSON/Markdown outputs, synchronized the canonical ledger mirror, and confirmed the current scan coverage without introducing new project roots or gaps; the refresh mainly updated last-touch timestamps and row ordering.",
+  "last_session_at": "2026-06-15T16:54:24Z",
+  "last_session_summary": "Refreshed the live project scan, regenerated CSV/JSON/Markdown outputs, synchronized the canonical ledger mirror, and confirmed the current scan coverage without introducing new project roots or gaps; this refresh updated last-touch timestamps and preserved the existing 163-entry scope.",
   "next_step": "Keep the scanner synced with live inventory changes, stable identity sidecars, and the mirrored canonical ledger docs.",
   "last_push_at": ""
 }
