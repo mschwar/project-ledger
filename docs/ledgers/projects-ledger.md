@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-06-14T16:41:02+00:00
+Generated: 2026-06-16T04:59:56+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -40,14 +40,14 @@ Generated: 2026-06-14T16:41:02+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-06-14T12:30:20+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-13T17:20:11-06:00 |
-| Project Ledger | git | shared | yes |  | 2026-06-14T04:33:49+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-13T16:28:19+00:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-06-16T00:30:17+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-14T13:18:51-06:00 |
+| Project Ledger | git | shared | yes |  | 2026-06-15T16:55:13+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-14T16:43:16+00:00 |
+| OpenClaw Meta Research | notes | local |  |  | 2026-06-15T06:00:01+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | White Rabbit v2 | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-19T13:24:27-06:00 |
 | White Rabbit (proxy-lead checkout) | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
 | Slop Cannon Agent OS | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/agent-os/README.md) | [url](https://github.com/mschwar/agent-os.git) | agent-os | 2026-05-21T00:33:26+00:00 |
 | Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
 | LLM Council | directory | local |  |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/apps/llm-council-master/README.md) | [llm-council-master](../../../../central/repos/apps/llm-council-master) | llm-council-master |  |
-| OpenClaw Meta Research | notes | local |  |  | 2026-06-13T06:00:01+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | The Garden | git | local | yes |  | 2026-06-08T20:35:04+00:00 |  | [the_garden](../../../../central/git/the_garden) | the_garden |  |
 | Homelab Agent Platform | git | shared | yes |  | 2026-06-03T03:46:06+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
 | Higgsfield Agent Project | directory | local |  |  | 2026-05-21T22:23:02+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project/README.md) | [higgsfield-agent-project](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project) | higgsfield-agent-project |  |
