@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-06-16T04:59:56+00:00
+Generated: 2026-06-16T17:06:35+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -36,12 +36,14 @@ Generated: 2026-06-16T04:59:56+00:00
 - `opt-homelab` — `/opt/homelab` — present (children)
 - `backup-20260416-repos` — `/central/archive/root-backups/central.root-backup-20260416T012657Z/repos` — present (git_repos)
 
-**Known gaps / inaccessible roots:** none detected in configured scan roots.
+**Known gaps / inaccessible roots:**
+- `matty-pc` is currently offline, so this refresh relied on the existing inventory/policy artifacts rather than a live peer crawl.
+- Live Tailscale peers `THING1` and `IZ` are online/pollable, but no project-ledger roots or mirrored inventory sources are configured for them yet, so they remain outside this refresh.
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-06-16T00:30:17+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-14T13:18:51-06:00 |
-| Project Ledger | git | shared | yes |  | 2026-06-15T16:55:13+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-14T16:43:16+00:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-06-16T12:30:35+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-16T05:56:03-06:00 |
+| Project Ledger | git | shared | yes |  | 2026-06-16T05:01:35+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T05:01:31Z |
 | OpenClaw Meta Research | notes | local |  |  | 2026-06-15T06:00:01+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | White Rabbit v2 | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-19T13:24:27-06:00 |
 | White Rabbit (proxy-lead checkout) | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
