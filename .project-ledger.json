@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-06-16T17:06:35+00:00",
-  "last_session_summary": "Refreshed the live project scan, regenerated CSV/JSON/Markdown outputs, synchronized the canonical ledger mirror, and confirmed the configured scan roots still resolve cleanly with 163 entries and no detected gaps.",
+  "last_session_at": "2026-06-17T05:13:42+00:00",
+  "last_session_summary": "Refreshed the live project scan, regenerated CSV/JSON/Markdown outputs, synchronized the canonical homelab project ledger mirror, and confirmed 163 configured entries with no detected gaps in the configured scan roots.",
   "next_step": "Keep the scanner synced with live inventory changes, stable identity sidecars, and the mirrored canonical ledger docs.",
   "last_push_at": "2026-06-16T17:09:36Z"
 }
