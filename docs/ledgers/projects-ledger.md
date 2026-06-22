@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-06-18T17:22:42+00:00
+Generated: 2026-06-22T06:09:56+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -40,9 +40,9 @@ Generated: 2026-06-18T17:22:42+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-06-18T12:30:56+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-17T22:04:39-06:00 |
-| Project Ledger | git | shared | yes |  | 2026-06-18T05:19:29+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
-| OpenClaw Meta Research | notes | local |  |  | 2026-06-17T06:00:04+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Homelab Agent Platform | git | shared | yes |  | 2026-06-22T06:00:36+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-21T13:05:16-06:00 |
+| Project Ledger | git | shared | yes |  | 2026-06-21T17:59:57+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
+| OpenClaw Meta Research | notes | local |  |  | 2026-06-21T06:00:01+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | White Rabbit v2 | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-19T13:24:27-06:00 |
 | White Rabbit (proxy-lead checkout) | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
 | Slop Cannon Agent OS | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/agent-os/README.md) | [url](https://github.com/mschwar/agent-os.git) | agent-os | 2026-05-21T00:33:26+00:00 |
@@ -147,7 +147,7 @@ Generated: 2026-06-18T17:22:42+00:00
 | Hermes ops workflows | directory | local |  |  | 2026-04-25T04:21:00+00:00 | [README](../../../../central/repos/active/hermes-ops-workflows/README.md) | [hermes-ops-workflows](../../../../central/repos/active/hermes-ops-workflows) | hermes-ops-workflows |  |
 | repos-other | git+obsidian | shared | yes | yes | 2026-04-20T23:24:24+00:00 |  | [url](gdrive://googledrive/repos-other) | repos-other |  |
 | repos-MS | directory | shared |  |  | 2026-04-20T22:15:24+00:00 |  | [url](gdrive://googledrive/repos-MS) | repos-MS |  |
-| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul | 2026-03-24T00:51:41-06:00 |
+| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul |  |
 | Projects | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects) | Projects |  |
 | LMNTL | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/LMNTL) | LMNTL |  |
 | legal | directory | shared |  |  | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/legal) | legal |  |
