@@ -95,6 +95,7 @@ Reference: `prompts/session_end_prompt.md`
 - actual remote push time is not inferable from local git alone
 - merge logic across machines is not implemented yet
 - current discovery heuristics are intentionally simple
+- unreadable filesystem entries are skipped and surfaced only through scan-gap reporting
 - current tests are still prototype-grade
 
 ## Handoff Checklist
