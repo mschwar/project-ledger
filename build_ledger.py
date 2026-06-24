@@ -250,9 +250,26 @@ def escape_md_cell(value: str) -> str:
 def find_first_existing(directory: Path, candidates: Iterable[str]) -> Path | None:
     for name in candidates:
         candidate = directory / name
-        if candidate.exists():
-            return candidate
+        try:
+            if candidate.exists():
+                return candidate
+        except OSError:
+            continue
     return None
+
+
+def safe_path_exists(path: Path) -> bool:
+    try:
+        return path.exists()
+    except OSError:
+        return False
+
+
+def safe_path_is_dir(path: Path) -> bool:
+    try:
+        return path.is_dir()
+    except OSError:
+        return False
 
 
 def iter_shallow_files(directory: Path, ignore_names: set[str], max_depth: int = 1) -> Iterable[Path]:
@@ -480,8 +497,8 @@ def discover_inventory_policy_candidates(root_cfg: dict, exclude_names: set[str]
 def inspect_candidate(directory: Path, ignore_names: set[str]) -> dict:
     readme_path = find_first_existing(directory, README_CANDIDATES)
     sidecar_path = find_first_existing(directory, SIDECAR_CANDIDATES)
-    has_git = (directory / ".git").exists()
-    has_obsidian = (directory / ".obsidian").is_dir()
+    has_git = safe_path_exists(directory / ".git")
+    has_obsidian = safe_path_is_dir(directory / ".obsidian")
 
     markdown_files = 0
     code_files = 0
@@ -695,8 +712,14 @@ def classify_project_type(git_enabled: bool, obsidian_enabled: bool, markdown_co
 
 def discover_children(root_path: Path, exclude_names: set[str]) -> list[Path]:
     results: list[Path] = []
-    for child in sorted(root_path.iterdir(), key=lambda item: item.name.lower()):
-        if not child.is_dir() or child.name in exclude_names:
+    try:
+        children = sorted(root_path.iterdir(), key=lambda item: item.name.lower())
+    except OSError:
+        return results
+    for child in children:
+        if child.name in exclude_names:
+            continue
+        if not safe_path_is_dir(child):
             continue
         results.append(child)
     return results
@@ -714,15 +737,23 @@ def discover_git_repos(root_path: Path, exclude_names: set[str], max_depth: int)
         filtered_dirs = []
         for dirname in dirs:
             candidate = root_path_current / dirname
-            if dirname in exclude_names or candidate.is_symlink():
+            if dirname in exclude_names:
                 continue
             if depth + 1 > max_depth:
+                continue
+            try:
+                if candidate.is_symlink():
+                    continue
+            except OSError:
                 continue
             filtered_dirs.append(dirname)
         dirs[:] = filtered_dirs
 
-        if ".git" in dirs or (root_path_current / ".git").exists():
-            results.append(root_path_current)
+        try:
+            if ".git" in dirs or safe_path_exists(root_path_current / ".git"):
+                results.append(root_path_current)
+        except OSError:
+            continue
     return sorted(results, key=lambda item: str(item).lower())
 
 
@@ -872,7 +903,7 @@ def build_inventory_entry(
 
     readme_path = None
     sidecar_path = None
-    if filesystem_path.exists() and filesystem_path.is_dir():
+    if safe_path_exists(filesystem_path) and safe_path_is_dir(filesystem_path):
         readme_path = find_first_existing(filesystem_path, README_CANDIDATES)
         sidecar_path = find_first_existing(filesystem_path, SIDECAR_CANDIDATES)
     sidecar = load_sidecar(sidecar_path)
@@ -938,7 +969,12 @@ def build_inventory_entry(
     source_label = f"{base_source_label}:{root_label}" if root_label else base_source_label
 
     inventory_path = str(candidate["inventory_path"]).strip()
-    path_value = str(filesystem_path.resolve()) if filesystem_path.exists() else f"{remote_name}:{inventory_path}"
+    path_value = f"{remote_name}:{inventory_path}"
+    if safe_path_exists(filesystem_path):
+        try:
+            path_value = str(filesystem_path.resolve())
+        except OSError:
+            path_value = f"{remote_name}:{inventory_path}"
 
     include_reasons = list(summary["reasons"])
     include_reasons.extend(
@@ -1062,7 +1098,7 @@ def summarize_roots(config: dict, config_dir: Path) -> list[dict]:
                 "label": str(root_cfg.get("label", "")).strip() or root_path.name,
                 "path": str(root_path),
                 "discovery": str(root_cfg.get("discovery", "children")).strip() or "children",
-                "exists": root_path.exists(),
+                "exists": safe_path_exists(root_path),
             }
         )
     return summaries

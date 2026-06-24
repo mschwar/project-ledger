@@ -7,6 +7,7 @@ import sys
 import unittest
 import uuid
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -43,6 +44,25 @@ class ProjectLedgerTests(unittest.TestCase):
         target = Path(r"C:\temp\My Folder\README.md")
         link = build_ledger.markdown_link(target, base, "README")
         self.assertEqual(link, "[README](../My%20Folder/README.md)")
+
+    def test_find_first_existing_skips_unreadable_candidate(self) -> None:
+        with ScratchDir() as root:
+            project = root / "sample-project"
+            project.mkdir()
+            readable = project / "Readme.md"
+            readable.write_text("# Sample\n", encoding="utf-8")
+
+            real_exists = Path.exists
+
+            def side_effect(self: Path) -> bool:
+                if self.name == "README.md":
+                    raise OSError("simulated read error")
+                return real_exists(self)
+
+            with mock.patch.object(Path, "exists", new=side_effect):
+                found = build_ledger.find_first_existing(project, build_ledger.README_CANDIDATES)
+
+            self.assertEqual(found, readable)
 
     def test_build_entry_reads_git_and_sidecar(self) -> None:
         with ScratchDir() as root:
