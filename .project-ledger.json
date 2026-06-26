@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-06-25T07:10:36Z",
-  "last_session_summary": "Refreshed the project ledger outputs, synchronized the canonical markdown mirror, and verified 163 entries across the configured roots.",
-  "next_step": "Keep scan-root handling resilient and add a regression test for additional unreadable filesystem entries if they appear.",
+  "last_session_at": "2026-06-26T19:40:41Z",
+  "last_session_summary": "Refreshed the project ledger outputs, synchronized the canonical markdown mirror, verified 163 entries across the configured roots, and noted a live ping timeout to matthews-macbook-air-2.",
+  "next_step": "Keep scan-root handling resilient and revisit MacBook peer reachability if it remains intermittent.",
   "last_push_at": "2026-06-16T17:09:36Z"
 }
