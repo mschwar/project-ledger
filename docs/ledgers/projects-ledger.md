@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-06-28T20:05:55+00:00
+Generated: 2026-07-01T20:50:43+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -37,6 +37,8 @@ Generated: 2026-06-28T20:05:55+00:00
 - `backup-20260416-repos` — `/central/archive/root-backups/central.root-backup-20260416T012657Z/repos` — present (git_repos)
 
 **Known gaps / inaccessible roots:** none detected in configured scan roots.
+
+**Live MacBook gap surfaced by SSH probe:** the current central mirror only covers four MacBook roots, but the reachable `matthews-macbook-air-2` `~/Documents` tree now also contains additional project-like top-level directories that are not yet ingested here. Examples include `ai-class`, `ai-onboard`, `airstream`, `brain-dump`, `finances`, `gym-bros`, `maya-tbd`, `miscellania`, `pipeline`, `pipeline2`, `rocket-bros`, `SDLC`, `WR-v3`, `xport`, and several `white-rabbit-*` worktrees/remediations. These were verified live on 2026-07-01 and should be promoted into a durable MacBook inventory/mirror root before the next broad refresh.
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

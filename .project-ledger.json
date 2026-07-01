@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-07-01T08:37:47+00:00",
-  "last_session_summary": "Regenerated the ledger outputs to 163 entries and synchronized the canonical homelab mirror; no new projects, repos, or inaccessible configured roots were found, and only touch-time and last_push updates changed.",
-  "next_step": "Keep scan-root handling resilient and rerun the ledger on the next scheduled pass.",
+  "last_session_at": "2026-07-01T20:50:43+00:00",
+  "last_session_summary": "Refreshed the ledger outputs to 163 entries and updated the canonical ledger mirror; configured roots still had no gaps, but a live SSH probe of matthews-macbook-air-2/Documents surfaced 29 additional project-like top-level directories outside current MacBook mirror coverage that should be promoted into a durable inventory next.",
+  "next_step": "Promote the live MacBook Documents roots into a durable inventory/mirror and rerun the ledger once coverage is expanded.",
   "last_push_at": "2026-06-16T17:09:36Z"
 }
