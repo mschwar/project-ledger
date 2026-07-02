@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-07-01T20:50:43+00:00
+Generated: 2026-07-02T08:57:49+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -38,13 +38,12 @@ Generated: 2026-07-01T20:50:43+00:00
 
 **Known gaps / inaccessible roots:** none detected in configured scan roots.
 
-**Live MacBook gap surfaced by SSH probe:** the current central mirror only covers four MacBook roots, but the reachable `matthews-macbook-air-2` `~/Documents` tree now also contains additional project-like top-level directories that are not yet ingested here. Examples include `ai-class`, `ai-onboard`, `airstream`, `brain-dump`, `finances`, `gym-bros`, `maya-tbd`, `miscellania`, `pipeline`, `pipeline2`, `rocket-bros`, `SDLC`, `WR-v3`, `xport`, and several `white-rabbit-*` worktrees/remediations. These were verified live on 2026-07-01 and should be promoted into a durable MacBook inventory/mirror root before the next broad refresh.
-
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-06-28T18:30:28+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-06-28T11:57:14-06:00 |
-| Project Ledger | git | shared | yes |  | 2026-06-28T08:01:03+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
-| OpenClaw Meta Research | notes | local |  |  | 2026-06-27T06:00:02+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-02T07:10:02+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-01T23:40:12-06:00 |
+| AI_SYSTEM_SPEC | obsidian | local |  | yes | 2026-07-02T05:43:03+00:00 | [README](../../../../central/projects/braindump/README.md) | [braindump](../../../../central/projects/braindump) | braindump |  |
+| Project Ledger | git | shared | yes |  | 2026-07-01T20:51:59+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
+| OpenClaw Meta Research | notes | local |  |  | 2026-07-01T06:00:02+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | White Rabbit v2 | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-19T13:24:27-06:00 |
 | White Rabbit (proxy-lead checkout) | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
 | Slop Cannon Agent OS | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/agent-os/README.md) | [url](https://github.com/mschwar/agent-os.git) | agent-os | 2026-05-21T00:33:26+00:00 |
@@ -134,7 +133,6 @@ Generated: 2026-07-01T20:50:43+00:00
 | C e n t r a l   G i t   t e s t   f r o m   W i n d o w s  | git | local | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/test-repo/README.md) | [test-repo](../../../../central/repos/active/test-repo) | test-repo |  |
 | bible-homepage | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/bible-homepage/README.md) | [url](https://github.com/mschwar/bible-homepage.git) | bible-homepage | 2026-02-16T13:50:12-07:00 |
 | Bahá’í Daily Homepage | git | shared | yes |  | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/bahai-homepage/README.md) | [url](https://github.com/mschwar/bahai-homepage.git) | bahai-homepage | 2026-02-07T19:15:10-06:00 |
-| AI_SYSTEM_SPEC | obsidian | local |  | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/projects/braindump/README.md) | [braindump](../../../../central/projects/braindump) | braindump |  |
 | AI Compute "Phase Shift" Scrollytelling Visualization | git+obsidian | shared | yes | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/scrollytelling/README.md) | [url](https://github.com/mschwar/scrollytelling.git) | scrollytelling | 2026-02-01T02:00:41-07:00 |
 | AI Companion | git+obsidian | local | yes | yes | 2026-05-19T00:19:56+00:00 | [README](../../../../central/repos/active/bridgeai/README.md) | [bridgeai](../../../../central/repos/active/bridgeai) | bridgeai |  |
 | AGENTS.md - Your Workspace | git | local | yes |  | 2026-05-19T00:19:56+00:00 |  | [the_garden](../../../../central/repos/active/the_garden) | the_garden |  |
