@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-07-02T08:57:49+00:00
+Generated: 2026-07-03T21:17:18+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -40,10 +40,10 @@ Generated: 2026-07-02T08:57:49+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-07-02T07:10:02+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-01T23:40:12-06:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-03T18:30:16+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-03T10:05:56-06:00 |
+| Project Ledger | git | shared | yes |  | 2026-07-03T09:12:51+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
+| OpenClaw Meta Research | notes | local |  |  | 2026-07-03T06:00:05+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | AI_SYSTEM_SPEC | obsidian | local |  | yes | 2026-07-02T05:43:03+00:00 | [README](../../../../central/projects/braindump/README.md) | [braindump](../../../../central/projects/braindump) | braindump |  |
-| Project Ledger | git | shared | yes |  | 2026-07-01T20:51:59+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
-| OpenClaw Meta Research | notes | local |  |  | 2026-07-01T06:00:02+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | White Rabbit v2 | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-19T13:24:27-06:00 |
 | White Rabbit (proxy-lead checkout) | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
 | Slop Cannon Agent OS | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/agent-os/README.md) | [url](https://github.com/mschwar/agent-os.git) | agent-os | 2026-05-21T00:33:26+00:00 |
