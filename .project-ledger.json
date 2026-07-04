@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-07-03T21:18:21Z",
-  "last_session_summary": "Refreshed the project ledger outputs and canonical markdown mirror from live roots; counts stayed at 163 entries with 3 machines covered and no new gaps in configured roots.",
+  "last_session_at": "2026-07-04T09:23:53Z",
+  "last_session_summary": "Refreshed the project ledger outputs from live roots and synced the canonical homelab ledger mirror; counts remained at 163 entries with 3 machines covered and no new gaps in configured roots.",
   "next_step": "Re-run the ledger after any new roots or sidecars land on the mounted/project surfaces.",
   "last_push_at": "2026-06-16T17:09:36Z"
 }
