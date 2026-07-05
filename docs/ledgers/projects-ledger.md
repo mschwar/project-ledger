@@ -38,6 +38,10 @@ Generated: 2026-07-05T09:44:58+00:00
 
 **Known gaps / inaccessible roots:** none detected in configured scan roots.
 
+**Live peers without direct scan roots or working SSH paths:**
+- `THING1` (`thing1.tail951b2a.ts.net`) — online in Tailscale, but `ssh -o BatchMode=yes -o ConnectTimeout=8 thing1 'hostname'` timed out, so no project-ledger root was scanned on that peer.
+- `IZ` (`iz.tail951b2a.ts.net`) — online in Tailscale, but `ssh -o BatchMode=yes -o ConnectTimeout=8 iz 'hostname'` timed out, so no project-ledger root was scanned on that peer.
+
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Paperclip Adapter for Hermes Agent | git | shared | yes |  | 2026-07-05T09:42:56+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter/README.md) | [url](https://github.com/NousResearch/hermes-paperclip-adapter.git) | hermes-paperclip-adapter | 2026-04-03T22:44:23-07:00 |
