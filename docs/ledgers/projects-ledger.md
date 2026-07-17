@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-07-17T00:23:45+00:00
+Generated: 2026-07-17T12:31:34+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -40,9 +40,9 @@ Generated: 2026-07-17T00:23:45+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-07-17T00:01:37+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-13T23:41:48-06:00 |
-| Project Ledger | git | shared | yes |  | 2026-07-16T12:17:09+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
-| OpenClaw Meta Research | notes | local |  |  | 2026-07-15T06:00:02+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-17T12:00:38+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-13T23:41:48-06:00 |
+| OpenClaw Meta Research | notes | local |  |  | 2026-07-17T06:00:01+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Project Ledger | git | shared | yes |  | 2026-07-17T00:26:04+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
 | Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-07-08T18:46:25+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
 | Homelab Agent Platform | git | shared | yes |  | 2026-07-08T18:43:05+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
 | Paperclip Adapter for Hermes Agent | git | shared | yes |  | 2026-07-05T09:51:06+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter/README.md) | [url](https://github.com/NousResearch/hermes-paperclip-adapter.git) | hermes-paperclip-adapter | 2026-04-03T22:44:23-07:00 |
