@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-07-15T12:00:27+00:00",
-  "last_session_summary": "Refreshed the project ledger outputs and canonical homelab mirror from live roots; counts stayed at 163 entries across 3 machines, and no new roots, gaps, or stable-identity sidecar additions were detected.",
+  "last_session_at": "2026-07-17T00:23:45+00:00",
+  "last_session_summary": "Refreshed the live ledger outputs from the configured hub, MacBook mirror, and matty-pc inventory roots; counts stayed at 163 entries across 3 machines, with no new gaps or stable-identity sidecar additions detected. Synced the refreshed markdown into the canonical homelab ledger.",
   "next_step": "Re-run the ledger after any new roots or sidecars land on the mounted/project surfaces.",
   "last_push_at": "2026-06-16T17:09:36Z"
 }
