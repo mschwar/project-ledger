@@ -1206,6 +1206,11 @@ def write_markdown(entries: list[dict], output_path: Path, root_summaries: list[
     output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def write_markdown_mirror(source_path: Path, mirror_path: Path) -> None:
+    mirror_path.parent.mkdir(parents=True, exist_ok=True)
+    mirror_path.write_text(source_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+
 def ensure_output_dir(output_dir: Path) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
@@ -1228,10 +1233,14 @@ def main() -> int:
     write_json(entries, json_path, config_path)
     write_markdown(entries, md_path, root_summaries)
 
+    mirror_path = script_dir / "docs" / "ledgers" / "projects-ledger.md"
+    write_markdown_mirror(md_path, mirror_path)
+
     print(f"Wrote {len(entries)} entries")
     print(f"  CSV:  {csv_path}")
     print(f"  JSON: {json_path}")
     print(f"  MD:   {md_path}")
+    print(f"  Mirror: {mirror_path}")
     return 0
 
 

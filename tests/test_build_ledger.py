@@ -45,6 +45,18 @@ class ProjectLedgerTests(unittest.TestCase):
         link = build_ledger.markdown_link(target, base, "README")
         self.assertEqual(link, "[README](../My%20Folder/README.md)")
 
+    def test_write_markdown_mirror_copies_canonical_ledger(self) -> None:
+        with ScratchDir() as root:
+            source = root / "output" / "projects.md"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text("# Project Ledger\nexample\n", encoding="utf-8")
+            mirror = root / "docs" / "ledgers" / "projects-ledger.md"
+
+            build_ledger.write_markdown_mirror(source, mirror)
+
+            self.assertTrue(mirror.exists())
+            self.assertEqual(mirror.read_text(encoding="utf-8"), source.read_text(encoding="utf-8"))
+
     def test_find_first_existing_skips_unreadable_candidate(self) -> None:
         with ScratchDir() as root:
             project = root / "sample-project"
