@@ -1,6 +1,8 @@
 # Project Ledger
 
-Generated: 2026-07-25T02:21:59+00:00
+Generated: 2026-07-25T14:28:55+00:00
+
+- Refresh notes: live recency data advanced for Homelab Agent Platform, OpenClaw Meta Research, Project Ledger, and claude-overhaul last-push metadata; no configured-root gaps detected.
 
 - Entries: 163
 - Git repos: 61
@@ -40,9 +42,9 @@ Generated: 2026-07-25T02:21:59+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-07-25T00:30:13+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-13T23:41:48-06:00 |
-| Project Ledger | git | shared | yes |  | 2026-07-24T14:16:26+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
-| OpenClaw Meta Research | notes | local |  |  | 2026-07-23T06:00:01+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-25T12:30:52+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-13T23:41:48-06:00 |
+| OpenClaw Meta Research | notes | local |  |  | 2026-07-25T06:00:02+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Project Ledger | git | shared | yes |  | 2026-07-25T02:21:59+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
 | Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-07-08T18:46:25+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
 | Homelab Agent Platform | git | shared | yes |  | 2026-07-08T18:43:05+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
 | Paperclip Adapter for Hermes Agent | git | shared | yes |  | 2026-07-05T09:51:06+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter/README.md) | [url](https://github.com/NousResearch/hermes-paperclip-adapter.git) | hermes-paperclip-adapter | 2026-04-03T22:44:23-07:00 |
@@ -147,7 +149,7 @@ Generated: 2026-07-25T02:21:59+00:00
 | Hermes ops workflows | directory | local |  |  | 2026-04-25T04:21:00+00:00 | [README](../../../../central/repos/active/hermes-ops-workflows/README.md) | [hermes-ops-workflows](../../../../central/repos/active/hermes-ops-workflows) | hermes-ops-workflows |  |
 | repos-other | git+obsidian | shared | yes | yes | 2026-04-20T23:24:24+00:00 |  | [url](gdrive://googledrive/repos-other) | repos-other |  |
 | repos-MS | directory | shared |  |  | 2026-04-20T22:15:24+00:00 |  | [url](gdrive://googledrive/repos-MS) | repos-MS |  |
-| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul |  |
+| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul | 2026-03-24T00:51:41-06:00 |
 | Projects | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects) | Projects |  |
 | LMNTL | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/LMNTL) | LMNTL |  |
 | legal | directory | shared |  |  | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/legal) | legal |  |
