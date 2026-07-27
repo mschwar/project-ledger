@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-07-26T14:50:02+00:00
+Generated: 2026-07-27T02:54:00+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -41,8 +41,8 @@ Generated: 2026-07-26T14:50:02+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Project Ledger | git | shared | yes |  | 2026-07-26T14:48:35+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
-| Homelab Agent Platform | git | shared | yes |  | 2026-07-26T12:30:47+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-13T23:41:48-06:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-27T00:30:37+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-13T23:41:48-06:00 |
+| Project Ledger | git | shared | yes |  | 2026-07-26T14:50:02+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
 | Paper Repo | directory | local |  |  | 2026-07-26T02:49:33+00:00 | [README](../../../../central/projects/paper-repo/README.md) | [paper-repo](../../../../central/projects/paper-repo) | paper-repo |  |
 | OpenClaw Meta Research | notes | local |  |  | 2026-07-25T06:00:02+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-07-08T18:46:25+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
