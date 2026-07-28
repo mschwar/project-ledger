@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-07-27T15:03:04+00:00
+Generated: 2026-07-28T03:08:56+00:00
 
 - Entries: 163
 - Git repos: 61
@@ -41,12 +41,12 @@ Generated: 2026-07-27T15:03:04+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Project Ledger | git | shared | yes |  | 2026-07-27T15:02:13+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
-| Homelab Agent Platform | git | shared | yes |  | 2026-07-27T12:30:27+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-13T23:41:48-06:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-28T00:30:32+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-13T23:41:48-06:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-27T20:15:30+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
+| Project Ledger | git | shared | yes |  | 2026-07-27T15:03:04+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
 | OpenClaw Meta Research | notes | local |  |  | 2026-07-27T06:00:05+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | Paper Repo | directory | local |  |  | 2026-07-26T02:49:33+00:00 | [README](../../../../central/projects/paper-repo/README.md) | [paper-repo](../../../../central/projects/paper-repo) | paper-repo |  |
 | Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-07-08T18:46:25+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
-| Homelab Agent Platform | git | shared | yes |  | 2026-07-08T18:43:05+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
 | Paperclip Adapter for Hermes Agent | git | shared | yes |  | 2026-07-05T09:51:06+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter/README.md) | [url](https://github.com/NousResearch/hermes-paperclip-adapter.git) | hermes-paperclip-adapter | 2026-04-03T22:44:23-07:00 |
 | Local Deep Research | git | shared | yes |  | 2026-07-05T09:50:16+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research/README.md) | [url](https://github.com/LearningCircuit/local-deep-research.git) | local-deep-research | 2026-05-08T00:31:16+00:00 |
 | AI_SYSTEM_SPEC | obsidian | local |  | yes | 2026-07-02T05:43:03+00:00 | [README](../../../../central/projects/braindump/README.md) | [braindump](../../../../central/projects/braindump) | braindump |  |
