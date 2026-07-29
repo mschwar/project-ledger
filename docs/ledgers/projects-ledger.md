@@ -1,12 +1,12 @@
 # Project Ledger
 
-Generated: 2026-07-29T03:32:50+00:00
+Generated: 2026-07-29T03:36:55+00:00
 
 - Entries: 169
 - Git repos: 67
 - Obsidian vaults: 46
 - Shared/synced: 110
-- Refresh notes: live recency data refreshed from configured roots; no new projects or gaps detected.
+- Refresh notes: live recency data refreshed from configured roots.
 
 > `Last Push` uses `last_push_at` from the sidecar when available; otherwise it falls back to the newest local remote-ref timestamp.
 
@@ -41,7 +41,7 @@ Generated: 2026-07-29T03:32:50+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Project Ledger | git | shared | yes |  | 2026-07-29T03:31:14+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
+| Project Ledger | git | shared | yes |  | 2026-07-29T03:34:46+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
 | Homelab Agent Platform | git | shared | yes |  | 2026-07-29T03:22:08+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-28T20:13:48-06:00 |
 | SlopVault | git+obsidian | shared | yes | yes | 2026-07-28T22:37:30+00:00 | [README](../../../../central/repos/active/slopvault/README.md) | [url](https://github.com/mschwar/slopvault.git) | slopvault | 2026-04-04T19:21:14-06:00 |
 | Dedupe Engine | git | shared | yes |  | 2026-07-28T22:37:27+00:00 | [README](../../../../central/repos/active/dedupe-engine-repo/README.md) | [url](https://github.com/mschwar/dedupe-engine-repo.git) | dedupe-engine-repo | 2026-02-18T18:30:10-07:00 |
@@ -154,7 +154,7 @@ Generated: 2026-07-29T03:32:50+00:00
 | Hermes ops workflows | directory | local |  |  | 2026-04-25T04:21:00+00:00 | [README](../../../../central/repos/active/hermes-ops-workflows/README.md) | [hermes-ops-workflows](../../../../central/repos/active/hermes-ops-workflows) | hermes-ops-workflows |  |
 | repos-other | git+obsidian | shared | yes | yes | 2026-04-20T23:24:24+00:00 |  | [url](gdrive://googledrive/repos-other) | repos-other |  |
 | repos-MS | directory | shared |  |  | 2026-04-20T22:15:24+00:00 |  | [url](gdrive://googledrive/repos-MS) | repos-MS |  |
-| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul | 2026-03-24T00:51:41-06:00 |
+| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul |  |
 | Projects | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects) | Projects |  |
 | LMNTL | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/LMNTL) | LMNTL |  |
 | legal | directory | shared |  |  | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/legal) | legal |  |

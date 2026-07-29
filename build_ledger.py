@@ -1149,7 +1149,7 @@ def write_markdown(entries: list[dict], output_path: Path, root_summaries: list[
         f"- Git repos: {git_count}",
         f"- Obsidian vaults: {obsidian_count}",
         f"- Shared/synced: {shared_count}",
-        "- Refresh notes: live recency data refreshed from configured roots; no new projects or gaps detected.",
+        "- Refresh notes: live recency data refreshed from configured roots.",
         "",
         "> `Last Push` uses `last_push_at` from the sidecar when available; otherwise it falls back to the newest local remote-ref timestamp.",
         "",
