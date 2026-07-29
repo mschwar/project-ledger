@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-07-29T03:36:55+00:00
+Generated: 2026-07-29T15:45:40+00:00
 
 - Entries: 169
 - Git repos: 67
@@ -41,8 +41,9 @@ Generated: 2026-07-29T03:36:55+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Project Ledger | git | shared | yes |  | 2026-07-29T03:34:46+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
-| Homelab Agent Platform | git | shared | yes |  | 2026-07-29T03:22:08+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-28T20:13:48-06:00 |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-29T12:00:43+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-29T04:05:21+00:00 |
+| OpenClaw Meta Research | notes | local |  |  | 2026-07-29T06:00:07+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
+| Project Ledger | git | shared | yes |  | 2026-07-29T03:36:55+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
 | SlopVault | git+obsidian | shared | yes | yes | 2026-07-28T22:37:30+00:00 | [README](../../../../central/repos/active/slopvault/README.md) | [url](https://github.com/mschwar/slopvault.git) | slopvault | 2026-04-04T19:21:14-06:00 |
 | Dedupe Engine | git | shared | yes |  | 2026-07-28T22:37:27+00:00 | [README](../../../../central/repos/active/dedupe-engine-repo/README.md) | [url](https://github.com/mschwar/dedupe-engine-repo.git) | dedupe-engine-repo | 2026-02-18T18:30:10-07:00 |
 | crawler | git+obsidian | shared | yes | yes | 2026-07-28T22:37:27+00:00 |  | [url](https://github.com/mschwar/crawler.git) | crawler | 2026-02-19T13:20:15-07:00 |
@@ -50,7 +51,6 @@ Generated: 2026-07-29T03:36:55+00:00
 | GemForge — Your Personal AI Product Factory | git+obsidian | shared | yes | yes | 2026-07-28T22:37:26+00:00 | [README](../../../../central/repos/active/gemforge/README.md) | [url](https://github.com/mschwar/gemforge.git) | gemforge | 2026-02-25T16:27:19-07:00 |
 | IdeaForge | git | shared | yes |  | 2026-07-28T22:37:25+00:00 | [README](../../../../central/repos/active/idea-forge/README.md) | [url](https://github.com/mschwar/idea-forge.git) | idea-forge | 2026-02-19T00:03:35-07:00 |
 | Homelab Agent Platform | git | shared | yes |  | 2026-07-27T20:15:30+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
-| OpenClaw Meta Research | notes | local |  |  | 2026-07-27T06:00:05+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | Paper Repo | directory | local |  |  | 2026-07-26T02:49:33+00:00 | [README](../../../../central/projects/paper-repo/README.md) | [paper-repo](../../../../central/projects/paper-repo) | paper-repo |  |
 | Open Higgsfield AI — Open-Source Alternative to Higgsfield AI | directory | local |  |  | 2026-07-08T18:46:25+00:00 | [README](../../../../central/repos/apps/Open-Higgsfield-AI-main/README.md) | [Open-Higgsfield-AI-main](../../../../central/repos/apps/Open-Higgsfield-AI-main) | Open-Higgsfield-AI-main |  |
 | Paperclip Adapter for Hermes Agent | git | shared | yes |  | 2026-07-05T09:51:06+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter/README.md) | [url](https://github.com/NousResearch/hermes-paperclip-adapter.git) | hermes-paperclip-adapter | 2026-04-03T22:44:23-07:00 |
@@ -154,7 +154,7 @@ Generated: 2026-07-29T03:36:55+00:00
 | Hermes ops workflows | directory | local |  |  | 2026-04-25T04:21:00+00:00 | [README](../../../../central/repos/active/hermes-ops-workflows/README.md) | [hermes-ops-workflows](../../../../central/repos/active/hermes-ops-workflows) | hermes-ops-workflows |  |
 | repos-other | git+obsidian | shared | yes | yes | 2026-04-20T23:24:24+00:00 |  | [url](gdrive://googledrive/repos-other) | repos-other |  |
 | repos-MS | directory | shared |  |  | 2026-04-20T22:15:24+00:00 |  | [url](gdrive://googledrive/repos-MS) | repos-MS |  |
-| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul |  |
+| What this is | git | shared | yes |  | 2026-04-20T18:54:38+00:00 | [README](../../GoogleDrive/repos-other/claude-overhaul/README.md) | [url](gdrive://googledrive/repos-other/claude-overhaul) | claude-overhaul | 2026-03-24T00:51:41-06:00 |
 | Projects | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects) | Projects |  |
 | LMNTL | obsidian | shared |  | yes | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/LMNTL) | LMNTL |  |
 | legal | directory | shared |  |  | 2026-04-20T18:48:31+00:00 |  | [url](gdrive://googledrive/Projects/legal) | legal |  |
