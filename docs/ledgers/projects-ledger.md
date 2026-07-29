@@ -1,11 +1,11 @@
 # Project Ledger
 
-Generated: 2026-07-28T15:17:53+00:00
+Generated: 2026-07-29T03:32:50+00:00
 
-- Entries: 163
-- Git repos: 61
-- Obsidian vaults: 42
-- Shared/synced: 104
+- Entries: 169
+- Git repos: 67
+- Obsidian vaults: 46
+- Shared/synced: 110
 - Refresh notes: live recency data refreshed from configured roots; no new projects or gaps detected.
 
 > `Last Push` uses `last_push_at` from the sidecar when available; otherwise it falls back to the newest local remote-ref timestamp.
@@ -41,8 +41,14 @@ Generated: 2026-07-28T15:17:53+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-07-28T12:00:29+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-28T12:00:30+00:00 |
-| Project Ledger | git | shared | yes |  | 2026-07-28T03:08:56+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
+| Project Ledger | git | shared | yes |  | 2026-07-29T03:31:14+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-29T03:22:08+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-28T20:13:48-06:00 |
+| SlopVault | git+obsidian | shared | yes | yes | 2026-07-28T22:37:30+00:00 | [README](../../../../central/repos/active/slopvault/README.md) | [url](https://github.com/mschwar/slopvault.git) | slopvault | 2026-04-04T19:21:14-06:00 |
+| Dedupe Engine | git | shared | yes |  | 2026-07-28T22:37:27+00:00 | [README](../../../../central/repos/active/dedupe-engine-repo/README.md) | [url](https://github.com/mschwar/dedupe-engine-repo.git) | dedupe-engine-repo | 2026-02-18T18:30:10-07:00 |
+| crawler | git+obsidian | shared | yes | yes | 2026-07-28T22:37:27+00:00 |  | [url](https://github.com/mschwar/crawler.git) | crawler | 2026-02-19T13:20:15-07:00 |
+| Agentic SDLC Framework | git+obsidian | shared | yes | yes | 2026-07-28T22:37:27+00:00 | [README](../../../../central/repos/active/SDLC/README.md) | [url](https://github.com/mschwar/SDLC.git) | SDLC | 2026-04-20T18:21:28-06:00 |
+| GemForge — Your Personal AI Product Factory | git+obsidian | shared | yes | yes | 2026-07-28T22:37:26+00:00 | [README](../../../../central/repos/active/gemforge/README.md) | [url](https://github.com/mschwar/gemforge.git) | gemforge | 2026-02-25T16:27:19-07:00 |
+| IdeaForge | git | shared | yes |  | 2026-07-28T22:37:25+00:00 | [README](../../../../central/repos/active/idea-forge/README.md) | [url](https://github.com/mschwar/idea-forge.git) | idea-forge | 2026-02-19T00:03:35-07:00 |
 | Homelab Agent Platform | git | shared | yes |  | 2026-07-27T20:15:30+00:00 | [README](../../../../central/repos/infra/homelab-repo/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-04-16T17:29:52+00:00 |
 | OpenClaw Meta Research | notes | local |  |  | 2026-07-27T06:00:05+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
 | Paper Repo | directory | local |  |  | 2026-07-26T02:49:33+00:00 | [README](../../../../central/projects/paper-repo/README.md) | [paper-repo](../../../../central/projects/paper-repo) | paper-repo |  |
@@ -52,7 +58,7 @@ Generated: 2026-07-28T15:17:53+00:00
 | AI_SYSTEM_SPEC | obsidian | local |  | yes | 2026-07-02T05:43:03+00:00 | [README](../../../../central/projects/braindump/README.md) | [braindump](../../../../central/projects/braindump) | braindump |  |
 | White Rabbit v2 | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/white-rabbit/README.md) | [url](https://github.com/mschwar/white-rabbit.git) | white-rabbit | 2026-05-19T13:24:27-06:00 |
 | White Rabbit (proxy-lead checkout) | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/proxy-lead/README.md) | [url](https://github.com/mschwar/proxy-lead.git) | proxy-lead | 2026-05-22T06:19:50+00:00 |
-| Slop Cannon Agent OS | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/agent-os/README.md) | [url](https://github.com/mschwar/agent-os.git) | agent-os | 2026-05-21T00:33:26+00:00 |
+| Slop Cannon Agent OS | git | shared | yes |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/active/agent-os/README.md) | [url](https://github.com/mschwar/agent-os.git) | agent-os | 2026-05-24T21:15:39-06:00 |
 | LLM Council | directory | local |  |  | 2026-06-14T04:33:08+00:00 | [README](../../../../central/repos/apps/llm-council-master/README.md) | [llm-council-master](../../../../central/repos/apps/llm-council-master) | llm-council-master |  |
 | The Garden | git | local | yes |  | 2026-06-08T20:35:04+00:00 |  | [the_garden](../../../../central/git/the_garden) | the_garden |  |
 | Higgsfield Agent Project | directory | local |  |  | 2026-05-21T22:23:02+00:00 | [README](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project/README.md) | [higgsfield-agent-project](../../../../central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project) | higgsfield-agent-project |  |
