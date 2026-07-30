@@ -1,0 +1,19 @@
+{
+  "project_key": "github.com/mschwar/project-ledger",
+  "display_name": "Project Ledger",
+  "description": "Ledger scanner for mixed project roots across machines and storage surfaces.",
+  "status": "active",
+  "tags": [
+    "ledger",
+    "git",
+    "tooling"
+  ],
+  "canonical_url": "https://github.com/mschwar/project-ledger.git",
+  "repo_name": "project-ledger",
+  "shared": true,
+  "storage_scope": "shared",
+  "last_session_at": "2026-07-30T16:00:29Z",
+  "last_session_summary": "Refreshed the project-ledger outputs from live configured roots; the scan found 169 entries, regenerated the CSV/JSON/Markdown outputs and canonical markdown mirror, and still reported no known gaps in configured roots.",
+  "next_step": "Re-run the ledger after any new roots, sidecars, or inventory-policy roots land on the mounted/project surfaces.",
+  "last_push_at": "2026-06-16T17:09:36Z"
+}

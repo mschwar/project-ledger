@@ -20,25 +20,111 @@
   },
   "roots": [
     {
-      "path": "..",
-      "label": "documents-top",
-      "discovery": "children",
-      "exclude_names": [
-        ".tmp.driveupload",
-        "Custom Office Templates",
-        "My Data Sources",
-        "My Games",
-        "Outlook Files",
-        "Saved Games",
-        "WindowsPowerShell",
-        "project-ledger",
-        "repos"
-      ],
-      "min_score": 2
+      "path": "/central/repos/apps",
+      "label": "central-apps",
+      "discovery": "children"
     },
     {
-      "path": "../repos",
-      "label": "repos",
+      "path": "/central/repos/infra",
+      "label": "central-infra",
+      "discovery": "git_repos",
+      "max_depth": 6
+    },
+    {
+      "path": "/central/services",
+      "label": "central-services",
+      "discovery": "children"
+    },
+    {
+      "path": "/central/git",
+      "label": "central-git",
+      "discovery": "git_repos",
+      "max_depth": 6
+    },
+    {
+      "path": "/central/projects",
+      "label": "central-projects",
+      "discovery": "children"
+    },
+    {
+      "path": "/central/repos/active",
+      "label": "central-active",
+      "discovery": "children"
+    },
+    {
+      "path": "/central/proxy-lead",
+      "label": "proxy-lead",
+      "discovery": "self"
+    },
+    {
+      "path": "/central/white-rabbit",
+      "label": "white-rabbit",
+      "discovery": "self"
+    },
+    {
+      "path": "/home/matt/project-ledger",
+      "label": "project-ledger",
+      "discovery": "self"
+    },
+    {
+      "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/hermes-paperclip-adapter",
+      "label": "matthews-macbook-air-2:hermes-paperclip-adapter",
+      "discovery": "self",
+      "machine_name": "matthews-macbook-air-2"
+    },
+    {
+      "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project",
+      "label": "matthews-macbook-air-2:higgsfield-agent-project",
+      "discovery": "self",
+      "machine_name": "matthews-macbook-air-2"
+    },
+    {
+      "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/homelab",
+      "label": "matthews-macbook-air-2:homelab",
+      "discovery": "self",
+      "machine_name": "matthews-macbook-air-2"
+    },
+    {
+      "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/local-deep-research",
+      "label": "matthews-macbook-air-2:local-deep-research",
+      "discovery": "self",
+      "machine_name": "matthews-macbook-air-2"
+    },
+    {
+      "path": "/central/registry/inventories/matty-pc-documents",
+      "label": "matty-pc",
+      "discovery": "inventory_policy",
+      "inventory_jsonl": "/central/registry/inventories/matty-pc-documents/matty_pc_documents_inventory_latest.jsonl",
+      "policy_path": "/central/registry/inventories/matty-pc-documents/matty_pc_documents_roots_policy.json",
+      "policy_crawl_treatments": [
+        "project_discovery"
+      ],
+      "require_project_ledger_candidate": true,
+      "remote_name": "matty-pc",
+      "machine_name": "matty-pc",
+      "storage_scope": "local"
+    },
+    {
+      "path": "/home/matt/GoogleDrive",
+      "label": "google-drive-policy",
+      "discovery": "inventory_policy",
+      "inventory_jsonl": "/central/registry/inventories/google_drive_inventory_latest.jsonl",
+      "policy_path": "/central/registry/inventories/google_drive_roots_policy.json",
+      "policy_crawl_treatments": [
+        "project_discovery"
+      ],
+      "require_project_ledger_candidate": true,
+      "remote_name": "googledrive",
+      "storage_scope": "shared"
+    },
+    {
+      "path": "/opt/homelab",
+      "label": "opt-homelab",
+      "discovery": "children"
+    },
+    {
+      "path": "/central/archive/root-backups/central.root-backup-20260416T012657Z/repos",
+      "label": "backup-20260416-repos",
       "discovery": "git_repos",
       "max_depth": 6
     }
