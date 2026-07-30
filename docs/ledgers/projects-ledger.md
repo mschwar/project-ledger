@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-07-29T15:45:40+00:00
+Generated: 2026-07-30T03:54:43+00:00
 
 - Entries: 169
 - Git repos: 67
@@ -41,9 +41,9 @@ Generated: 2026-07-29T15:45:40+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Homelab Agent Platform | git | shared | yes |  | 2026-07-29T12:00:43+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-29T04:05:21+00:00 |
+| Project Ledger | git | shared | yes |  | 2026-07-30T03:53:47+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
+| Homelab Agent Platform | git | shared | yes |  | 2026-07-30T00:30:03+00:00 | [README](../../../../central/repos/active/homelab/README.md) | [url](https://github.com/mschwar/homelab.git) | homelab | 2026-07-29T04:05:21+00:00 |
 | OpenClaw Meta Research | notes | local |  |  | 2026-07-29T06:00:07+00:00 | [README](../../../../central/projects/openclaw-meta-research/README.md) | [openclaw-meta-research](../../../../central/projects/openclaw-meta-research) | openclaw-meta-research |  |
-| Project Ledger | git | shared | yes |  | 2026-07-29T03:36:55+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-06-16T17:09:36Z |
 | SlopVault | git+obsidian | shared | yes | yes | 2026-07-28T22:37:30+00:00 | [README](../../../../central/repos/active/slopvault/README.md) | [url](https://github.com/mschwar/slopvault.git) | slopvault | 2026-04-04T19:21:14-06:00 |
 | Dedupe Engine | git | shared | yes |  | 2026-07-28T22:37:27+00:00 | [README](../../../../central/repos/active/dedupe-engine-repo/README.md) | [url](https://github.com/mschwar/dedupe-engine-repo.git) | dedupe-engine-repo | 2026-02-18T18:30:10-07:00 |
 | crawler | git+obsidian | shared | yes | yes | 2026-07-28T22:37:27+00:00 |  | [url](https://github.com/mschwar/crawler.git) | crawler | 2026-02-19T13:20:15-07:00 |
