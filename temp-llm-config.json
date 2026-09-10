@@ -1,0 +1,28 @@
+{
+    "defaults":  {
+                     "exclude_names":  [
+                                           ".git",
+                                           ".idea",
+                                           ".mypy_cache",
+                                           ".obsidian",
+                                           ".pytest_cache",
+                                           ".ruff_cache",
+                                           ".venv",
+                                           ".vscode",
+                                           "__pycache__",
+                                           "node_modules",
+                                           "venv"
+                                       ],
+                     "git_repo_max_depth":  6,
+                     "min_score":  2,
+                     "tree_scan_max_depth":  8,
+                     "tree_scan_max_entries":  5000
+                 },
+    "roots":  [
+                  {
+                      "label":  "llm-infra-docs",
+                      "path":  "G:\\My Drive\\llm-infra-docs",
+                      "discovery":  "self"
+                  }
+              ]
+}
