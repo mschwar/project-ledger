@@ -1,42 +1,34 @@
 # Project Ledger
 
-Project Ledger is evolving into a **project-reality compiler and control substrate** for a distributed project estate.
+Project Ledger is a **project-reality compiler and control substrate** for a distributed project estate.
 
-Today it scans/ingests project-like observations from directories, git repos, Obsidian vaults, mirrors, backups, and inventory/policy-backed storage surfaces. The target system compiles those observations into durable canonical projects, explicit current/freshness state, reviewable uncertainty, and compact agent-facing views.
+It ingests project-like observations from directories, git repos, Obsidian vaults, mirrors, backups, and inventory/policy-backed sources, preserves provenance and uncertainty, and is being evolved into the shared project-identity/current-state layer for agents and operator tooling.
 
-The goal is simple to state: **an agent should be able to understand what project the user means, where the trustworthy working copies are, what state the project is in, what is uncertain, and what to do next without repeating repo/filesystem archaeology.**
+The optimization target is simple: **a cold agent should be able to understand what project the user means, where trustworthy manifestations exist, how fresh the evidence is, what is uncertain, and what capability is actually available without replaying repo/filesystem archaeology.**
 
 ## Start here
 
-- `SYSTEM.md` — canonical conceptual model and invariants
-- `AGENT_PROTOCOL.md` — how agents should orient, reason, act, and hand off
+- `SYSTEM.md` — canonical system model and invariants
+- `AGENT_PROTOCOL.md` — agent orientation/action/handoff protocol
+- `SCHEMA.md` — compatibility schema and typed target contracts
 - `ARCHITECTURE.md` — implementation/dataflow architecture
-- `SCHEMA.md` — current compatibility fields and target typed entity model
-- `PRD.md` — product requirements/acceptance scenarios
-- `ROADMAP.md` — gated evolution
-- `BACKLOG.md` — executable work packages
-- `RUNBOOK.md` — current operations/recovery
-- `docs/decisions/` — durable architecture decisions
+- `ROADMAP.md` / `BACKLOG.md` — gated evolution and executable work
+- `RUNBOOK.md` — operations/recovery
+- `docs/decisions/` — durable architectural decisions
 
-Agents should use progressive disclosure rather than loading all docs by default.
+## Current executable boundary
 
-## What exists today
+Wave 1 now has a real first vertical slice while preserving the existing scanner contract.
 
-Current `main` provides:
+### Preferred refresh
 
-- config-driven source discovery;
-- `children`, `git_repos`, `self`, and `inventory_policy` modes;
-- filesystem/git/Obsidian/README metadata extraction;
-- inventory + root-policy promotion for remote/cloud inventories;
-- machine/source/storage provenance;
-- project-local `.project-ledger.json` overlay;
-- safe handling/reporting of missing ordinary roots;
-- validation for required inventory-policy artifacts;
-- CSV/JSON/Markdown exports;
-- committed human-facing Markdown ledger mirror;
-- unit tests + CI.
+```bash
+python -m ledger refresh
+```
 
-Current outputs:
+That runs the compatibility scanner and then compiles the agent-facing state plane.
+
+Compatibility outputs remain:
 
 ```text
 output/projects.csv
@@ -45,154 +37,141 @@ output/projects.md
 docs/ledgers/projects-ledger.md
 ```
 
-The current flat record is best understood as an **observation/compatibility record**, not yet a canonical project entity.
-
-## Run today
-
-```powershell
-python build_ledger.py
-python -m unittest tests.test_build_ledger
-```
-
-Optional scanner arguments:
-
-```powershell
-python build_ledger.py --config ledger_config.json --output-dir output
-```
-
-CI compiles the scanner and runs tests on pushes/pull requests.
-
-## The system it is becoming
-
-The architecture is a linked abstraction tower:
-
-```text
-sources
- -> snapshots
- -> observations + claims
- -> identity evidence + decisions
- -> canonical projects
- -> current state
- -> derived changes/review/freshness
- -> compact agent views
- -> agent work + receipts
- -> next incremental compile
-```
-
-Three properties matter more than feature count:
-
-### Epistemic clarity
-
-Observed facts, explicit declarations, machine inferences, and reviewed decisions are different things. Stale/unavailable/absent/conflicted are different states. The system should never force an agent to guess which one a value represents.
-
-### Cheap read path
-
-The target normal path is:
-
-```text
-ledger orient
- -> ledger resolve <referent>
- -> ledger show <project>
- -> ledger locate/explain only if needed
-```
-
-Planned agent-facing materialized views:
+Generated agent projections are:
 
 ```text
 state/system-manifest.json
-state/projects/<canonical_project_id>.json
-state/review-queue.json
-state/changes.json
+state/observations.json
 ```
 
-These are compiled semantic caches with evidence pointers, not hand-maintained truth.
+`state/` is intentionally gitignored: it is rebuildable compiled state, not canon.
 
-### Accretion
+### Agent-facing commands now implemented
 
-Identity resolutions, aliases, review decisions, session receipts, and regression fixtures should become durable. A future agent should not have to solve the same ambiguity twice.
+```bash
+python -m ledger validate
+python -m ledger refresh
+python -m ledger compile
+python -m ledger orient
+python -m ledger sources
+```
 
-## System boundary
+Use `--json` on the agent-facing commands when machine-readable output is preferred.
 
-Project Ledger owns **project topology and compiled project/current-state reality**.
+`orient` is the cheapest current entrypoint after a compile. It reports run/as-of information, source and observation counts, estate health, and the capability boundary so agents do not mistake planned features for implemented ones.
 
-It does not own:
+## What Wave 1 now makes explicit
 
-- full task lifecycle;
-- deep semantic/document memory;
-- raw source-control history;
-- source inventory payloads.
+The first typed substrate includes:
 
-It links to those systems through stable project IDs/pointers.
+- compiler/schema versions;
+- explicit stable `source_id` values in the production config;
+- source classes (`live`, `mirror`, `backup`, `inventory`);
+- source health and artifact availability;
+- deterministic source fingerprints;
+- stable `snapshot_id` values derived from source state;
+- stable manifestation-oriented `observation_id` values;
+- typed observation wrappers around the existing flat compatibility records;
+- explicit capability states and reason codes for unavailable future layers;
+- stable validation error codes;
+- explicit `known` / `unknown` / `unavailable` / `stale` / `absent` / `conflicted` / `not_applicable` vocabulary for the new contracts;
+- failure containment: a temporarily unavailable source degrades the compiled manifest instead of erasing the rest of the estate from orientation.
 
-## Discovery today
+The legacy flat record is still a compatibility observation, **not a canonical project entity**.
 
-`ledger_config.json` defines source roots.
+## Current capability boundary
 
-- `children` — direct child directories scored for project signals
-- `git_repos` — recursively find git repositories
-- `self` — treat the configured root as one observation
-- `inventory_policy` — consume durable inventory + policy and promote roots intended for project discovery
-
-The committed operator config is environment-specific and includes `/central` surfaces, selected Mac mirrors, Matty-PC inventory data, Google Drive inventory/policy data, standalone roots, and backups.
-
-Missing/unreadable ordinary roots are reported as gaps. Required inventory/policy metadata must exist and validate.
-
-## Inventory-policy rule
+Implemented now:
 
 ```text
-inventory discovers source reality
- -> policy decides project relevance
- -> Project Ledger emits observations
- -> canonical identity compiler decides project membership (target)
+sources
+ -> source fingerprints/snapshots
+ -> compatibility observations
+ -> typed observations
+ -> system manifest / source health
 ```
 
-Policy promotion must not be mistaken for canonical project identity.
+Not implemented yet, and explicitly reported as unavailable by the manifest:
 
-## Sidecars today and tomorrow
+```text
+identity evidence + decisions
+ -> canonical projects
+ -> identity review queue
+ -> project capsules / resolve / locate / explain
+ -> structured session receipts / current-state resolver
+ -> semantic change feed
+```
 
-A live project may contain `.project-ledger.json` with stable key/display/current-session hints.
+Canonical project count therefore remains `null`; raw observation count must not be presented as project count.
 
-Today the scanner overlays those fields directly into its flat output. Target architecture treats the sidecar as a **versioned declaration source** attached to an observation. If several copies of one canonical project contain divergent sidecars, the system should expose competing claims/conflict rather than silently using last-write-wins.
+## Source identity
+
+Every committed operator root now has an explicit `source_id`. This identity is independent of `roots[]` ordering and should survive normal path/config refactors.
+
+For additional sources, prefer an intentional stable `source_id` rather than relying on the deterministic compatibility fallback.
+
+A source snapshot is a particular sensed state of that source:
+
+```text
+source_id + input_fingerprint -> snapshot_id
+```
+
+An observation is a manifestation inside a source and is keyed primarily by source + observed location, not by a conceptual project key. That distinction is required before canonical project identity can be built safely.
+
+## Degraded-source semantics
+
+`python -m ledger validate` is strict: malformed config or missing required inventory/policy artifacts fail validation.
+
+`python -m ledger compile` is orientation-preserving: structurally valid but temporarily unavailable sources are represented as unavailable/degraded in `system-manifest.json` so one broken source does not prevent an agent from understanding the rest of the estate.
+
+A full `ledger refresh` still depends on the compatibility scanner's ability to read its required ingestion artifacts.
+
+## Discovery/compatibility engine
+
+The existing `build_ledger.py` remains the compatibility scanner during migration. It supports:
+
+- `children`
+- `git_repos`
+- `self`
+- `inventory_policy`
+
+and continues to provide filesystem/git/Obsidian/README extraction, project-local sidecar overlay, inventory/policy promotion, Markdown/CSV/JSON exports, and safe handling of missing ordinary filesystem roots.
+
+The new `ledger/` package compiles around this stable output rather than rewriting the monolith before the contracts are proven.
+
+## Sidecars
+
+`.project-ledger.json` remains a thin declaration/current-session compatibility source. It is not canonical truth and should not become a task manager.
+
+Target architecture will turn declarations into typed claims and expose conflicting copies rather than using implicit last-write-wins behavior.
 
 See `templates/project-ledger.sidecar.example.json` and `prompts/session_end_prompt.md`.
 
-## Identity direction
+## System boundary across repos
 
-Current keys use explicit sidecar key, normalized git remote, source-specific inventory identity, or weaker fallback.
+Project Ledger owns **project topology and compiled project reality**.
 
-Target identity separates:
+- **AGENT05** owns the reusable execution/control grammar: Work Objects, Assertions, Receipts, evidence, control packets, and disposable-agent continuity.
+- **homelab** owns deployment/orchestration against the real machine/service estate and its existing WorkSpec execution plane.
+- **Project Ledger** owns source/project topology, provenance, identity/current-state compilation, and the compact reality surfaces those systems can consume.
 
-- source identity;
-- snapshot/run identity;
-- observation identity;
-- immutable canonical project identity;
-- human-readable project key/aliases.
+Do not duplicate Project Ledger's schema/identity engine into AGENT05 or homelab. Integrate through explicit stable outputs once the relevant contract is implemented.
 
-Paths, names, and URLs remain valuable evidence but are not durable identity by themselves.
+## Tests
 
-## Resource-economy direction
+```bash
+python -m unittest discover -s tests
+```
 
-Project Ledger should use the cheapest trustworthy mechanism first:
+CI compiles both the legacy scanner and the `ledger` package and runs the complete unittest suite on pull requests.
 
-1. deterministic source evidence;
-2. normalization/hashes/stable aliases;
-3. explicit heuristics with confidence;
-4. cheap/local semantic comparison only when needed;
-5. frontier reasoning for consequential ambiguity;
-6. human review for high-impact unresolved cases.
+## Next build gate
 
-Later incremental compilation should fingerprint sources, skip unchanged work, and recompile only affected projects/views.
+Wave 1 is **in progress**, not complete. The next tranche should harden the contract foundation rather than jump ahead to UI or semantic dedupe:
 
-## Current next milestone
+1. finish version/compatibility policy and schema validation;
+2. strengthen source freshness/as-of semantics beyond `unknown` where upstream evidence permits;
+3. formalize typed claim/evidence envelopes and field-resolution policy interfaces;
+4. then cross Gate B into Wave 2 canonical identity evidence/decisions/review.
 
-Do not prioritize more UI or broad source expansion yet. The immediate build sequence is:
-
-1. version/freeze the current observation contract;
-2. introduce source/snapshot/observation IDs, freshness/error/null semantics, and validation;
-3. implement canonical identity evidence/decisions/review;
-4. materialize the agent read plane (manifest/capsules/query commands);
-5. add structured session receipts/current-state resolution;
-6. optimize incremental/cost-aware operation;
-7. integrate task/knowledge/control-plane systems through canonical project IDs.
-
-See `ROADMAP.md` and `BACKLOG.md` for gates and executable packages.
+See `ROADMAP.md` and `BACKLOG.md` for the dependency gates.
