@@ -18,6 +18,7 @@ Before ending this material work session, leave an evidence-bearing project hand
    - `canonical_url`
    - `repo_name`
    - `shared`
+   - `storage_scope`
    - `last_session_at`: ISO 8601 with timezone.
    - `last_session_summary`: 2-5 concrete sentences describing what actually landed/currently exists.
    - `next_step`: one bounded continuation action, not a task tree.
