@@ -26,13 +26,14 @@ def read_compat_output(path: Path) -> dict:
     return payload
 
 
-def _resolve_source_id(source_label: str, sources: list[dict]) -> tuple[str, str]:
+def _resolve_source(source_label: str, sources: list[dict]) -> tuple[str, str | None, str]:
     candidates = sorted(sources, key=lambda item: len(item["label"]), reverse=True)
     for source in candidates:
         label = source["label"]
         if source_label == label or source_label.startswith(label + ":"):
-            return source["source_id"], "resolved"
-    return stable_id("src", "unresolved", source_label), "unresolved"
+            return source["source_id"], source["snapshot_id"], "resolved"
+    source_id = stable_id("src", "unresolved", source_label)
+    return source_id, None, "unresolved"
 
 
 def compile_state(
@@ -61,14 +62,16 @@ def compile_state(
         if not isinstance(entry, dict):
             raise ValueError("Each compatibility entry must be a JSON object.")
         source_label = str(entry.get("source_label", "")).strip()
-        source_id, resolution = _resolve_source_id(source_label, sources)
+        source_id, snapshot_id, resolution = _resolve_source(source_label, sources)
         if resolution == "unresolved":
             unresolved_source_count += 1
+            snapshot_id = stable_id("snap", source_id, observed_at)
         observations.append(
             {
                 "schema_version": OBSERVATION_SCHEMA_VERSION,
                 "observation_id": observation_id_for(entry, source_id),
                 "source_id": source_id,
+                "snapshot_id": snapshot_id,
                 "source_resolution": resolution,
                 "observed_at": observed_at,
                 "project_key": str(entry.get("project_key", "")).strip() or None,
