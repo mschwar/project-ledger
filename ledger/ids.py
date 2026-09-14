@@ -47,15 +47,15 @@ def source_id_for(root_cfg: dict, *, index: int = 0) -> str:
 
 
 def observation_id_for(entry: dict, source_id: str) -> str:
-    evidence_key = (
-        str(entry.get("project_key", "")).strip()
-        or str(entry.get("remote_url", "")).strip()
-        or str(entry.get("canonical_url", "")).strip()
-        or str(entry.get("path_from_root", "")).strip()
+    location_key = (
+        str(entry.get("path_from_root", "")).strip()
         or str(entry.get("path", "")).strip()
+        or str(entry.get("canonical_url", "")).strip()
+        or str(entry.get("remote_url", "")).strip()
+        or str(entry.get("project_key", "")).strip()
         or str(entry.get("name", "")).strip()
     )
-    return stable_id("obs", source_id, evidence_key)
+    return stable_id("obs", source_id, normalize_locator(location_key))
 
 
 def path_digest(path: Path) -> str:
