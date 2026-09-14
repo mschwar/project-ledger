@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .contracts import SUPPORTED_DISCOVERY_MODES
-from .ids import digest_json, normalize_locator, path_digest, source_id_for, stable_id
+from .ids import digest_json, normalize_locator, path_digest, source_id_for
 
 
 class LedgerConfigError(ValueError):
@@ -130,6 +130,7 @@ def _mtime_iso(path: Path) -> str | None:
 
 
 def describe_sources(config: dict, config_dir: Path) -> list[dict]:
+    """Describe current source availability/probe state, not historical scan snapshots."""
     sources: list[dict] = []
     for index, root_raw in enumerate(config["roots"]):
         root = dict(root_raw)
@@ -171,7 +172,6 @@ def describe_sources(config: dict, config_dir: Path) -> list[dict]:
         sources.append(
             {
                 "source_id": sid,
-                "snapshot_id": stable_id("snap", sid, input_fingerprint),
                 "label": str(root.get("label", "")).strip() or path.name or f"root-{index}",
                 "source_class": classify_source(root),
                 "discovery": discovery,
@@ -182,8 +182,8 @@ def describe_sources(config: dict, config_dir: Path) -> list[dict]:
                 "status": status,
                 "status_reason": status_reason,
                 "freshness_state": "unknown",
-                "as_of": _mtime_iso(path) if path.exists() else None,
-                "input_fingerprint": input_fingerprint,
+                "probe_as_of": _mtime_iso(path) if path.exists() else None,
+                "probe_fingerprint": input_fingerprint,
                 "artifacts": artifacts,
             }
         )
