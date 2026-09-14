@@ -22,6 +22,8 @@ def stable_id(prefix: str, *parts: object, length: int = 24) -> str:
 
 def normalize_locator(raw: str) -> str:
     text = os.path.expandvars(os.path.expanduser(str(raw).strip())).replace("\\", "/")
+    if "://" in text:
+        return text.rstrip("/")
     while "//" in text and not text.startswith("//"):
         text = text.replace("//", "/")
     if len(text) > 1:
