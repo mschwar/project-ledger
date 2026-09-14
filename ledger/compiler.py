@@ -26,14 +26,13 @@ def read_compat_output(path: Path) -> dict:
     return payload
 
 
-def _resolve_source(source_label: str, sources: list[dict]) -> tuple[str, str | None, str]:
+def _resolve_source(source_label: str, sources: list[dict]) -> tuple[str, str]:
     candidates = sorted(sources, key=lambda item: len(item["label"]), reverse=True)
     for source in candidates:
         label = source["label"]
         if source_label == label or source_label.startswith(label + ":"):
-            return source["source_id"], source["snapshot_id"], "resolved"
-    source_id = stable_id("src", "unresolved", source_label)
-    return source_id, None, "unresolved"
+            return source["source_id"], "resolved"
+    return stable_id("src", "unresolved", source_label), "unresolved"
 
 
 def compile_state(
@@ -50,7 +49,6 @@ def compile_state(
     # Compilation must preserve orientation when a source is temporarily unavailable.
     # Structural config errors still fail; source-artifact availability is reported in the manifest.
     validate_config(config, config_path.parent, check_artifacts=False)
-    sources = describe_sources(config, config_path.parent)
     compat = read_compat_output(compat_output_path)
 
     compiled_at = generated_at or now_utc()
@@ -58,16 +56,27 @@ def compile_state(
     config_digest = digest_json(config)
     run_id = stable_id("run", compiled_at, config_digest, str(compat_output_path))
 
+    sources = describe_sources(config, config_path.parent)
+    snapshot_id_by_source: dict[str, str] = {}
+    for source in sources:
+        snapshot_id = stable_id("snap", source["source_id"], observed_at)
+        snapshot_id_by_source[source["source_id"]] = snapshot_id
+        # Compatibility scanner v0 only gives one overall generated_at. This is a bounded
+        # compatibility snapshot identity, separate from the source's current health probe.
+        source["compat_snapshot_id"] = snapshot_id
+        source["compat_snapshot_as_of"] = observed_at
+        source["compat_snapshot_basis"] = "compat_output.generated_at"
+
     observations: list[dict] = []
     unresolved_source_count = 0
     for entry in compat["entries"]:
         if not isinstance(entry, dict):
             raise ValueError("Each compatibility entry must be a JSON object.")
         source_label = str(entry.get("source_label", "")).strip()
-        source_id, snapshot_id, resolution = _resolve_source(source_label, sources)
+        source_id, resolution = _resolve_source(source_label, sources)
         if resolution == "unresolved":
             unresolved_source_count += 1
-            snapshot_id = stable_id("snap", source_id, observed_at)
+        snapshot_id = snapshot_id_by_source.get(source_id) or stable_id("snap", source_id, observed_at)
         observations.append(
             {
                 "schema_version": OBSERVATION_SCHEMA_VERSION,
@@ -159,6 +168,7 @@ def compile_state(
         "limitations": [
             "Canonical project identity is not implemented; observation count is not project count.",
             "Source freshness is reported as unknown unless an upstream source contract supplies stronger semantics.",
+            "Compatibility snapshot IDs are scoped by source and the v0 output generated_at; v0 does not preserve native per-source snapshot metadata.",
             "Current-state/session fields inside compatibility entries remain legacy declarations until the Wave 4 resolver lands.",
         ],
     }
