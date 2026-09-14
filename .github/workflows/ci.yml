@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feat/**
+      - wave*/**
   pull_request:
 
 permissions:
@@ -22,8 +23,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Compile scanner
-        run: python -m py_compile build_ledger.py
+      - name: Compile Python entrypoints
+        run: python -m py_compile build_ledger.py ledger/*.py
 
       - name: Run unit tests
-        run: python -m unittest tests.test_build_ledger
+        run: python -m unittest discover -s tests

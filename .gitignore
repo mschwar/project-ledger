@@ -6,3 +6,4 @@ __pycache__/
 tests/.tmp/
 tests/__pycache__/
 output/
+state/
