@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from ledger import cli
 from ledger.compiler import compile_state, load_manifest, orient_payload
@@ -42,7 +43,7 @@ class Wave1SubstrateTests(unittest.TestCase):
             validate_config(config, Path("/"), check_artifacts=False)
         self.assertEqual(ctx.exception.code, "SOURCE_ID_DUPLICATE")
 
-    def test_inventory_source_fingerprint_changes_with_inventory(self) -> None:
+    def test_inventory_probe_fingerprint_changes_with_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             mount = root / "drive"
@@ -65,12 +66,10 @@ class Wave1SubstrateTests(unittest.TestCase):
             }
             validate_config(config, root)
             first_source = describe_sources(config, root)[0]
-            first_fingerprint = first_source["input_fingerprint"]
-            first_snapshot = first_source["snapshot_id"]
+            first_fingerprint = first_source["probe_fingerprint"]
             inventory.write_text('{"path":"Projects"}\n{"path":"Projects/X"}\n', encoding="utf-8")
             second_source = describe_sources(config, root)[0]
-            self.assertNotEqual(first_fingerprint, second_source["input_fingerprint"])
-            self.assertNotEqual(first_snapshot, second_source["snapshot_id"])
+            self.assertNotEqual(first_fingerprint, second_source["probe_fingerprint"])
             self.assertEqual(first_source["source_id"], second_source["source_id"])
 
     def test_compile_emits_manifest_and_typed_observations(self) -> None:
@@ -135,14 +134,15 @@ class Wave1SubstrateTests(unittest.TestCase):
             self.assertTrue((state_dir / "system-manifest.json").is_file())
 
             live_source = next(item for item in manifest["sources"] if item["source_id"] == "live-primary")
-            self.assertTrue(live_source["snapshot_id"].startswith("snap_"))
+            self.assertTrue(live_source["compat_snapshot_id"].startswith("snap_"))
+            self.assertEqual(live_source["compat_snapshot_as_of"], "2026-09-14T06:00:00+00:00")
 
             observations = json.loads((state_dir / "observations.json").read_text(encoding="utf-8"))
             self.assertEqual(observations["observation_count"], 1)
             observation = observations["observations"][0]
             self.assertTrue(observation["observation_id"].startswith("obs_"))
             self.assertEqual(observation["source_id"], "live-primary")
-            self.assertEqual(observation["snapshot_id"], live_source["snapshot_id"])
+            self.assertEqual(observation["snapshot_id"], live_source["compat_snapshot_id"])
             self.assertEqual(observation["source_resolution"], "resolved")
 
             loaded = load_manifest(state_dir)
@@ -150,6 +150,33 @@ class Wave1SubstrateTests(unittest.TestCase):
             self.assertEqual(orientation["health"]["state"], "degraded")
             self.assertIn("typed_observations", orientation["available_capabilities"])
             self.assertIn("project_capsules", orientation["unavailable_capabilities"])
+
+    def test_compat_snapshot_changes_when_observation_run_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            live = root / "live"
+            live.mkdir()
+            config_path = root / "ledger_config.json"
+            config_path.write_text(
+                json.dumps({"roots": [{"path": str(live), "label": "live", "source_id": "live-primary"}]}),
+                encoding="utf-8",
+            )
+            compat_path = root / "projects.json"
+            compat_path.write_text(json.dumps({"generated_at": "2026-09-14T06:00:00Z", "entries": []}), encoding="utf-8")
+            first = compile_state(
+                config_path=config_path,
+                compat_output_path=compat_path,
+                state_dir=root / "state-a",
+                generated_at="2026-09-14T06:10:00Z",
+            )
+            compat_path.write_text(json.dumps({"generated_at": "2026-09-14T07:00:00Z", "entries": []}), encoding="utf-8")
+            second = compile_state(
+                config_path=config_path,
+                compat_output_path=compat_path,
+                state_dir=root / "state-b",
+                generated_at="2026-09-14T07:10:00Z",
+            )
+            self.assertNotEqual(first["sources"][0]["compat_snapshot_id"], second["sources"][0]["compat_snapshot_id"])
 
     def test_compile_survives_missing_inventory_artifact_and_reports_degraded_source(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -222,13 +249,11 @@ class Wave1SubstrateTests(unittest.TestCase):
             self.assertTrue(unresolved["source_id"].startswith("src_"))
             self.assertTrue(unresolved["snapshot_id"].startswith("snap_"))
 
-    def test_refresh_runs_legacy_scan_then_compiles_state(self) -> None:
+    def test_refresh_orchestrates_scan_then_compile_without_mutating_repo_fixture(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             live = root / "live"
-            project = live / "sample-project"
-            project.mkdir(parents=True)
-            (project / "README.md").write_text("# Sample Project\nA refresh fixture.\n", encoding="utf-8")
+            live.mkdir()
             config_path = root / "ledger_config.json"
             config_path.write_text(
                 json.dumps(
@@ -247,19 +272,42 @@ class Wave1SubstrateTests(unittest.TestCase):
             )
             output_dir = root / "output"
             state_dir = root / "state"
-            result = cli.main(
-                [
-                    "refresh",
-                    "--config",
-                    str(config_path),
-                    "--output-dir",
-                    str(output_dir),
-                    "--state-dir",
-                    str(state_dir),
-                ]
-            )
+
+            def fake_scan(*_args, **_kwargs):
+                output_dir.mkdir(parents=True, exist_ok=True)
+                (output_dir / "projects.json").write_text(
+                    json.dumps(
+                        {
+                            "generated_at": "2026-09-14T06:00:00Z",
+                            "entries": [
+                                {
+                                    "project_key": "sample-project",
+                                    "source_label": "refresh-fixture",
+                                    "path": str(live / "sample-project"),
+                                    "name": "Sample Project",
+                                }
+                            ],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                return mock.Mock(returncode=0)
+
+            with mock.patch.object(cli.subprocess, "run", side_effect=fake_scan) as run_scan:
+                result = cli.main(
+                    [
+                        "refresh",
+                        "--config",
+                        str(config_path),
+                        "--output-dir",
+                        str(output_dir),
+                        "--state-dir",
+                        str(state_dir),
+                    ]
+                )
+
             self.assertEqual(result, 0)
-            self.assertTrue((output_dir / "projects.json").is_file())
+            run_scan.assert_called_once()
             self.assertTrue((state_dir / "system-manifest.json").is_file())
             manifest = load_manifest(state_dir)
             self.assertEqual(manifest["counts"]["observations"], 1)
