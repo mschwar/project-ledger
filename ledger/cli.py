@@ -30,6 +30,11 @@ def _parser() -> argparse.ArgumentParser:
     refresh = sub.add_parser("refresh", help="Run the compatibility scanner, then compile agent-facing state.")
     _add_compile_args(refresh)
     refresh.add_argument("--output-dir", default="output")
+    refresh.add_argument(
+        "--no-markdown-mirror",
+        action="store_true",
+        help="Do not update docs/ledgers/projects-ledger.md; intended for external provider automation.",
+    )
     refresh.add_argument("--json", action="store_true")
 
     compile_cmd = sub.add_parser("compile", help="Compile typed observations and the system manifest.")
@@ -86,20 +91,25 @@ def main(argv: list[str] | None = None) -> int:
             repo_root = Path(__file__).resolve().parents[1]
             config_path = Path(args.config).resolve()
             output_dir = Path(args.output_dir).resolve()
-            scan = subprocess.run(
-                [
-                    sys.executable,
-                    str(repo_root / "build_ledger.py"),
-                    "--config",
-                    str(config_path),
-                    "--output-dir",
-                    str(output_dir),
-                ],
-                check=False,
-            )
-            if scan.returncode != 0:
-                print(f"LEDGER_SCAN_FAILED: build_ledger.py exited {scan.returncode}", file=sys.stderr)
-                return scan.returncode or 2
+            if args.no_markdown_mirror:
+                from .compat import scan_without_markdown_mirror
+
+                scan_without_markdown_mirror(config_path=config_path, output_dir=output_dir)
+            else:
+                scan = subprocess.run(
+                    [
+                        sys.executable,
+                        str(repo_root / "build_ledger.py"),
+                        "--config",
+                        str(config_path),
+                        "--output-dir",
+                        str(output_dir),
+                    ],
+                    check=False,
+                )
+                if scan.returncode != 0:
+                    print(f"LEDGER_SCAN_FAILED: build_ledger.py exited {scan.returncode}", file=sys.stderr)
+                    return scan.returncode or 2
             manifest = _compile_from_paths(args, input_json=output_dir / "projects.json")
             _print_compile_result(manifest, args.state_dir, args.json)
             return 0
