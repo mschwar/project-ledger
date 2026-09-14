@@ -2,259 +2,267 @@
 
 ## Product
 
-Project Ledger
+Project Ledger — project-reality compiler and agent control substrate.
 
-## Status
+## Product thesis
 
-Working prototype in active hardening. The original March 2026 scanner has expanded into a multi-source project-observation registry. Canonical cross-source project merge remains the next major product milestone.
+Projects exist as distributed evidence across repos, working directories, mirrors, backups, inventories, clouds, project declarations, and work history. Humans can often reconstruct which things are the same project and which copy is current by intuition; agents pay that reconstruction cost repeatedly and are more vulnerable to stale, duplicated, or ambiguous state.
 
-## Problem
+Project Ledger should compile that distributed evidence into a **small, trustworthy, explainable project model** so an agent can orient accurately, choose the right working surface, understand uncertainty, act cheaply, and leave structured continuity for the next agent.
 
-The owner has projects, repos, idea folders, and Obsidian vaults spread across multiple computers and storage roots. The same conceptual project may appear as a live repo, machine-local copy, mirrored folder, backup, or cloud/inventory-backed observation.
+The success criterion is not “we indexed everything.” It is **routine project control with bounded reads, explicit uncertainty, and minimal repeated reasoning.**
 
-The system needs to answer two related but distinct questions:
+## Current status
 
-1. What project-like observations exist, and where did each observation come from?
-2. Which observations represent the same durable project, and what is the project's current state?
+The converged September 2026 implementation is a useful multi-source observation scanner with provenance, policy-backed inventory ingestion, sidecar overlays, generated outputs, tests, and CI.
 
-The current implementation answers the first question well enough for routine use and carries partial identity/current-state metadata for the second. It does not yet provide a canonical merged project model.
+It does not yet implement the agent-native canonical model defined in `SYSTEM.md`/`SCHEMA.md`: canonical IDs, observation/canonical separation, claim/decision semantics, incremental compilation, system manifest, project capsules, receipts, review queue, and query/control commands remain planned.
 
-## Users
+## Primary users
 
-### Primary user
+### Agent operator
 
-The owner who needs a complete, durable inventory and current-state index of work across machines and storage surfaces.
+An autonomous or supervised agent that needs to understand project reality accurately enough to act without broad rediscovery.
 
-### Secondary users
+### Human operator
 
-- agents operating on the owner's projects
-- future maintainers of the ledger tool
-- reporting, cleanup, task-extraction, and control-plane workflows that depend on project metadata
+The owner who needs a comprehensible project estate, explicit review points, and confidence that agents are acting on the right project/copy/state.
 
-## Jobs To Be Done
+### Downstream systems
 
-1. Ingest candidate project roots from one or more configured locations or durable inventories.
-2. Preserve source, machine, storage, and policy provenance for every observation.
-3. Classify each observation as directory, git repo, Obsidian vault, or mixed.
-4. Generate stable identity evidence that can match the same project across machines/sources.
-5. Overlay inferred metadata with explicit project-local sidecar metadata.
-6. Export artifacts useful to spreadsheets, scripts, agents, and Markdown review.
-7. Maintain a thin project current-state pointer through session metadata.
-8. Merge observations into canonical projects without hiding ambiguous matches.
-9. Produce review/change reports so operators can see uncertainty and change rather than manually diffing snapshots.
+Task/execution control planes, homelab orchestration, reporting/analytics, and knowledge systems that need project identity/state without implementing their own deduplication logic.
 
-## Product Goals
+## Jobs to be done
 
-### G1. Reliable discovery
+### Orientation
 
-Identify project-like observations from configured filesystems and inventory/policy sources with good recall and acceptable precision.
+Given a cold start, tell an agent what system state is trustworthy, how fresh it is, which sources are degraded, and what capabilities are available.
 
-### G2. Stable identity
+### Resolution
 
-Represent the same conceptual project consistently across runs, paths, devices, and storage surfaces.
+Given a messy referent such as a name, path, URL, repo, or old key, resolve it to one canonical project or return explicit ambiguity.
 
-### G3. Provenance preservation
+### Location
 
-Never flatten away where an observation came from. Canonicalization must retain machine/source observations.
+For a canonical project, rank known observations/working locations and explain which is safest/useful to operate on from the current context.
 
-### G4. Mixed metadata model
+### State continuity
 
-Combine inferred metadata with operator-maintained metadata without making the manual workflow painful.
+Expose the freshest trustworthy project lifecycle/session/continuation state without forcing the agent to reconstruct chronology from commits and prose.
 
-### G5. Operator clarity
+### Explainability
 
-Provide artifacts and review queues that make uncertainty, duplicates, gaps, and stale state explicit.
+For identity, preferred location, or resolved state, show why the system believes what it believes and what conflicts remain.
 
-### G6. Agent readiness
+### Change/review
 
-Make project identity/current state easy for agents to update and consume without turning the ledger into a competing general-purpose task manager.
+Show material deltas and concentrate uncertainty into a bounded review queue.
 
-## Non-Goals
+### Accretion
 
-For the current phase, the product does not need to:
+After material work or review, preserve structured receipts/decisions so the same reconstruction or ambiguity is not paid for again.
 
-- become a cloud service
-- provide real-time file watching
-- replace a general task/project-management system
-- infer true remote push timestamps from local git alone
-- fully eliminate manual curation
-- silently solve ambiguous semantic deduplication
-- scan every file on disk without scoped configuration/policy
-- add a heavyweight UI before the canonical data model stabilizes
+## Product goals
 
-## Current Scope
+### G1. Agent-legible reality
 
-The working branch supports:
+A normal agent should orient from one system manifest and one project capsule, following deeper pointers only when necessary.
 
-- config-driven root discovery
-- discovery modes: `children`, `git_repos`, `self`, `inventory_policy`
-- shallow project-likelihood heuristics
-- git metadata extraction from local repositories
-- Obsidian detection via `.obsidian`
-- README detection and summary extraction
-- sidecar overlay via `.project-ledger.json`
-- inventory/policy ingestion from durable JSONL inventory plus root policy artifacts
-- source/machine/storage provenance
-- graceful handling of missing/unreadable ordinary filesystem roots
-- validation of required `inventory_policy` artifacts
-- CSV, JSON, Markdown outputs
-- committed canonical human-facing Markdown mirror
-- unit tests and CI
+### G2. Durable identity
 
-The committed operator config currently covers `/central` project/repo/service roots, selected Mac mirrors, Matty-PC inventory data, Google Drive inventory/policy data, and backup roots. These roots are environment-specific; portability comes from the config contract, not from assuming every machine has the same filesystem layout.
+Represent conceptual projects independently of path, name, machine, current remote, or individual copy.
 
-## Functional Requirements
+### G3. Provenance without cognitive overload
 
-### FR1. Configured root ingestion
+Keep full traceability underneath compact agent views. Compression must not destroy explainability.
 
-The system must accept one or more scan roots from a config file.
+### G4. Explicit epistemics
 
-Supported discovery modes:
+Distinguish observed, declared, inferred, decided, unknown, stale, unavailable, absent, and conflicted states.
 
-- `children`
-- `git_repos`
-- `self`
-- `inventory_policy`
+### G5. Incremental economy
 
-`inventory_policy` requires both `inventory_jsonl` and `policy_path`. Missing required artifacts must fail with an operator-readable validation error rather than a raw internal exception.
+Avoid rescanning/reasoning globally when source fingerprints or deltas can limit work to affected entities.
 
-### FR2. Candidate evaluation
+### G6. Ambiguity containment
 
-The system must score likely projects based on observable signals such as:
+Stop safely when identity/state cannot be resolved confidently and create a small actionable review item rather than a plausible guess.
 
-- `.git`
-- `.obsidian`
-- README presence
-- code file presence
-- markdown/document presence
-- special project files
-- explicit sidecar presence
-- inventory/policy promotion evidence
+### G7. Knowledge ratchet
 
-### FR3. Metadata extraction
+Every durable identity/review/session resolution should make future operation cheaper and more reliable.
 
-For each observation, the system must attempt to collect:
+### G8. Clean system boundaries
 
-- name
-- path or remote/inventory path
-- source label
-- machine name
-- storage scope
-- git flag
-- obsidian flag
-- repo name
-- remote/canonical URL
-- README location
-- last touch timestamp
-- commit metadata
-- local remote-ref timestamp
-- inferred markdown/note counts
-- explainable inclusion reason
+Own project topology/current-state compilation; integrate with but do not duplicate task lifecycle, deep knowledge memory, source-control history, or raw inventories.
 
-### FR4. Sidecar overlay
+## Non-goals
 
-The system must support a per-project sidecar that can override or enrich inferred metadata.
+Project Ledger should not:
 
-Sidecar use cases include:
+- become a general task/project management system;
+- become a document/semantic-memory store;
+- copy entire source repos/files/inventories into its own canonical store;
+- mutate target projects while sensing them;
+- silently solve ambiguous identity for aesthetic cleanliness;
+- require frontier-model reasoning for ordinary metadata extraction;
+- provide real-time distributed services before local/versioned contracts are stable;
+- build a heavy UI before the agent/query model works;
+- treat every source as always online;
+- equate “not observed right now” with “does not exist.”
 
-- stable `project_key`
-- canonical URL
-- project status
-- tags
-- last session summary
-- next step
-- manually recorded `last_push_at`
+## Functional requirements
 
-### FR5. Artifact export
+### FR1. Source registry and snapshots
 
-The system must export:
+The system accepts configured live and inventory-backed sources with stable source identity, source class, freshness policy, adapter metadata, and bounded source health/errors.
 
-- CSV for spreadsheet workflows
-- JSON for scripts/agents
-- Markdown for review/navigation
-- a committed human-facing Markdown mirror for repo-native inspection
+Each sensing pass produces a snapshot identity/fingerprint sufficient for change detection and provenance.
 
-### FR6. Session-end workflow
+### FR2. Normalized observations
 
-The repo must define a standard pattern that agents can use to update sidecar metadata before ending a work session.
+Source-native facts become typed project observations with stable observation identity where possible, provenance, timestamps, source-native identifiers, and access state.
 
-This current-state layer should remain intentionally thin: factual status/session summary/next-step metadata, not a full task queue.
+### FR3. Claims and declarations
 
-### FR7. Multi-source canonical merge
+Observed facts, project-local/operator declarations, and inferred claims retain epistemic type, provenance, time, and confidence where relevant.
 
-The target product must support merging observations into canonical projects while retaining the underlying observations and provenance.
+### FR4. Canonical identity
 
-This is not fully implemented yet and is the central next-phase deliverable.
+The system compiles observations into immutable canonical project identities using explicit evidence/decision rules. Ambiguous matches become review items.
 
-### FR8. Change and review reporting
+### FR5. Field-specific resolution
 
-The target product should produce reports showing:
+Canonical/current-state fields are resolved through named testable policies rather than one global precedence rule. Selected values retain evidence references and conflicts.
 
-- newly discovered observations/projects
-- missing/dropped observations
-- changed identity candidates
-- duplicate/ambiguous identity groups
-- missing sidecars for important projects
-- stale active projects
-- low-confidence entries requiring review
-- scan coverage/gaps
+### FR6. Current state
 
-Only scan coverage/gap reporting is currently implemented.
+The system resolves lifecycle/session/continuation state and preferred working observation while preserving freshness and conflict semantics.
 
-## Non-Functional Requirements
+### FR7. Agent views
+
+Materialize at minimum:
+
+- system manifest;
+- project capsules;
+- review queue;
+- change feed.
+
+Views must carry run/schema/as-of metadata and pointers to deeper evidence.
+
+### FR8. Query/control contract
+
+Provide stable machine-readable operations conceptually equivalent to:
+
+- orient;
+- resolve;
+- show;
+- locate;
+- explain;
+- changes;
+- review;
+- sources;
+- compile/validate;
+- record-session.
+
+### FR9. Durable decisions
+
+Identity merge/split/alias and review resolutions are durable compiler inputs, not transient chat conclusions.
+
+### FR10. Session receipts
+
+Material project work can emit a compact factual receipt linked to the project and relevant git/task/evidence references.
+
+### FR11. Incremental compilation
+
+Unchanged source fingerprints should avoid unnecessary extraction/reasoning. Source deltas should invalidate only affected observations, identity components, canonical projects, signals, and views where practical.
+
+### FR12. Compatibility/migration
+
+The current flat observation output remains available through a documented compatibility period while versioned target entities are introduced beside it.
+
+## Non-functional requirements
 
 ### NFR1. Determinism
 
-Repeated runs against unchanged input should produce stable project identity/output content except for explicit run timestamps.
+Unchanged deterministic inputs/decisions produce semantically stable compiled outputs except explicit run metadata.
 
-### NFR2. Safety
+### NFR2. Explainability
 
-Scanning must be read-only with respect to target projects.
+Important identity/state/location resolutions can be explained from retained evidence and policy without rerunning expensive reasoning.
 
-### NFR3. Minimal setup
+### NFR3. Failure containment
 
-The tool should work with Python 3.12+ and standard library only unless a clear need justifies dependencies.
+One source failure, malformed declaration, or ambiguous identity should degrade only affected scope.
 
-### NFR4. Explainability
+### NFR4. Minimal expensive inference
 
-The system should expose why a directory/inventory candidate was included.
+The default path uses exact/deterministic logic; semantic models are reserved for unresolved ambiguity.
 
-### NFR5. Maintainability
+### NFR5. Bounded context
 
-The codebase should be refactored from monolithic script form into explicit modules without unintentionally changing observable behavior.
+Normal agent orientation should not require loading the complete observation/evidence store or all design docs.
 
-### NFR6. Authority
+### NFR6. Versionability
 
-`main` must represent the authoritative product state. Long-lived branches must not become a shadow production line.
+Schema and query contracts carry explicit versions and incompatible major versions fail/degrade explicitly rather than being guessed through.
 
-## Success Metrics
+### NFR7. Idempotence
 
-### Current success
+Compile/materialization/review resolution operations should be safely repeatable and avoid semantic churn.
 
-- major configured roots can produce a useful multi-source observation ledger
-- policy-backed Google Drive/Matty-PC candidates can be promoted without recursive cloud crawling
-- active projects can be enriched with sidecars
-- downstream agents can follow repo docs without additional human explanation
-- missing/unreadable ordinary roots are reported rather than crashing the run
+### NFR8. Authority
 
-### Next success
+`main` is product authority; generated views are not hand-maintained canonical truth.
 
-- observation records and canonical project records are explicitly separated
-- two or more machine/source observations can be merged reproducibly
-- ambiguous matches are surfaced instead of silently collapsed
-- project counts represent canonical projects rather than raw observations when requested
-- change/review queues are small and actionable
+## Agent-ergonomic acceptance tests
 
-## Major Risks
+The architecture should eventually pass scenarios like:
 
-- project identity across machines is harder than simple path/name hashing
-- remote URLs can be absent, stale, or shared by divergent copies
-- README/name heuristics are noisy
-- imported backups create stale shadow observations
-- owners/agents may not consistently maintain sidecars unless the workflow stays light
-- adding more ingestion sources before canonical merge can multiply duplicate noise
-- UI/analytics built before canonical identity can give false confidence in counts
+1. A cold agent can determine source health, run freshness, project counts, and open review burden with one bounded orientation read.
+2. `homelab`, a path to a homelab copy, and its canonical URL resolve to one project when evidence/decisions support that, with all observations retained.
+3. Two same-name unrelated projects return ambiguity/separate canonical IDs rather than being merged.
+4. A backup remains visible as a stale observation but is not selected as the preferred working location over a healthy live checkout.
+5. An unavailable machine does not cause its projects to be marked deleted.
+6. A conflicting sidecar becomes explicit claims/review instead of last-write-wins state.
+7. After an identity review is resolved, the same inputs no longer trigger the same review.
+8. A material agent session leaves enough receipt/current-state data that the next agent can continue without replaying the previous conversation.
+9. Changing one source causes bounded recomputation rather than mandatory semantic re-analysis of the entire estate.
+10. Any recommended identity/location/state value can be explained with evidence and freshness.
 
-## Release Direction
+## Success metrics / design targets
 
-See `ROADMAP.md` for waves and `BACKLOG.md` for concrete next work. The immediate sequence is schema/identity hardening, package/config cleanup, observation/canonical split, canonical merge, then review/change analytics.
+Prefer metrics that measure agent control quality rather than raw inventory size:
+
+- orientation requires one manifest plus at most one project capsule for routine project work;
+- percentage of project resolutions satisfied deterministically without semantic model calls;
+- number/rate of recurring review items after prior resolution — target near zero;
+- stale/unavailable/conflicted state is explicitly classified rather than blank;
+- canonical-project counts are distinct from observation counts;
+- source deltas trigger bounded affected-project recomputation;
+- project capsule size remains intentionally bounded while preserving evidence pointers;
+- downstream systems consume canonical IDs instead of reimplementing identity matching.
+
+## Major risks
+
+- over-modeling before real canonicalization fixtures exist;
+- allowing convenience heuristics to masquerade as identity certainty;
+- duplicating state already owned by tasks/git/knowledge systems;
+- letting sidecars become divergent mini-databases;
+- building views/UI before epistemic/freshness contracts stabilize;
+- creating an event/receipt firehose with low-value detail;
+- optimizing incremental performance before correctness fixtures exist;
+- documentation drifting ahead of executable capability.
+
+## Release direction
+
+The immediate sequence is not “add more sources.” It is:
+
+1. freeze/version the current observation contract;
+2. establish stable IDs, epistemic types, source/snapshot contracts, and validation;
+3. build canonical identity/decision/review compilation beside compatibility output;
+4. materialize manifest/capsules and agent query surfaces;
+5. add receipts/current-state resolution and delta-first operation;
+6. then broaden analytics/integration/UI on top of trusted abstractions.
+
+See `ROADMAP.md` and `BACKLOG.md` for gated execution.
