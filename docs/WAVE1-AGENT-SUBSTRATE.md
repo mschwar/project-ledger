@@ -67,15 +67,17 @@ Rules:
 - duplicate explicit/effective IDs are invalid;
 - deterministic derived IDs exist only as a compatibility fallback.
 
-### snapshot_id
+### Compatibility snapshot_id
 
-A snapshot represents the currently sensed state of one source:
+Compatibility scanner v0 emits one overall `generated_at`, but does not retain native per-source snapshot metadata. Wave 1 therefore creates a bounded compatibility snapshot identity:
 
 ```text
-snapshot_id = hash(source_id, input_fingerprint)
+compat_snapshot_id = hash(source_id, compat_output.generated_at)
 ```
 
-The input fingerprint currently includes source locator/access metadata and durable inventory/policy artifact hashes where applicable. Later waves may strengthen checkpoint semantics without changing source identity.
+Every resolved typed observation points to that source/run snapshot. This is deliberately separate from the source's **current health probe** so compiling an older compatibility output while a source is now unavailable does not rewrite history.
+
+Future source adapters may emit stronger native snapshot/checkpoint identities without changing `source_id`.
 
 ### observation_id
 
@@ -93,7 +95,7 @@ The ID is scoped by `source_id`.
 
 Changing a project-key claim must therefore not rename an otherwise unchanged manifestation.
 
-## Source model
+## Source probe model
 
 Current source classes:
 
@@ -104,16 +106,18 @@ Current source classes:
 
 Each source record in the manifest contains:
 
-- `source_id`
-- `snapshot_id`
-- label/class/discovery mode
-- machine/storage hints
-- path and path state
-- source status and reason
-- `freshness_state`
-- current `as_of` evidence where available
-- input fingerprint
-- required inventory/policy artifact states and hashes where applicable
+- `source_id`;
+- `compat_snapshot_id`, `compat_snapshot_as_of`, and compatibility snapshot basis;
+- label/class/discovery mode;
+- machine/storage hints;
+- path and path state;
+- current source status and reason;
+- `freshness_state`;
+- current probe timestamp evidence where available;
+- current `probe_fingerprint`;
+- required inventory/policy artifact states and hashes where applicable.
+
+`probe_fingerprint` is a cheap current probe/checkpoint hint, **not a cryptographic digest of every live filesystem descendant**. Inventory-policy fingerprints are stronger because they include durable inventory/policy artifact hashes. Wave 5 may use stronger adapter-specific checkpoints for incremental invalidation.
 
 `freshness_state` is currently conservative and normally `unknown`; stronger freshness policy is Tranche 1B.
 
@@ -161,7 +165,7 @@ compat_entry
 - aggregate health;
 - source-unavailable and unresolved-source counts;
 - source and observation counts;
-- source records;
+- current source probes plus compatibility snapshot linkage;
 - capability states;
 - artifact pointers;
 - explicit limitations.
@@ -218,6 +222,7 @@ Before Wave 2 canonical identity begins in earnest:
 - executable schema validation for generated artifacts;
 - explicit major/minor compatibility/migration rules;
 - stronger freshness/as-of contracts where evidence permits;
+- adapter-native source snapshot/checkpoint metadata where justified;
 - sidecar/declaration validation;
 - typed claim/evidence envelopes;
 - field-resolution policy interface;
