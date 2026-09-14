@@ -150,6 +150,50 @@ class Wave1SubstrateTests(unittest.TestCase):
             self.assertIn("typed_observations", orientation["available_capabilities"])
             self.assertIn("project_capsules", orientation["unavailable_capabilities"])
 
+    def test_compile_survives_missing_inventory_artifact_and_reports_degraded_source(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mount = root / "drive"
+            mount.mkdir()
+            missing_inventory = root / "missing.jsonl"
+            policy = root / "policy.json"
+            policy.write_text('{"roots":{}}', encoding="utf-8")
+            config_path = root / "ledger_config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "roots": [
+                            {
+                                "path": str(mount),
+                                "label": "drive",
+                                "source_id": "drive-inventory",
+                                "discovery": "inventory_policy",
+                                "inventory_jsonl": str(missing_inventory),
+                                "policy_path": str(policy),
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            compat_path = root / "projects.json"
+            compat_path.write_text(json.dumps({"entries": []}), encoding="utf-8")
+
+            with self.assertRaises(LedgerConfigError):
+                config = json.loads(config_path.read_text(encoding="utf-8"))
+                validate_config(config, root, check_artifacts=True)
+
+            manifest = compile_state(
+                config_path=config_path,
+                compat_output_path=compat_path,
+                state_dir=root / "state",
+                generated_at="2026-09-14T06:10:00Z",
+            )
+            self.assertEqual(manifest["health"]["state"], "degraded")
+            self.assertEqual(manifest["health"]["source_unavailable_count"], 1)
+            self.assertEqual(manifest["sources"][0]["status"], "unavailable")
+            self.assertEqual(manifest["sources"][0]["artifacts"][0]["state"], "unavailable")
+
     def test_compile_surfaces_unresolved_source_instead_of_guessing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
