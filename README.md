@@ -11,6 +11,7 @@ The optimization target is simple: **a cold agent should be able to understand w
 - `SYSTEM.md` — canonical system model and invariants
 - `AGENT_PROTOCOL.md` — agent orientation/action/handoff protocol
 - `SCHEMA.md` — compatibility schema and typed target contracts
+- `docs/WAVE1-AGENT-SUBSTRATE.md` — exact executable Wave 1 contract
 - `ARCHITECTURE.md` — implementation/dataflow architecture
 - `ROADMAP.md` / `BACKLOG.md` — gated evolution and executable work
 - `RUNBOOK.md` — operations/recovery
@@ -67,9 +68,9 @@ The first typed substrate includes:
 - compiler/schema versions;
 - explicit stable `source_id` values in the production config;
 - source classes (`live`, `mirror`, `backup`, `inventory`);
-- source health and artifact availability;
-- deterministic source fingerprints;
-- stable `snapshot_id` values derived from source state;
+- current source health and artifact availability;
+- deterministic current source probe fingerprints;
+- compatibility `snapshot_id` values scoped by source + compatibility scan time;
 - stable manifestation-oriented `observation_id` values;
 - typed observation wrappers around the existing flat compatibility records;
 - explicit capability states and reason codes for unavailable future layers;
@@ -84,8 +85,8 @@ The legacy flat record is still a compatibility observation, **not a canonical p
 Implemented now:
 
 ```text
-sources
- -> source fingerprints/snapshots
+registered sources
+ -> current source probes + compatibility source/run snapshots
  -> compatibility observations
  -> typed observations
  -> system manifest / source health
@@ -104,19 +105,23 @@ identity evidence + decisions
 
 Canonical project count therefore remains `null`; raw observation count must not be presented as project count.
 
-## Source identity
+## Source, snapshot, and observation identity
 
 Every committed operator root now has an explicit `source_id`. This identity is independent of `roots[]` ordering and should survive normal path/config refactors.
 
 For additional sources, prefer an intentional stable `source_id` rather than relying on the deterministic compatibility fallback.
 
-A source snapshot is a particular sensed state of that source:
+Compatibility scanner v0 provides one overall `generated_at`, not a native per-source snapshot record. Wave 1 therefore uses:
 
 ```text
-source_id + input_fingerprint -> snapshot_id
+source_id + compatibility generated_at -> compat_snapshot_id
 ```
 
+Separately, the manifest records a **current source probe** with health/access metadata and a `probe_fingerprint`. The probe is not rewritten into historical snapshot identity. This lets an older observation remain tied to the run that produced it even when its source is unavailable now.
+
 An observation is a manifestation inside a source and is keyed primarily by source + observed location, not by a conceptual project key. That distinction is required before canonical project identity can be built safely.
+
+See `docs/WAVE1-AGENT-SUBSTRATE.md` for exact semantics and limitations.
 
 ## Degraded-source semantics
 
