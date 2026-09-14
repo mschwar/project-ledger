@@ -47,7 +47,9 @@ def compile_state(
     compat_output_path = compat_output_path.resolve()
     state_dir = state_dir.resolve()
     config = read_config(config_path)
-    validate_config(config, config_path.parent, check_artifacts=True)
+    # Compilation must preserve orientation when a source is temporarily unavailable.
+    # Structural config errors still fail; source-artifact availability is reported in the manifest.
+    validate_config(config, config_path.parent, check_artifacts=False)
     sources = describe_sources(config, config_path.parent)
     compat = read_compat_output(compat_output_path)
 
