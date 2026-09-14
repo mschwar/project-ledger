@@ -28,48 +28,64 @@ Gate A exit: `main` is authoritative, tests pass, and source refresh can run wit
 
 # Wave 1 — Agent substrate and contracts
 
+Status: **in progress**. The first executable vertical slice is implemented: stable source/snapshot/observation IDs, source health/fingerprints, config validation, typed observation wrappers, `state/system-manifest.json`, and the `validate` / `refresh` / `compile` / `orient` / `sources` CLI surface.
+
 Goal: make evidence/state machine-readable and unambiguous before canonicalization grows.
 
-Deliverables:
+## Tranche 1A — executable orientation substrate
+
+Implemented:
+
+- compiler/schema version constants;
+- explicit stable `source_id` values in the production config;
+- source classes and source-health states;
+- deterministic input fingerprints and `snapshot_id` values;
+- manifestation-oriented stable `observation_id` values;
+- strict config validation with stable error codes;
+- typed null/state vocabulary for new contracts;
+- typed observation wrappers around the flat compatibility output;
+- `state/system-manifest.json` with run/config/source/health/count/capability metadata;
+- explicit unavailable-capability reason codes for future layers;
+- degraded-source failure containment in compiled orientation;
+- `python -m ledger refresh` as the one-command scan + compile path;
+- `orient` and `sources` as cheap agent read surfaces;
+- full legacy + Wave 1 CI discovery.
+
+This tranche deliberately does **not** introduce canonical projects, semantic dedupe, project capsules, receipts, or a new task plane.
+
+## Tranche 1B — remaining Gate B contract work
 
 ### Contract/version foundation
 
-- freeze/version current flat observation JSON as compatibility output;
-- introduce explicit schema/compiler version fields;
-- define compatibility/migration policy;
-- introduce typed error/state/null semantics.
+- freeze/version current flat observation JSON as compatibility output beyond the current compatibility-version declaration;
+- define explicit major/minor compatibility and migration policy;
+- add executable schema validation for generated manifest/observation artifacts.
 
-### Stable IDs and source model
+### Source/freshness model
 
-- `source_id` registry/derivation;
-- `snapshot_id` / run identity;
-- stable `observation_id` strategy;
-- source class: live, mirror, backup, inventory-only, etc.;
-- source health/freshness/fingerprint contract.
+- strengthen source `as_of` / freshness semantics where upstream sources provide authoritative timestamps;
+- distinguish unavailable vs stale vs successfully-observed-empty source outcomes in the materialized contracts;
+- add previous-snapshot/checkpoint links needed for later incremental operation.
 
 ### Epistemic model
 
-- observed/declaration/inference/decision claim types;
+- formalize observed/declaration/inference/decision claim envelopes;
 - evidence references;
 - confidence semantics;
 - field-resolution policy interface.
 
 ### Validation
 
-- full config validation layer;
 - sidecar/declaration schema validation;
-- version validation;
-- stable machine-readable error codes.
-
-### Minimal orientation manifest
-
-Materialize the first `state/system-manifest.json` even before full canonical projects exist. It should expose run/version/source health/observation counts/review debt and clearly label unavailable future capabilities.
+- generated schema/version validation;
+- stable machine-readable error/review codes across boundaries.
 
 Gate B exit:
 
 - an agent can inspect one manifest and know what ran, against which sources, how fresh/healthy those sources are, and what schema it is reading;
 - compatibility observation records have stable IDs and explicit semantics;
-- unsupported/malformed state fails explicitly rather than by ambient interpretation.
+- unsupported/malformed state fails explicitly rather than by ambient interpretation;
+- claim/evidence and field-resolution contracts are stable enough that Wave 2 identity does not need to invent them ad hoc.
 
 ---
 
@@ -137,12 +153,14 @@ Deliverables:
 
 ### Query CLI/API
 
-- `ledger orient`;
+Already available from Wave 1: `ledger orient`, `ledger sources`.
+
+Wave 3 additions:
+
 - `ledger resolve`;
 - `ledger show`;
 - `ledger locate`;
 - `ledger explain`;
-- `ledger sources`;
 - `ledger review`.
 
 ### Preferred-location resolver
@@ -210,7 +228,7 @@ Goal: make the system cheap enough to run routinely across the estate.
 
 Deliverables:
 
-- source fingerprints/checkpoints;
+- source fingerprints/checkpoints (fingerprints begin in Wave 1; this wave uses them for invalidation);
 - skip unchanged extraction;
 - delta propagation from source -> observations -> identity components -> canonical projects -> views;
 - cached semantic summaries keyed by evidence digests;
@@ -231,9 +249,16 @@ Gate F exit:
 
 Goal: make Project Ledger the shared project-identity/state substrate rather than an isolated tool.
 
+Integration ownership:
+
+- Project Ledger publishes stable reality contracts;
+- AGENT05 consumes them as reality/evidence inside its execution-control grammar rather than owning a competing ledger;
+- homelab deploys/schedules/queries Project Ledger on the real fleet rather than owning a competing identity schema.
+
 Deliverables may include:
 
 - stable plugin/query contract for homelab agents across nodes;
+- AGENT05 adapter from manifest/capsules into Situation Model / Control Packet reality inputs;
 - task-system project-ID linking/work-candidate handoff;
 - GBrain/knowledge pointers keyed to canonical project IDs;
 - Mission Control/operator UI consuming manifest/capsules/review/change data;
@@ -286,4 +311,5 @@ Do not let higher layers compensate for missing lower-layer contracts. In partic
 - do not build rich analytics on raw observation counts before canonical identity;
 - do not build a heavy UI before the agent query/read model;
 - do not add model-heavy deduplication before deterministic evidence/decision contracts;
-- do not add many ingestion sources faster than identity/review capacity can absorb them.
+- do not add many ingestion sources faster than identity/review capacity can absorb them;
+- do not duplicate AGENT05's execution grammar or homelab's WorkSpec/task plane inside Project Ledger.
