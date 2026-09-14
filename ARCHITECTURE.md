@@ -1,179 +1,371 @@
 # Architecture
 
-## Current Architecture
+`SYSTEM.md` defines the conceptual model. This document maps that model onto concrete software boundaries and artifacts.
 
-The current implementation is a single script:
+## Current implementation
 
-- `build_ledger.py`
+Today `build_ledger.py` performs most responsibilities in one process:
 
-Its pipeline is:
+```text
+config
+ -> discover candidates
+ -> score/include
+ -> extract filesystem/git/inventory metadata
+ -> overlay sidecar
+ -> emit CSV/JSON/Markdown
+```
 
-1. load config
-2. discover candidate roots
-3. score/include candidates
-4. extract filesystem and git metadata
-5. merge sidecar metadata
-6. emit CSV, JSON, and Markdown artifacts
+This is a useful observation scanner, but it conflates source adaptation, observation schema, identity hints, current-state overlay, and presentation. It does not yet implement canonical-project compilation.
 
-This is correct enough for a prototype but too monolithic for long-term extension.
+## Target architecture
 
-## Target Architecture
+The target system is an incremental compiler with a query/materialization layer:
 
-Refactor toward a small package with explicit boundaries.
+```text
+SOURCE ADAPTERS
+  -> SNAPSHOTS
+  -> NORMALIZED OBSERVATIONS + CLAIMS
+  -> IDENTITY RESOLUTION
+  -> CANONICAL PROJECTS
+  -> CURRENT-STATE RESOLUTION
+  -> DERIVED SIGNALS / REVIEW
+  -> MATERIALIZED AGENT VIEWS
+  -> QUERY / CONTROL SURFACE
 
-### Proposed layout
+                         ^
+                         |
+              decisions / receipts
+                         |
+                    agent work
+```
+
+Canonical views are rebuilt from evidence/declarations/decisions rather than directly edited.
+
+## Module boundaries
+
+Suggested package structure:
 
 ```text
 project-ledger/
   ledger/
-    __init__.py
     cli.py
     config.py
+    ids.py
     models.py
-    discovery.py
-    identity.py
-    sidecar.py
-    merge.py
-    reporters.py
-    exporters/
-      csv_exporter.py
-      json_exporter.py
-      markdown_exporter.py
-    extractors/
+    validation.py
+
+    sources/
+      base.py
       filesystem.py
       git.py
-      obsidian.py
+      inventory_policy.py
+
+    normalize/
+      observations.py
+      claims.py
+
+    identity/
+      evidence.py
+      resolver.py
+      decisions.py
+      aliases.py
+
+    state/
+      declarations.py
+      receipts.py
+      resolver.py
+
+    compile/
+      compiler.py
+      incremental.py
+      changes.py
+      review.py
+
+    views/
+      manifest.py
+      capsules.py
+      markdown.py
+      csv.py
+      json.py
+
+    query/
+      resolve.py
+      locate.py
+      explain.py
+      orient.py
+
+  state/                  # generated/materialized views; source-of-truth status varies by artifact
+  registry/               # explicit durable decisions/declarations owned by Project Ledger
   tests/
-  build_ledger.py
+  docs/decisions/
+  build_ledger.py         # compatibility entrypoint while migration proceeds
 ```
 
-`build_ledger.py` should become a thin entrypoint over package code.
+Module names may change, but the responsibility boundaries should not collapse back together.
 
-## Core Concepts
+## Layer contracts
 
-### Scan root
+### 1. Source adapter
 
-A configured filesystem path plus a discovery mode and exclusions.
+A source adapter senses one class of source and emits a source snapshot plus source-native facts. It must not decide canonical identity.
 
-### Candidate project
+Adapter contract should include:
 
-A directory that might represent a meaningful project, repo, vault, or idea container.
+- stable `source_id`;
+- adapter/type/version;
+- source locator/config digest;
+- `observed_at` / `source_as_of`;
+- source health/result state;
+- source-native object IDs where available;
+- warnings/errors scoped to the source;
+- deterministic fingerprint allowing unchanged work to be skipped.
 
-### Observed record
+Adapters are read-only toward source projects during sensing.
 
-Metadata produced from one machine's scan of one project root.
+### 2. Normalization
 
-### Canonical project
+Normalization converts source-native facts into typed observations/claims without losing source pointers.
 
-A merged identity representing the same project across one or more observed records.
+It may normalize URLs, paths, timestamps, booleans, tags, and git metadata. It must not hide conflicts or make irreversible identity decisions.
 
-### Sidecar
+### 3. Identity resolution
 
-A human-maintained metadata overlay stored inside the project root.
+Identity consumes observation evidence and durable decisions and produces relationships to canonical projects.
 
-## Data Flow
+Resolution ladder:
+
+1. explicit immutable canonical ID/declaration when trusted;
+2. explicit identity decisions/aliases;
+3. normalized remote/source-native strong keys;
+4. deterministic compound evidence;
+5. scored heuristic/semantic evidence;
+6. unresolved review item.
+
+Low-confidence matches never silently merge.
+
+Identity outputs should carry explanation/evidence references, not only a project ID.
+
+### 4. Canonical project compilation
+
+A canonical project is a compiled durable entity containing links to all observations and selected resolved fields. It does not copy full source content.
+
+The canonicalizer applies field-specific resolution policies. It records selected claim provenance and unresolved conflicts.
+
+### 5. Current-state resolution
+
+Current state resolves mutable project-level continuity information from declarations/receipts/observations using freshness and authority policy.
+
+Examples:
+
+- lifecycle state;
+- last trusted session;
+- continuation/next-step pointer;
+- preferred working observation/location;
+- freshness state;
+- known blockers/review references.
+
+This layer should not ingest arbitrary task trees.
+
+### 6. Derived signals/review
+
+Derived calculations include:
+
+- source freshness/health;
+- new/missing observations;
+- canonical-project changes;
+- identity conflicts/probable duplicates;
+- stale projects;
+- no-current-state/continuation signals;
+- source divergence;
+- preferred-location ranking.
+
+Uncertainty becomes explicit review items rather than prose warnings scattered across outputs.
+
+### 7. Materialized agent views
+
+The normal agent read path should use generated compact views:
 
 ```text
-config
-  -> discovery
-  -> candidate scoring
-  -> metadata extractors
-  -> sidecar overlay
-  -> identity resolution
-  -> outputs
+state/system-manifest.json
+state/projects/<canonical_project_id>.json
+state/review-queue.json
+state/changes.json
 ```
 
-Future merge mode:
+These are semantic caches. They are replaceable/rebuildable and must contain run/schema/freshness metadata.
+
+### 8. Query/control surface
+
+The CLI/query layer should operate on system concepts rather than file internals:
 
 ```text
-machine ledgers
-  -> identity matching
-  -> conflict resolution
-  -> canonical master ledger
-  -> review report
+ledger orient
+ledger resolve <referent>
+ledger show <project>
+ledger locate <project>
+ledger explain <thing>
+ledger changes
+ledger review
+ledger sources
+ledger compile
+ledger validate
+ledger record-session
 ```
 
-## Identity Strategy
+JSON is the stable agent contract; Markdown/table rendering is a view.
 
-The prototype currently uses:
+## Two paths: read and write
 
-- sidecar `project_key` when available
-- normalized remote URL when available
-- fallback slug/name-derived key otherwise
+### Agent read path
 
-This is not sufficient for long-term cross-machine matching by itself.
+Optimize aggressively for cheap orientation:
 
-### Target identity model
+```text
+system manifest
+ -> resolve referent
+ -> project capsule
+ -> targeted evidence only if needed
+```
 
-Use layered identity evidence:
+A normal agent should not need the full observation store or all doctrine documents.
 
-1. explicit sidecar `project_key`
-2. normalized remote URL
-3. repo root name plus README hash plus title similarity
-4. path aliases and machine-specific aliases
-5. manual override table for ambiguous cases
+### Agent write path
 
-The system should distinguish:
+Agents write durable inputs, not compiled outputs:
 
-- stable canonical identity
-- machine-local observation identity
-- candidate duplicate relationships
+```text
+project work
+ -> git/task/source changes
+ -> session receipt / declaration / explicit review decision
+ -> incremental compile
+ -> affected canonical project + views refreshed
+```
 
-## Schema Ownership
+This produces an auditable loop and avoids hidden canonical mutations.
 
-`SCHEMA.md` is the source of truth for field definitions.
+## Incremental compilation
 
-If code and schema diverge, the agent making the change must reconcile them in the same task.
+Full rescans may remain useful as reconciliation, but routine operation should be incremental.
 
-## Exports
+Each source should expose a fingerprint/checkpoint. If unchanged, reuse the prior normalized snapshot. Changed observations should invalidate only the affected identity groups/canonical projects and derived views.
 
-### CSV
+Conceptually:
 
-Human-friendly and spreadsheet-friendly.
+```text
+source delta
+ -> affected observation IDs
+ -> affected identity components
+ -> affected canonical IDs
+ -> affected signals/views
+```
 
-### JSON
+This is the primary compute-saving mechanism.
 
-Canonical machine-readable artifact for scripts and merge flows.
+## Evidence and decision storage
 
-### Markdown
+Durable explicit resolutions should live in a Project Ledger-owned registry separate from generated views. Candidate families:
 
-Quick review table with direct links to paths and READMEs.
+```text
+registry/sources.*
+registry/identity-decisions.*
+registry/aliases.*
+registry/project-declarations.*
+registry/review-resolutions.*
+```
 
-### Future exports
+Exact storage format should follow schema/version work. The architectural rule is more important than the initial file choice: **decisions are inputs; canonical projects are outputs.**
 
-- SQLite
-- change reports
-- issue queue / review queue files
+## Sidecars in the target system
 
-## Testing Strategy
+`.project-ledger.json` remains useful because project-local declarations travel with a live project. However, a sidecar is an input claim source, not automatically canonical truth.
 
-### Current
+The compiler should record:
 
-Small `unittest` coverage around candidate detection, links, and git/sidecar extraction.
+- which observation exposed the sidecar;
+- sidecar schema/version;
+- claim provenance/freshness;
+- conflicts with other declarations;
+- whether identity/current-state fields were selected and why.
 
-### Required next step
+Multiple copies of one project may contain divergent sidecars; this must become a visible conflict, not last-write-wins behavior.
 
-Introduce fixture-based tests for:
+## Preferred location resolver
 
-- nested git repos
-- obsidian-only vaults
-- low-signal docs-only projects
-- malformed sidecars
-- multiple root configurations
-- merge behavior once implemented
+Location ranking should be a dedicated, explainable resolver rather than ad-hoc sorting.
 
-## Operational Constraints
+Inputs may include:
 
-- target roots may be large
-- some directories may be inaccessible
-- some roots may be imported backups rather than live projects
-- git remote information may be missing or stale
-- Windows path behavior must remain a first-class concern
+- source class: live/mirror/backup/inventory-only;
+- accessibility from current node;
+- canonical remote match;
+- git divergence/branch/head freshness;
+- trusted recent-session location;
+- operator source preference;
+- node capability constraints.
 
-## Design Principles
+Output: ranked observations with reason codes and confidence.
 
-1. Read-only scanning
-2. Deterministic outputs
-3. Human-overridable identity
-4. Small, explicit modules
-5. Clear separation between observed machine data and canonical merged data
+## Explainability
+
+Every important resolution should support an `explain` path. Internally this means retaining references from a compiled value/relationship to candidate claims, selected claim, resolution policy, and conflicts.
+
+Debugging should be possible without rerunning semantic reasoning.
+
+## Error model
+
+Prefer typed bounded results:
+
+- source unavailable;
+- source stale;
+- malformed declaration;
+- invalid config;
+- identity ambiguous;
+- identity conflict;
+- schema incompatible;
+- compiled view stale.
+
+Errors should identify affected entity IDs, evidence, and recovery action. One error should not invalidate unrelated sources/projects.
+
+## Testing architecture
+
+Tests should progress from unit behavior to contract and system fixtures:
+
+1. adapter/source fixtures;
+2. normalization/schema validation;
+3. deterministic ID stability;
+4. identity match/no-match/ambiguity fixtures;
+5. field-resolution precedence/freshness;
+6. incremental compile invalidation;
+7. project capsule/system-manifest golden contracts;
+8. review resolution ratchet tests;
+9. end-to-end multi-source estate fixture.
+
+Every real failure that required nontrivial reasoning is a candidate regression fixture.
+
+## Migration strategy
+
+Do not rewrite the monolith and canonicalizer simultaneously.
+
+Preferred sequence:
+
+1. freeze/version current observation output as a compatibility contract;
+2. introduce typed IDs/models/validation around existing behavior;
+3. extract adapters/normalization without semantic changes;
+4. add canonical compilation as a new output beside current observation output;
+5. add manifest/capsules/review/change views;
+6. add query commands over those views;
+7. shift normal agent operation to the new read path;
+8. retire compatibility paths only after validation.
+
+## Design principles
+
+1. Compiler architecture over mutable canonical records.
+2. Progressive disclosure for agent reads.
+3. Evidence/decision separation.
+4. Field-specific authority and freshness.
+5. Immutable durable IDs plus human aliases.
+6. Deterministic/incremental work before semantic reasoning.
+7. Local failure containment.
+8. Explainable preference/resolution.
+9. Project topology boundary: do not absorb task or knowledge systems.
+10. Every resolved ambiguity should reduce future cost.
