@@ -1,165 +1,198 @@
 # Project Ledger
 
-Project Ledger builds a multi-source ledger of project observations across plain directories, git repos, Obsidian vaults, machine mirrors, backups, and inventory/policy-backed storage surfaces.
+Project Ledger is evolving into a **project-reality compiler and control substrate** for a distributed project estate.
 
-It is evolving from a scanner into the project-reality layer for the homelab: discover observations, preserve provenance, resolve durable project identity, maintain a thin current-state pointer, and expose trustworthy project metadata to people and agents.
+Today it scans/ingests project-like observations from directories, git repos, Obsidian vaults, mirrors, backups, and inventory/policy-backed storage surfaces. The target system compiles those observations into durable canonical projects, explicit current/freshness state, reviewable uncertainty, and compact agent-facing views.
 
-The scanner emits:
+The goal is simple to state: **an agent should be able to understand what project the user means, where the trustworthy working copies are, what state the project is in, what is uncertain, and what to do next without repeating repo/filesystem archaeology.**
 
-- `output/projects.csv`
-- `output/projects.json`
-- `output/projects.md`
-- `docs/ledgers/projects-ledger.md` (committed human-facing ledger mirror)
+## Start here
 
-## Handoff Docs
+- `SYSTEM.md` — canonical conceptual model and invariants
+- `AGENT_PROTOCOL.md` — how agents should orient, reason, act, and hand off
+- `ARCHITECTURE.md` — implementation/dataflow architecture
+- `SCHEMA.md` — current compatibility fields and target typed entity model
+- `PRD.md` — product requirements/acceptance scenarios
+- `ROADMAP.md` — gated evolution
+- `BACKLOG.md` — executable work packages
+- `RUNBOOK.md` — current operations/recovery
+- `docs/decisions/` — durable architecture decisions
 
-These files are the operating packet for future agents:
+Agents should use progressive disclosure rather than loading all docs by default.
 
-- `AGENTS.md`
-- `PRD.md`
-- `ARCHITECTURE.md`
-- `SCHEMA.md`
-- `ROADMAP.md`
-- `BACKLOG.md`
-- `RUNBOOK.md`
+## What exists today
 
-## Why this exists
+Current `main` provides:
 
-Project reality is not one neat repo. It is spread across live working roots, mirrors, backups, cloud-drive inventories, git remotes, and project-local metadata.
+- config-driven source discovery;
+- `children`, `git_repos`, `self`, and `inventory_policy` modes;
+- filesystem/git/Obsidian/README metadata extraction;
+- inventory + root-policy promotion for remote/cloud inventories;
+- machine/source/storage provenance;
+- project-local `.project-ledger.json` overlay;
+- safe handling/reporting of missing ordinary roots;
+- validation for required inventory-policy artifacts;
+- CSV/JSON/Markdown exports;
+- committed human-facing Markdown ledger mirror;
+- unit tests + CI.
 
-The observation ledger gives one place to answer:
+Current outputs:
 
-- What project-like things exist?
-- Where and on which source/machine were they observed?
-- Is an observation a git repo or Obsidian vault?
-- When was it last touched?
-- Where is its README or canonical URL?
-- What was the last session summary / next step?
-- Which observations may represent the same durable project?
+```text
+output/projects.csv
+output/projects.json
+output/projects.md
+docs/ledgers/projects-ledger.md
+```
 
-Today the scanner is strong at the observation layer. Canonical cross-source project merge is the next major architecture milestone.
+The current flat record is best understood as an **observation/compatibility record**, not yet a canonical project entity.
 
-## Run it
+## Run today
 
 ```powershell
 python build_ledger.py
+python -m unittest tests.test_build_ledger
 ```
 
-Optionally:
+Optional scanner arguments:
 
 ```powershell
 python build_ledger.py --config ledger_config.json --output-dir output
 ```
 
-Run tests:
+CI compiles the scanner and runs tests on pushes/pull requests.
 
-```powershell
-python -m unittest tests.test_build_ledger
+## The system it is becoming
+
+The architecture is a linked abstraction tower:
+
+```text
+sources
+ -> snapshots
+ -> observations + claims
+ -> identity evidence + decisions
+ -> canonical projects
+ -> current state
+ -> derived changes/review/freshness
+ -> compact agent views
+ -> agent work + receipts
+ -> next incremental compile
 ```
 
-CI runs the unit test suite on pushes and pull requests.
+Three properties matter more than feature count:
 
-## How discovery works
+### Epistemic clarity
 
-`ledger_config.json` defines scan roots. Supported discovery modes are:
+Observed facts, explicit declarations, machine inferences, and reviewed decisions are different things. Stale/unavailable/absent/conflicted are different states. The system should never force an agent to guess which one a value represents.
 
-- `children`: inspect each direct child directory and keep the ones that look project-like
-- `git_repos`: recursively find directories that contain `.git`
-- `self`: treat the configured root itself as one observation
-- `inventory_policy`: read a durable inventory artifact plus a policy file, then promote only roots marked for project discovery
+### Cheap read path
 
-### Current operator config
+The target normal path is:
 
-The committed config is environment-specific and currently references the owner's homelab/project surfaces, including:
+```text
+ledger orient
+ -> ledger resolve <referent>
+ -> ledger show <project>
+ -> ledger locate/explain only if needed
+```
 
-- `/central` app/infra/service/git/project/active roots
-- selected MacBook mirror roots under the central registry
-- Matty-PC inventory/policy data
-- Google Drive inventory/policy data
-- selected standalone roots and backups
+Planned agent-facing materialized views:
 
-Ordinary missing/unreadable filesystem roots are handled safely and reported in scan coverage. `inventory_policy` roots require readable `inventory_jsonl` and `policy_path` artifacts and fail early with a clear validation error when those required metadata inputs are missing.
+```text
+state/system-manifest.json
+state/projects/<canonical_project_id>.json
+state/review-queue.json
+state/changes.json
+```
 
-If you are operating on another machine, provide an appropriate config rather than assuming these host-specific paths exist there.
+These are compiled semantic caches with evidence pointers, not hand-maintained truth.
+
+### Accretion
+
+Identity resolutions, aliases, review decisions, session receipts, and regression fixtures should become durable. A future agent should not have to solve the same ambiguity twice.
+
+## System boundary
+
+Project Ledger owns **project topology and compiled project/current-state reality**.
+
+It does not own:
+
+- full task lifecycle;
+- deep semantic/document memory;
+- raw source-control history;
+- source inventory payloads.
+
+It links to those systems through stable project IDs/pointers.
+
+## Discovery today
+
+`ledger_config.json` defines source roots.
+
+- `children` — direct child directories scored for project signals
+- `git_repos` — recursively find git repositories
+- `self` — treat the configured root as one observation
+- `inventory_policy` — consume durable inventory + policy and promote roots intended for project discovery
+
+The committed operator config is environment-specific and includes `/central` surfaces, selected Mac mirrors, Matty-PC inventory data, Google Drive inventory/policy data, standalone roots, and backups.
+
+Missing/unreadable ordinary roots are reported as gaps. Required inventory/policy metadata must exist and validate.
 
 ## Inventory-policy rule
 
-For Google Drive, Matty-PC inventory, or similar durable inventories, prefer policy-backed promotion instead of indiscriminate recursive scanning.
+```text
+inventory discovers source reality
+ -> policy decides project relevance
+ -> Project Ledger emits observations
+ -> canonical identity compiler decides project membership (target)
+```
 
-Configure:
+Policy promotion must not be mistaken for canonical project identity.
 
-- `path`: mounted/navigation root when available
-- `inventory_jsonl`: durable metadata inventory
-- `policy_path`: classification/promotion policy
-- `policy_crawl_treatments`: normally `["project_discovery"]`
-- `require_project_ledger_candidate`: normally `true`
+## Sidecars today and tomorrow
 
-This implements the control-plane rule:
+A live project may contain `.project-ledger.json` with stable key/display/current-session hints.
 
-**inventory discovers reality → policy decides relevance → Project Ledger promotes project observations**
+Today the scanner overlays those fields directly into its flat output. Target architecture treats the sidecar as a **versioned declaration source** attached to an observation. If several copies of one canonical project contain divergent sidecars, the system should expose competing claims/conflict rather than silently using last-write-wins.
 
-The physical mount may be absent while inventory metadata remains useful; the required inventory and policy artifacts themselves must exist.
-
-## Important field notes
-
-- `project_hash`: deterministic hash of the current `project_key`; do not treat it as a future canonical-project ID
-- `project_key`: best stable observation/project key the scanner can currently infer or receive from a sidecar
-- `source_label`: where/how the observation entered the ledger
-- `machine_name`: machine attribution when available
-- `last_touch_at`: newest filesystem/inventory timestamp seen under the observed project tree
-- `last_push_at`: not reliably inferable from local git; set manually only when justified
-- `last_remote_ref_at`: fallback based on local remote-tracking refs
-- `include_reason`: explainable evidence for why an observation was included
-
-The current schema does not yet fully separate machine/source observations from canonical merged projects. See `SCHEMA.md` and `ROADMAP.md`.
-
-## Per-project sidecar
-
-If a live project root contains `.project-ledger.json`, the scanner merges it into auto-discovered metadata.
-
-Use this for facts that inference cannot safely own:
-
-- stable `project_key`
-- `display_name`
-- `status`
-- `tags`
-- `canonical_url`
-- `shared`
-- `last_session_at`
-- `last_session_summary`
-- `next_step`
-- `last_push_at`
-
-See [`templates/project-ledger.sidecar.example.json`](templates/project-ledger.sidecar.example.json).
-
-This is intentionally a thin current-state layer. Project Ledger should expose work context, not become a second general-purpose task manager.
-
-## Session-end workflow
-
-Use [`prompts/session_end_prompt.md`](prompts/session_end_prompt.md) as the last instruction to an agent before ending work in a repo/vault/project.
-
-It keeps project-local state useful by refreshing:
-
-- current status
-- exact next step
-- factual session summary
-- push metadata only when a push actually occurred
+See `templates/project-ledger.sidecar.example.json` and `prompts/session_end_prompt.md`.
 
 ## Identity direction
 
-Current identity evidence uses:
+Current keys use explicit sidecar key, normalized git remote, source-specific inventory identity, or weaker fallback.
 
-1. explicit sidecar `project_key`
-2. normalized git remote when available
-3. source-specific stable inventory key or name/slug fallback
+Target identity separates:
 
-The target model will separate observation identity from canonical project identity, retain aliases/provenance, assign confidence/review state, and surface ambiguity instead of silently collapsing it.
+- source identity;
+- snapshot/run identity;
+- observation identity;
+- immutable canonical project identity;
+- human-readable project key/aliases.
 
-## Adding another source or machine
+Paths, names, and URLs remain valuable evidence but are not durable identity by themselves.
 
-Prefer one of these patterns:
+## Resource-economy direction
 
-1. scan a live/mirrored filesystem root with `children`, `git_repos`, or `self`
-2. ingest a durable external inventory with `inventory_policy`
+Project Ledger should use the cheapest trustworthy mechanism first:
 
-Always give roots useful labels and machine/storage provenance where possible. Avoid adding ingestion surfaces faster than duplicate/canonical identity can be reviewed.
+1. deterministic source evidence;
+2. normalization/hashes/stable aliases;
+3. explicit heuristics with confidence;
+4. cheap/local semantic comparison only when needed;
+5. frontier reasoning for consequential ambiguity;
+6. human review for high-impact unresolved cases.
+
+Later incremental compilation should fingerprint sources, skip unchanged work, and recompile only affected projects/views.
+
+## Current next milestone
+
+Do not prioritize more UI or broad source expansion yet. The immediate build sequence is:
+
+1. version/freeze the current observation contract;
+2. introduce source/snapshot/observation IDs, freshness/error/null semantics, and validation;
+3. implement canonical identity evidence/decisions/review;
+4. materialize the agent read plane (manifest/capsules/query commands);
+5. add structured session receipts/current-state resolution;
+6. optimize incremental/cost-aware operation;
+7. integrate task/knowledge/control-plane systems through canonical project IDs.
+
+See `ROADMAP.md` and `BACKLOG.md` for gates and executable packages.
