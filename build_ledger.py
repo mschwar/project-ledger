@@ -453,8 +453,6 @@ def discover_inventory_policy_candidates(root_cfg: dict, exclude_names: set[str]
             if str(record.get("path", "")) == normalized_inventory_path
             or str(record.get("path", "")).startswith(prefix)
         ]
-        if not scoped_records:
-            scoped_records = [record for record in root_records if str(record.get("path", "")) == root_name]
 
         filesystem_path = root_cfg["_resolved_path"].joinpath(*normalized_inventory_path.split("/"))
         candidates.append(
@@ -951,11 +949,11 @@ def build_inventory_entry(
         or git_meta["normalized_remote_url"]
         or f"google-drive:{candidate['inventory_path'].lower()}"
     )
-    project_hash = sha256_hex(project_key or candidate["path_key"])
+    project_hash = sha256_hex(project_key)
 
     obsidian_enabled = summary["has_obsidian"]
     git_enabled = git_meta["git"] or summary["has_git"]
-    markdown_count = int(summary["markdown_count"])
+    markdown_count = summary["markdown_count"]
     project_type = classify_project_type(git_enabled, obsidian_enabled, markdown_count)
     machine_name = (
         str(sidecar.get("machine_name", "")).strip()
@@ -1038,21 +1036,63 @@ def collect_entries(config: dict, config_dir: Path, output_dir: Path) -> list[di
 
     entries: list[dict] = []
     seen_paths: set[str] = set()
+    supported_discovery_modes = {"children", "git_repos", "self", "inventory_policy"}
 
-    for root_cfg_raw in roots:
+    for root_index, root_cfg_raw in enumerate(roots):
+        if not isinstance(root_cfg_raw, dict):
+            raise ValueError(f"roots[{root_index}] must be a JSON object.")
+
         root_cfg = dict(root_cfg_raw)
-        root_path = resolve_path(root_cfg["path"], config_dir)
+        raw_root_path = str(root_cfg.get("path", "")).strip()
+        if not raw_root_path:
+            raise ValueError(f"roots[{root_index}].path is required.")
+
+        discovery = str(root_cfg.get("discovery", "children")).strip() or "children"
+        if discovery not in supported_discovery_modes:
+            raise ValueError(f"Unsupported discovery mode in roots[{root_index}]: {discovery}")
+
+        root_path = resolve_path(raw_root_path, config_dir)
         root_cfg["_resolved_path"] = root_path
-        if "inventory_jsonl" in root_cfg:
-            root_cfg["_inventory_jsonl_path"] = resolve_path(root_cfg["inventory_jsonl"], config_dir)
-        if "policy_path" in root_cfg:
-            root_cfg["_policy_path"] = resolve_path(root_cfg["policy_path"], config_dir)
+
+        if discovery == "inventory_policy":
+            inventory_jsonl_raw = str(root_cfg.get("inventory_jsonl", "")).strip()
+            policy_path_raw = str(root_cfg.get("policy_path", "")).strip()
+            missing_fields = [
+                field_name
+                for field_name, field_value in (
+                    ("inventory_jsonl", inventory_jsonl_raw),
+                    ("policy_path", policy_path_raw),
+                )
+                if not field_value
+            ]
+            if missing_fields:
+                joined = ", ".join(missing_fields)
+                raise ValueError(
+                    f"roots[{root_index}] with discovery=inventory_policy requires: {joined}."
+                )
+
+            inventory_jsonl_path = resolve_path(inventory_jsonl_raw, config_dir)
+            policy_path = resolve_path(policy_path_raw, config_dir)
+            if not safe_path_exists(inventory_jsonl_path):
+                raise ValueError(
+                    f"roots[{root_index}].inventory_jsonl does not exist: {inventory_jsonl_path}"
+                )
+            if not safe_path_exists(policy_path):
+                raise ValueError(
+                    f"roots[{root_index}].policy_path does not exist: {policy_path}"
+                )
+            root_cfg["_inventory_jsonl_path"] = inventory_jsonl_path
+            root_cfg["_policy_path"] = policy_path
+        else:
+            if "inventory_jsonl" in root_cfg:
+                root_cfg["_inventory_jsonl_path"] = resolve_path(root_cfg["inventory_jsonl"], config_dir)
+            if "policy_path" in root_cfg:
+                root_cfg["_policy_path"] = resolve_path(root_cfg["policy_path"], config_dir)
 
         exclude_names = set(DEFAULT_EXCLUDES)
         exclude_names.update(defaults.get("exclude_names", []))
         exclude_names.update(root_cfg.get("exclude_names", []))
 
-        discovery = root_cfg.get("discovery", "children")
         if discovery == "children":
             candidates = discover_children(root_path, exclude_names)
         elif discovery == "git_repos":
@@ -1063,10 +1103,8 @@ def collect_entries(config: dict, config_dir: Path, output_dir: Path) -> list[di
             )
         elif discovery == "self":
             candidates = [root_path]
-        elif discovery == "inventory_policy":
-            candidates = discover_inventory_policy_candidates(root_cfg, exclude_names)
         else:
-            raise ValueError(f"Unsupported discovery mode: {discovery}")
+            candidates = discover_inventory_policy_candidates(root_cfg, exclude_names)
 
         for candidate in candidates:
             if isinstance(candidate, dict):

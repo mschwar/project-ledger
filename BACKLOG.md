@@ -1,97 +1,189 @@
 # Backlog
 
-## P0
+## P0 — Convergence completion
 
-### P0.1 Refactor into package modules
+### P0.1 Merge evolved implementation to `main`
 
-- extract config loading
-- extract discovery
-- extract filesystem metadata
-- extract git metadata
-- extract exporters
+- land PR review fixes
+- land current doctrine/roadmap updates
+- land CI
+- merge the long-lived feature branch
 
-Why:
+### P0.2 Refresh from real operator roots
 
-The current single-file implementation is the biggest maintainability bottleneck.
+After merge, on the homelab surface:
 
-### P0.2 Add config validation
+- pull current `main`
+- run unit tests
+- run `python build_ledger.py`
+- inspect `docs/ledgers/projects-ledger.md`
+- confirm scan gaps/coverage
+- record any duplicate/identity anomalies as Wave 1/2 work
 
-- validate root entries
-- validate discovery mode names
-- validate integer thresholds
-- fail clearly on missing paths and malformed config
+### P0.3 Branch hygiene
 
-### P0.3 Add sidecar validation
+- preserve rescue branches only as long as they have recovery value
+- retire the merged feature branch after convergence
+- do not use long-lived branches as the operational source of truth
 
-- validate expected field names and types
-- report malformed sidecars in output
-- add tests for malformed JSON and wrong types
+## P1 — Schema and identity
 
-### P0.4 Introduce schema versioning
+### P1.1 Introduce schema versioning
 
 - define schema version field for JSON output
 - document compatibility expectations
-- decide migration behavior for sidecars
+- decide sidecar migration behavior
 
-### P0.5 Expand test fixtures
+### P1.2 Separate observation and canonical schemas
 
-- create stable fixture directories under `tests/fixtures`
-- stop relying only on inline scratch data
-- add regression coverage for discovery and metadata extraction
+Observation-level fields should include:
 
-## P1
+- source/root provenance
+- machine/host identity
+- observed path/location
+- scan/run metadata
+- access/scan warnings
+- extracted git/filesystem/vault facts
 
-### P1.1 Implement merge command
+Canonical-level fields should include:
 
-- accept multiple JSON ledger files
-- preserve machine observations
-- produce canonical project list
-- produce ambiguity report
+- stable canonical project ID
+- aliases/identity evidence
+- linked machine/source observations
+- identity confidence
+- review state
+- duplicate group
+- lifecycle/current-state metadata
 
-### P1.2 Add identity matching rules
+### P1.3 Formalize identity matching rules
 
-- explicit `project_key`
+- explicit sidecar `project_key`
 - normalized remote URL
-- path aliases
-- README hash and repo-name heuristics
-- manual override table for conflicts
+- path/machine aliases
+- repo/name/README evidence
+- manual overrides for conflicts
+- never silently collapse ambiguous matches
 
-### P1.3 Add change reports
+### P1.4 Add sidecar validation
 
-- new projects
-- missing projects
+- validate expected field names and types
+- surface malformed sidecars in review output
+- add regression coverage
+
+### P1.5 Complete config validation
+
+Current inventory-policy required fields/artifacts are validated. Expand this into a single explicit config validation layer covering:
+
+- root object/type
+- required `path`
+- discovery modes
+- integer thresholds
+- treatment lists and booleans
+- useful warnings for missing ordinary live roots versus required metadata artifacts
+
+## P2 — Core refactor and canonical merge
+
+### P2.1 Refactor into package modules
+
+Suggested extraction order:
+
+- config/validation
+- discovery
+- filesystem/git/inventory extractors
+- models/schema
+- sidecar overlay
+- identity
+- merge
+- reporters/exporters
+
+Keep `build_ledger.py` as a thin compatibility entrypoint.
+
+### P2.2 Expand stable fixtures
+
+- nested git repos
+- obsidian-only vaults
+- low-signal docs-only projects
+- malformed sidecars
+- missing/unreadable roots
+- inventory-policy roots
+- duplicate projects observed from multiple sources
+- ambiguous identity groups
+
+### P2.3 Implement merge command
+
+- accept multiple/source observation sets
+- preserve observations
+- resolve high-confidence identity matches
+- produce canonical project list
+- produce ambiguity/duplicate review output
+
+### P2.4 Add manual identity overrides
+
+- durable alias/override artifact
+- explicit merge/split decisions
+- regression tests for resolved conflicts
+
+## P3 — History, change, and review
+
+### P3.1 Add run metadata
+
+- `inventory_run_id`
+- `observed_at`
+- input/source snapshot metadata
+- scan warnings/errors
+
+### P3.2 Add change reports
+
+- new projects/observations
+- missing observations
 - metadata deltas
 - stale active projects
+- project lifecycle transitions
 
-### P1.4 Add confidence and review state
+### P3.3 Add confidence/review queue
 
-- low-confidence candidate detection
 - unresolved identity conflicts
-- manual review required flags
+- probable duplicates
+- low-confidence observations
+- missing sidecars for high-value projects
+- canonical projects with no current next step
 
-## P2
+## P4 — Operator analytics
 
-### P2.1 Improve operator outputs
+### P4.1 Improve human-facing outputs
 
-- richer Markdown sections
-- grouped reports by root/type/tag
-- sidecar coverage report
+- distinguish observation count from canonical project count
+- group by root/type/tag/status
+- show duplicate groups and freshest observation
+- show scan coverage and source freshness
 
-### P2.2 Optional structured storage
+### P4.2 Structured storage/query
 
-- SQLite export
-- canonical merged database
+Only after the canonical schema is stable:
 
-### P2.3 Optional UI
+- optional SQLite export/store
+- query CLI
 
-- local-only review UI
-- search and filter
-- click-through to path/README/sidecar
+### P4.3 Optional UI
+
+Only after canonical identity/change reporting works:
+
+- local review UI or Mission-Control integration
+- search/filter
+- click-through to observation/readme/sidecar
+
+## P5 — Agent/control-plane integration
+
+- resolve project by canonical key/alias
+- return freshest/current observation candidates
+- generate resume-context packet
+- accept session-end current-state updates safely
+- expose work candidates to the task/execution layer without owning full task lifecycle
 
 ## Nice To Have
 
 - import metadata from README frontmatter
-- import metadata from Obsidian vault config or vault notes
+- richer Obsidian metadata
 - scheduled scans
-- host-specific profiles
-- push/pull helper docs for machine synchronization
+- host-specific config profiles
+- helper commands for source/machine registration

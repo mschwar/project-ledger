@@ -151,6 +151,52 @@ class ProjectLedgerTests(unittest.TestCase):
             self.assertEqual(omi["path_from_root"], "OMI")
             self.assertEqual(omi["canonical_url"], "gdrive://googledrive/OMI")
 
+    def test_inventory_policy_requires_inventory_and_policy_paths(self) -> None:
+        with ScratchDir() as root:
+            mount_root = root / "GoogleDrive"
+            mount_root.mkdir()
+            output_dir = root / "output"
+            output_dir.mkdir()
+
+            for missing_field in ("inventory_jsonl", "policy_path"):
+                root_cfg = {
+                    "path": str(mount_root),
+                    "label": "google-drive-policy",
+                    "discovery": "inventory_policy",
+                }
+                present_field = "policy_path" if missing_field == "inventory_jsonl" else "inventory_jsonl"
+                root_cfg[present_field] = str(root / f"{present_field}.json")
+                config = {"defaults": {}, "roots": [root_cfg]}
+
+                with self.assertRaisesRegex(ValueError, missing_field):
+                    build_ledger.collect_entries(config, root, output_dir)
+
+    def test_inventory_policy_rejects_missing_inventory_artifacts(self) -> None:
+        with ScratchDir() as root:
+            mount_root = root / "GoogleDrive"
+            mount_root.mkdir()
+            output_dir = root / "output"
+            output_dir.mkdir()
+            policy_path = root / "policy.json"
+            policy_path.write_text(json.dumps({"roots": {}}), encoding="utf-8")
+            missing_inventory = root / "missing-inventory.jsonl"
+
+            config = {
+                "defaults": {},
+                "roots": [
+                    {
+                        "path": str(mount_root),
+                        "label": "google-drive-policy",
+                        "discovery": "inventory_policy",
+                        "inventory_jsonl": str(missing_inventory),
+                        "policy_path": str(policy_path),
+                    }
+                ],
+            }
+
+            with self.assertRaisesRegex(ValueError, "inventory_jsonl does not exist"):
+                build_ledger.collect_entries(config, root, output_dir)
+
     def test_inventory_policy_identity_is_stable_across_reruns(self) -> None:
         with ScratchDir() as root:
             config_path = self._make_inventory_policy_fixture(root)

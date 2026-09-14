@@ -1,102 +1,164 @@
 # Roadmap
 
-## Phase 0
+## Wave 0 — Convergence
 
-Status: completed on March 8, 2026
+Status: in progress September 14, 2026
 
-Delivered:
+Goal: restore one authoritative product line before further expansion.
 
-- prototype scanner
-- config-driven root discovery
-- sidecar overlay pattern
-- CSV, JSON, Markdown exports
-- initial tests
-- session-end prompt
-- handoff documentation
+Delivered / landing:
 
-## Phase 1
+- reconcile the long-lived evolved feature branch with stale `main`
+- review rescue branches as snapshots rather than competing implementation lines
+- resolve outstanding PR review findings that affect operator correctness
+- update doctrine/PRD/backlog to actual implemented behavior
+- add CI for the unit test suite
+- merge the evolved implementation to `main`
 
-Goal: harden the prototype into a maintainable core
+Remaining operator follow-up after merge:
 
-Deliverables:
-
-- refactor `build_ledger.py` into package modules
-- config validation with clear errors
-- richer fixture-based test coverage
-- sidecar validation and better malformed-sidecar reporting
-- schema versioning plan
-- cleaner repo hygiene and sample fixture strategy
+- run `python build_ledger.py` on the real homelab surface to refresh generated outputs from current roots
+- inspect the refreshed Markdown ledger for gaps/duplicates
+- update the repo sidecar with the post-refresh state if needed
+- retire obsolete rescue/feature branches once their recovery value is no longer needed
 
 Exit criteria:
 
-- no major feature lives only in monolithic script code
-- tests cover the major discovery modes and extractor branches
-- schema and code are in sync
+- `main` is authoritative
+- CI passes on the merged implementation
+- docs describe the actual discovery/ingestion behavior
+- no known review finding blocks routine operation
 
-## Phase 2
+## Wave 1 — Schema and identity hardening
 
-Goal: support multi-machine ingestion and canonical merge
-
-Deliverables:
-
-- machine/run metadata in JSON outputs
-- merge command for multiple ledger JSON files
-- alias and identity resolution rules
-- duplicate/ambiguous match review report
-- canonical master ledger artifact
-
-Exit criteria:
-
-- two machine snapshots can be merged reproducibly
-- ambiguous matches are surfaced instead of silently collapsed
-
-## Phase 3
-
-Goal: make the ledger operationally useful day to day
+Goal: formalize the data contracts that later canonicalization depends on.
 
 Deliverables:
 
-- change reports between runs
-- missing-sidecar report for important projects
-- stale-project report based on activity thresholds
-- optional status summaries by tag/type/root
-- better README/path navigation output
+- schema versioning
+- explicit observation-level schema
+- explicit canonical-project schema
+- identity evidence/alias model
+- review/confidence states
+- sidecar validation and compatibility rules
+- config validation cleanup beyond current inventory-policy validation
 
 Exit criteria:
 
-- owner can review what changed since the last ingest without manual diffing
+- observation and canonical concepts are represented separately in documentation/tests
+- breaking schema changes have an explicit version/migration policy
+- identity precedence and uncertainty are testable contracts
 
-## Phase 4
+## Wave 2 — Maintainable core + canonical merge
 
-Goal: reduce maintenance friction
+Goal: turn the monolithic scanner into a maintainable engine and merge observations reproducibly.
 
 Deliverables:
 
-- optional SQLite export
-- optional lightweight local UI
-- optional automation hooks for scheduled scans
-- improved session-end integration patterns
+- refactor `build_ledger.py` into package modules without changing observable scan behavior
+- fixture-based test coverage for major discovery/extractor branches
+- merge command for multiple/source observations
+- canonical project IDs
+- normalized remote and path aliases
+- duplicate/ambiguous match groups
+- manual override table
+- canonical master artifact while retaining source observations
 
 Exit criteria:
 
-- routine maintenance does not require manual CSV inspection for common tasks
+- no major feature lives only in a monolithic script path
+- two source snapshots can be merged reproducibly
+- uncertain identity matches are surfaced instead of silently collapsed
 
-## Parallelizable Workstreams
+## Wave 3 — Historical/current-state layer
 
-### Workstream A
+Goal: know change over time rather than only latest state.
 
-Schema and identity
+Deliverables:
 
-### Workstream B
+- run/snapshot metadata
+- `inventory_run_id` / `observed_at` semantics
+- durable comparison between runs
+- lifecycle/current-state normalization
+- freshness semantics for active/stale/archived observations
 
-Package refactor and tests
+Exit criteria:
 
-### Workstream C
+- the system can explain what changed between two runs
+- current-state reports operate on canonical projects rather than raw duplicates
 
-Merge engine and review reports
+## Wave 4 — Review and portfolio analytics
 
-### Workstream D
+Goal: make the ledger operationally useful day to day.
 
-Operator UX and runbook improvements
+Deliverables:
 
-Workstream A should lead. B and C can proceed after A stabilizes core assumptions.
+- new/missing project reports
+- duplicate/ambiguity review queue
+- missing-sidecar report
+- stale-active/no-next-step report
+- grouped summaries by root/type/tag/status
+- scan health and coverage diagnostics
+
+Exit criteria:
+
+- the owner can review meaningful change and uncertainty without manual CSV diffing
+- analytics distinguish observations from canonical projects
+
+## Wave 5 — Agent/control-plane integration
+
+Goal: expose trustworthy project reality to downstream systems.
+
+Deliverables:
+
+- stable machine-readable query/export contract
+- project resolution by canonical ID/key/alias
+- agent resume-context packet
+- session-end automation hooks
+- clean handoff of work candidates to task/execution systems without making Project Ledger the task manager
+
+Exit criteria:
+
+- an agent on another node can resolve the same project and its freshest known observation/current state
+- downstream control-plane tools do not need to reimplement project identity
+
+## Wave 6 — Optional structured storage and operator UI
+
+Goal: reduce maintenance friction after the contracts stabilize.
+
+Possible deliverables:
+
+- SQLite export/storage
+- query CLI
+- lightweight local/Mission-Control UI
+- scheduled scans
+
+Exit criteria:
+
+- routine use no longer requires manual artifact inspection for common questions
+
+## Parallelizable Programmes
+
+### Programme A — Schema and identity
+
+Leads the sequence. Other work should not outrun its contracts.
+
+### Programme B — Core refactor and tests
+
+Can proceed once Wave 1 contracts are stable enough to preserve behavior.
+
+### Programme C — Canonical merge and review
+
+Depends on explicit observation/canonical separation.
+
+### Programme D — Federated ingestion
+
+Continue adding sources only when they materially improve coverage; avoid multiplying adapters faster than identity resolution can absorb them.
+
+### Programme E — Analytics and operator UX
+
+Build on canonical identity/history, not directly on raw observation counts.
+
+### Programme F — Agent/control-plane integration
+
+Consume Project Ledger as the project-reality layer; keep task lifecycle elsewhere.
