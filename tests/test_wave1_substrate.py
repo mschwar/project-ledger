@@ -14,16 +14,32 @@ class Wave1SubstrateTests(unittest.TestCase):
     def test_source_and_observation_ids_are_stable(self) -> None:
         root = {"path": "/tmp/projects", "label": "projects", "discovery": "children", "machine_name": "prime"}
         first_source = source_id_for(root, index=0)
-        second_source = source_id_for(dict(root), index=0)
+        second_source = source_id_for(dict(root), index=99)
         self.assertEqual(first_source, second_source)
+
         entry = {"project_key": "github.com/example/project", "path": "/tmp/projects/project"}
-        self.assertEqual(observation_id_for(entry, first_source), observation_id_for(dict(entry), second_source))
+        renamed_claim = dict(entry, project_key="renamed-project-key")
+        self.assertEqual(
+            observation_id_for(entry, first_source),
+            observation_id_for(renamed_claim, second_source),
+        )
 
     def test_config_validation_rejects_bad_discovery(self) -> None:
         config = {"roots": [{"path": "/tmp", "discovery": "magic"}]}
         with self.assertRaises(LedgerConfigError) as ctx:
             validate_config(config, Path("/"), check_artifacts=False)
         self.assertEqual(ctx.exception.code, "DISCOVERY_UNSUPPORTED")
+
+    def test_config_validation_rejects_duplicate_source_ids(self) -> None:
+        config = {
+            "roots": [
+                {"path": "/tmp/a", "source_id": "primary"},
+                {"path": "/tmp/b", "source_id": "primary"},
+            ]
+        }
+        with self.assertRaises(LedgerConfigError) as ctx:
+            validate_config(config, Path("/"), check_artifacts=False)
+        self.assertEqual(ctx.exception.code, "SOURCE_ID_DUPLICATE")
 
     def test_inventory_source_fingerprint_changes_with_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -39,6 +55,7 @@ class Wave1SubstrateTests(unittest.TestCase):
                     {
                         "path": str(mount),
                         "label": "drive",
+                        "source_id": "google-drive",
                         "discovery": "inventory_policy",
                         "inventory_jsonl": str(inventory),
                         "policy_path": str(policy),
@@ -46,10 +63,14 @@ class Wave1SubstrateTests(unittest.TestCase):
                 ]
             }
             validate_config(config, root)
-            first = describe_sources(config, root)[0]["input_fingerprint"]
+            first_source = describe_sources(config, root)[0]
+            first_fingerprint = first_source["input_fingerprint"]
+            first_snapshot = first_source["snapshot_id"]
             inventory.write_text('{"path":"Projects"}\n{"path":"Projects/X"}\n', encoding="utf-8")
-            second = describe_sources(config, root)[0]["input_fingerprint"]
-            self.assertNotEqual(first, second)
+            second_source = describe_sources(config, root)[0]
+            self.assertNotEqual(first_fingerprint, second_source["input_fingerprint"])
+            self.assertNotEqual(first_snapshot, second_source["snapshot_id"])
+            self.assertEqual(first_source["source_id"], second_source["source_id"])
 
     def test_compile_emits_manifest_and_typed_observations(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -62,8 +83,20 @@ class Wave1SubstrateTests(unittest.TestCase):
                 json.dumps(
                     {
                         "roots": [
-                            {"path": str(live), "label": "live", "discovery": "children", "machine_name": "prime"},
-                            {"path": str(missing), "label": "missing", "discovery": "children", "machine_name": "prime"},
+                            {
+                                "path": str(live),
+                                "label": "live",
+                                "source_id": "live-primary",
+                                "discovery": "children",
+                                "machine_name": "prime",
+                            },
+                            {
+                                "path": str(missing),
+                                "label": "missing",
+                                "source_id": "missing-source",
+                                "discovery": "children",
+                                "machine_name": "prime",
+                            },
                         ]
                     }
                 ),
@@ -99,10 +132,17 @@ class Wave1SubstrateTests(unittest.TestCase):
             self.assertIsNone(manifest["counts"]["canonical_projects"])
             self.assertEqual(manifest["capabilities"]["canonical_projects"]["state"], "unavailable")
             self.assertTrue((state_dir / "system-manifest.json").is_file())
+
+            live_source = next(item for item in manifest["sources"] if item["source_id"] == "live-primary")
+            self.assertTrue(live_source["snapshot_id"].startswith("snap_"))
+
             observations = json.loads((state_dir / "observations.json").read_text(encoding="utf-8"))
             self.assertEqual(observations["observation_count"], 1)
-            self.assertTrue(observations["observations"][0]["observation_id"].startswith("obs_"))
-            self.assertEqual(observations["observations"][0]["source_resolution"], "resolved")
+            observation = observations["observations"][0]
+            self.assertTrue(observation["observation_id"].startswith("obs_"))
+            self.assertEqual(observation["source_id"], "live-primary")
+            self.assertEqual(observation["snapshot_id"], live_source["snapshot_id"])
+            self.assertEqual(observation["source_resolution"], "resolved")
 
             loaded = load_manifest(state_dir)
             orientation = orient_payload(loaded)
@@ -122,14 +162,20 @@ class Wave1SubstrateTests(unittest.TestCase):
                 json.dumps({"entries": [{"project_key": "x", "source_label": "mystery", "path": "/x"}]}),
                 encoding="utf-8",
             )
+            state_dir = root / "state"
             manifest = compile_state(
                 config_path=config_path,
                 compat_output_path=compat_path,
-                state_dir=root / "state",
+                state_dir=state_dir,
                 generated_at="2026-09-14T06:10:00Z",
             )
             self.assertEqual(manifest["health"]["unresolved_observation_source_count"], 1)
             self.assertEqual(manifest["health"]["state"], "degraded")
+            observations = json.loads((state_dir / "observations.json").read_text(encoding="utf-8"))
+            unresolved = observations["observations"][0]
+            self.assertEqual(unresolved["source_resolution"], "unresolved")
+            self.assertTrue(unresolved["source_id"].startswith("src_"))
+            self.assertTrue(unresolved["snapshot_id"].startswith("snap_"))
 
 
 if __name__ == "__main__":
