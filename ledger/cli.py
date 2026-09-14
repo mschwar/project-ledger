@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -13,6 +14,11 @@ def _print_json(value: object) -> None:
     print(json.dumps(value, indent=2, sort_keys=True))
 
 
+def _add_compile_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--config", default="ledger_config.json")
+    parser.add_argument("--state-dir", default="state")
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ledger", description="Project Ledger agent-facing substrate CLI.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -21,10 +27,14 @@ def _parser() -> argparse.ArgumentParser:
     validate.add_argument("--config", default="ledger_config.json")
     validate.add_argument("--json", action="store_true")
 
+    refresh = sub.add_parser("refresh", help="Run the compatibility scanner, then compile agent-facing state.")
+    _add_compile_args(refresh)
+    refresh.add_argument("--output-dir", default="output")
+    refresh.add_argument("--json", action="store_true")
+
     compile_cmd = sub.add_parser("compile", help="Compile typed observations and the system manifest.")
-    compile_cmd.add_argument("--config", default="ledger_config.json")
+    _add_compile_args(compile_cmd)
     compile_cmd.add_argument("--input-json", default="output/projects.json")
-    compile_cmd.add_argument("--state-dir", default="state")
     compile_cmd.add_argument("--json", action="store_true")
 
     orient = sub.add_parser("orient", help="Read the compact system orientation surface.")
@@ -35,6 +45,26 @@ def _parser() -> argparse.ArgumentParser:
     sources.add_argument("--state-dir", default="state")
     sources.add_argument("--json", action="store_true")
     return parser
+
+
+def _compile_from_paths(args: argparse.Namespace, *, input_json: Path) -> dict:
+    return compile_state(
+        config_path=Path(args.config),
+        compat_output_path=input_json,
+        state_dir=Path(args.state_dir),
+    )
+
+
+def _print_compile_result(manifest: dict, state_dir: str, as_json: bool) -> None:
+    if as_json:
+        _print_json(manifest)
+        return
+    summary = orient_payload(manifest)
+    print(
+        f"compiled {summary['counts']['observations']} observations from "
+        f"{summary['counts']['sources']} sources; health={summary['health']['state']}"
+    )
+    print(f"manifest: {Path(state_dir).resolve() / 'system-manifest.json'}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -52,21 +82,31 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"config valid: {config_path} ({len(sources)} sources)")
             return 0
 
-        if args.command == "compile":
-            manifest = compile_state(
-                config_path=Path(args.config),
-                compat_output_path=Path(args.input_json),
-                state_dir=Path(args.state_dir),
+        if args.command == "refresh":
+            repo_root = Path(__file__).resolve().parents[1]
+            config_path = Path(args.config).resolve()
+            output_dir = Path(args.output_dir).resolve()
+            scan = subprocess.run(
+                [
+                    sys.executable,
+                    str(repo_root / "build_ledger.py"),
+                    "--config",
+                    str(config_path),
+                    "--output-dir",
+                    str(output_dir),
+                ],
+                check=False,
             )
-            if args.json:
-                _print_json(manifest)
-            else:
-                summary = orient_payload(manifest)
-                print(
-                    f"compiled {summary['counts']['observations']} observations from "
-                    f"{summary['counts']['sources']} sources; health={summary['health']['state']}"
-                )
-                print(f"manifest: {Path(args.state_dir).resolve() / 'system-manifest.json'}")
+            if scan.returncode != 0:
+                print(f"LEDGER_SCAN_FAILED: build_ledger.py exited {scan.returncode}", file=sys.stderr)
+                return scan.returncode or 2
+            manifest = _compile_from_paths(args, input_json=output_dir / "projects.json")
+            _print_compile_result(manifest, args.state_dir, args.json)
+            return 0
+
+        if args.command == "compile":
+            manifest = _compile_from_paths(args, input_json=Path(args.input_json))
+            _print_compile_result(manifest, args.state_dir, args.json)
             return 0
 
         manifest = load_manifest(Path(args.state_dir))
