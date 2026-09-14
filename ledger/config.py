@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .contracts import SUPPORTED_DISCOVERY_MODES
-from .ids import digest_json, normalize_locator, path_digest, source_id_for
+from .ids import digest_json, normalize_locator, path_digest, source_id_for, stable_id
 
 
 class LedgerConfigError(ValueError):
@@ -55,6 +55,7 @@ def validate_config(config: dict, config_dir: Path, *, check_artifacts: bool = T
         if key in defaults and (not isinstance(defaults[key], int) or defaults[key] < 0):
             raise LedgerConfigError("DEFAULT_INVALID_INTEGER", f"defaults.{key} must be a non-negative integer.")
 
+    seen_source_ids: set[str] = set()
     for index, root in enumerate(roots):
         where = f"roots[{index}]"
         if not isinstance(root, dict):
@@ -69,6 +70,13 @@ def validate_config(config: dict, config_dir: Path, *, check_artifacts: bool = T
         for key in ("label", "machine_name", "storage_scope", "remote_name", "source_id"):
             if key in root and not isinstance(root[key], str):
                 raise LedgerConfigError("ROOT_FIELD_TYPE", f"{where}.{key} must be a string when present.")
+        explicit_source_id = str(root.get("source_id", "")).strip()
+        if "source_id" in root and not explicit_source_id:
+            raise LedgerConfigError("SOURCE_ID_EMPTY", f"{where}.source_id must be non-empty when present.")
+        effective_source_id = source_id_for(root, index=index)
+        if effective_source_id in seen_source_ids:
+            raise LedgerConfigError("SOURCE_ID_DUPLICATE", f"{where} resolves to duplicate source_id {effective_source_id!r}.")
+        seen_source_ids.add(effective_source_id)
         for key in ("max_depth", "min_score", "tree_scan_max_entries", "tree_scan_max_depth"):
             if key in root and (not isinstance(root[key], int) or root[key] < 0):
                 raise LedgerConfigError("ROOT_INVALID_INTEGER", f"{where}.{key} must be a non-negative integer.")
@@ -159,9 +167,11 @@ def describe_sources(config: dict, config_dir: Path) -> list[dict]:
             "path_mtime": _mtime_iso(path) if path.exists() else None,
             "artifacts": [{k: item[k] for k in ("role", "state", "sha256")} for item in artifacts],
         }
+        input_fingerprint = digest_json(fingerprint_payload)
         sources.append(
             {
                 "source_id": sid,
+                "snapshot_id": stable_id("snap", sid, input_fingerprint),
                 "label": str(root.get("label", "")).strip() or path.name or f"root-{index}",
                 "source_class": classify_source(root),
                 "discovery": discovery,
@@ -173,7 +183,7 @@ def describe_sources(config: dict, config_dir: Path) -> list[dict]:
                 "status_reason": status_reason,
                 "freshness_state": "unknown",
                 "as_of": _mtime_iso(path) if path.exists() else None,
-                "input_fingerprint": digest_json(fingerprint_payload),
+                "input_fingerprint": input_fingerprint,
                 "artifacts": artifacts,
             }
         )
