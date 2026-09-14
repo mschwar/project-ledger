@@ -2,115 +2,100 @@
 
 ## Mission
 
-Build `project-ledger` into the durable project-reality layer for projects, repositories, vaults, and idea containers spread across multiple computers and storage surfaces.
+Build and operate `project-ledger` as the durable **project-reality compiler and control substrate** for projects spread across machines and storage surfaces.
 
-The system discovers machine/source observations, preserves provenance, overlays explicit operator metadata, and is evolving toward canonical project identity across those observations.
+The system senses distributed source evidence, normalizes it into observations, reconciles durable project identity without hiding uncertainty, compiles project/current-state views, and exposes a cheap trustworthy read path for agents.
 
-It must support:
+The design goal is not maximum metadata. It is **minimum uncertainty per unit of agent attention and compute**.
 
-- repeated ingestion across multiple machines and storage surfaces
-- inventory/policy-backed ingestion for cloud or remotely inventoried roots
-- stable project identity across runs and devices
-- manual curation where heuristics are insufficient
-- mergeable machine/source observations
-- human-readable and agent-readable artifacts
-- a thin current-state pointer (`status`, last session, next step) without becoming a general task manager
+## Start here
 
-## Start Here
+Use progressive disclosure rather than reading the entire repo by default.
 
-Read these files in this order before making non-trivial changes:
+For any substantive task:
 
-1. `README.md`
-2. `PRD.md`
-3. `ARCHITECTURE.md`
-4. `SCHEMA.md`
-5. `ROADMAP.md`
-6. `BACKLOG.md`
-7. `RUNBOOK.md`
+1. Read `SYSTEM.md` for the conceptual model/invariants.
+2. Read `AGENT_PROTOCOL.md` for the operating loop.
+3. Read only the task-relevant contract:
+   - `ARCHITECTURE.md` for module/dataflow changes
+   - `SCHEMA.md` for entity/identity/state changes
+   - `RUNBOOK.md` for operation/recovery
+   - `ROADMAP.md` / `BACKLOG.md` for sequencing/execution
+   - `PRD.md` for product outcomes and acceptance criteria
+4. Inspect current ledger/source artifacts only when the task depends on estate state.
 
-## Current State
+Target-state agents should normally orient through `ledger orient` / `state/system-manifest.json` and load a project capsule instead of reconstructing the estate from prose.
+
+## Current state
 
 As of September 14, 2026:
 
-- `build_ledger.py` is the working CLI and remains monolithic
-- `ledger_config.json` describes the operator's current live roots
-- discovery modes include `children`, `git_repos`, `self`, and `inventory_policy`
-- `inventory_policy` consumes durable inventory JSONL plus a root-policy artifact before promoting project candidates
-- configured inputs include `/central` project/repo/service surfaces, selected Mac mirrors, Matty-PC inventory data, Google Drive inventory/policy data, and backup roots
-- `.project-ledger.json` is the project-local metadata/current-state overlay
-- the scanner emits CSV, JSON, Markdown, and the canonical human-facing Markdown mirror under `docs/ledgers/`
-- generated snapshots have demonstrated 100+ observations across mixed local/shared sources
-- unit tests cover core discovery, sidecars, inventory-policy ingestion, stable inventory identity, path handling, malformed/missing inventory-policy config, and Markdown mirroring
-- canonical multi-observation merge is not implemented yet
-- observation records and canonical project records are not yet separated in the output schema
+- `main` contains the converged multi-source scanner and is product authority.
+- `build_ledger.py` remains the working monolithic CLI.
+- discovery supports `children`, `git_repos`, `self`, and `inventory_policy`.
+- configured sources include `/central` roots, selected Mac mirrors, Matty-PC inventory, Google Drive inventory/policy, and backup surfaces.
+- `.project-ledger.json` provides a thin project-local declaration/current-state overlay.
+- outputs include CSV, JSON, Markdown, and the committed human-facing ledger mirror.
+- CI compiles the scanner and runs unit tests.
+- observation and canonical-project entities are not yet separated in executable schema.
+- canonical multi-observation merge, system manifest/project capsules, session receipts, change feed, and review queue are target architecture, not yet implemented.
 
-The next architectural milestone is schema/identity hardening followed by canonical merge and review reporting.
+The next milestone is the agent-native substrate: versioned schemas/IDs/claim semantics and the observation-vs-canonical boundary that all later control/query surfaces depend on.
 
-## Operating Rules
+## Architectural laws
 
-1. `main` is the authoritative product branch. Do not allow long-lived feature branches to become a shadow production branch.
-2. Use bounded work units. One substantive change should normally land through one focused branch/PR, receive review/QA, and merge promptly.
-3. Do not break the existing `python build_ledger.py` flow while refactoring.
-4. Preserve deterministic outputs unless the schema/version explicitly changes.
-5. Scanning target projects is read-only.
-6. When changing schema, update:
-   - `SCHEMA.md`
-   - sidecar example template
-   - tests
-   - README and runbook if operator behavior changes
-7. When adding a new capability, add at least one automated test.
-8. Prefer standard library solutions unless a dependency is clearly justified.
-9. Generated artifacts in `output/` are not canonical source files. `docs/ledgers/projects-ledger.md` is a committed human-facing mirror, not the source of project identity.
-10. Keep sidecar files human-editable and conservative. Do not force complex manual workflows.
-11. Any work that changes session-end metadata expectations must also update `prompts/session_end_prompt.md`.
-12. Preserve provenance and uncertainty. Never silently collapse ambiguous observations into one canonical project.
+These summarize `SYSTEM.md`; the full document is authoritative for rationale.
 
-## Architectural Rule
+1. Canonical state is compiled, not directly hand-authored.
+2. Preserve provenance; never silently collapse ambiguous observations.
+3. Separate observed facts, declarations, inferences, and explicit decisions.
+4. Identity is not a path/name/URL; those are evidence and aliases.
+5. Freshness and uncertainty are first-class state.
+6. Agent-facing reads should be compact materialized views with pointers to deeper evidence.
+7. Deterministic/incremental computation precedes semantic/expensive reasoning.
+8. Resolved ambiguity becomes a durable decision/test so it is not paid for twice.
+9. Project Ledger owns project topology/current-state resolution, not general task lifecycle or deep knowledge storage.
+10. Sensing is read-only with respect to target projects.
+11. Fail locally and explicitly; degraded sources/ambiguous projects do not poison healthy state.
+12. `main` remains authoritative; shadow product branches are defects.
 
-The intended data flow is:
+## Development operating rules
 
-```text
-source inventories / filesystems / git
-  -> observations
-  -> identity evidence
-  -> canonical projects
-  -> current state / review state
-  -> reports and downstream agent/control-plane consumers
-```
+1. Use bounded work units: one coherent task -> focused branch/workspace -> tests/docs -> review/QA -> resolve -> merge.
+2. Preserve the existing `python build_ledger.py` entrypoint while refactoring unless an explicitly versioned migration changes it.
+3. Preserve deterministic output semantics unless the schema/version explicitly changes.
+4. Schema/protocol changes must update documentation, validation/tests, migration expectations, and agent/operator behavior in the same work unit.
+5. New capabilities require automated coverage appropriate to their risk.
+6. Prefer standard-library/deterministic solutions unless a dependency or model materially improves correctness or cost.
+7. Generated artifacts are views, not identity truth.
+8. Keep project-local declarations human-editable and conservative.
+9. Do not overload sidecars into a task manager.
+10. Do not use expensive models where exact source evidence can answer the question.
 
-Inventory discovers reality. Policy decides which inventory roots are relevant for project discovery. Project Ledger promotes and reconciles project observations.
-
-## Expected Commands
+## Expected commands today
 
 ```powershell
 python build_ledger.py
-python -m unittest tests\test_build_ledger.py
+python -m unittest tests.test_build_ledger
 ```
 
-CI runs the unit test suite on pushes and pull requests.
+CI runs compile + tests on pushes and pull requests.
 
-If you introduce new commands, document them in `README.md` and `RUNBOOK.md`.
+Target commands are defined in `SYSTEM.md`/`ARCHITECTURE.md` and should be introduced behind stable machine-readable contracts.
 
-## Definition Of Done
+## Definition of done
 
-A change is not done unless:
+A substantive change is not done unless:
 
-- the code path works locally or in CI
-- tests pass
-- docs reflect the new behavior
-- schema changes are documented
-- the handoff path for future agents remains clear
-- `main` is left as the intended authoritative state after the work is merged
+- behavior/contracts are implemented coherently;
+- tests/validation pass;
+- documentation reflects actual behavior;
+- schema compatibility/migration is addressed where relevant;
+- uncertainty/error paths are explicit;
+- the agent/operator read path remains clear;
+- material decisions or new failure knowledge are made durable;
+- completed work is merged so `main` remains authoritative.
 
-## Preferred Execution Order
+## Session-end requirement
 
-1. Schema and identity hardening
-2. Package refactor/config validation cleanup
-3. Observation/canonical split and multi-machine merge
-4. Review/change reporting and operator analytics
-5. Agent/control-plane integration
-6. Optional structured storage/UI/automation
-
-## Session-End Requirement
-
-When you finish work in this repo, update relevant docs and the project sidecar when appropriate. Use `prompts/session_end_prompt.md` as the pattern for downstream project metadata updates.
+For material work, leave a bounded evidence-bearing handoff: what landed, verification, unresolved issues, exact continuation point, and relevant refs. Today use the project sidecar/session-end prompt where appropriate. The target architecture upgrades this into structured session receipts linked to canonical projects.

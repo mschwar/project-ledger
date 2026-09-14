@@ -2,150 +2,269 @@
 
 ## Purpose
 
-This runbook explains how to operate and extend `project-ledger` safely.
+Operate and extend Project Ledger safely while preserving its role as a project-reality compiler. `SYSTEM.md` defines the invariants; `AGENT_PROTOCOL.md` defines the agent loop.
 
-## Standard Commands
-
-Run the scanner:
+## Commands available today
 
 ```powershell
 python build_ledger.py
-```
-
-Run tests:
-
-```powershell
 python -m unittest tests.test_build_ledger
 ```
 
-CI also compiles `build_ledger.py` and runs the unit test suite on pushes and pull requests.
+CI compiles `build_ledger.py` and runs the test suite on pushes and pull requests.
 
-## Authority Rule
+The `ledger orient/resolve/show/...` command family described in the design docs is target architecture, not yet implemented.
 
-`main` is the authoritative product branch. Do not leave substantial working behavior stranded indefinitely on a feature branch.
+## Authority rule
 
-For normal development:
+`main` is product authority. Generated outputs are views. Target canonical project views will also be compiled outputs rather than directly edited truth.
 
-1. create a focused branch/workspace
-2. implement the bounded change
-3. add/update tests and docs
-4. obtain review/QA
-5. resolve findings
-6. merge promptly
+Normal development loop:
 
-## Before Making Changes
+1. bounded task;
+2. focused branch/workspace;
+3. implementation + tests + docs;
+4. review/foreign QA;
+5. resolve findings;
+6. merge promptly;
+7. leave `main` authoritative.
 
-1. Read `AGENTS.md`, `PRD.md`, `ARCHITECTURE.md`, and `SCHEMA.md`.
-2. Decide whether the change affects:
-   - implementation only
-   - schema/identity
-   - source ingestion
-   - operator workflow
-3. Update tests/docs in the same task when behavior or contracts change.
+## Agent orientation today
 
-## When Adding A Live Filesystem Root
+For system-development work:
 
-1. Edit the appropriate config.
-2. Set a useful `label`.
-3. Choose `children`, `git_repos`, or `self`.
-4. Add machine/storage provenance when it is not inferable.
-5. Add `exclude_names` for obvious noise.
-6. Add `force_include_names` only for known low-signal projects.
-7. Run the scanner and inspect the Markdown output before trusting the results.
+1. `SYSTEM.md`;
+2. `AGENT_PROTOCOL.md`;
+3. only the relevant architecture/schema/runbook/roadmap sections;
+4. current generated/source artifacts only if the task depends on estate state.
 
-Missing/unreadable ordinary filesystem roots are skipped safely and shown as gaps in the Markdown coverage section.
+For a real-source refresh, qualify the output by which configured sources were actually accessible. Code freshness and ledger-data freshness are separate facts.
 
-## When Adding An Inventory-Policy Root
+## Target orientation path
 
-Use this for durable inventories such as Google Drive or remote machine inventories where direct recursive scanning is undesirable.
+When implemented, routine agents should use:
 
-1. Keep `path` pointed at the mount/navigation root when one exists.
-2. Set `discovery` to `inventory_policy`.
-3. Set `inventory_jsonl` to the durable inventory artifact.
-4. Set `policy_path` to the matching root-policy file.
-5. Restrict `policy_crawl_treatments` to the intended promotion set, normally `project_discovery`.
-6. Normally require `project_ledger_candidate` policy promotion.
-7. Set `remote_name`, `machine_name`, and `storage_scope` as appropriate.
-8. Verify resulting observations preserve source/policy provenance and stable source-specific keys.
+```text
+ledger orient
+ -> ledger resolve <referent>
+ -> ledger show <canonical project>
+ -> ledger locate <canonical project> if work location matters
+ -> ledger explain ... only when deeper evidence is needed
+```
 
-`inventory_jsonl` and `policy_path` are required inputs. Missing fields or missing artifacts fail with an operator-readable `ValueError` before candidate discovery.
+This target read path should replace routine repo archaeology, not add another mandatory layer on top of it.
 
-## When A Project Is Missing
+---
 
-Check in this order:
+# Source operations
 
-1. Was the source/root included in config or upstream policy?
-2. Was the directory/root excluded accidentally?
-3. For `children`, does it have enough project signals to pass the score threshold?
-4. For `inventory_policy`, was the root promoted with the expected crawl treatment/candidate flag?
-5. Should a known low-signal live directory be added to `force_include_names`?
-6. Should a sidecar make the project explicit?
+## Adding a live filesystem source
 
-## When Identity Looks Wrong Or Duplicated
+1. Register/configure the source with a useful stable source identity/label.
+2. Choose `children`, `git_repos`, or `self` today.
+3. Preserve machine/storage/source-class provenance.
+4. Set exclusions intentionally.
+5. Use forced inclusion only for known low-signal projects.
+6. Run tests/validation and scanner.
+7. Inspect source coverage/gaps and newly introduced duplicates.
+8. Once source registry/fingerprints land, ensure freshness/fingerprint policy is explicit.
 
-Short-term correction for a live project:
+Missing/unreadable ordinary roots should degrade as source gaps, not become proof that projects disappeared.
 
-1. create/update `.project-ledger.json`
-2. set a stable `project_key`
-3. set `display_name` and `canonical_url` if useful
-4. rerun the scanner
+## Adding an inventory-policy source
 
-Do not assume two same-name observations are one project, and do not silently collapse uncertain matches.
+Use when a durable inventory should be interpreted rather than recursively crawled.
 
-Long-term identity work belongs in the canonical merge/identity layer described by `ROADMAP.md` and `SCHEMA.md`.
+Current required inputs:
 
-## When Changing The Schema
+- `path` when useful for navigation;
+- `discovery: inventory_policy`;
+- `inventory_jsonl`;
+- `policy_path`;
+- intended `policy_crawl_treatments`, normally `project_discovery`;
+- normally `require_project_ledger_candidate: true`;
+- source/machine/storage metadata as appropriate.
 
-Required updates:
+Required metadata artifacts fail early with operator-readable validation errors.
 
-1. code
-2. `SCHEMA.md`
-3. sidecar example template if relevant
-4. tests
-5. README/runbook if operator-visible behavior changed
-6. schema version/migration policy once versioning lands
+Architectural rule:
 
-## Session-End Practice
+```text
+inventory discovers source reality
+ -> policy decides project relevance
+ -> Project Ledger normalizes observations
+ -> identity compiler decides canonical project membership
+```
 
-For downstream project repos:
+Policy promotion is not canonical identity.
 
-1. update `.project-ledger.json`
-2. write factual `last_session_summary`
-3. write one clear `next_step`
-4. only set `last_push_at` if a push actually happened
+---
 
-Reference: `prompts/session_end_prompt.md`.
+# Project/identity operations
 
-Project Ledger's sidecar is a current-state pointer, not a full task queue. Rich task lifecycle should remain in the execution/task system.
+## Project missing from current observation output
 
-## Refreshing The Canonical Human-Facing Ledger
+Check in order:
 
-On a machine that has access to the intended operator roots:
+1. source configured/enabled?
+2. source actually accessible/current?
+3. excluded?
+4. candidate threshold/signals sufficient?
+5. inventory policy promoted the root?
+6. source inventory stale/incomplete?
+7. declaration/sidecar malformed?
 
-1. pull current `main`
-2. run tests
-3. run `python build_ledger.py`
-4. inspect `docs/ledgers/projects-ledger.md`
-5. review configured-root gaps and obvious duplicate observations
-6. commit refreshed generated mirror only when it represents an intentional snapshot/update
+Do not jump directly to force-inclusion before verifying source health/policy.
 
-Do not claim a scan is current merely because code changed; the committed Markdown mirror has its own generation timestamp.
+## Duplicate-looking projects today
 
-## Known Limitations
+Current short-term correction for live projects:
 
-- actual remote push time is not inferable from local git alone
-- observation records and canonical projects are not yet separate output entities
-- canonical multi-source merge is not implemented yet
-- current discovery heuristics are intentionally simple
-- current operator config contains environment-specific roots
-- scan snapshots can become stale if they are not regenerated on the real source surfaces
+- use stable sidecar `project_key` and canonical URL only when justified;
+- retain both observations in outputs;
+- document ambiguous cases rather than collapsing them manually in generated output.
 
-## Handoff Checklist
+Target state: identity evidence + explicit merge/split/reject decisions + review queue.
 
-Before ending substantive work in this repo:
+## Identity resolution target rule
 
-1. run/confirm CI tests
-2. run the scanner if behavior changed and the required source surfaces are available
-3. confirm docs are accurate
-4. leave the next step obvious in the repo sidecar/backlog
-5. merge the completed bounded work so `main` remains authoritative
+Never merge based only on same display name. Prefer strong deterministic evidence; preserve ambiguity when evidence remains weak.
+
+After Wave 2, a resolved identity question should produce a durable decision so it does not recur.
+
+---
+
+# Schema/contract changes
+
+Any schema/protocol change must address:
+
+1. current compatibility impact;
+2. schema/version changes;
+3. code/model/validation;
+4. `SCHEMA.md` and relevant design docs;
+5. tests/golden fixtures;
+6. migration/unsupported-version behavior;
+7. agent/operator read/write behavior.
+
+Do not silently change the meaning of an existing field while keeping the same version.
+
+When the target claim model lands, preserve observed/declaration/inference/decision provenance through transformations.
+
+---
+
+# Sidecar/declaration operations
+
+Today `.project-ledger.json` is the thin project-local overlay for stable key/display/current-session hints.
+
+Rules:
+
+- only write facts justified by the project/current session;
+- do not invent push timestamps;
+- do not casually replace stable keys;
+- keep `next_step` bounded;
+- do not encode a task tree;
+- recognize that copied projects can have divergent sidecars.
+
+Target state: sidecars become versioned declaration sources. Conflicting sidecars create competing claims/review rather than last-write-wins canonical state.
+
+---
+
+# Session-end operations
+
+## Compatibility workflow today
+
+For material downstream project work:
+
+1. update sidecar factual current-state fields when appropriate;
+2. factual bounded session summary;
+3. one continuation point;
+4. `last_push_at` only if actually justified;
+5. return/record exact changed files, verification, commit/PR refs, unresolved issues.
+
+Use `prompts/session_end_prompt.md`.
+
+## Target workflow
+
+Prefer a structured session receipt linked to canonical project identity, then compile affected state/views. The receipt should capture landed state and evidence pointers, not narrate the whole session.
+
+A future agent should be able to continue from project capsule + receipt without replaying chat history.
+
+---
+
+# Real-source refresh
+
+On a node with intended source access:
+
+1. pull current `main`;
+2. run tests;
+3. run scanner/compile;
+4. inspect source coverage and warnings;
+5. inspect obvious duplicates/identity anomalies;
+6. verify output timestamps/source-as-of semantics;
+7. commit refreshed human-facing snapshot only when intentional/trustworthy;
+8. convert nontrivial anomalies into fixtures/backlog items rather than rediscovering them later.
+
+Do not claim the ledger is current because code changed. Data freshness is source/run-specific.
+
+---
+
+# Review and failure recovery
+
+Prefer local bounded failures.
+
+## Source unavailable
+
+- preserve prior evidence as stale if policy allows;
+- mark source unavailable;
+- do not infer deletion/absence;
+- continue healthy sources.
+
+## Malformed declaration
+
+- scope error to declaration/project;
+- retain underlying source observation;
+- surface actionable validation/review;
+- do not poison unrelated projects.
+
+## Ambiguous identity
+
+- retain separate observations/candidates;
+- surface review with evidence;
+- do not guess for cleanliness.
+
+## Conflicting current-state claims
+
+- compare authority/freshness according to field-specific policy;
+- resolve only when policy permits;
+- otherwise open review.
+
+## Unsupported schema version
+
+- fail/degrade explicitly;
+- never silently parse incompatible major versions as if compatible.
+
+---
+
+# Resource-economy rules
+
+1. Deterministic source evidence before model reasoning.
+2. Fingerprint/skip unchanged sources once supported.
+3. Recompute affected projects rather than global semantic reconstruction.
+4. Cache derived summaries by evidence digest.
+5. Local/cheap semantic model before frontier reasoning where safe.
+6. Human review only when consequence/ambiguity justifies it.
+7. Record the resolution so the same ambiguity is not paid for twice.
+
+---
+
+# Handoff checklist
+
+Before ending substantive Project Ledger work:
+
+- tests/CI status known;
+- behavior/docs/contracts synchronized;
+- source refresh performed only if relevant surfaces were available;
+- new uncertainty/error paths explicit;
+- nontrivial real failure converted into fixture/decision/backlog when useful;
+- exact continuation point recorded;
+- completed bounded work merged so `main` remains authority.
