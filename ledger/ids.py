@@ -32,6 +32,7 @@ def normalize_locator(raw: str) -> str:
 
 
 def source_id_for(root_cfg: dict, *, index: int = 0) -> str:
+    del index  # retained in the call signature for compatibility; root order is not identity.
     explicit = str(root_cfg.get("source_id", "")).strip()
     if explicit:
         return explicit
@@ -41,7 +42,6 @@ def source_id_for(root_cfg: dict, *, index: int = 0) -> str:
         "discovery": str(root_cfg.get("discovery", "children")).strip(),
         "remote_name": str(root_cfg.get("remote_name", "")).strip(),
         "path": normalize_locator(str(root_cfg.get("path", ""))),
-        "index": index,
     }
     return stable_id("src", payload)
 
