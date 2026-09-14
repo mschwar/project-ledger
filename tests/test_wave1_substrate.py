@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from ledger import cli
 from ledger.compiler import compile_state, load_manifest, orient_payload
 from ledger.config import LedgerConfigError, describe_sources, validate_config
 from ledger.ids import observation_id_for, source_id_for
@@ -220,6 +221,49 @@ class Wave1SubstrateTests(unittest.TestCase):
             self.assertEqual(unresolved["source_resolution"], "unresolved")
             self.assertTrue(unresolved["source_id"].startswith("src_"))
             self.assertTrue(unresolved["snapshot_id"].startswith("snap_"))
+
+    def test_refresh_runs_legacy_scan_then_compiles_state(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            live = root / "live"
+            project = live / "sample-project"
+            project.mkdir(parents=True)
+            (project / "README.md").write_text("# Sample Project\nA refresh fixture.\n", encoding="utf-8")
+            config_path = root / "ledger_config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "roots": [
+                            {
+                                "source_id": "refresh-fixture",
+                                "path": str(live),
+                                "label": "refresh-fixture",
+                                "discovery": "children",
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output_dir = root / "output"
+            state_dir = root / "state"
+            result = cli.main(
+                [
+                    "refresh",
+                    "--config",
+                    str(config_path),
+                    "--output-dir",
+                    str(output_dir),
+                    "--state-dir",
+                    str(state_dir),
+                ]
+            )
+            self.assertEqual(result, 0)
+            self.assertTrue((output_dir / "projects.json").is_file())
+            self.assertTrue((state_dir / "system-manifest.json").is_file())
+            manifest = load_manifest(state_dir)
+            self.assertEqual(manifest["counts"]["observations"], 1)
+            self.assertEqual(manifest["sources"][0]["source_id"], "refresh-fixture")
 
 
 if __name__ == "__main__":
