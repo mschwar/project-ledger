@@ -14,9 +14,29 @@ The success criterion is not “we indexed everything.” It is **routine projec
 
 ## Current status
 
-The converged September 2026 implementation is a useful multi-source observation scanner with provenance, policy-backed inventory ingestion, sidecar overlays, generated outputs, tests, and CI.
+The September 2026 implementation has crossed the first observation/orientation boundary.
 
-It does not yet implement the agent-native canonical model defined in `SYSTEM.md`/`SCHEMA.md`: canonical IDs, observation/canonical separation, claim/decision semantics, incremental compilation, system manifest, project capsules, receipts, review queue, and query/control commands remain planned.
+Implemented now:
+
+- multi-source compatibility scanner with filesystem/git/inventory-policy ingestion and sidecar overlays;
+- stable source, compatibility-snapshot, and manifestation-oriented observation identities;
+- typed observation materialization;
+- source probes/health with degraded-source containment;
+- versioned `state/system-manifest.json`;
+- `ledger validate`, `refresh`, `compile`, `orient`, and `sources`;
+- a homelab deployment seam that can run non-mutating provider refreshes.
+
+Not implemented yet:
+
+- canonical project identity and merge/split/alias decisions;
+- identity review queue;
+- `resolve/show/locate/explain` and project capsules;
+- structured session receipts/current-state resolver;
+- Project Ledger semantic change feed and incremental compilation.
+
+The current walking skeleton answers **what sources/observations were seen and what is healthy**. The next product boundary is **what conceptual project does this referent mean?** Canonical identity is therefore the active constraint.
+
+The committed human-facing ledger is historical evidence; current production freshness requires a live provider run on a node with the intended source access.
 
 ## Primary users
 
