@@ -44,6 +44,8 @@ Generated agent projections are:
 ```text
 state/system-manifest.json
 state/observations.json
+state/canonical-projects.json
+state/review-queue.json
 ```
 
 `state/` is intentionally gitignored: it is rebuildable compiled state, not canon.
@@ -56,6 +58,7 @@ python -m ledger refresh
 python -m ledger compile
 python -m ledger orient
 python -m ledger sources
+python -m ledger resolve <referent>
 ```
 
 Use `--json` on the agent-facing commands when machine-readable output is preferred.
@@ -90,21 +93,28 @@ registered sources
  -> current source probes + compatibility source/run snapshots
  -> compatibility observations
  -> typed observations
- -> system manifest / source health
+ -> exact-remote identity evidence + explicit identity decisions
+ -> canonical projects + identity review
+ -> system manifest / orient / exact resolve
 ```
 
-Not implemented yet, and explicitly reported as unavailable by the manifest:
+Automatic identity is intentionally conservative:
+
+- exact normalized repository remote is the only automatic merge authority;
+- compatibility `project_key` values and names are referents, not automatic merge authority;
+- explicit committed decisions can merge, split, reject a match, or add an alias;
+- ambiguous exact referents remain explicit.
+
+Still unavailable:
 
 ```text
-identity evidence + decisions
- -> canonical projects
- -> identity review queue
- -> project capsules / resolve / locate / explain
+project capsules / show / locate / explain
  -> structured session receipts / current-state resolver
- -> semantic change feed
+ -> Project Ledger semantic change feed
+ -> incremental compilation
 ```
 
-Canonical project count therefore remains `null`; raw observation count must not be presented as project count.
+Canonical project count is now distinct from observation count and is reported in the manifest.
 
 ## Source, snapshot, and observation identity
 
@@ -120,7 +130,9 @@ source_id + compatibility generated_at -> compat_snapshot_id
 
 Separately, the manifest records a **current source probe** with health/access metadata and a `probe_fingerprint`. The probe is not rewritten into historical snapshot identity. This lets an older observation remain tied to the run that produced it even when its source is unavailable now.
 
-An observation is a manifestation inside a source and is keyed primarily by source + observed location, not by a conceptual project key. That distinction is required before canonical project identity can be built safely.
+An observation is a manifestation inside a source and is keyed primarily by source + observed location, not by a conceptual project key.
+
+The first canonical identity slice now compiles those observations into conceptual projects using only exact normalized repository remotes plus explicit durable decisions. This avoids treating names or compatibility keys as stronger evidence than they are.
 
 See `docs/WAVE1-AGENT-SUBSTRATE.md` for exact semantics and limitations.
 
@@ -173,11 +185,10 @@ CI compiles both the legacy scanner and the `ledger` package and runs the comple
 
 ## Next build gate
 
-Wave 1 is **in progress**, not complete. The next tranche should harden the contract foundation rather than jump ahead to UI or semantic dedupe:
+The identity walking skeleton is implemented. The next software wave is deliberately **not auto-authorized**.
 
-1. finish version/compatibility policy and schema validation;
-2. strengthen source freshness/as-of semantics beyond `unknown` where upstream evidence permits;
-3. formalize typed claim/evidence envelopes and field-resolution policy interfaces;
-4. then cross Gate B into Wave 2 canonical identity evidence/decisions/review.
+Before expanding location/current-state features, run the live homelab provider proof in `CURRENT.md` / `docs/work/REALITY-TO-IDENTITY.md` and inspect how the conservative identity rules behave against the real estate. Choose the next constraint from that evidence.
 
-See `ROADMAP.md` and `BACKLOG.md` for the dependency gates.
+Remaining contract hardening—compatibility policy, stronger source freshness, and typed declaration provenance—should advance when it blocks demonstrated identity/location use, not as detached infrastructure work.
+
+See `CURRENT.md` first, then `ROADMAP.md` / `BACKLOG.md`.
