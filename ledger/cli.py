@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .compiler import compile_state, load_manifest, orient_payload
 from .config import LedgerConfigError, describe_sources, read_config, validate_config
+from .identity import resolve_payload
 
 
 def _print_json(value: object) -> None:
@@ -17,6 +18,7 @@ def _print_json(value: object) -> None:
 def _add_compile_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", default="ledger_config.json")
     parser.add_argument("--state-dir", default="state")
+    parser.add_argument("--identity-decisions", default="registry/identity-decisions.json")
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -49,6 +51,11 @@ def _parser() -> argparse.ArgumentParser:
     sources = sub.add_parser("sources", help="Show source health from the latest manifest.")
     sources.add_argument("--state-dir", default="state")
     sources.add_argument("--json", action="store_true")
+
+    resolve = sub.add_parser("resolve", help="Resolve an exact project referent to canonical identity.")
+    resolve.add_argument("referent")
+    resolve.add_argument("--state-dir", default="state")
+    resolve.add_argument("--json", action="store_true")
     return parser
 
 
@@ -57,6 +64,7 @@ def _compile_from_paths(args: argparse.Namespace, *, input_json: Path) -> dict:
         config_path=Path(args.config),
         compat_output_path=input_json,
         state_dir=Path(args.state_dir),
+        identity_decisions_path=Path(args.identity_decisions),
     )
 
 
@@ -119,6 +127,26 @@ def main(argv: list[str] | None = None) -> int:
             _print_compile_result(manifest, args.state_dir, args.json)
             return 0
 
+        if args.command == "resolve":
+            payload = resolve_payload(Path(args.state_dir), args.referent)
+            if args.json:
+                _print_json(payload)
+            elif payload["status"] == "resolved":
+                print(
+                    f"resolved {payload['referent']!r} -> {payload['canonical_project_id']} "
+                    f"({payload['project_key']})"
+                )
+            elif payload["status"] == "ambiguous":
+                print(f"ambiguous {payload['referent']!r}: {payload['candidate_count']} candidates")
+                for candidate in payload["candidates"]:
+                    print(
+                        f"  {candidate['canonical_project_id']}\t{candidate['project_key']}\t"
+                        f"{candidate['display_name']}"
+                    )
+            else:
+                print(f"unresolved {payload['referent']!r}")
+            return {"resolved": 0, "ambiguous": 3, "unresolved": 4}[payload["status"]]
+
         manifest = load_manifest(Path(args.state_dir))
         if args.command == "orient":
             payload = orient_payload(manifest)
@@ -131,6 +159,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"health: {payload['health']['state']}")
                 print(f"sources: {payload['counts']['sources']}")
                 print(f"observations: {payload['counts']['observations']}")
+                if payload["counts"].get("canonical_projects") is not None:
+                    print(f"canonical projects: {payload['counts']['canonical_projects']}")
+                if payload["counts"].get("review_items") is not None:
+                    print(f"identity review: {payload['counts']['review_items']}")
                 print("available: " + ", ".join(payload["available_capabilities"]))
                 if payload["unavailable_capabilities"]:
                     print("not yet available: " + ", ".join(payload["unavailable_capabilities"]))
