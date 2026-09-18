@@ -91,6 +91,35 @@ class IdentityWalkingSkeletonTests(unittest.TestCase):
         self.assertEqual(reviews["review_count"], 1)
         self.assertEqual(reviews["items"][0]["code"], "PROJECT_KEY_AMBIGUOUS")
 
+    def test_project_key_and_arbitrary_website_do_not_become_auto_identity(self) -> None:
+        key_only = observation(
+            "obs-key-only",
+            project_key="github.com/mschwar/homelab",
+            name="Homelab Agent Platform",
+            path="/notes/homelab",
+        )
+        website_a = observation(
+            "obs-site-a",
+            project_key="site-a",
+            name="Shared Website A",
+            path="/projects/site-a",
+            canonical_url="https://example.com/shared-product",
+        )
+        website_b = observation(
+            "obs-site-b",
+            project_key="site-b",
+            name="Shared Website B",
+            path="/projects/site-b",
+            canonical_url="https://example.com/shared-product",
+        )
+
+        canonical, _ = compile_identity(
+            [self.live, key_only, website_a, website_b],
+            {"schema_version": "1.0.0", "decisions": []},
+        )
+
+        self.assertEqual(canonical["canonical_project_count"], 4)
+
     def test_canonical_id_is_stable_when_an_exact_remote_mirror_is_added(self) -> None:
         first, _ = compile_identity(
             [self.live],
