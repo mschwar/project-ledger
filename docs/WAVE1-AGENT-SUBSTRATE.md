@@ -45,8 +45,8 @@ These are materialized projections and are gitignored. They must be reproducible
 Current constants:
 
 ```text
-compiler_version              0.1.0
-manifest schema_version       1.0.0
+compiler_version              0.2.0
+manifest schema_version       1.1.0
 typed observation version     1.0.0
 compat flat schema version    0.1.0
 ```
@@ -180,12 +180,15 @@ Implemented capabilities are reported `available`:
 - typed observations
 - source health
 
-Planned layers are explicitly `unavailable` with stable reason codes:
+The Wave 1 document originally ended before canonical identity. The current compiler now extends this substrate with a conservative R2 identity slice:
 
-- canonical projects — `WAVE2_NOT_IMPLEMENTED`
-- identity review queue — `WAVE2_NOT_IMPLEMENTED`
-- project capsules — `WAVE3_NOT_IMPLEMENTED`
-- semantic change feed — `WAVE4_NOT_IMPLEMENTED`
+- canonical projects — available;
+- identity review queue — available;
+- exact `ledger resolve` — available;
+- project capsules — still unavailable (`WAVE3_NOT_IMPLEMENTED`);
+- semantic change feed — still unavailable (`WAVE4_NOT_IMPLEMENTED`).
+
+Automatic identity is limited to exact normalized repository remote plus explicit durable decisions; this document remains the source/snapshot/observation contract, while `SCHEMA.md §1.7` defines the identity extension.
 
 An agent should consume this capability map rather than infer support from design prose.
 
