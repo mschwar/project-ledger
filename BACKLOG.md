@@ -27,104 +27,75 @@ On a node with the intended source access:
 
 # P1 — Agent substrate and contracts
 
-## P1.1 Freeze compatibility observation contract
+## Landed in Wave 1 Tranche 1A
+
+The following are implemented on `main` and must not be re-created as new work:
+
+- compiler/schema version constants;
+- explicit stable production `source_id` values and deterministic fallback;
+- source classes, source probes/health, probe fingerprints, and compatibility snapshot IDs;
+- stable manifestation-oriented `observation_id`;
+- strict structural config validation with stable error codes;
+- explicit semantic-state vocabulary for new contracts;
+- typed observation wrappers;
+- `state/system-manifest.json` and `state/observations.json`;
+- explicit unavailable capability reason codes;
+- degraded-source failure containment during compile;
+- `ledger validate`, `refresh`, `compile`, `orient`, and `sources`;
+- automation-safe `ledger refresh --no-markdown-mirror`.
+
+## Remaining Gate B work
+
+### P1.1 Freeze compatibility observation contract
 
 Deliver:
 
-- explicit current output version (compat/v0);
-- documented JSON envelope semantics;
-- golden fixture for current flat output;
-- compatibility test preventing accidental field-meaning drift.
+- documented compatibility envelope and major/minor policy;
+- a golden compatibility fixture preventing accidental field-meaning drift;
+- explicit unsupported-major behavior.
 
-Exit evidence: old scanner consumers can identify/version what they are reading.
+### P1.4 Minimal epistemic claim/evidence contract
 
-## P1.2 Introduce stable source and run identities
+Deliver only what canonical identity needs immediately:
 
-Deliver:
-
-- `source_id` contract/registry;
-- source class (`live`, `mirror`, `backup`, `inventory-only`, etc.);
-- `snapshot_id` / compiler run ID;
-- source adapter/version metadata;
-- source/config fingerprints;
-- freshness/health result model.
-
-Fixtures:
-
-- healthy live source;
-- missing/unavailable source;
-- partial inventory source;
-- unchanged source fingerprint.
-
-## P1.3 Introduce stable observation identity
-
-Deliver:
-
-- `observation_id` strategy;
-- source-native-ID preference where available;
-- deterministic fallback documented/tested;
-- path migration/alias behavior;
-- observation identity separate from canonical project identity.
-
-## P1.4 Epistemic claim model
-
-Deliver typed contracts for:
-
-- observed claim;
-- declaration;
-- inference + confidence;
+- observed/declaration/inference envelopes;
 - evidence references;
-- selected/resolved claim references.
+- confidence for inference;
+- a small field-resolution policy interface.
 
-Do not implement general semantic matching yet.
+Do not build a generalized knowledge framework.
 
-## P1.5 Explicit null/freshness/error semantics
+### P1.5 Tighten freshness/result semantics
 
 Deliver:
 
-- `unknown`, `unavailable`, `stale`, `absent`, `conflicted`, `not_applicable`, `known` convention;
-- machine-readable error/review codes;
-- migration away from ambiguous empty strings in new schemas;
-- tests for source unavailable vs empty/absent.
+- unavailable vs successfully-observed-empty distinction;
+- stronger `as_of` semantics where an upstream source actually supplies evidence;
+- no invented freshness when it cannot be known.
 
-## P1.6 Full config validation
+Defer elaborate checkpoint/history machinery until incremental compilation needs it.
 
-Deliver one preflight validation layer covering:
-
-- root object shape;
-- required paths/fields;
-- discovery mode;
-- numeric thresholds;
-- booleans/lists;
-- inventory-policy artifacts;
-- duplicate source IDs/labels;
-- actionable errors.
-
-## P1.7 Sidecar as versioned declaration source
+### P1.7 Sidecar as versioned declaration source
 
 Deliver:
 
 - sidecar `schema_version` plan/validation;
 - accepted field/type validation;
-- malformed/unsupported-version review/error behavior;
-- explicit rule that sidecar values become declarations rather than unconditional canonical truth.
+- malformed/unsupported-version error or review behavior;
+- explicit conversion of sidecar values into declarations rather than unconditional canonical truth.
 
-Do not add `canonical_project_id` to sidecars until the canonical registry can assign/validate it safely.
+Do not add `canonical_project_id` to sidecars until the registry can assign/validate it safely.
 
-## P1.8 Minimal system manifest
+### P1.9 Production reality proof
 
-Deliver first `state/system-manifest.json` containing:
+On the intended homelab node:
 
-- compiler/schema versions;
-- run ID/timestamp;
-- config digest;
-- source health/freshness;
-- observation counts;
-- known capability flags;
-- pointers to generated outputs;
-- explicit `canonicalization_available: false` until Wave 2.
+- run current `main` through the deployed non-mutating provider seam;
+- retain commit/run ID, source health, counts, and unavailable-source reasons;
+- capture representative duplicate/same-name/renamed manifestations as canonicalization fixtures;
+- never treat the historical committed Markdown ledger as current production proof.
 
-Add a compact human `ledger orient` rendering only if it can consume the same manifest contract.
+Exit evidence: one current provider run demonstrates the exact Wave 1 contract against the intended estate, or records a bounded source/deployment defect.
 
 ---
 
