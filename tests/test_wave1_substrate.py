@@ -126,7 +126,7 @@ class Wave1SubstrateTests(unittest.TestCase):
                 state_dir=state_dir,
                 generated_at="2026-09-14T06:10:00Z",
             )
-            self.assertEqual(manifest["schema_version"], "1.0.0")
+            self.assertEqual(manifest["schema_version"], "1.1.0")
             self.assertEqual(manifest["health"]["state"], "degraded")
             self.assertEqual(manifest["counts"]["observations"], 1)
             self.assertEqual(manifest["counts"]["canonical_projects"], 1)
