@@ -14,7 +14,10 @@ The success criterion is not “we indexed everything.” It is **routine projec
 
 ## Current status
 
-The September 2026 implementation has crossed the first observation/orientation boundary.
+The September 2026 implementation has crossed two boundaries:
+
+1. estate observation/orientation;
+2. a conservative first canonical-identity/exact-resolution slice.
 
 Implemented now:
 
@@ -22,21 +25,22 @@ Implemented now:
 - stable source, compatibility-snapshot, and manifestation-oriented observation identities;
 - typed observation materialization;
 - source probes/health with degraded-source containment;
-- versioned `state/system-manifest.json`;
-- `ledger validate`, `refresh`, `compile`, `orient`, and `sources`;
+- canonical projects compiled from exact normalized repository remotes plus explicit durable identity decisions;
+- identity review queue for blocked/conflicting/ambiguous exact referents;
+- versioned `state/system-manifest.json`, `observations.json`, `canonical-projects.json`, and `review-queue.json`;
+- `ledger validate`, `refresh`, `compile`, `orient`, `sources`, and exact `resolve`;
 - a homelab deployment seam that can run non-mutating provider refreshes.
 
 Not implemented yet:
 
-- canonical project identity and merge/split/alias decisions;
-- identity review queue;
-- `resolve/show/locate/explain` and project capsules;
+- preferred-location resolver and project capsules;
+- `show/locate/explain`;
 - structured session receipts/current-state resolver;
 - Project Ledger semantic change feed and incremental compilation.
 
-The current walking skeleton answers **what sources/observations were seen and what is healthy**. The next product boundary is **what conceptual project does this referent mean?** Canonical identity is therefore the active constraint.
+Automatic identity is intentionally narrow: names and compatibility project keys never auto-merge projects. They remain resolution/ambiguity surfaces until stronger typed declaration provenance exists.
 
-The committed human-facing ledger is historical evidence; current production freshness requires a live provider run on a node with the intended source access.
+The committed human-facing ledger is historical evidence; current production freshness and identity behavior require a live provider run on a node with the intended source access.
 
 ## Primary users
 
