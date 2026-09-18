@@ -4,7 +4,7 @@
 
 ## Current implementation
 
-The runtime is currently a deliberate two-layer migration architecture.
+The runtime is a deliberate layered migration architecture.
 
 `build_ledger.py` remains the compatibility scanner:
 
@@ -17,20 +17,24 @@ config
  -> emit CSV/JSON/Markdown compatibility observations
 ```
 
-The `ledger/` package now wraps that scanner with the first executable agent substrate:
+The `ledger/` package now adds:
 
 ```text
 compatibility observations
  -> stable source/snapshot/observation identity
  -> source probes/health
  -> typed observations
- -> state/system-manifest.json
- -> ledger orient / ledger sources
+ -> exact normalized remote identity + durable identity decisions
+ -> canonical projects + review queue
+ -> system manifest
+ -> ledger orient / ledger sources / ledger resolve
 ```
 
-This is a real observation/orientation vertical slice. It still does **not** compile conceptual project identity. Canonical projects, identity decisions/review, project capsules, project-level resolve/location, receipts, and incremental compilation remain later boundaries.
+The identity layer is intentionally conservative. Exact normalized repository remote is the only automatic merge rule. Names/project-key hints are referents, not identity authority. Explicit committed decisions can merge/split/reject/alias.
 
-The active architecture constraint is therefore the seam between normalized observations and canonical project identity, not basic ingestion.
+Still absent: project capsules, preferred-location/current-state resolution, receipts, semantic change feed, and incremental compilation.
+
+The next architecture constraint must be selected after the live provider proof rather than inferred from roadmap order.
 
 ## Target architecture
 
