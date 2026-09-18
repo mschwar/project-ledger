@@ -34,22 +34,25 @@ Before acting, know:
 - which requested capabilities are actually available in the manifest;
 - whether the task is product work, source ingestion, identity work, review resolution, or downstream project work.
 
-Current limitation: `orient` can describe the estate but cannot yet resolve a human project referent to canonical identity.
+Current boundary: `orient` describes the estate and `resolve` can perform exact canonical resolution. Preferred-location/current-state/project-capsule queries remain later work.
 
 ## 2. RESOLVE
 
 Never treat a human name, path, or repo folder as sufficient identity when duplicates are possible.
 
-Next walking-skeleton behavior (not yet on `main` at the start of this programme):
+Implemented exact behavior:
 
 ```text
 ledger resolve <user referent>
 ```
 
-Resolution should return either:
+Resolution returns one of:
 
-- one canonical project with evidence; or
-- an explicit ambiguity set requiring more evidence/review.
+- one canonical project with matched-by evidence;
+- an explicit ambiguity set; or
+- unresolved.
+
+Exact normalized remote/path/canonical ID and operator-approved aliases are higher-priority referents than compatibility project-key hints or display names.
 
 Do not silently choose one of several plausible projects.
 
