@@ -270,7 +270,6 @@ Current available capabilities:
 - `typed_observations`
 - `source_health`
 - `canonical_projects`
-- `identity_review`
 - `review_queue`
 
 Current explicit unavailable capabilities:
