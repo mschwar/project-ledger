@@ -8,6 +8,7 @@ from . import COMPAT_FLAT_SCHEMA_VERSION, COMPILER_VERSION, MANIFEST_SCHEMA_VERS
 from .config import describe_sources, read_config, validate_config
 from .contracts import capability
 from .ids import digest_json, observation_id_for, stable_id
+from .identity import materialize_identity
 
 
 def now_utc() -> str:
@@ -40,6 +41,7 @@ def compile_state(
     config_path: Path,
     compat_output_path: Path,
     state_dir: Path,
+    identity_decisions_path: Path | None = None,
     generated_at: str | None = None,
 ) -> dict:
     config_path = config_path.resolve()
@@ -113,6 +115,16 @@ def compile_state(
     }
     observations_path.write_text(json.dumps(observation_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
+    canonical_payload, review_payload = materialize_identity(
+        observations=observations,
+        decisions_path=identity_decisions_path,
+        state_dir=state_dir,
+        run_id=run_id,
+        compiled_at=compiled_at,
+    )
+    canonical_path = state_dir / "canonical-projects.json"
+    review_path = state_dir / "review-queue.json"
+
     manifest = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
         "compiler_version": COMPILER_VERSION,
@@ -127,33 +139,27 @@ def compile_state(
             "state": health_state,
             "source_unavailable_count": source_unavailable_count,
             "unresolved_observation_source_count": unresolved_source_count,
+            "identity_review_count": review_payload["review_count"],
         },
         "counts": {
             "sources": len(sources),
             "observations": len(observations),
-            "canonical_projects": None,
-            "review_items": None,
+            "canonical_projects": canonical_payload["canonical_project_count"],
+            "review_items": review_payload["review_count"],
         },
         "sources": sources,
         "capabilities": {
             "compat_observations": capability("available"),
             "typed_observations": capability("available"),
             "source_health": capability("available"),
-            "canonical_projects": capability(
-                "unavailable",
-                reason_code="WAVE2_NOT_IMPLEMENTED",
-                detail="Canonical identity compilation is a Wave 2 capability.",
-            ),
+            "canonical_projects": capability("available"),
+            "identity_review": capability("available"),
             "project_capsules": capability(
                 "unavailable",
                 reason_code="WAVE3_NOT_IMPLEMENTED",
-                detail="Project capsules require canonical projects.",
+                detail="Project capsules are not implemented yet.",
             ),
-            "review_queue": capability(
-                "unavailable",
-                reason_code="WAVE2_NOT_IMPLEMENTED",
-                detail="Identity/review queue is not implemented yet.",
-            ),
+            "review_queue": capability("available"),
             "change_feed": capability(
                 "unavailable",
                 reason_code="WAVE4_NOT_IMPLEMENTED",
@@ -163,13 +169,16 @@ def compile_state(
         "artifacts": {
             "compat_observations": str(compat_output_path),
             "typed_observations": str(observations_path),
+            "canonical_projects": str(canonical_path),
+            "review_queue": str(review_path),
             "system_manifest": str(manifest_path),
         },
         "limitations": [
-            "Canonical project identity is not implemented; observation count is not project count.",
+            "Canonical identity auto-merges only exact normalized repository remotes; names and compatibility project_key values are referents, not automatic identity authority.",
+            "Non-remote duplicate manifestations require an explicit identity decision until stronger typed declaration contracts land.",
             "Source freshness is reported as unknown unless an upstream source contract supplies stronger semantics.",
             "Compatibility snapshot IDs are scoped by source and the v0 output generated_at; v0 does not preserve native per-source snapshot metadata.",
-            "Current-state/session fields inside compatibility entries remain legacy declarations until the Wave 4 resolver lands.",
+            "Current-state/session fields inside compatibility entries remain legacy declarations until the later current-state resolver lands.",
         ],
     }
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
