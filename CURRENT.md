@@ -2,7 +2,7 @@
 
 This is the canonical executable frontier for Project Ledger. Read it before roadmap/backlog archaeology.
 
-The first canonical-identity walking skeleton is now implemented on this branch and becomes current reality when this PR lands.
+The first canonical-identity walking skeleton is implemented on `main`.
 
 ## Product objective
 
