@@ -153,7 +153,6 @@ def compile_state(
             "typed_observations": capability("available"),
             "source_health": capability("available"),
             "canonical_projects": capability("available"),
-            "identity_review": capability("available"),
             "project_capsules": capability(
                 "unavailable",
                 reason_code="WAVE3_NOT_IMPLEMENTED",
