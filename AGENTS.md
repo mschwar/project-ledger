@@ -36,11 +36,12 @@ As of September 18, 2026:
 - implemented agent commands are `validate`, `refresh`, `compile`, `orient`, and `sources`.
 - generated Wave 1 state is `state/system-manifest.json` plus `state/observations.json`; `state/` is rebuildable and gitignored.
 - stable source IDs, compatibility snapshot IDs, manifestation-oriented observation IDs, source probes/health, explicit capability states, and degraded-source containment are implemented.
-- canonical project identity, identity decisions/review, project capsules, `resolve/show/locate/explain`, structured session receipts/current-state resolution, and Project Ledger's semantic change feed are not implemented yet.
+- the first canonical identity slice is implemented: exact normalized repository remotes auto-merge; durable merge/split/reject/alias decisions are compiler inputs; canonical projects and identity review are materialized; `ledger resolve` is available.
+- project capsules, preferred-location resolution, `show/locate/explain`, structured session receipts/current-state resolution, and Project Ledger's semantic change feed are not implemented yet.
 - homelab owns the deployed reality-provider seam and consumes the non-mutating refresh contract; Project Ledger continues to own source/project schema and identity semantics.
 - the committed human ledger is historical evidence, not proof of current production freshness. A live provider proof on the intended homelab node remains an operational closeout item.
 
-The active product constraint is now **observation -> canonical project identity**. Do not restart already-landed Wave 1 substrate work. `CURRENT.md` is the canonical frontier pointer.
+The observation -> canonical identity boundary has now been crossed conservatively. Do not broaden automatic matching beyond exact remote identity without evidence/decision contracts. `CURRENT.md` is the canonical frontier pointer; the next software constraint is chosen only after live provider proof/synthesis.
 
 ## Architectural laws
 
@@ -81,12 +82,13 @@ python -m ledger refresh --no-markdown-mirror
 python -m ledger compile
 python -m ledger orient
 python -m ledger sources
+python -m ledger resolve <referent>
 python -m unittest discover -s tests
 ```
 
 The compatibility entrypoint `python build_ledger.py` remains supported during migration.
 
-Commands such as `resolve`, `show`, `locate`, `explain`, `review`, `changes`, and `record-session` remain unavailable until their stated gate lands. Consume the manifest capability map rather than inferring capability from prose.
+Commands such as `show`, `locate`, `explain`, `review`, `changes`, and `record-session` remain unavailable until their stated gate lands. Consume the manifest capability map rather than inferring capability from prose.
 
 ## Definition of done
 
