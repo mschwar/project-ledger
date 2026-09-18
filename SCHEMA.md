@@ -5,8 +5,9 @@
 This document is the schema authority for Project Ledger. It distinguishes:
 
 1. the legacy flat compatibility record;
-2. the **currently implemented Wave 1 typed substrate**;
-3. the later canonical-project/current-state schema families that remain design targets.
+2. the implemented typed source/observation substrate;
+3. the implemented first canonical-identity/review slice;
+4. the broader current-state/capsule/change schema families that remain design targets.
 
 Do not treat a target field as implemented merely because it appears in this document. The runtime capability map in `state/system-manifest.json` is the executable boundary.
 
@@ -76,10 +77,13 @@ The compatibility record mixes observed facts, declarations, inference, and proj
 Current constants from `ledger/__init__.py`:
 
 ```text
-COMPILER_VERSION            = 0.1.0
-MANIFEST_SCHEMA_VERSION     = 1.0.0
-OBSERVATION_SCHEMA_VERSION  = 1.0.0
-COMPAT_FLAT_SCHEMA_VERSION  = 0.1.0
+COMPILER_VERSION                    = 0.2.0
+MANIFEST_SCHEMA_VERSION             = 1.1.0
+OBSERVATION_SCHEMA_VERSION          = 1.0.0
+COMPAT_FLAT_SCHEMA_VERSION          = 0.1.0
+CANONICAL_PROJECT_SCHEMA_VERSION    = 1.0.0
+IDENTITY_DECISION_SCHEMA_VERSION    = 1.0.0
+REVIEW_QUEUE_SCHEMA_VERSION         = 1.0.0
 ```
 
 Full compatibility/migration policy for these versions is still Gate B work. Unsupported future major versions must eventually fail/degrade explicitly rather than being guessed through.
@@ -236,6 +240,7 @@ digest
 state                                  ok | degraded
 source_unavailable_count
 unresolved_observation_source_count
+identity_review_count
 ```
 
 ### counts
@@ -243,11 +248,11 @@ unresolved_observation_source_count
 ```text
 sources
 observations
-canonical_projects     null until Wave 2
-review_items           null until Wave 2
+canonical_projects
+review_items
 ```
 
-`null` means capability not implemented/known. It must not be converted to `0`.
+Canonical project and identity-review counts are now concrete integers. Unimplemented capability counts should continue to use explicit null/absence rather than being silently coerced to zero.
 
 ### capabilities
 
@@ -264,11 +269,11 @@ Current available capabilities:
 - `compat_observations`
 - `typed_observations`
 - `source_health`
+- `canonical_projects`
+- `review_queue`
 
 Current explicit unavailable capabilities:
 
-- `canonical_projects` — `WAVE2_NOT_IMPLEMENTED`
-- `review_queue` — `WAVE2_NOT_IMPLEMENTED`
 - `project_capsules` — `WAVE3_NOT_IMPLEMENTED`
 - `change_feed` — `WAVE4_NOT_IMPLEMENTED`
 
@@ -300,11 +305,117 @@ This difference is contractual, not accidental.
 
 For exact current operational details see `docs/WAVE1-AGENT-SUBSTRATE.md`.
 
+## 1.7 Executable canonical identity slice
+
+Generated files:
+
+```text
+state/canonical-projects.json
+state/review-queue.json
+```
+
+Durable identity decisions are committed compiler inputs:
+
+```text
+registry/identity-decisions.json
+```
+
+### Automatic identity authority
+
+The first slice deliberately has one automatic merge rule:
+
+```text
+exact normalized repository remote
+```
+
+Examples such as HTTPS and SSH forms of the same GitHub remote normalize to one identity key.
+
+The following **do not** automatically merge projects:
+
+- display name;
+- compatibility `project_key`;
+- path similarity;
+- README similarity;
+- semantic/fuzzy similarity.
+
+Those values may still be exact resolve referents. If an exact lower-authority referent maps to more than one canonical project, resolution returns ambiguity instead of guessing.
+
+### Durable decision types
+
+The versioned decision registry supports:
+
+- `merge` — explicitly union two or more observation IDs;
+- `split` — explicitly keep listed observation IDs in separate conceptual projects;
+- `reject_match` — reject one specific observation pair;
+- `alias` — attach an operator-approved exact referent to the project containing an observation.
+
+Missing observation references become bounded `DECISION_REFERENCE_UNAVAILABLE` review items rather than failing unrelated identity compilation. Conflicting positive/negative decisions become `DECISION_CONFLICT`.
+
+### Canonical project artifact
+
+Current per-project fields:
+
+```text
+schema_version
+canonical_project_id
+project_key
+display_name
+observation_ids[]
+identity_anchor
+normalized_remotes[]
+project_key_hints[]
+referents[]
+identity_evidence[]
+merge_decision_ids[]
+```
+
+Current canonical IDs are deterministic under unchanged identity evidence. A single normalized remote is the preferred anchor; explicit merge decisions anchor multi-remote/non-remote merged groups; otherwise a singleton observation anchors the project.
+
+This first slice does not yet claim the full eventual immutable-ID registry semantics described later in this document.
+
+### Review queue artifact
+
+Current envelope:
+
+```text
+schema_version
+run_id
+compiled_at
+review_count
+items[]
+```
+
+Current review codes include:
+
+- `PROJECT_KEY_AMBIGUOUS`;
+- `AUTO_MATCH_BLOCKED_BY_DECISION`;
+- `DECISION_REFERENCE_UNAVAILABLE`;
+- `DECISION_CONFLICT`.
+
+### Exact resolve contract
+
+`ledger resolve <referent>` reads canonical project state and returns:
+
+- `resolved` — one canonical project;
+- `ambiguous` — more than one equally authoritative exact candidate;
+- `unresolved` — no candidate.
+
+Referent priority is explicit: canonical ID first; exact normalized remote/path/operator alias next; raw URL/project key next; compatibility key hints next; display name last.
+
+CLI exit codes:
+
+```text
+0 resolved
+3 ambiguous
+4 unresolved
+2 operational/config error
+```
+
 ---
 
-# 2. Target epistemic and canonical schema families
+# 2. Broader target epistemic and canonical schema families
 
-The following layers are **not yet executable capabilities** unless explicitly stated otherwise.
+The following sections describe the broader target beyond the implemented first identity slice. Where a concept is already partially executable, the narrower contract in §1.7 is authoritative for current behavior.
 
 ## Common envelope direction
 
@@ -389,7 +500,7 @@ Decisions are compiler inputs and should be append/supersede oriented rather tha
 
 ## 2.5 Canonical project
 
-Durable compiled conceptual entity:
+A narrow canonical project is executable in §1.7. The broader durable entity target is:
 
 - immutable `canonical_project_id`
 - human-readable `project_key`
@@ -506,14 +617,15 @@ The capsule should omit deep evidence payloads unless needed for normal orientat
 
 ## Review queue / change feed
 
-Planned:
+`state/review-queue.json` is implemented for the first identity slice.
+
+Still planned:
 
 ```text
-state/review-queue.json
 state/changes.json
 ```
 
-They are not implemented in Wave 1.
+The current review queue is identity-focused; broader current-state/schema review families remain later work.
 
 ---
 
@@ -579,7 +691,7 @@ A sidecar is a declaration source attached to an observation. If multiple observ
 
 # 7. Compatibility/versioning direction
 
-Gate B must finish these rules before Wave 2 depends on them:
+These compatibility rules remain important hardening work. The first identity slice avoids depending on unfinished declaration semantics by using only exact observed remote identity plus explicit durable decisions:
 
 1. preserve the flat compatibility output as an explicit v0 contract;
 2. introduce typed entity collections beside it rather than silently changing field meanings;

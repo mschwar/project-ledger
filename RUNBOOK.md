@@ -13,14 +13,15 @@ python -m ledger refresh --no-markdown-mirror
 python -m ledger compile
 python -m ledger orient
 python -m ledger sources
+python -m ledger resolve <referent>
 python -m unittest discover -s tests
 ```
 
 The compatibility scanner remains directly available as `python build_ledger.py`.
 
-Implemented today: `validate`, `refresh`, `compile`, `orient`, and `sources`.
+Implemented today: `validate`, `refresh`, `compile`, `orient`, `sources`, and exact `resolve`.
 
-Not yet implemented: `resolve`, `show`, `locate`, `explain`, `review`, `changes`, and `record-session`. The manifest capability map is the executable source of truth.
+Not yet implemented: `show`, `locate`, `explain`, `review`, `changes`, and `record-session`. The manifest capability map is the executable source of truth.
 
 ## Authority rule
 
@@ -61,7 +62,7 @@ ledger orient
  -> ledger locate <canonical project>
 ```
 
-Only `orient` exists today. Do not invent the rest from design prose.
+`orient` and exact `resolve` exist today. `show` and `locate` do not; do not invent them from design prose.
 
 A real-source refresh must always be qualified by the sources actually accessible in that run. Code freshness and ledger-data freshness are separate facts.
 
@@ -135,13 +136,13 @@ Current short-term correction for live projects:
 - retain both observations in outputs;
 - document ambiguous cases rather than collapsing them manually in generated output.
 
-Target state: identity evidence + explicit merge/split/reject decisions + review queue.
+Current first slice: exact normalized repository remotes auto-merge; committed merge/split/reject/alias decisions are compiler inputs; ambiguity is materialized in `state/review-queue.json`. Compatibility names/project keys never auto-merge by themselves.
 
 ## Identity resolution target rule
 
 Never merge based only on same display name. Prefer strong deterministic evidence; preserve ambiguity when evidence remains weak.
 
-After Wave 2, a resolved identity question should produce a durable decision so it does not recur.
+When an ambiguity is explicitly resolved, encode it in `registry/identity-decisions.json` so it does not recur.
 
 ---
 

@@ -126,11 +126,15 @@ class Wave1SubstrateTests(unittest.TestCase):
                 state_dir=state_dir,
                 generated_at="2026-09-14T06:10:00Z",
             )
-            self.assertEqual(manifest["schema_version"], "1.0.0")
+            self.assertEqual(manifest["schema_version"], "1.1.0")
             self.assertEqual(manifest["health"]["state"], "degraded")
             self.assertEqual(manifest["counts"]["observations"], 1)
-            self.assertIsNone(manifest["counts"]["canonical_projects"])
-            self.assertEqual(manifest["capabilities"]["canonical_projects"]["state"], "unavailable")
+            self.assertEqual(manifest["counts"]["canonical_projects"], 1)
+            self.assertEqual(manifest["counts"]["review_items"], 0)
+            self.assertEqual(manifest["capabilities"]["canonical_projects"]["state"], "available")
+            self.assertEqual(manifest["capabilities"]["review_queue"]["state"], "available")
+            self.assertTrue((state_dir / "canonical-projects.json").is_file())
+            self.assertTrue((state_dir / "review-queue.json").is_file())
             self.assertTrue((state_dir / "system-manifest.json").is_file())
 
             live_source = next(item for item in manifest["sources"] if item["source_id"] == "live-primary")
@@ -149,6 +153,8 @@ class Wave1SubstrateTests(unittest.TestCase):
             orientation = orient_payload(loaded)
             self.assertEqual(orientation["health"]["state"], "degraded")
             self.assertIn("typed_observations", orientation["available_capabilities"])
+            self.assertIn("canonical_projects", orientation["available_capabilities"])
+            self.assertIn("review_queue", orientation["available_capabilities"])
             self.assertIn("project_capsules", orientation["unavailable_capabilities"])
 
     def test_compat_snapshot_changes_when_observation_run_changes(self) -> None:

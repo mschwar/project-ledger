@@ -146,7 +146,7 @@ Agents should consume deltas rather than repeatedly reconstruct the whole estate
 
 ## Agent control surface
 
-The eventual conceptual CLI/API should be small and stable:
+The CLI/API should remain small and stable. Implemented today: `orient`, `sources`, `validate`, `refresh`, `compile`, and exact `resolve`. The broader target surface is:
 
 ```text
 ledger orient
@@ -234,6 +234,7 @@ over raw tracebacks or silent omission.
 - `BACKLOG.md` — executable work packages.
 - `RUNBOOK.md` — operations/recovery.
 - `docs/decisions/` — durable architectural decisions/rationale.
+- `registry/identity-decisions.json` — durable merge/split/reject/alias identity decisions; compiler input, not generated state.
 
 When they disagree: executable schema/tests outrank prose; `SYSTEM.md` invariants and explicit decisions outrank other prose; `CURRENT.md` is the frontier pointer for what is implemented and what executes next. Roadmap/backlog must be reconciled to it rather than interpreted independently. Conflicts should be repaired, not carried forward.
 

@@ -101,6 +101,20 @@ Exit evidence: one current provider run demonstrates the exact Wave 1 contract a
 
 # P2 — Canonical identity compiler
 
+## Landed — R2 identity walking skeleton
+
+Implemented:
+
+- conservative canonical identity compilation from exact normalized repository remotes;
+- durable `registry/identity-decisions.json` input supporting merge/split/reject/alias;
+- `state/canonical-projects.json`;
+- `state/review-queue.json`;
+- canonical-project/review counts and capabilities in the system manifest;
+- exact `ledger resolve` with explicit resolved/ambiguous/unresolved outcomes;
+- regression coverage for same-name unrelated projects, duplicate manifestations, negative decisions, explicit merge/alias, and stable canonical IDs.
+
+Do not broaden automatic matching to names/project-key hints merely to increase merge rate.
+
 ## P2.1 Extract source adapters and normalization
 
 Refactor under frozen compatibility tests:

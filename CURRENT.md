@@ -2,6 +2,8 @@
 
 This is the canonical executable frontier for Project Ledger. Read it before roadmap/backlog archaeology.
 
+The first canonical-identity walking skeleton is implemented on `main`.
+
 ## Product objective
 
 A cold agent should be able to take a messy project referent, determine which conceptual project the operator means, identify trustworthy manifestations and current state, understand uncertainty, and continue work without replaying filesystem/repository archaeology.
@@ -13,26 +15,34 @@ Implemented:
 ```text
 registered sources
  -> compatibility scan
- -> source probes + compatibility snapshots
  -> typed manifestation observations
+ -> exact-remote identity evidence + explicit decisions
+ -> canonical projects + identity review
  -> system manifest
- -> ledger orient / ledger sources
+ -> ledger orient / ledger resolve / ledger sources
 ```
 
-This crosses the **estate observation/orientation** boundary.
+This crosses both the **estate observation/orientation** boundary and the first **conceptual project identity** boundary.
 
-Not implemented yet:
+Identity is deliberately conservative:
+
+- exact normalized repository remote is the only automatic merge authority;
+- names and compatibility `project_key` values are exact referents, not automatic merge authority;
+- non-remote duplicate manifestations remain separate until an explicit decision exists;
+- split/reject decisions can block an otherwise exact automatic match;
+- ambiguous exact referents remain explicit rather than being guessed.
+
+Still not implemented:
 
 ```text
-identity evidence + durable decisions
- -> canonical projects
- -> identity review
- -> exact resolve
- -> preferred working location
- -> project capsules/current state/receipts
+preferred working location
+ -> project capsules
+ -> structured current state / session receipts
+ -> semantic change feed
+ -> incremental compilation
 ```
 
-The active product constraint is **observation -> canonical project identity**.
+The next software constraint is intentionally **not preselected**. R0 live provider proof must now test the identity slice against the real estate before R3 is authorized.
 
 ## Current commands
 
@@ -43,6 +53,7 @@ python -m ledger refresh --no-markdown-mirror
 python -m ledger compile
 python -m ledger orient
 python -m ledger sources
+python -m ledger resolve <referent>
 python -m unittest discover -s tests
 ```
 
@@ -60,33 +71,23 @@ python -m unittest discover -s tests
 
 ### R1 — Canonicality + assurance repair
 
-Status: in progress on the current bounded work unit.
+Status: COMPLETE.
 
-Exit:
+Evidence:
 
-- operating docs agree with executable Wave 1 reality;
-- already-landed work is not left looking READY in the backlog;
-- the non-mutating provider regression test is actually discovered by configured CI;
-- this file becomes the single frontier pointer.
+- canonical frontier and execution programme landed;
+- operating docs agree with the executable substrate;
+- configured CI discovers the provider regression test.
 
 ### R2 — Identity walking skeleton
 
-Status: next executable software unit.
+Status: COMPLETE when this PR lands.
 
-Cross this observable boundary:
+New observable capability:
 
-> Given exact strong referents/evidence, compile stable conceptual project identity and resolve to one canonical project or explicit ambiguity.
+> Given an exact canonical ID, known path, exact normalized repository remote, operator-approved alias, project-key hint, or display name, return one canonical project, explicit ambiguity, or unresolved.
 
-Minimum acceptance:
-
-- deterministic strong evidence only;
-- one canonical project may retain multiple observations;
-- same-name unrelated observations are not silently merged;
-- explicit durable merge/split/reject/alias decisions are compiler inputs;
-- unchanged inputs produce stable canonical IDs/results;
-- `ledger resolve <referent>` exists with JSON output;
-- every result exposes evidence/reason codes;
-- no semantic model required.
+Automatic identity remains narrower than resolution: only exact normalized repository remotes auto-merge. Explicit identity decisions are durable compiler inputs.
 
 ### R0 — Live provider proof
 
@@ -106,4 +107,4 @@ If live access is unavailable, record the bounded deployment/source defect; do n
 
 Do not add broad ingestion adapters, UI, model-first dedupe, portfolio analytics, workflow engines, or heavy incremental machinery while exact canonical identity is still unavailable.
 
-After R2 lands, reassess the next constraint from demonstrated use rather than automatically executing the rest of the roadmap.
+After R0 produces current production evidence, synthesize the next constraint from demonstrated use. Do not automatically start R3 merely because it is next in the design sequence.
