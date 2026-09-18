@@ -6,14 +6,21 @@ Operate and extend Project Ledger safely while preserving its role as a project-
 
 ## Commands available today
 
-```powershell
-python build_ledger.py
-python -m unittest tests.test_build_ledger
+```bash
+python -m ledger validate
+python -m ledger refresh
+python -m ledger refresh --no-markdown-mirror
+python -m ledger compile
+python -m ledger orient
+python -m ledger sources
+python -m unittest discover -s tests
 ```
 
-CI compiles `build_ledger.py` and runs the test suite on pushes and pull requests.
+The compatibility scanner remains directly available as `python build_ledger.py`.
 
-The `ledger orient/resolve/show/...` command family described in the design docs is target architecture, not yet implemented.
+Implemented today: `validate`, `refresh`, `compile`, `orient`, and `sources`.
+
+Not yet implemented: `resolve`, `show`, `locate`, `explain`, `review`, `changes`, and `record-session`. The manifest capability map is the executable source of truth.
 
 ## Authority rule
 
@@ -31,28 +38,32 @@ Normal development loop:
 
 ## Agent orientation today
 
+For routine estate orientation after a successful compile/provider refresh:
+
+1. `python -m ledger orient --json` or read `state/system-manifest.json`;
+2. inspect `python -m ledger sources --json` only when source health matters;
+3. load `state/observations.json` only when observation-level evidence is required;
+4. read design documents only when changing Project Ledger itself.
+
 For system-development work:
 
-1. `SYSTEM.md`;
-2. `AGENT_PROTOCOL.md`;
-3. only the relevant architecture/schema/runbook/roadmap sections;
-4. current generated/source artifacts only if the task depends on estate state.
+1. `CURRENT.md`;
+2. `SYSTEM.md`;
+3. `AGENT_PROTOCOL.md`;
+4. only the task-relevant architecture/schema/runbook/roadmap sections.
 
-For a real-source refresh, qualify the output by which configured sources were actually accessible. Code freshness and ledger-data freshness are separate facts.
-
-## Target orientation path
-
-When implemented, routine agents should use:
+The intended later project-level path remains:
 
 ```text
 ledger orient
  -> ledger resolve <referent>
  -> ledger show <canonical project>
- -> ledger locate <canonical project> if work location matters
- -> ledger explain ... only when deeper evidence is needed
+ -> ledger locate <canonical project>
 ```
 
-This target read path should replace routine repo archaeology, not add another mandatory layer on top of it.
+Only `orient` exists today. Do not invent the rest from design prose.
+
+A real-source refresh must always be qualified by the sources actually accessible in that run. Code freshness and ledger-data freshness are separate facts.
 
 ---
 
