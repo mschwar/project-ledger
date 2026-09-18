@@ -8,6 +8,7 @@ The optimization target is simple: **a cold agent should be able to understand w
 
 ## Start here
 
+- `CURRENT.md` — canonical executable frontier and next bounded work
 - `SYSTEM.md` — canonical system model and invariants
 - `AGENT_PROTOCOL.md` — agent orientation/action/handoff protocol
 - `SCHEMA.md` — compatibility schema and typed target contracts

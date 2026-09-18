@@ -14,9 +14,10 @@ Use progressive disclosure rather than reading the entire repo by default.
 
 For any substantive task:
 
-1. Read `SYSTEM.md` for the conceptual model/invariants.
-2. Read `AGENT_PROTOCOL.md` for the operating loop.
-3. Read only the task-relevant contract:
+1. Read `CURRENT.md` for the executable frontier and current capability boundary.
+2. Read `SYSTEM.md` for the conceptual model/invariants.
+3. Read `AGENT_PROTOCOL.md` for the operating loop.
+4. Read only the task-relevant contract:
    - `ARCHITECTURE.md` for module/dataflow changes
    - `SCHEMA.md` for entity/identity/state changes
    - `RUNBOOK.md` for operation/recovery
@@ -28,19 +29,18 @@ Target-state agents should normally orient through `ledger orient` / `state/syst
 
 ## Current state
 
-As of September 14, 2026:
+As of September 18, 2026:
 
-- `main` contains the converged multi-source scanner and is product authority.
-- `build_ledger.py` remains the working monolithic CLI.
-- discovery supports `children`, `git_repos`, `self`, and `inventory_policy`.
-- configured sources include `/central` roots, selected Mac mirrors, Matty-PC inventory, Google Drive inventory/policy, and backup surfaces.
-- `.project-ledger.json` provides a thin project-local declaration/current-state overlay.
-- outputs include CSV, JSON, Markdown, and the committed human-facing ledger mirror.
-- CI compiles the scanner and runs unit tests.
-- observation and canonical-project entities are not yet separated in executable schema.
-- canonical multi-observation merge, system manifest/project capsules, session receipts, change feed, and review queue are target architecture, not yet implemented.
+- `main` is product authority and contains the converged multi-source compatibility scanner plus the executable Wave 1 agent substrate.
+- preferred refresh is `python -m ledger refresh`; automation can use `--no-markdown-mirror`.
+- implemented agent commands are `validate`, `refresh`, `compile`, `orient`, and `sources`.
+- generated Wave 1 state is `state/system-manifest.json` plus `state/observations.json`; `state/` is rebuildable and gitignored.
+- stable source IDs, compatibility snapshot IDs, manifestation-oriented observation IDs, source probes/health, explicit capability states, and degraded-source containment are implemented.
+- canonical project identity, identity decisions/review, project capsules, `resolve/show/locate/explain`, structured session receipts/current-state resolution, and Project Ledger's semantic change feed are not implemented yet.
+- homelab owns the deployed reality-provider seam and consumes the non-mutating refresh contract; Project Ledger continues to own source/project schema and identity semantics.
+- the committed human ledger is historical evidence, not proof of current production freshness. A live provider proof on the intended homelab node remains an operational closeout item.
 
-The next milestone is the agent-native substrate: versioned schemas/IDs/claim semantics and the observation-vs-canonical boundary that all later control/query surfaces depend on.
+The active product constraint is now **observation -> canonical project identity**. Do not restart already-landed Wave 1 substrate work. `CURRENT.md` is the canonical frontier pointer.
 
 ## Architectural laws
 
@@ -74,14 +74,19 @@ These summarize `SYSTEM.md`; the full document is authoritative for rationale.
 
 ## Expected commands today
 
-```powershell
-python build_ledger.py
-python -m unittest tests.test_build_ledger
+```bash
+python -m ledger validate
+python -m ledger refresh
+python -m ledger refresh --no-markdown-mirror
+python -m ledger compile
+python -m ledger orient
+python -m ledger sources
+python -m unittest discover -s tests
 ```
 
-CI runs compile + tests on pushes and pull requests.
+The compatibility entrypoint `python build_ledger.py` remains supported during migration.
 
-Target commands are defined in `SYSTEM.md`/`ARCHITECTURE.md` and should be introduced behind stable machine-readable contracts.
+Commands such as `resolve`, `show`, `locate`, `explain`, `review`, `changes`, and `record-session` remain unavailable until their stated gate lands. Consume the manifest capability map rather than inferring capability from prose.
 
 ## Definition of done
 

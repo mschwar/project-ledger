@@ -223,7 +223,8 @@ over raw tracebacks or silent omission.
 
 ## Documentation control plane
 
-- `README.md` — short orientation/current capability boundary.
+- `CURRENT.md` — canonical executable frontier, current capability, active constraint, and next bounded work.
+- `README.md` — short product orientation/current capability boundary.
 - `SYSTEM.md` — canonical conceptual model and invariants.
 - `AGENT_PROTOCOL.md` — agent read/act/handoff protocol.
 - `ARCHITECTURE.md` — implementation architecture.
@@ -234,7 +235,7 @@ over raw tracebacks or silent omission.
 - `RUNBOOK.md` — operations/recovery.
 - `docs/decisions/` — durable architectural decisions/rationale.
 
-When they disagree: executable schema/tests outrank prose; `SYSTEM.md` invariants and explicit decisions outrank roadmap/backlog/generated views. Conflicts should be repaired, not interpreted indefinitely.
+When they disagree: executable schema/tests outrank prose; `SYSTEM.md` invariants and explicit decisions outrank other prose; `CURRENT.md` is the frontier pointer for what is implemented and what executes next. Roadmap/backlog must be reconciled to it rather than interpreted independently. Conflicts should be repaired, not carried forward.
 
 ## End state
 
