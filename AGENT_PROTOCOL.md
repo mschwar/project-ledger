@@ -18,17 +18,12 @@ Do not begin routine work with repo archaeology or a broad filesystem crawl if a
 
 Read the cheapest authoritative surface first.
 
-Today:
+Implemented path:
 
-1. `AGENTS.md`
-2. `SYSTEM.md`
-3. the specific architecture/schema/runbook section relevant to the task
-4. current ledger artifacts when the question depends on project estate state
-
-Target state:
-
-1. `ledger orient` / `state/system-manifest.json`
-2. only deeper docs if changing the system itself
+1. `CURRENT.md` when changing Project Ledger itself;
+2. after a compile/provider refresh, `ledger orient` / `state/system-manifest.json`;
+3. `ledger sources` when source health is relevant;
+4. deeper docs/artifacts only when the bounded read surface is insufficient.
 
 Before acting, know:
 
@@ -36,14 +31,16 @@ Before acting, know:
 - schema/compiler version when relevant;
 - source freshness/coverage;
 - known degraded sources;
-- whether the requested project resolves uniquely;
+- which requested capabilities are actually available in the manifest;
 - whether the task is product work, source ingestion, identity work, review resolution, or downstream project work.
+
+Current limitation: `orient` can describe the estate but cannot yet resolve a human project referent to canonical identity.
 
 ## 2. RESOLVE
 
 Never treat a human name, path, or repo folder as sufficient identity when duplicates are possible.
 
-Target behavior:
+Next walking-skeleton behavior (not yet on `main` at the start of this programme):
 
 ```text
 ledger resolve <user referent>
