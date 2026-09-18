@@ -15,6 +15,7 @@ from .ids import normalize_locator, stable_id
 
 
 _ALLOWED_REMOTE_SCHEMES = {"http", "https", "ssh", "git"}
+_KNOWN_REPOSITORY_HOSTS = {"github.com", "gitlab.com", "bitbucket.org", "codeberg.org"}
 _DECISION_TYPES = {"merge", "split", "reject_match", "alias"}
 
 
@@ -127,13 +128,29 @@ class _UnionFind:
         return [set(self.members[root]) for root in sorted(self.members)]
 
 
+def _canonical_url_repository_identity(raw: str) -> str | None:
+    text = str(raw or "").strip()
+    normalized = normalize_remote_identity(text)
+    if not normalized:
+        return None
+    if text.startswith("git@") or text.endswith(".git"):
+        return normalized
+    if "://" in text:
+        parsed = urlparse(text)
+        if (parsed.hostname or "").lower() in _KNOWN_REPOSITORY_HOSTS:
+            return normalized
+    return None
+
+
 def _observation_facts(observation: dict) -> dict:
     compat = observation.get("compat_entry") if isinstance(observation.get("compat_entry"), dict) else {}
-    remotes = {
-        value
-        for raw in (compat.get("remote_url"), compat.get("canonical_url"), observation.get("project_key"))
-        if (value := normalize_remote_identity(str(raw or "")))
-    }
+    remotes: set[str] = set()
+    remote_identity = normalize_remote_identity(str(compat.get("remote_url") or ""))
+    if remote_identity:
+        remotes.add(remote_identity)
+    canonical_remote = _canonical_url_repository_identity(str(compat.get("canonical_url") or ""))
+    if canonical_remote:
+        remotes.add(canonical_remote)
     project_key = str(observation.get("project_key") or "").strip() or None
     names = {
         str(value).strip()
