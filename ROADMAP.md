@@ -91,7 +91,21 @@ Gate B exit:
 
 # Wave 2 — Canonical identity compiler
 
+Status: **first walking skeleton landed; broader Wave 2 remains open**.
+
 Goal: compile durable project identity while preserving all observations and uncertainty.
+
+Landed first slice:
+
+- exact normalized repository remote as the only automatic identity merge rule;
+- durable JSON decision registry supporting merge/split/reject/alias inputs;
+- canonical project materialization;
+- bounded identity review queue;
+- distinct canonical-project/review counts in the manifest;
+- exact `ledger resolve` with resolved/ambiguous/unresolved outcomes;
+- reality-shaped regression fixtures covering multi-manifestation merge, same-name separation, negative decisions, explicit merge/alias, and stable IDs.
+
+This slice deliberately does **not** treat names or compatibility `project_key` values as automatic identity authority. Gate-B declaration/freshness hardening remains relevant when it blocks real identity use, but the conservative slice does not depend on untyped declarations for merging.
 
 Deliverables:
 
@@ -127,7 +141,7 @@ Deliverables:
 - first-class identity review items with stable IDs, evidence, severity, resolution actions;
 - resolved review items ratchet into durable decisions/tests.
 
-Gate C exit:
+Gate C exit remains broader than the first slice:
 
 - two or more source snapshots compile reproducibly into canonical projects;
 - ambiguous same-name/similar projects are not silently merged;
