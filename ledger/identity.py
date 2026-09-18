@@ -464,6 +464,8 @@ def materialize_identity(
     run_id: str,
     compiled_at: str,
 ) -> tuple[dict, dict]:
+    state_dir = state_dir.resolve()
+    state_dir.mkdir(parents=True, exist_ok=True)
     decisions = load_identity_decisions(decisions_path)
     canonical, reviews = compile_identity(observations, decisions)
     canonical.update({"run_id": run_id, "compiled_at": compiled_at})
