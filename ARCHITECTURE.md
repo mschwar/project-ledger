@@ -4,7 +4,9 @@
 
 ## Current implementation
 
-Today `build_ledger.py` performs most responsibilities in one process:
+The runtime is currently a deliberate two-layer migration architecture.
+
+`build_ledger.py` remains the compatibility scanner:
 
 ```text
 config
@@ -12,10 +14,23 @@ config
  -> score/include
  -> extract filesystem/git/inventory metadata
  -> overlay sidecar
- -> emit CSV/JSON/Markdown
+ -> emit CSV/JSON/Markdown compatibility observations
 ```
 
-This is a useful observation scanner, but it conflates source adaptation, observation schema, identity hints, current-state overlay, and presentation. It does not yet implement canonical-project compilation.
+The `ledger/` package now wraps that scanner with the first executable agent substrate:
+
+```text
+compatibility observations
+ -> stable source/snapshot/observation identity
+ -> source probes/health
+ -> typed observations
+ -> state/system-manifest.json
+ -> ledger orient / ledger sources
+```
+
+This is a real observation/orientation vertical slice. It still does **not** compile conceptual project identity. Canonical projects, identity decisions/review, project capsules, project-level resolve/location, receipts, and incremental compilation remain later boundaries.
+
+The active architecture constraint is therefore the seam between normalized observations and canonical project identity, not basic ingestion.
 
 ## Target architecture
 
