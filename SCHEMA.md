@@ -348,9 +348,19 @@ The versioned decision registry supports:
 - `merge` — explicitly union two or more observation IDs;
 - `split` — explicitly keep listed observation IDs in separate conceptual projects;
 - `reject_match` — reject one specific observation pair;
-- `alias` — attach an operator-approved exact referent to the project containing an observation.
+- `alias` — attach an operator-approved exact referent to the project containing an observation;
+- `canonical_key` — assign an operator-approved stable human-readable `project_key` to the project containing an observation (overrides the auto-derived key; never changes membership);
+- `supersede` — mark a prior decision as inactive for this compile (append/supersede oriented, never silently rewritten).
 
-Missing observation references become bounded `DECISION_REFERENCE_UNAVAILABLE` review items rather than failing unrelated identity compilation. Conflicting positive/negative decisions become `DECISION_CONFLICT`.
+Every decision carries a stable `decision_id` and may carry `rationale`, `evidence`
+refs, `authority` (`operator` | `trusted_automation` | `reviewed_agent`), and
+`decided_at`. A `supersede` decision references `supersedes_decision_id`; superseded
+decisions no longer constrain compilation or evidence.
+
+Missing observation references become bounded `DECISION_REFERENCE_UNAVAILABLE` review
+items rather than failing unrelated identity compilation. Conflicting positive/negative
+decisions become `DECISION_CONFLICT`. A `supersede` referencing an unknown decision
+becomes a bounded `DECISION_SUPERSEDE_UNKNOWN` review.
 
 ### Canonical project artifact
 
@@ -368,6 +378,7 @@ project_key_hints[]
 referents[]
 identity_evidence[]
 merge_decision_ids[]
+canonical_key_decision_id
 ```
 
 Current canonical IDs are deterministic under unchanged identity evidence. A single normalized remote is the preferred anchor; explicit merge decisions anchor multi-remote/non-remote merged groups; otherwise a singleton observation anchors the project.
@@ -391,7 +402,8 @@ Current review codes include:
 - `PROJECT_KEY_AMBIGUOUS`;
 - `AUTO_MATCH_BLOCKED_BY_DECISION`;
 - `DECISION_REFERENCE_UNAVAILABLE`;
-- `DECISION_CONFLICT`.
+- `DECISION_CONFLICT`;
+- `DECISION_SUPERSEDE_UNKNOWN`.
 
 ### Exact resolve contract
 
@@ -586,7 +598,7 @@ Evidence is not itself a merge decision.
 
 ## 2.4 Identity decision
 
-Durable explicit resolution:
+Durable explicit resolution (implemented in §1.7):
 
 - `decision_id`
 - decision type: merge, split, alias, reject-match, canonical-key assignment, supersede

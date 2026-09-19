@@ -193,16 +193,25 @@ Coverage: `tests/test_identity_evidence.py` (13 tests); total suite 64.
 
 ## P2.4 Decision registry
 
-Implement durable inputs for:
+**Complete.** Durable inputs now cover the full decision-type set, implemented in
+`ledger/identity.py` (validation + compiler) and `ledger/evidence.py` (supersession-aware
+negative evidence):
 
 - merge;
 - split;
 - reject-match;
 - alias;
-- canonical human key assignment;
-- supersession.
+- canonical human key assignment (`canonical_key` — operator-approved stable
+  `project_key` override; never changes membership);
+- supersession (`supersede` — marks a prior decision inactive for the compile;
+  append/supersede oriented, never silently rewritten).
 
-Every decision carries rationale/evidence and stable ID.
+Every decision carries a stable `decision_id` and may carry `rationale`, `evidence`
+refs, `authority` (`operator` | `trusted_automation` | `reviewed_agent`), and
+`decided_at`. A `supersede` referencing an unknown decision becomes a bounded
+`DECISION_SUPERSEDE_UNKNOWN` review. Superseded negative decisions no longer constrain
+compilation or evidence. Coverage: `tests/test_decision_registry.py` (10 tests); total
+suite 74.
 
 ## P2.5 Canonical project IDs and compiler
 

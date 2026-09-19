@@ -16,7 +16,8 @@ from .ids import normalize_locator, stable_id
 
 _ALLOWED_REMOTE_SCHEMES = {"http", "https", "ssh", "git"}
 _KNOWN_REPOSITORY_HOSTS = {"github.com", "gitlab.com", "bitbucket.org", "codeberg.org"}
-_DECISION_TYPES = {"merge", "split", "reject_match", "alias"}
+_DECISION_TYPES = {"merge", "split", "reject_match", "alias", "canonical_key", "supersede"}
+_DECISION_AUTHORITIES = {"operator", "trusted_automation", "reviewed_agent"}
 
 
 def normalize_remote_identity(raw: str) -> str | None:
@@ -94,6 +95,29 @@ def load_identity_decisions(path: Path | None) -> dict:
                 f"decisions[{index}].type={decision_type!r} is unsupported; "
                 f"expected one of {sorted(_DECISION_TYPES)}."
             )
+        authority = str(decision.get("authority", "")).strip()
+        if authority and authority not in _DECISION_AUTHORITIES:
+            raise ValueError(
+                f"decisions[{index}].authority={authority!r} is unsupported; "
+                f"expected one of {sorted(_DECISION_AUTHORITIES)}."
+            )
+        if decision_type == "canonical_key":
+            observation_id = str(decision.get("observation_id", "")).strip()
+            key = str(decision.get("key", "")).strip()
+            if not observation_id:
+                raise ValueError(f"decisions[{index}].canonical_key requires observation_id.")
+            if not key:
+                raise ValueError(f"decisions[{index}].canonical_key requires a non-empty key.")
+        elif decision_type == "supersede":
+            supersedes = str(decision.get("supersedes_decision_id", "")).strip()
+            if not supersedes:
+                raise ValueError(
+                    f"decisions[{index}].supersede requires supersedes_decision_id."
+                )
+            if supersedes == decision_id:
+                raise ValueError(
+                    f"decisions[{index}].supersede cannot supersede itself."
+                )
     return payload
 
 
@@ -233,6 +257,15 @@ def _decision_observation_ids(decision: dict) -> list[str]:
         if not observation_id or not alias:
             raise ValueError(f"{decision['decision_id']} requires observation_id and alias.")
         return [observation_id]
+    if decision_type == "canonical_key":
+        observation_id = str(decision.get("observation_id", "")).strip()
+        if not observation_id:
+            raise ValueError(f"{decision['decision_id']} requires observation_id.")
+        return [observation_id]
+    if decision_type == "supersede":
+        # A supersede decision references another decision, not observations. It is
+        # applied by the compiler before observation refs are resolved.
+        return []
     raise ValueError(f"Unsupported identity decision type: {decision_type}")
 
 
@@ -256,9 +289,34 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
     def add_review(item: dict) -> None:
         review_by_id[item["review_id"]] = item
 
+    # Supersede decisions are applied first: a superseded decision is inactive for
+    # this compile (append/supersede oriented, never silently rewritten). A supersede
+    # referencing an unknown decision is a bounded review, not a compile failure.
+    decision_by_id = {str(d.get("decision_id", "")): d for d in decisions_payload.get("decisions", [])}
+    superseded_ids: set[str] = set()
+    for decision in decisions_payload.get("decisions", []):
+        if decision["type"] != "supersede":
+            continue
+        target = str(decision.get("supersedes_decision_id", "")).strip()
+        if target not in decision_by_id:
+            add_review(
+                _review(
+                    "DECISION_SUPERSEDE_UNKNOWN",
+                    [],
+                    f"Supersede decision {decision['decision_id']} references unknown decision {target!r}.",
+                    evidence=[{"kind": "decision", "decision_id": decision["decision_id"], "type": "supersede"}],
+                )
+            )
+            continue
+        superseded_ids.add(target)
+
     # Validate decision references first. Missing observations are a bounded review,
     # not a global compile failure, because a source may simply be unavailable today.
     for decision in decisions_payload.get("decisions", []):
+        if decision["type"] == "supersede":
+            continue
+        if decision["decision_id"] in superseded_ids:
+            continue
         refs = _decision_observation_ids(decision)
         missing = sorted(set(refs) - set(by_id))
         if missing:
@@ -358,9 +416,21 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                 }
             )
 
+    # Canonical human key assignment: an operator-approved stable project_key for the
+    # project containing an observation. It overrides the auto-derived project_key but
+    # never changes which observations are members (identity authority is unchanged).
+    canonical_key_by_observation: dict[str, dict] = {}
+    for decision in applicable:
+        if decision["type"] != "canonical_key":
+            continue
+        observation_id = _decision_observation_ids(decision)[0]
+        canonical_key_by_observation[observation_id] = {
+            "key": str(decision["key"]).strip(),
+            "decision_id": decision["decision_id"],
+        }
+
     projects: list[dict] = []
     obs_to_project: dict[str, str] = {}
-
     for members in uf.components():
         member_ids = sorted(members)
         remotes = sorted({remote for obs_id in member_ids for remote in facts[obs_id]["remotes"]})
@@ -385,7 +455,19 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             anchor_value = member_ids[0]
 
         canonical_project_id = stable_id("prj", anchor_kind, anchor_value)
-        project_key = key_hints[0] if len(key_hints) == 1 else (remotes[0] if len(remotes) == 1 else canonical_project_id)
+        # An operator-approved canonical_key overrides the auto-derived project_key.
+        canonical_key_decision = next(
+            (
+                canonical_key_by_observation[obs_id]
+                for obs_id in member_ids
+                if obs_id in canonical_key_by_observation
+            ),
+            None,
+        )
+        if canonical_key_decision is not None:
+            project_key = canonical_key_decision["key"]
+        else:
+            project_key = key_hints[0] if len(key_hints) == 1 else (remotes[0] if len(remotes) == 1 else canonical_project_id)
         display_name = names[0] if names else project_key
 
         referents: list[dict] = [
@@ -439,6 +521,9 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             "identity_evidence": evidence,
             "identity_evidence_summary": evidence_summary,
             "merge_decision_ids": merge_decision_ids,
+            "canonical_key_decision_id": canonical_key_decision["decision_id"]
+            if canonical_key_decision is not None
+            else None,
         }
         projects.append(project)
         for obs_id in member_ids:

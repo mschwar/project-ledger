@@ -401,10 +401,22 @@ def project_identity_evidence(
     return sorted(evidence, key=lambda item: item["identity_evidence_id"]), summary
 
 
+def _active_decisions(decisions_payload: dict) -> list[dict]:
+    """Decisions that are not superseded by a later supersede decision."""
+    decisions = decisions_payload.get("decisions", [])
+    superseded: set[str] = set()
+    for decision in decisions:
+        if str(decision.get("type", "")).strip() == "supersede":
+            target = str(decision.get("supersedes_decision_id", "")).strip()
+            if target:
+                superseded.add(target)
+    return [d for d in decisions if str(d.get("decision_id", "")).strip() not in superseded]
+
+
 def negative_pairs_from_decisions(decisions_payload: dict) -> set[tuple[str, str]]:
     """Pairs of observations an explicit split/reject decision keeps apart."""
     pairs: set[tuple[str, str]] = set()
-    for decision in decisions_payload.get("decisions", []):
+    for decision in _active_decisions(decisions_payload):
         decision_type = str(decision.get("type", "")).strip()
         if decision_type == "split":
             refs = [
@@ -427,7 +439,7 @@ def negative_decision_ids_by_pair(
 ) -> dict[tuple[str, str], set[str]]:
     """Map a negative observation pair to the decision IDs that keep it apart."""
     by_pair: dict[tuple[str, str], set[str]] = {}
-    for decision in decisions_payload.get("decisions", []):
+    for decision in _active_decisions(decisions_payload):
         decision_type = str(decision.get("type", "")).strip()
         decision_id = str(decision.get("decision_id", "")).strip()
         if not decision_id:

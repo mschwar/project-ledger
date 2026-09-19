@@ -40,6 +40,14 @@ split/reject evidence is first-class, and the materialized `identity-evidence.js
 exposes per-project unifying evidence + summaries. This is descriptive scoring — the
 merge authority is unchanged.
 
+The **decision registry (P2.4)** now covers the full durable decision-type set: merge,
+split, reject-match, alias, canonical human key assignment (`canonical_key`), and
+supersession (`supersede`). Every decision carries a stable `decision_id` and may carry
+`rationale`, `evidence` refs, `authority`, and `decided_at`. Supersession is
+append/supersede oriented (never silently rewritten): a superseded decision is inactive
+for the compile, and a `supersede` referencing an unknown decision becomes a bounded
+`DECISION_SUPERSEDE_UNKNOWN` review.
+
 > Known latent quirk (owned by the canonical-ID compiler, P2.5): two *distinct*
 > projects can briefly share a `canonical_project_id` when a split/reject keeps two
 > observations that still share an exact remote. The evidence store keys by observation
