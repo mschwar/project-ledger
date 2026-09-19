@@ -73,7 +73,8 @@ class FilesystemAdapter(SourceAdapter):
 class InventoryPolicyAdapter(SourceAdapter):
     """Covers inventory_policy discovery over an rclone-style inventory + policy file."""
 
-    discovery = "inventory_policy"
+    def __init__(self) -> None:
+        self.discovery = "inventory_policy"
 
     def discover_candidates(
         self, root_cfg: dict, defaults: dict, exclude_names: set[str]
@@ -99,7 +100,10 @@ ADAPTERS: dict[str, SourceAdapter] = {
 
 
 def get_adapter(discovery: str) -> SourceAdapter:
-    return ADAPTERS[discovery]
+    try:
+        return ADAPTERS[discovery]
+    except KeyError as exc:
+        raise ValueError(f"Unsupported discovery mode: {discovery}") from exc
 
 
 def collect_entries(config: dict, config_dir: Path, output_dir: Path) -> list[dict]:

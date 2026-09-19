@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import uuid
 from pathlib import Path
 from unittest import mock
@@ -22,6 +23,7 @@ from ledger.models import (
 from ledger.sources import base as sources_base
 from ledger.sources.base import FilesystemAdapter, InventoryPolicyAdapter
 from ledger.sources.filesystem import build_entry
+from ledger.sources.git import gather_git_metadata, git_output
 
 TMP_ROOT = Path(__file__).resolve().parent / ".tmp"
 TMP_ROOT.mkdir(exist_ok=True)
@@ -201,6 +203,47 @@ class InventoryAdapterTests(unittest.TestCase):
                 keyed["google-drive:projects/lmntl"]["canonical_url"],
                 "gdrive://googledrive/Projects/LMNTL",
             )
+
+
+class GitAdapterTests(unittest.TestCase):
+    def test_gather_git_metadata_on_real_repo(self) -> None:
+        with ScratchDir() as root:
+            repo = root / "repo"
+            repo.mkdir()
+            (repo / "README.md").write_text("# Repo\n", encoding="utf-8")
+            subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True)
+            subprocess.run(["git", "config", "user.email", "t@e.com"], cwd=repo, check=True, capture_output=True)
+            subprocess.run(["git", "config", "user.name", "T"], cwd=repo, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "remote", "add", "origin", "https://github.com/mschwar/sample-repo.git"],
+                cwd=repo, check=True, capture_output=True,
+            )
+            subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True)
+            subprocess.run(["git", "commit", "-m", "init"], cwd=repo, check=True, capture_output=True)
+
+            meta = gather_git_metadata(repo)
+
+            self.assertTrue(meta["git"])
+            self.assertEqual(meta["normalized_remote_url"], "github.com/mschwar/sample-repo")
+            self.assertEqual(meta["repo_name"], "sample-repo")
+            self.assertTrue(meta["head_branch"])
+            self.assertTrue(meta["head_commit"])
+            self.assertTrue(meta["head_commit_at"])
+
+    def test_gather_git_metadata_non_git_dir(self) -> None:
+        with ScratchDir() as root:
+            plain = root / "plain"
+            plain.mkdir()
+            meta = gather_git_metadata(plain)
+            self.assertFalse(meta["git"])
+            self.assertEqual(meta["remote_url"], "")
+            self.assertEqual(meta["normalized_remote_url"], "")
+
+    def test_git_output_returns_empty_on_error(self) -> None:
+            # A non-existent directory makes `git -C` fail, exercising the error path.
+            # (A plain dir inside a git repo would resolve to the enclosing repo, so it
+            # is not a valid "not a repo" probe.)
+            self.assertEqual(git_output(Path("/nonexistent/pl-git-probe"), "rev-parse", "HEAD"), "")
 
 
 if __name__ == "__main__":
