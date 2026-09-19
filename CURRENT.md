@@ -110,7 +110,9 @@ ambiguity are captured as candidate fixtures.
 Deployment defect surfaced and fixed on the seam: the committed config still listed
 three dead roots (`/home/matt/project-ledger`, `/home/matt/GoogleDrive`, `/opt/homelab`)
 that aborted the watchdog; removed as a host-specific uncommitted seam edit. The
-committed upstream config still lists them — reconcile the template with the live host.
+committed upstream template has now been reconciled with the live host (2026-09-19):
+the three dead roots are removed from `ledger_config.json` and marked `[Needs validation]`
+in a provenance note (see `docs/work/FUTURE-SPEC-reconcile-ledger-config-template-20260919.md`).
 
 ## Stop condition
 
