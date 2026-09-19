@@ -6,13 +6,19 @@
 
 The runtime is a deliberate layered migration architecture.
 
-`build_ledger.py` remains the compatibility scanner:
+`build_ledger.py` remains the compatibility scanner entrypoint, but as of P2.1 it
+is a thin shim: the source adapters and normalization it used to contain have been
+extracted into the `ledger/` package (`ledger/models.py` for normalization helpers
+and `ledger/sources/` for the filesystem / git / inventory-policy adapters and the
+`SourceAdapter` abstraction). The shim re-exports those names unchanged and keeps
+only argument parsing, the CSV/JSON/Markdown writers, and the mirror step.
 
 ```text
 config
- -> discover candidates
+ -> source adapter (ledger/sources/) discover candidates
  -> score/include
  -> extract filesystem/git/inventory metadata
+ -> normalize/models (ledger/models.py)
  -> overlay sidecar
  -> emit CSV/JSON/Markdown compatibility observations
 ```

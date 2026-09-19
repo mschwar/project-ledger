@@ -24,7 +24,7 @@ jobs:
           python-version: "3.12"
 
       - name: Compile Python entrypoints
-        run: python -m py_compile build_ledger.py ledger/*.py
+        run: python -m py_compile build_ledger.py ledger/*.py ledger/sources/*.py
 
       - name: Run unit tests
         run: python -m unittest discover -s tests
