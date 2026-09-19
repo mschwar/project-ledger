@@ -215,13 +215,14 @@ suite 74.
 
 ## P2.5 Canonical project IDs and compiler
 
-Deliver:
-
-- immutable `canonical_project_id` assignment;
-- observation membership graph;
-- project-key aliases;
-- resolved fields with claim provenance;
-- reproducible compile from observations + decisions.
+**Complete.** The canonical-ID compiler now guarantees a distinct `canonical_project_id`
+per conceptual project: a normalized remote is only used as the identity anchor when it
+is unique to one project across the whole compile, so a split/reject that keeps two
+observations sharing an exact remote in separate projects no longer produces a shared
+ID (the legacy colliding-anchor quirk flagged in SCHEMA.md §1.8 is resolved). Each
+canonical project also carries a `resolved_fields` claim-provenance map explaining which
+observation/decision/evidence produced its `project_key` and `display_name`. Coverage:
+`tests/test_p25_canonical_ids.py` (8 tests); total suite 82.
 
 ## P2.6 Identity review queue
 

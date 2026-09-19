@@ -18,6 +18,7 @@ registered sources
  -> typed manifestation observations
  -> exact-remote identity evidence + explicit decisions
  -> identity evidence model (records + scoring, P2.3)
+ -> canonical project IDs + resolved-field provenance (P2.5)
  -> canonical projects + identity review
  -> system manifest
  -> ledger orient / ledger resolve / ledger sources
@@ -48,10 +49,12 @@ append/supersede oriented (never silently rewritten): a superseded decision is i
 for the compile, and a `supersede` referencing an unknown decision becomes a bounded
 `DECISION_SUPERSEDE_UNKNOWN` review.
 
-> Known latent quirk (owned by the canonical-ID compiler, P2.5): two *distinct*
-> projects can briefly share a `canonical_project_id` when a split/reject keeps two
-> observations that still share an exact remote. The evidence store keys by observation
-> membership so it stays lossless; PL will correct the colliding anchor in P2.5.
+> The **canonical-ID compiler (P2.5)** now guarantees a distinct `canonical_project_id`
+> per conceptual project: a normalized remote is only used as the anchor when it is
+> unique to one project across the compile, so a split/reject that keeps two
+> observations sharing an exact remote in separate projects no longer collides. Each
+> canonical project also carries a `resolved_fields` claim-provenance map explaining
+> which observation/decision/evidence produced its `project_key` and `display_name`.
 
 Still not implemented:
 
