@@ -14,6 +14,6 @@
   "storage_scope": "shared",
   "last_session_at": "2026-09-18T06:44:16Z",
   "last_session_summary": "Reality-to-identity programme crossed the first canonical identity boundary: exact normalized repository remotes plus explicit durable decisions now compile canonical projects/review state, and ledger resolve returns resolved, ambiguous, or unresolved exact outcomes.",
-  "next_step": "Run CURRENT.md R0 live provider proof against the intended homelab estate, inspect real identity/review behavior, then synthesize the next constraint before authorizing preferred-location/current-state work.",
+  "next_step": "R0 live provider proof is complete and the committed ledger_config.json template has been reconciled with the live ai-server root set (three dead roots removed, marked [Needs validation]). Next: synthesize the next software constraint from demonstrated use before authorizing preferred-location/current-state work.",
   "last_push_at": ""
 }

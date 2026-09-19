@@ -99,7 +99,9 @@ and representative duplicate/same-name manifestations as canonicalization fixtur
 Exit evidence satisfied: one current provider run demonstrated the exact Wave 1 contract
 against the intended estate. A deployment defect (three dead roots in the committed
 config) was surfaced and fixed as a host-specific uncommitted seam edit; the committed
-template still lists them and should be reconciled.
+template has now been reconciled with the live host (2026-09-19) — the three dead roots
+are removed from `ledger_config.json` and marked `[Needs validation]` in a provenance
+note (see `docs/work/FUTURE-SPEC-reconcile-ledger-config-template-20260919.md`).
 
 ---
 
