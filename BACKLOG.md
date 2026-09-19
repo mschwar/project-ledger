@@ -134,7 +134,14 @@ Keep `build_ledger.py` as compatibility entrypoint.
 
 ## P2.2 Multi-source estate fixture
 
-Build a durable fixture containing:
+**Partial — R0 reality cases landed.** `tests/fixtures/r0-reality-cases.json` +
+`tests/test_r0_reality_regressions.py` reproduce the exact canonical IDs from the
+R0 live provider proof (homelab/white-rabbit/reality-ledger multi-manifestation
+merges; `the-garden` `PROJECT_KEY_AMBIGUOUS` split + review). This covers the
+"one project present as live repo + mirror/backup" and "same-name unrelated
+project" columns of the full fixture.
+
+Still open to reach the full multi-source estate fixture:
 
 - one project present as live repo + mirror + backup;
 - same-name unrelated project;

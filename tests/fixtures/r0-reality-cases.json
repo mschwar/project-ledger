@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0.0",
+  "description": "Reality-shaped canonical identity regression fixture captured from the R0 live provider proof (2026-09-19, run_4c8e9084d4ca23637eac9267) on ai-server. Source of cases: docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md. Reproduces the exact canonical project IDs and review ID documented in that proof, so the identity compiler cannot drift from demonstrated production behavior.",
+  "source": {
+    "doc": "docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md",
+    "run_id": "run_4c8e9084d4ca23637eac9267",
+    "observations_total": 132,
+    "canonical_projects_total": 129,
+    "review_items_total": 1
+  },
+  "observations": [
+    {
+      "schema_version": "1.0.0",
+      "observation_id": "obs_cc508b56483db8d8e146107a",
+      "source_id": "central-infra",
+      "snapshot_id": "snap-r0",
+      "source_resolution": "resolved",
+      "observed_at": "2026-09-19T04:56:00Z",
+      "project_key": "homelab",
+      "location": "/central/repos/infra/homelab",
+      "compat_entry": {
+        "project_key": "homelab",
+        "name": "Homelab Agent Platform",
+        "repo_name": "homelab",
+        "remote_url": "git@github.com:mschwar/homelab.git",
+        "canonical_url": "",
+        "path": "/central/repos/infra/homelab"
+      }
+    },
+    {
+      "schema_version": "1.0.0",
+      "observation_id": "obs_f0c43e37fa8e90f8dafd9d52",
+      "source_id": "macbook-air-2-homelab",
+      "snapshot_id": "snap-r0",
+      "source_resolution": "resolved",
+      "observed_at": "2026-09-19T04:56:00Z",
+      "project_key": "homelab",
+      "location": "/central/registry/mirrors/matthews-macbook-air-2/Documents/homelab",
+      "compat_entry": {
+        "project_key": "homelab",
+        "name": "Homelab Agent Platform",
+        "repo_name": "homelab",
+        "remote_url": "https://github.com/mschwar/homelab.git",
+        "canonical_url": "",
+        "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/homelab"
+      }
+    },
+    {
+      "schema_version": "1.0.0",
+      "observation_id": "obs_128ca37a8e8f71df0611b79b",
+      "source_id": "white-rabbit",
+      "snapshot_id": "snap-r0",
+      "source_resolution": "resolved",
+      "observed_at": "2026-09-19T04:56:00Z",
+      "project_key": "white-rabbit",
+      "location": "/central/white-rabbit",
+      "compat_entry": {
+        "project_key": "white-rabbit",
+        "name": "White Rabbit",
+        "repo_name": "white-rabbit",
+        "remote_url": "https://github.com/mschwar/white-rabbit.git",
+        "canonical_url": "",
+        "path": "/central/white-rabbit"
+      }
+    },
+    {
+      "schema_version": "1.0.0",
+      "observation_id": "obs_9ddd0040fce7668f9c3aa442",
+      "source_id": "central-active",
+      "snapshot_id": "snap-r0",
+      "source_resolution": "resolved",
+      "observed_at": "2026-09-19T04:56:00Z",
+      "project_key": "white-rabbit",
+      "location": "/central/repos/active/white-rabbit",
+      "compat_entry": {
+        "project_key": "white-rabbit",
+        "name": "White Rabbit",
+        "repo_name": "white-rabbit",
+        "remote_url": "https://github.com/mschwar/white-rabbit.git",
+        "canonical_url": "",
+        "path": "/central/repos/active/white-rabbit"
+      }
+    },
+    {
+      "schema_version": "1.0.0",
+      "observation_id": "obs_d04229543f0f27e9cda304c7",
+      "source_id": "central-projects",
+      "snapshot_id": "snap-r0",
+      "source_resolution": "resolved",
+      "observed_at": "2026-09-19T04:56:00Z",
+      "project_key": "reality-ledger",
+      "location": "/central/projects/reality-ledger",
+      "compat_entry": {
+        "project_key": "reality-ledger",
+        "name": "Reality Ledger",
+        "repo_name": "reality-ledger",
+        "remote_url": "https://github.com/mschwar/reality-ledger.git",
+        "canonical_url": "",
+        "path": "/central/projects/reality-ledger"
+      }
+    },
+    {
+      "schema_version": "1.0.0",
+      "observation_id": "obs_e78c1dfefc3786c34da9bf7a",
+      "source_id": "central-active",
+      "snapshot_id": "snap-r0",
+      "source_resolution": "resolved",
+      "observed_at": "2026-09-19T04:56:00Z",
+      "project_key": "reality-ledger",
+      "location": "/central/repos/active/reality-ledger",
+      "compat_entry": {
+        "project_key": "reality-ledger",
+        "name": "Reality Ledger",
+        "repo_name": "reality-ledger",
+        "remote_url": "https://github.com/mschwar/reality-ledger.git",
+        "canonical_url": "",
+        "path": "/central/repos/active/reality-ledger"
+      }
+    },
+    {
+      "schema_version": "1.0.0",
+      "observation_id": "obs_ae0625819f15a3d3b080671f",
+      "source_id": "central-git",
+      "snapshot_id": "snap-r0",
+      "source_resolution": "resolved",
+      "observed_at": "2026-09-19T04:56:00Z",
+      "project_key": "the-garden",
+      "location": "/central/git/the_garden",
+      "compat_entry": {
+        "project_key": "the-garden",
+        "name": "The Garden",
+        "repo_name": "the_garden",
+        "remote_url": "",
+        "canonical_url": "",
+        "path": "/central/git/the_garden"
+      }
+    },
+    {
+      "schema_version": "1.0.0",
+      "observation_id": "obs_f6554456613bfca1cfa76246",
+      "source_id": "central-active",
+      "snapshot_id": "snap-r0",
+      "source_resolution": "resolved",
+      "observed_at": "2026-09-19T04:56:00Z",
+      "project_key": "the-garden",
+      "location": "/central/repos/active/the_garden",
+      "compat_entry": {
+        "project_key": "the-garden",
+        "name": "AGENTS.md - Your Workspace",
+        "repo_name": "the_garden",
+        "remote_url": "",
+        "canonical_url": "",
+        "path": "/central/repos/active/the_garden"
+      }
+    }
+  ],
+  "expected": {
+    "canonical_project_count": 5,
+    "canonical_projects": {
+      "homelab": "prj_3988fba6a0c8cf990a577bb8",
+      "white-rabbit": "prj_8d14c04e0a62ad084fccf416",
+      "reality-ledger": "prj_981bd44f515a9c435684919c"
+    },
+    "the-garden_split_count": 2,
+    "project_key_ambiguous_review_id": "rev_08eb96a0b8b7722ac70b2a20",
+    "project_key_ambiguous_observations": [
+      "obs_ae0625819f15a3d3b080671f",
+      "obs_f6554456613bfca1cfa76246"
+    ]
+  }
+}

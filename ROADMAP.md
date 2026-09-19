@@ -91,7 +91,10 @@ Gate B exit:
 
 # Wave 2 — Canonical identity compiler
 
-Status: **first walking skeleton landed; broader Wave 2 remains open**.
+Status: **first walking skeleton landed; broader Wave 2 remains open**. The R0 reality
+cases are now ratcheted as deterministic regression fixtures
+(`tests/fixtures/r0-reality-cases.json` reproduces exact canonical/review IDs from the
+2026-09-19 production proof).
 
 Goal: compile durable project identity while preserving all observations and uncertainty.
 
