@@ -371,6 +371,7 @@ schema_version
 canonical_project_id
 project_key
 display_name
+resolved_fields
 observation_ids[]
 identity_anchor
 normalized_remotes[]
@@ -381,7 +382,9 @@ merge_decision_ids[]
 canonical_key_decision_id
 ```
 
-Current canonical IDs are deterministic under unchanged identity evidence. A single normalized remote is the preferred anchor; explicit merge decisions anchor multi-remote/non-remote merged groups; otherwise a singleton observation anchors the project.
+Current canonical IDs are deterministic under unchanged identity evidence. A single normalized remote is the preferred anchor; explicit merge decisions anchor multi-remote/non-remote merged groups; otherwise a singleton observation anchors the project. A normalized remote is only used as the anchor when it is **unique to one project** across the whole compile — when a split/reject keeps two observations that share an exact remote in separate projects, each falls back to a membership-scoped anchor so the two projects never share a `canonical_project_id` (P2.5).
+
+`resolved_fields` records claim provenance for each resolved canonical field (`project_key`, `display_name`): which observation/decision/evidence produced the value, so a cold agent can see *why* a canonical value exists without re-running archaeology. Provenance kinds are `decision` (canonical_key), `declaration` (project_key sidecar), `observed` (remote/name), or `derived` (fallback).
 
 This first slice does not yet claim the full eventual immutable-ID registry semantics described later in this document.
 
@@ -515,12 +518,11 @@ covers and stays categorized `negative`.
 The manifest exposes `identity_evidence` as an available capability and an artifact,
 and `counts.identity_evidence` as the evidence-record count.
 
-> Note (latent, owned by the canonical-ID compiler, P2.5): two *distinct* projects can
-> briefly share a `canonical_project_id` when a split/reject keeps two observations
-> that still share an exact remote (the identity anchor still prefers the shared remote
-> for each component). The evidence store keys `by_project` by observation membership
-> so it remains lossless and deterministic regardless. Resolving the colliding anchor is
-> P2.5 canonical-ID work, not evidence-model scope.
+> Note (resolved, P2.5): a split/reject that keeps two observations sharing an exact
+> remote in separate projects no longer produces a shared `canonical_project_id` — the
+> compiler falls back to a membership-scoped anchor for each, so IDs are distinct and
+> stable. The evidence store keys `by_project` by observation membership, which remains
+> lossless and deterministic regardless.
 
 ---
 

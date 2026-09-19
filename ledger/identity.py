@@ -431,6 +431,19 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
 
     projects: list[dict] = []
     obs_to_project: dict[str, str] = {}
+    # A normalized remote is only a valid identity anchor when it is unique to ONE
+    # project across the whole compile. When a split/reject keeps two observations
+    # that share an exact remote in separate projects, that remote is shared by two
+    # distinct projects and can no longer anchor either (P2.5: otherwise both would
+    # derive the same canonical_project_id and collide). Each such project falls back
+    # to a membership-scoped anchor so IDs stay distinct and stable.
+    remote_to_memberships: dict[str, set[str]] = {}
+    for members in uf.components():
+        member_ids = sorted(members)
+        for obs_id in member_ids:
+            for remote in facts[obs_id]["remotes"]:
+                remote_to_memberships.setdefault(remote, set()).add("|".join(member_ids))
+
     for members in uf.components():
         member_ids = sorted(members)
         remotes = sorted({remote for obs_id in member_ids for remote in facts[obs_id]["remotes"]})
@@ -444,9 +457,15 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             if set(_decision_observation_ids(decision)).issubset(members)
         )
 
-        if len(remotes) == 1:
+        membership_key = "|".join(member_ids)
+        unique_remotes = [
+            remote
+            for remote in remotes
+            if remote_to_memberships.get(remote) == {membership_key}
+        ]
+        if len(unique_remotes) == 1:
             anchor_kind = "normalized_remote"
-            anchor_value = remotes[0]
+            anchor_value = unique_remotes[0]
         elif merge_decision_ids:
             anchor_kind = "merge_decision"
             anchor_value = "|".join(merge_decision_ids)
@@ -469,6 +488,88 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
         else:
             project_key = key_hints[0] if len(key_hints) == 1 else (remotes[0] if len(remotes) == 1 else canonical_project_id)
         display_name = names[0] if names else project_key
+        # Resolved-field claim provenance (P2.5): for each resolved canonical field,
+        # record which observation/decision/evidence produced the value, so a cold
+        # agent can see *why* a canonical value exists without re-running archaeology.
+        resolved_fields: dict[str, dict] = {}
+        if canonical_key_decision is not None:
+            resolved_fields["project_key"] = {
+                "value": project_key,
+                "provenance": [
+                    {
+                        "kind": "decision",
+                        "decision_id": canonical_key_decision["decision_id"],
+                        "reason_code": "CANONICAL_KEY_DECISION",
+                    }
+                ],
+            }
+        elif len(key_hints) == 1:
+            hint_obs = sorted(
+                obs_id
+                for obs_id in member_ids
+                if facts[obs_id]["project_key"] == key_hints[0]
+            )
+            resolved_fields["project_key"] = {
+                "value": project_key,
+                "provenance": [
+                    {
+                        "kind": "declaration",
+                        "observation_id": obs_id,
+                        "reason_code": "PROJECT_KEY_DECLARATION",
+                    }
+                    for obs_id in hint_obs
+                ],
+            }
+        elif len(remotes) == 1:
+            resolved_fields["project_key"] = {
+                "value": project_key,
+                "provenance": [
+                    {
+                        "kind": "observed",
+                        "value": remotes[0],
+                        "reason_code": "EXACT_NORMALIZED_REMOTE",
+                    }
+                ],
+            }
+        else:
+            resolved_fields["project_key"] = {
+                "value": project_key,
+                "provenance": [
+                    {
+                        "kind": "derived",
+                        "value": canonical_project_id,
+                        "reason_code": "CANONICAL_PROJECT_ID",
+                    }
+                ],
+            }
+        if names:
+            name_obs = sorted(
+                obs_id
+                for obs_id in member_ids
+                if display_name in facts[obs_id]["names"]
+            )
+            resolved_fields["display_name"] = {
+                "value": display_name,
+                "provenance": [
+                    {
+                        "kind": "observed",
+                        "observation_id": obs_id,
+                        "reason_code": "DISPLAY_NAME",
+                    }
+                    for obs_id in name_obs
+                ],
+            }
+        else:
+            resolved_fields["display_name"] = {
+                "value": display_name,
+                "provenance": [
+                    {
+                        "kind": "derived",
+                        "value": project_key,
+                        "reason_code": "PROJECT_KEY",
+                    }
+                ],
+            }
 
         referents: list[dict] = [
             {"kind": "canonical_project_id", "value": canonical_project_id},
@@ -513,6 +614,7 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             "canonical_project_id": canonical_project_id,
             "project_key": project_key,
             "display_name": display_name,
+            "resolved_fields": resolved_fields,
             "observation_ids": member_ids,
             "identity_anchor": {"kind": anchor_kind, "value": anchor_value},
             "normalized_remotes": remotes,

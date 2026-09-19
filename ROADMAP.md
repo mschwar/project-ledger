@@ -144,10 +144,12 @@ evidence). The R0 reality cases remain as the production proof pin.
 
 ### Canonical projects
 
-- immutable `canonical_project_id`;
+- immutable `canonical_project_id` — **done (P2.5)**: distinct per conceptual project
+  (a shared remote no longer collides when a split/reject keeps observations apart);
 - human-readable stable `project_key` aliases;
 - observation links retained;
-- resolved canonical fields with provenance;
+- resolved canonical fields with provenance — **done (P2.5)**: `resolved_fields`
+  claim-provenance map on each canonical project;
 - duplicate/ambiguity groups.
 
 ### Review queue
