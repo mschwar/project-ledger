@@ -39,7 +39,7 @@ As of September 18, 2026:
 - the first canonical identity slice is implemented: exact normalized repository remotes auto-merge; durable merge/split/reject/alias decisions are compiler inputs; canonical projects and identity review are materialized; `ledger resolve` is available.
 - project capsules, preferred-location resolution, `show/locate/explain`, structured session receipts/current-state resolution, and Project Ledger's semantic change feed are not implemented yet.
 - homelab owns the deployed reality-provider seam and consumes the non-mutating refresh contract; Project Ledger continues to own source/project schema and identity semantics.
-- the committed human ledger is historical evidence, not proof of current production freshness. A live provider proof on the intended homelab node remains an operational closeout item.
+- the committed human ledger is historical evidence, not proof of current production freshness. A live provider proof on the intended homelab node has now been completed (2026-09-19, see `docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md`).
 
 The observation -> canonical identity boundary has now been crossed conservatively. Do not broaden automatic matching beyond exact remote identity without evidence/decision contracts. `CURRENT.md` is the canonical frontier pointer; the next software constraint is chosen only after live provider proof/synthesis.
 

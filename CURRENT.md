@@ -91,17 +91,19 @@ Automatic identity remains narrower than resolution: only exact normalized repos
 
 ### R0 — Live provider proof
 
-Status: READY on a node with the intended source access; can execute independently of R2 implementation.
+Status: COMPLETE (2026-09-19). Evidence: `docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md`.
 
-Run the deployed homelab Project Ledger watchdog against current `main`. Retain:
+Ran the deployed homelab Project Ledger watchdog against current `main` (`bf04d7b`)
+on ai-server. Result: `observations=132 sources=14 health=ok changed=yes`, run
+`run_4c8e9084d4ca23637eac9267`. All 14 sources available; 129 canonical projects from
+132 observations; 1 open review item (`the-garden` PROJECT_KEY_AMBIGUOUS). Representative
+multi-manifestation merges (homelab, white-rabbit, reality-ledger) and the `the-garden`
+ambiguity are captured as candidate fixtures.
 
-- Project Ledger commit;
-- manifest run ID / input as-of;
-- health and counts;
-- every unavailable/degraded source;
-- representative real duplicate/ambiguity cases worth turning into fixtures.
-
-If live access is unavailable, record the bounded deployment/source defect; do not fake freshness.
+Deployment defect surfaced and fixed on the seam: the committed config still listed
+three dead roots (`/home/matt/project-ledger`, `/home/matt/GoogleDrive`, `/opt/homelab`)
+that aborted the watchdog; removed as a host-specific uncommitted seam edit. The
+committed upstream config still lists them — reconcile the template with the live host.
 
 ## Stop condition
 
