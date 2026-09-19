@@ -142,7 +142,13 @@ def _canonical_url_repository_identity(raw: str) -> str | None:
     return None
 
 
-def _observation_facts(observation: dict) -> dict:
+def observation_facts(observation: dict) -> dict:
+    """Extract the normalized identity-evidence facts an observation carries.
+
+    Public so the identity evidence model (``ledger.evidence``) can reuse the
+    exact same normalization instead of drifting a second copy. Facts are the raw
+    inputs; strength/scoring is decided by the evidence model, not here.
+    """
     compat = observation.get("compat_entry") if isinstance(observation.get("compat_entry"), dict) else {}
     remotes: set[str] = set()
     remote_identity = normalize_remote_identity(str(compat.get("remote_url") or ""))
@@ -167,13 +173,25 @@ def _observation_facts(observation: dict) -> dict:
         for value in (compat.get("remote_url"), compat.get("canonical_url"))
         if str(value or "").strip()
     }
+    readme_sha = str(compat.get("readme_sha256") or "").strip() or None
+    readme_path = str(compat.get("readme_path") or "").strip() or None
+    description = str(compat.get("description") or "").strip() or None
     return {
         "observation_id": observation["observation_id"],
+        "source_id": str(observation.get("source_id") or "").strip() or None,
+        "snapshot_id": str(observation.get("snapshot_id") or "").strip() or None,
         "remotes": remotes,
         "project_key": project_key,
         "names": names,
         "paths": paths,
         "raw_urls": raw_urls,
+        "readme": {
+            "sha256": readme_sha,
+            "path": readme_path,
+            "description": description,
+            "repo_name": str(compat.get("repo_name") or "").strip() or None,
+            "git": bool(compat.get("git")),
+        },
     }
 
 
@@ -219,11 +237,15 @@ def _decision_observation_ids(decision: dict) -> list[str]:
 
 
 def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple[dict, dict]:
+    # Imported lazily to avoid a module-load cycle: evidence.py imports identity.py's
+    # observation_facts, which must be fully defined before evidence is imported here.
+    from .evidence import project_identity_evidence
+
     by_id = {str(item.get("observation_id", "")): item for item in observations}
     if "" in by_id or len(by_id) != len(observations):
         raise ValueError("Typed observations require unique non-empty observation_id values.")
 
-    facts = {obs_id: _observation_facts(observation) for obs_id, observation in by_id.items()}
+    facts = {obs_id: observation_facts(observation) for obs_id, observation in by_id.items()}
     uf = _UnionFind(sorted(by_id))
     review_by_id: dict[str, dict] = {}
     negative_pairs: set[tuple[str, str]] = set()
@@ -393,27 +415,16 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             seen_refs.add(key)
             unique_refs.append(ref)
 
-        evidence: list[dict] = []
-        for obs_id in member_ids:
-            for remote in sorted(facts[obs_id]["remotes"]):
-                evidence.append(
-                    {
-                        "kind": "observed_remote",
-                        "authority": "observed",
-                        "reason_code": "EXACT_NORMALIZED_REMOTE",
-                        "observation_id": obs_id,
-                        "value": remote,
-                    }
-                )
-        for decision_id in merge_decision_ids:
-            evidence.append(
-                {
-                    "kind": "identity_decision",
-                    "authority": "decision",
-                    "reason_code": "EXPLICIT_MERGE_DECISION",
-                    "decision_id": decision_id,
-                }
-            )
+        evidence, evidence_summary = project_identity_evidence(
+            {
+                "canonical_project_id": canonical_project_id,
+                "observation_ids": member_ids,
+                "identity_anchor": {"kind": anchor_kind, "value": anchor_value},
+                "normalized_remotes": remotes,
+                "merge_decision_ids": merge_decision_ids,
+            },
+            by_id,
+        )
 
         project = {
             "schema_version": CANONICAL_PROJECT_SCHEMA_VERSION,
@@ -426,6 +437,7 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             "project_key_hints": key_hints,
             "referents": unique_refs,
             "identity_evidence": evidence,
+            "identity_evidence_summary": evidence_summary,
             "merge_decision_ids": merge_decision_ids,
         }
         projects.append(project)
@@ -481,6 +493,8 @@ def materialize_identity(
     run_id: str,
     compiled_at: str,
 ) -> tuple[dict, dict]:
+    from .evidence import build_identity_evidence
+
     state_dir = state_dir.resolve()
     state_dir.mkdir(parents=True, exist_ok=True)
     decisions = load_identity_decisions(decisions_path)
@@ -492,6 +506,13 @@ def materialize_identity(
     review_path = state_dir / "review-queue.json"
     canonical_path.write_text(json.dumps(canonical, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     review_path.write_text(json.dumps(reviews, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    identity_evidence = build_identity_evidence(observations, canonical, decisions)
+    identity_evidence.update({"run_id": run_id, "compiled_at": compiled_at})
+    evidence_path = state_dir / "identity-evidence.json"
+    evidence_path.write_text(
+        json.dumps(identity_evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return canonical, reviews
 
 

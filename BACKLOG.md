@@ -169,15 +169,27 @@ proof pin; the estate fixture is the broader synthetic acceptance matrix.
 
 ## P2.3 Identity evidence model
 
-Implement records/scoring for:
+**Complete — records/scoring implemented as `ledger/evidence.py` (SCHEMA.md §1.8).**
+Models every evidence kind with a strength class (`strong` / `weak` / `negative`) and
+materializes `state/identity-evidence.json`:
 
-- explicit project key/declaration;
-- normalized remote;
-- source-native identity;
-- aliases/path migrations;
-- README/repo compound evidence;
-- negative/conflict evidence;
-- weak name/semantic similarity clearly marked as weak.
+- normalized remote (strong, the lone auto-merge authority);
+- source-native identity (strong provenance: source + snapshot anchoring);
+- explicit merge decision (strong);
+- explicit project key / declaration (weak, declared);
+- path locator + path migration alias (weak);
+- raw URL (weak);
+- display name (weak — collides across unrelated projects);
+- README/repo compound evidence (weak);
+- name / semantic similarity (explicitly weak, referent-only — never merges);
+- negative / conflict evidence from split/reject decisions (negative).
+
+Per canonical project, `identity_evidence[]` + `identity_evidence_summary` expose the
+unifying authority (exact remote vs explicit decision vs singleton) and weak-overlap
+counts. `cross_project_weak_overlaps` records weak hits and negative decisions between
+distinct projects so unused evidence is visible and clearly weak. Scoring is purely
+descriptive: merge authority is unchanged (exact normalized remote + durable decisions).
+Coverage: `tests/test_identity_evidence.py` (13 tests); total suite 64.
 
 ## P2.4 Decision registry
 
