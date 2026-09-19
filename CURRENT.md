@@ -17,6 +17,7 @@ registered sources
  -> compatibility scan
  -> typed manifestation observations
  -> exact-remote identity evidence + explicit decisions
+ -> identity evidence model (records + scoring, P2.3)
  -> canonical projects + identity review
  -> system manifest
  -> ledger orient / ledger resolve / ledger sources
@@ -31,6 +32,18 @@ Identity is deliberately conservative:
 - non-remote duplicate manifestations remain separate until an explicit decision exists;
 - split/reject decisions can block an otherwise exact automatic match;
 - ambiguous exact referents remain explicit rather than being guessed.
+
+The **identity evidence model (P2.3)** now records and scores why observations unify
+(or do not): every evidence kind carries a strength (`strong`/`weak`/`negative`), weak
+name/semantic similarity is explicitly marked weak (never auto-merging), negative
+split/reject evidence is first-class, and the materialized `identity-evidence.json`
+exposes per-project unifying evidence + summaries. This is descriptive scoring — the
+merge authority is unchanged.
+
+> Known latent quirk (owned by the canonical-ID compiler, P2.5): two *distinct*
+> projects can briefly share a `canonical_project_id` when a split/reject keeps two
+> observations that still share an exact remote. The evidence store keys by observation
+> membership so it stays lossless; PL will correct the colliding anchor in P2.5.
 
 Still not implemented:
 

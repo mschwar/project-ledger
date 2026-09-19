@@ -170,6 +170,23 @@ Low-confidence matches never silently merge.
 
 Identity outputs should carry explanation/evidence references, not only a project ID.
 
+The **identity evidence model** (`ledger/evidence.py`, programme P2.3) implements the
+records/scoring slice of the ladder: it classifies every evidence kind as strong / weak
+/ negative (SCHEMA.md §1.8), records per-observation evidence (normalized remote,
+source-native identity, explicit project key, path/raw-URL referents, display name,
+README/repo compound), scores observation pairs (strong match / weak / none), and
+materializes per-canonical-project unifying evidence plus a `state/identity-evidence.json`
+store. It is descriptive: it does **not** widen the merge authority, which remains
+exactly one rule (exact normalized repository remote) plus explicit durable decisions.
+
+Note: the suggested package tree below nests identity under `identity/evidence.py`; the
+implemented Wave 1/2 substrate keeps identity/lifecycle modules flat at the package root
+(`ledger/evidence.py`, `ledger/identity.py`, `ledger/compiler.py`), consistent with the
+existing `ledger/` flat layout. Responsibility boundaries are what matter, not the path.
+
+- `ledger/evidence.py` — evidence kind taxonomy, strength scoring, per-observation
+  records, pair + project scoring, `state/identity-evidence.json` store (P2.3).
+
 ### 4. Canonical project compilation
 
 A canonical project is a compiled durable entity containing links to all observations and selected resolved fields. It does not copy full source content.

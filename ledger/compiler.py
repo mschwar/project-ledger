@@ -124,6 +124,8 @@ def compile_state(
     )
     canonical_path = state_dir / "canonical-projects.json"
     review_path = state_dir / "review-queue.json"
+    evidence_path = state_dir / "identity-evidence.json"
+    evidence_payload = json.loads(evidence_path.read_text(encoding="utf-8"))
 
     manifest = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
@@ -145,6 +147,7 @@ def compile_state(
             "sources": len(sources),
             "observations": len(observations),
             "canonical_projects": canonical_payload["canonical_project_count"],
+            "identity_evidence": evidence_payload["identity_evidence_count"],
             "review_items": review_payload["review_count"],
         },
         "sources": sources,
@@ -153,6 +156,7 @@ def compile_state(
             "typed_observations": capability("available"),
             "source_health": capability("available"),
             "canonical_projects": capability("available"),
+            "identity_evidence": capability("available"),
             "project_capsules": capability(
                 "unavailable",
                 reason_code="WAVE3_NOT_IMPLEMENTED",
@@ -169,6 +173,7 @@ def compile_state(
             "compat_observations": str(compat_output_path),
             "typed_observations": str(observations_path),
             "canonical_projects": str(canonical_path),
+            "identity_evidence": str(evidence_path),
             "review_queue": str(review_path),
             "system_manifest": str(manifest_path),
         },

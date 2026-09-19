@@ -126,11 +126,12 @@ evidence). The R0 reality cases remain as the production proof pin.
 
 ### Identity graph
 
-- identity evidence records;
+- identity evidence records — **done (P2.3)**; `ledger/evidence.py` + `state/identity-evidence.json`;
 - aliases;
 - strong deterministic matching rules;
-- scored weak evidence separated from decisions;
-- negative/split evidence.
+- scored weak evidence separated from decisions — **done (P2.3)**: strength-classified
+  evidence (strong/weak/negative), weak name/semantic similarity explicitly marked weak;
+- negative/split evidence — **done (P2.3)** as first-class negative evidence.
 
 ### Decision registry
 

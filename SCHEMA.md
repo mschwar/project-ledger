@@ -83,6 +83,7 @@ OBSERVATION_SCHEMA_VERSION          = 1.0.0
 COMPAT_FLAT_SCHEMA_VERSION          = 0.1.0
 CANONICAL_PROJECT_SCHEMA_VERSION    = 1.0.0
 IDENTITY_DECISION_SCHEMA_VERSION    = 1.0.0
+IDENTITY_EVIDENCE_SCHEMA_VERSION    = 1.0.0
 REVIEW_QUEUE_SCHEMA_VERSION         = 1.0.0
 ```
 
@@ -411,6 +412,104 @@ CLI exit codes:
 2 operational/config error
 ```
 
+### 1.8 Identity evidence model
+
+Implemented as programme P2.3. The identity evidence model *records and scores* why
+observations unify (or do not). Evidence is descriptive — it does **not** change the
+merge authority; exactly one automatic merge rule remains (exact normalized remote)
+and split/reject decisions remain durable compiler inputs.
+
+Generated file:
+
+```text
+state/identity-evidence.json
+```
+
+Envelope:
+
+```text
+schema_version          = IDENTITY_EVIDENCE_SCHEMA_VERSION
+compiler_version
+run_id
+compiled_at
+identity_evidence_count
+by_project              keyed by the sorted observation membership (unique per project)
+cross_project_weak_overlaps[]
+```
+
+Each `by_project` entry:
+
+```text
+canonical_project_id
+observation_ids[]
+summary
+evidence[]
+```
+
+`summary` scores the project's unification:
+
+```text
+unifying_authority       exact_normalized_remote | explicit_decision | singleton | referential
+strong_reason_code       EXACT_NORMALIZED_REMOTE | EXPLICIT_MERGE_DECISION | NONE
+automatic                bool — merged by exact remote without an operator decision
+member_count
+weak_overlap_pair_count  intra-project pairs whose only overlap is weak referents
+evidence_count
+```
+
+Each identity evidence record (also present per canonical project as
+`identity_evidence[]` and `identity_evidence_summary`):
+
+```text
+identity_evidence_id     stable id (kind, member observations, value)
+kind
+strength                 strong | weak | negative
+authority                observed | declared | decision
+reason_code
+observation_ids[]
+value                    optional
+detail                   optional
+```
+
+**Evidence kinds and strength** (also queryable via `ledger.evidence.evidence_kinds()`):
+
+```text
+strong
+  normalized_remote            exact normalized repository remote (auto-merge authority)
+  source_native_identity       manifestation anchored to a source + snapshot
+  explicit_merge_decision      operator-approved union
+
+weak  (referents only — never identity authority, never auto-merge)
+  explicit_project_key         compatibility project_key declaration/hint
+  raw_url                      non-normalizable network locator
+  path_locator                 filesystem path
+  path_migration               renamed/moved path alias
+  display_name                 name (may collide across unrelated projects)
+  readme_compound              readme/description/repo-nature presence
+  name_similarity              same-name overlap
+  semantic_similarity          fuzzy/project-key overlap
+  cross_project_weak_overlap   weak hit between distinct projects
+
+negative
+  negative_decision            explicit split / reject_match
+  conflicting_decision         positive decision blocked by a negative one
+```
+
+`cross_project_weak_overlaps` records weak hits or negative decisions between
+observations in *distinct* projects, so evidence that was considered but deliberately
+not used is visible and clearly weak. A negative decision dominates any overlap it
+covers and stays categorized `negative`.
+
+The manifest exposes `identity_evidence` as an available capability and an artifact,
+and `counts.identity_evidence` as the evidence-record count.
+
+> Note (latent, owned by the canonical-ID compiler, P2.5): two *distinct* projects can
+> briefly share a `canonical_project_id` when a split/reject keeps two observations
+> that still share an exact remote (the identity anchor still prefers the shared remote
+> for each component). The evidence store keys `by_project` by observation membership
+> so it remains lossless and deterministic regardless. Resolving the colliding anchor is
+> P2.5 canonical-ID work, not evidence-model scope.
+
 ---
 
 # 2. Broader target epistemic and canonical schema families
@@ -469,7 +568,9 @@ Claims preserve why a canonical value exists.
 
 ## 2.3 Identity evidence
 
-Evidence that observations are the same or different conceptual project:
+Evidence that observations are the same or different conceptual project. **Executable**
+as §1.8 (`ledger/evidence.py`, `state/identity-evidence.json`); this section is the
+broader intent behind the implemented slice.
 
 - `identity_evidence_id`
 - observation IDs involved
