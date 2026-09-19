@@ -11,7 +11,7 @@ Every unit must cross or directly enable an observable usability boundary. Infra
 | Unit | State | Boundary / evidence |
 | --- | --- | --- |
 | R1 | COMPLETE | Canonical docs + CI assurance agree with executable Wave 1 reality |
-| R0 | READY EXTERNAL | Fresh homelab provider proof against current sources; retain run/source evidence |
+| R0 | COMPLETE | Live homelab provider proof against current sources; evidence in `docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md` |
 | R2 | COMPLETE | Deterministic canonical identity + exact `ledger resolve` |
 | R3 | HOLD FOR SYNTHESIS | Explainable preferred-location resolution after R2 is demonstrated |
 | R4 | HOLD FOR SYNTHESIS | Structured current-state/session receipt only after identity can anchor it |
@@ -62,4 +62,7 @@ Prove with a reality-shaped fixture that:
 
 ## Synthesis point
 
-R2 is now the software baseline. Once R0 evidence is available, inspect demonstrated use. The next wave is not automatically R3: choose the new constraint from evidence.
+R2 is now the software baseline. R0 live provider proof has produced current production
+evidence against the intended estate (see `docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md`).
+Inspect demonstrated use and choose the next constraint from evidence — do not
+automatically start R3 merely because it is next in the design sequence.

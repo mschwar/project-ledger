@@ -88,14 +88,18 @@ Do not add `canonical_project_id` to sidecars until the registry can assign/vali
 
 ### P1.9 Production reality proof
 
-On the intended homelab node:
+Status: COMPLETE (2026-09-19). Evidence: `docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md`.
 
-- run current `main` through the deployed non-mutating provider seam;
-- retain commit/run ID, source health, counts, and unavailable-source reasons;
-- capture representative duplicate/same-name/renamed manifestations as canonicalization fixtures;
-- never treat the historical committed Markdown ledger as current production proof.
+Ran current `main` (`bf04d7b`) through the deployed non-mutating provider seam on
+ai-server. Retained commit/run ID (`run_4c8e9084d4ca23637eac9267`), source health
+(all 14 available), counts (132 observations → 129 canonical projects, 1 review item),
+and representative duplicate/same-name manifestations as canonicalization fixtures
+(homelab/white-rabbit/reality-ledger multi-manifestation merges; `the-garden` ambiguity).
 
-Exit evidence: one current provider run demonstrates the exact Wave 1 contract against the intended estate, or records a bounded source/deployment defect.
+Exit evidence satisfied: one current provider run demonstrated the exact Wave 1 contract
+against the intended estate. A deployment defect (three dead roots in the committed
+config) was surfaced and fixed as a host-specific uncommitted seam edit; the committed
+template still lists them and should be reconciled.
 
 ---
 
