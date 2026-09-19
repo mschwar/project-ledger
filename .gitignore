@@ -7,3 +7,5 @@ tests/.tmp/
 tests/__pycache__/
 output/
 state/
+# host-specific local config (ai-server template is the committed one)
+ledger_config.local.json

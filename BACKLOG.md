@@ -123,14 +123,26 @@ Do not broaden automatic matching to names/project-key hints merely to increase 
 
 ## P2.1 Extract source adapters and normalization
 
-Refactor under frozen compatibility tests:
+**Complete.** The source adapters and normalization that lived in the
+`build_ledger.py` monolith have been extracted into the `ledger/` package under the
+frozen compatibility tests, which still pass unchanged (40 tests):
 
-- config/validation;
-- source abstraction;
-- filesystem scanner;
-- git extraction;
-- inventory-policy adapter;
-- normalization/models.
+- config/validation — already in `ledger/config.py`; `ledger/sources/common.py`
+  now carries the scanner's shared path/exclude/readme helpers and constants;
+- source abstraction — `ledger/sources/base.py` (`SourceAdapter` ABC + adapter
+  registry keyed by discovery mode + `collect_entries` orchestration);
+- filesystem scanner — `ledger/sources/filesystem.py` (discover
+  children/git_repos/self, candidate inspection, tree summary, entry building);
+- git extraction — `ledger/sources/git.py` (`git_output`, `gather_git_metadata`);
+- inventory-policy adapter — `ledger/sources/inventory_policy.py`;
+- normalization/models — `ledger/models.py` (URL/timestamp/boolean/tag
+  normalization, markdown rendering primitives, project-type classification,
+  `CSV_FIELDS`).
+
+`build_ledger.py` remains the compatibility entrypoint: it now re-exports the
+extracted names unchanged and keeps only argument parsing, the CSV/JSON/Markdown
+writers, and the markdown-mirror step, so output is byte-identical. Direct adapter
+coverage was added in `tests/test_source_adapters.py` (8 tests; total suite 48).
 
 Keep `build_ledger.py` as compatibility entrypoint.
 
