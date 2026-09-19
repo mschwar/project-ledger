@@ -93,6 +93,13 @@ Automatic identity remains narrower than resolution: only exact normalized repos
 
 Status: COMPLETE (2026-09-19). Evidence: `docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md`.
 
+The demonstrated reality has been ratcheted into a durable regression fixture:
+`tests/fixtures/r0-reality-cases.json` + `tests/test_r0_reality_regressions.py`
+reproduce the exact canonical project IDs (homelab/white-rabbit/reality-ledger
+multi-manifestation merges) and the `the-garden` `PROJECT_KEY_AMBIGUOUS` review ID
+from the production proof, so the identity compiler cannot silently drift from
+demonstrated behavior.
+
 Ran the deployed homelab Project Ledger watchdog against current `main` (`bf04d7b`)
 on ai-server. Result: `observations=132 sources=14 health=ok changed=yes`, run
 `run_4c8e9084d4ca23637eac9267`. All 14 sources available; 129 canonical projects from
