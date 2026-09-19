@@ -135,9 +135,12 @@ evidence). The R0 reality cases remain as the production proof pin.
 
 ### Decision registry
 
-- merge/split/reject-match/alias/canonical-key decisions;
-- supersession semantics;
-- operator/review rationale/evidence references.
+- merge/split/reject-match/alias/canonical-key decisions — **done (P2.4)**;
+- supersession semantics — **done (P2.4)**: `supersede` marks a prior decision inactive
+  for the compile (append/supersede oriented, never silently rewritten);
+- operator/review rationale/evidence references — **done (P2.4)**: every decision
+  carries a stable `decision_id` and may carry `rationale`, `evidence` refs,
+  `authority`, and `decided_at`.
 
 ### Canonical projects
 
