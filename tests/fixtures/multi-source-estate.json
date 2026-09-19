@@ -1,0 +1,542 @@
+{
+  "schema_version": "1.1.0",
+  "description": "Multi-source estate canonical-identity acceptance fixture. One self-contained case per estate column that the identity compiler must handle deterministically. Expected blocks are pinned to the compiler's current deterministic output so behavior cannot silently drift.",
+  "cases": [
+    {
+      "case_id": "estate-1",
+      "title": "Live + mirror + backup of one project merge by exact remote",
+      "note": "One conceptual project present as a live repo, a mirror, and a backup. All carry the same normalized remote (https vs ssh forms); the backup uses canonical_url only. Exact remote authority must merge all three into one stable canonical project with no review.",
+      "observations": [
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m1-live",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "osprey",
+          "location": "/central/repos/active/osprey",
+          "compat_entry": {
+            "project_key": "osprey",
+            "name": "Osprey",
+            "repo_name": "osprey",
+            "remote_url": "https://github.com/mschwar/osprey.git",
+            "canonical_url": "",
+            "path": "/central/repos/active/osprey"
+          }
+        },
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m1-mir",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "osprey",
+          "location": "/central/registry/mirrors/mac/Developer/osprey",
+          "compat_entry": {
+            "project_key": "osprey",
+            "name": "Osprey",
+            "repo_name": "osprey",
+            "remote_url": "git@github.com:mschwar/osprey.git",
+            "canonical_url": "",
+            "path": "/central/registry/mirrors/mac/Developer/osprey"
+          }
+        },
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m1-bak",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "osprey",
+          "location": "/central/archive/root-backups/osprey",
+          "compat_entry": {
+            "project_key": "osprey",
+            "name": "Osprey",
+            "repo_name": "osprey",
+            "remote_url": "",
+            "canonical_url": "https://github.com/mschwar/osprey",
+            "path": "/central/archive/root-backups/osprey"
+          }
+        }
+      ],
+      "decisions": [],
+      "expected": {
+        "canonical_project_count": 1,
+        "by_project_key": {
+          "osprey": [
+            {
+              "canonical_project_id": "prj_ed185ac8b09dd055bb165920",
+              "observation_ids": [
+                "m1-bak",
+                "m1-live",
+                "m1-mir"
+              ],
+              "normalized_remotes": [
+                "github.com/mschwar/osprey"
+              ],
+              "project_key_hints": [
+                "osprey"
+              ],
+              "identity_anchor": {
+                "kind": "normalized_remote",
+                "value": "github.com/mschwar/osprey"
+              }
+            }
+          ]
+        },
+        "review_count": 0,
+        "reviews": []
+      }
+    },
+    {
+      "case_id": "estate-2",
+      "title": "Renamed / moved project keeps identity over a moved path",
+      "note": "The same project observed at an archived legacy path and at the current active path, same remote. Moving the working copy must not split identity; both paths resolve to the same canonical project.",
+      "observations": [
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m2-old",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "cardinal",
+          "location": "/central/archive/legacy/cardinal",
+          "compat_entry": {
+            "project_key": "cardinal",
+            "name": "Cardinal",
+            "repo_name": "cardinal",
+            "remote_url": "https://github.com/mschwar/cardinal.git",
+            "canonical_url": "",
+            "path": "/central/archive/legacy/cardinal"
+          }
+        },
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m2-new",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "cardinal",
+          "location": "/central/repos/active/cardinal",
+          "compat_entry": {
+            "project_key": "cardinal",
+            "name": "Cardinal",
+            "repo_name": "cardinal",
+            "remote_url": "git@github.com:mschwar/cardinal.git",
+            "canonical_url": "",
+            "path": "/central/repos/active/cardinal"
+          }
+        }
+      ],
+      "decisions": [],
+      "expected": {
+        "canonical_project_count": 1,
+        "by_project_key": {
+          "cardinal": [
+            {
+              "canonical_project_id": "prj_e7d560d6730f180262ea80bf",
+              "observation_ids": [
+                "m2-new",
+                "m2-old"
+              ],
+              "normalized_remotes": [
+                "github.com/mschwar/cardinal"
+              ],
+              "project_key_hints": [
+                "cardinal"
+              ],
+              "identity_anchor": {
+                "kind": "normalized_remote",
+                "value": "github.com/mschwar/cardinal"
+              }
+            }
+          ]
+        },
+        "review_count": 0,
+        "reviews": []
+      }
+    },
+    {
+      "case_id": "estate-3",
+      "title": "Same-name unrelated projects stay separate",
+      "note": "Two unrelated projects that share a display name and compatibility project_key but live at different remotes. Names must never auto-merge; each becomes its own canonical project and the key collision surfaces a PROJECT_KEY_AMBIGUOUS review.",
+      "observations": [
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m3-a",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "wren",
+          "location": "/central/repos/apps/wren",
+          "compat_entry": {
+            "project_key": "wren",
+            "name": "Wren",
+            "repo_name": "wren",
+            "remote_url": "https://github.com/example/wren.git",
+            "canonical_url": "",
+            "path": "/central/repos/apps/wren"
+          }
+        },
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m3-b",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "wren",
+          "location": "/central/projects/wren",
+          "compat_entry": {
+            "project_key": "wren",
+            "name": "Wren",
+            "repo_name": "wren",
+            "remote_url": "https://github.com/example-org/wren.git",
+            "canonical_url": "",
+            "path": "/central/projects/wren"
+          }
+        }
+      ],
+      "decisions": [],
+      "expected": {
+        "canonical_project_count": 2,
+        "by_project_key": {
+          "wren": [
+            {
+              "canonical_project_id": "prj_570ff908cdf51299e5742031",
+              "observation_ids": [
+                "m3-a"
+              ],
+              "normalized_remotes": [
+                "github.com/example/wren"
+              ],
+              "project_key_hints": [
+                "wren"
+              ],
+              "identity_anchor": {
+                "kind": "normalized_remote",
+                "value": "github.com/example/wren"
+              }
+            },
+            {
+              "canonical_project_id": "prj_9578c6735066e7040d45a1e2",
+              "observation_ids": [
+                "m3-b"
+              ],
+              "normalized_remotes": [
+                "github.com/example-org/wren"
+              ],
+              "project_key_hints": [
+                "wren"
+              ],
+              "identity_anchor": {
+                "kind": "normalized_remote",
+                "value": "github.com/example-org/wren"
+              }
+            }
+          ]
+        },
+        "review_count": 1,
+        "reviews": [
+          {
+            "code": "PROJECT_KEY_AMBIGUOUS",
+            "review_id": "rev_eb14cae17eb32720761cf3b6",
+            "affected_observation_ids": [
+              "m3-a",
+              "m3-b"
+            ],
+            "state": "open"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "estate-4",
+      "title": "Missing remote: no remote means no automatic merge",
+      "note": "Two observations with no remote and no canonical_url but the same name/key remain separate by default (no strong evidence), and the identical key surfaces ambiguity rather than guessing a merge.",
+      "observations": [
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m4-a",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "loon",
+          "location": "/central/notes/loon-a",
+          "compat_entry": {
+            "project_key": "loon",
+            "name": "Loon",
+            "repo_name": "loon-a",
+            "remote_url": "",
+            "canonical_url": "",
+            "path": "/central/notes/loon-a"
+          }
+        },
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m4-b",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "loon",
+          "location": "/central/notes/loon-b",
+          "compat_entry": {
+            "project_key": "loon",
+            "name": "Loon",
+            "repo_name": "loon-b",
+            "remote_url": "",
+            "canonical_url": "",
+            "path": "/central/notes/loon-b"
+          }
+        }
+      ],
+      "decisions": [],
+      "expected": {
+        "canonical_project_count": 2,
+        "by_project_key": {
+          "loon": [
+            {
+              "canonical_project_id": "prj_97a87ec916906274a3966ee3",
+              "observation_ids": [
+                "m4-b"
+              ],
+              "normalized_remotes": [],
+              "project_key_hints": [
+                "loon"
+              ],
+              "identity_anchor": {
+                "kind": "observation",
+                "value": "m4-b"
+              }
+            },
+            {
+              "canonical_project_id": "prj_ccdcf1f24982a3d649377872",
+              "observation_ids": [
+                "m4-a"
+              ],
+              "normalized_remotes": [],
+              "project_key_hints": [
+                "loon"
+              ],
+              "identity_anchor": {
+                "kind": "observation",
+                "value": "m4-a"
+              }
+            }
+          ]
+        },
+        "review_count": 1,
+        "reviews": [
+          {
+            "code": "PROJECT_KEY_AMBIGUOUS",
+            "review_id": "rev_4af33b33d344a8054a35f56a",
+            "affected_observation_ids": [
+              "m4-a",
+              "m4-b"
+            ],
+            "state": "open"
+          }
+        ]
+      }
+    },
+    {
+      "case_id": "estate-5",
+      "title": "Divergent sidecar declarations on a same-remote project stay claims, not truth",
+      "note": "Two observations of the same project (same remote) carry conflicting project_key sidecar claims (north vs south). Exact remote merges them into one project; the conflicting declarations remain distinct hints and the project keeps remote as its stable key. No last-write-wins and no review — remote authority holds.",
+      "observations": [
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m5-north",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "north",
+          "location": "/central/repos/active/north",
+          "compat_entry": {
+            "project_key": "north",
+            "name": "Meridian",
+            "repo_name": "north",
+            "remote_url": "https://github.com/mschwar/north.git",
+            "canonical_url": "",
+            "path": "/central/repos/active/north"
+          }
+        },
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m5-south",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "south",
+          "location": "/central/registry/mirrors/mac/south",
+          "compat_entry": {
+            "project_key": "south",
+            "name": "Meridian",
+            "repo_name": "south",
+            "remote_url": "git@github.com:mschwar/north.git",
+            "canonical_url": "",
+            "path": "/central/registry/mirrors/mac/south"
+          }
+        }
+      ],
+      "decisions": [],
+      "expected": {
+        "canonical_project_count": 1,
+        "by_project_key": {
+          "github.com/mschwar/north": [
+            {
+              "canonical_project_id": "prj_3173be8d179692eec916cfa6",
+              "observation_ids": [
+                "m5-north",
+                "m5-south"
+              ],
+              "normalized_remotes": [
+                "github.com/mschwar/north"
+              ],
+              "project_key_hints": [
+                "north",
+                "south"
+              ],
+              "identity_anchor": {
+                "kind": "normalized_remote",
+                "value": "github.com/mschwar/north"
+              }
+            }
+          ]
+        },
+        "review_count": 0,
+        "reviews": []
+      }
+    },
+    {
+      "case_id": "estate-6",
+      "title": "Inventory-only observation is a valid singleton",
+      "note": "An observation that exists only in an inventory artifact (no on-disk repo, no remote) must compile to its own canonical project anchored by observation, not be dropped.",
+      "observations": [
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m6-inv",
+          "source_id": "matty-pc-inventory",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "jot",
+          "location": "inventory://matty-pc/docs/jot",
+          "compat_entry": {
+            "project_key": "jot",
+            "name": "Jot",
+            "repo_name": "jot",
+            "remote_url": "",
+            "canonical_url": "",
+            "path": "inventory://matty-pc/docs/jot"
+          }
+        }
+      ],
+      "decisions": [],
+      "expected": {
+        "canonical_project_count": 1,
+        "by_project_key": {
+          "jot": [
+            {
+              "canonical_project_id": "prj_e13b0b60701bd21bfd712b30",
+              "observation_ids": [
+                "m6-inv"
+              ],
+              "normalized_remotes": [],
+              "project_key_hints": [
+                "jot"
+              ],
+              "identity_anchor": {
+                "kind": "observation",
+                "value": "m6-inv"
+              }
+            }
+          ]
+        },
+        "review_count": 0,
+        "reviews": []
+      }
+    },
+    {
+      "case_id": "estate-7",
+      "title": "Inaccessible source: a decision referencing an unavailable observation is a bounded review",
+      "note": "A merge decision references an observation from a source that is unavailable in this compile. This must become a DECISION_REFERENCE_UNAVAILABLE review and the present observations must still compile, not fail wholesale.",
+      "observations": [
+        {
+          "schema_version": "1.0.0",
+          "observation_id": "m7-live",
+          "source_id": "fixture",
+          "snapshot_id": "snap-estate",
+          "source_resolution": "resolved",
+          "observed_at": "2026-09-18T06:00:00Z",
+          "project_key": "aardvark",
+          "location": "/central/repos/active/aardvark",
+          "compat_entry": {
+            "project_key": "aardvark",
+            "name": "Aardvark",
+            "repo_name": "aardvark",
+            "remote_url": "https://github.com/mschwar/aardvark.git",
+            "canonical_url": "",
+            "path": "/central/repos/active/aardvark"
+          }
+        }
+      ],
+      "decisions": [
+        {
+          "decision_id": "dec-ref-unavailable",
+          "type": "merge",
+          "observation_ids": [
+            "m7-live",
+            "obs-today-unavailable"
+          ],
+          "rationale": "references an observation from a source unavailable this compile."
+        }
+      ],
+      "expected": {
+        "canonical_project_count": 1,
+        "by_project_key": {
+          "aardvark": [
+            {
+              "canonical_project_id": "prj_078c93dbe3e2cb2970744a49",
+              "observation_ids": [
+                "m7-live"
+              ],
+              "normalized_remotes": [
+                "github.com/mschwar/aardvark"
+              ],
+              "project_key_hints": [
+                "aardvark"
+              ],
+              "identity_anchor": {
+                "kind": "normalized_remote",
+                "value": "github.com/mschwar/aardvark"
+              }
+            }
+          ]
+        },
+        "review_count": 1,
+        "reviews": [
+          {
+            "code": "DECISION_REFERENCE_UNAVAILABLE",
+            "review_id": "rev_dc04e7c450b642556f2a93ff",
+            "affected_observation_ids": [
+              "m7-live",
+              "obs-today-unavailable"
+            ],
+            "state": "open"
+          }
+        ]
+      }
+    }
+  ]
+}

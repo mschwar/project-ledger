@@ -81,13 +81,20 @@ Evidence:
 
 ### R2 — Identity walking skeleton
 
-Status: COMPLETE when this PR lands.
+Status: COMPLETE.
 
 New observable capability:
 
 > Given an exact canonical ID, known path, exact normalized repository remote, operator-approved alias, project-key hint, or display name, return one canonical project, explicit ambiguity, or unresolved.
 
 Automatic identity remains narrower than resolution: only exact normalized repository remotes auto-merge. Explicit identity decisions are durable compiler inputs.
+
+The full multi-source estate fixture (`tests/fixtures/multi-source-estate.json` +
+`tests/test_multi_source_estate.py`) is now the primary canonicalization acceptance
+environment. It pins the compiler's exact deterministic output for every estate column
+(live+mirror+backup, renamed/moved, same-name unrelated, missing remote, divergent
+sidecars, inventory-only, inaccessible source, strong vs weak evidence), so canonical
+identity cannot silently drift from demonstrated estate behavior.
 
 ### R0 — Live provider proof
 

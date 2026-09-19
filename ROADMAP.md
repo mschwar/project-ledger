@@ -117,6 +117,13 @@ Deliverables:
 - extract source adapters/normalization/models from `build_ledger.py` without changing compatibility behavior;
 - fixture-based multi-source estate tests.
 
+The multi-source estate fixture is **complete** and is now the primary canonicalization
+acceptance environment: `tests/fixtures/multi-source-estate.json` +
+`tests/test_multi_source_estate.py` pin the compiler's exact deterministic output for
+every estate column (live+mirror+backup, renamed/moved, same-name unrelated, missing
+remote, divergent sidecars, inventory-only, inaccessible source, strong vs weak
+evidence). The R0 reality cases remain as the production proof pin.
+
 ### Identity graph
 
 - identity evidence records;

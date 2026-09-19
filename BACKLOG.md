@@ -136,25 +136,24 @@ Keep `build_ledger.py` as compatibility entrypoint.
 
 ## P2.2 Multi-source estate fixture
 
-**Partial — R0 reality cases landed.** `tests/fixtures/r0-reality-cases.json` +
-`tests/test_r0_reality_regressions.py` reproduce the exact canonical IDs from the
-R0 live provider proof (homelab/white-rabbit/reality-ledger multi-manifestation
-merges; `the-garden` `PROJECT_KEY_AMBIGUOUS` split + review). This covers the
-"one project present as live repo + mirror/backup" and "same-name unrelated
-project" columns of the full fixture.
+**Complete — the full multi-source estate fixture is now the primary canonicalization
+acceptance environment.** `tests/fixtures/multi-source-estate.json` +
+`tests/test_multi_source_estate.py` pin the compiler's exact deterministic output for
+every estate column:
 
-Still open to reach the full multi-source estate fixture:
+- one project present as live repo + mirror + backup (exact remote merges all three);
+- renamed/moved project (same remote across a moved path keeps one canonical project);
+- same-name unrelated project (stays separate; `PROJECT_KEY_AMBIGUOUS` review);
+- missing remote (no strong evidence -> separate by default, ambiguity surfaced);
+- divergent sidecars (same remote, conflicting `project_key` claims -> remote stays the
+  stable key, both hints preserved, no last-write-wins, no review);
+- inventory-only observation (valid singleton anchored by observation);
+- inaccessible source (a decision referencing an unavailable observation becomes a
+  bounded `DECISION_REFERENCE_UNAVAILABLE` review; present observations still compile);
+- strong and weak identity evidence (exact remote is strong; names/keys are weak).
 
-- one project present as live repo + mirror + backup;
-- same-name unrelated project;
-- renamed/moved project;
-- missing remote;
-- divergent sidecars;
-- inventory-only observation;
-- inaccessible source;
-- strong and weak identity evidence.
-
-This fixture should become the primary canonicalization acceptance environment.
+The R0 reality cases (`tests/fixtures/r0-reality-cases.json`) remain as the production
+proof pin; the estate fixture is the broader synthetic acceptance matrix.
 
 ## P2.3 Identity evidence model
 
