@@ -223,14 +223,43 @@ def _pair(left: str, right: str) -> tuple[str, str]:
     return tuple(sorted((left, right)))
 
 
-def _review(code: str, observation_ids: list[str], detail: str, *, evidence: list[dict] | None = None) -> dict:
+def _review(
+    code: str,
+    observation_ids: list[str],
+    detail: str,
+    *,
+    evidence: list[dict] | None = None,
+    decision_ids: list[str] | None = None,
+    severity: str = "warning",
+    reason_automation_stopped: str | None = None,
+    resolution_actions: list[str] | None = None,
+) -> dict:
+    """Build one first-class identity review item (P2.6).
+
+    ``affected_observation_ids`` stays present (possibly empty) for backward
+    compatibility. Decision-scoped reviews (e.g. ``DECISION_SUPERSEDE_UNKNOWN``)
+    carry a non-empty ``affected_decision_ids`` referent so the review is about the
+    decision, not observations. The decision referent is fed into the ``stable_id``
+    material so two distinct decision-scoped reviews never collapse to one
+    ``review_id`` (a data-loss bug fixed in P2.6).
+    """
     ids = sorted(set(observation_ids))
+    decision_ids = sorted(set(decision_ids or []))
+    # Only include the decision referent in the ID material when present, so
+    # observation-scoped review IDs are unchanged (pinned fixtures preserved).
+    id_parts: list[object] = [code, ids]
+    if decision_ids:
+        id_parts.append(decision_ids)
     return {
-        "review_id": stable_id("rev", code, ids),
+        "review_id": stable_id("rev", *id_parts),
         "code": code,
         "state": "open",
+        "severity": severity,
         "affected_observation_ids": ids,
+        "affected_decision_ids": decision_ids,
         "detail": detail,
+        "reason_automation_stopped": reason_automation_stopped,
+        "resolution_actions": resolution_actions or [],
         "evidence": evidence or [],
     }
 
@@ -305,6 +334,16 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                     [],
                     f"Supersede decision {decision['decision_id']} references unknown decision {target!r}.",
                     evidence=[{"kind": "decision", "decision_id": decision["decision_id"], "type": "supersede"}],
+                    decision_ids=[decision["decision_id"]],
+                    severity="warning",
+                    reason_automation_stopped=(
+                        "A supersede decision references a decision id that is not present in the "
+                        "decision registry; the supersede cannot be applied."
+                    ),
+                    resolution_actions=[
+                        "Correct the supersedes_decision_id to a decision that exists in the registry.",
+                        "Add the referenced decision to the registry if it was omitted.",
+                    ],
                 )
             )
             continue
@@ -326,6 +365,15 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                     refs,
                     f"Decision {decision['decision_id']} references observations not present in this compile: {missing}",
                     evidence=[{"kind": "decision", "decision_id": decision["decision_id"], "type": decision["type"]}],
+                    severity="warning",
+                    reason_automation_stopped=(
+                        "A decision references observations that are not present in this compile "
+                        "(their source may be unavailable); the decision cannot be applied."
+                    ),
+                    resolution_actions=[
+                        "Confirm the referenced source is available and recompile.",
+                        "Supersede or correct the decision if the reference is stale.",
+                    ],
                 )
             )
             continue
@@ -358,6 +406,15 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                     refs,
                     f"Merge decision {decision['decision_id']} conflicts with a split/reject decision.",
                     evidence=[{"kind": "decision", "decision_id": decision["decision_id"], "type": "merge"}],
+                    severity="error",
+                    reason_automation_stopped=(
+                        "A positive merge decision conflicts with an explicit negative (split/reject) "
+                        "decision; automation stopped rather than letting decision order decide truth."
+                    ),
+                    resolution_actions=[
+                        "Resolve the conflict between the positive and negative decisions.",
+                        "Supersede the conflicting decision once the intended outcome is clear.",
+                    ],
                 )
             )
             continue
@@ -374,6 +431,15 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                     refs,
                     f"Merge decision {decision['decision_id']} would violate an existing negative decision.",
                     evidence=[{"kind": "decision", "decision_id": decision["decision_id"], "type": "merge"}],
+                    severity="error",
+                    reason_automation_stopped=(
+                        "A positive merge decision would violate an existing negative (split/reject) "
+                        "decision; automation stopped rather than letting decision order decide truth."
+                    ),
+                    resolution_actions=[
+                        "Resolve the conflict between the positive and negative decisions.",
+                        "Supersede the conflicting decision once the intended outcome is clear.",
+                    ],
                 )
             )
             continue
@@ -400,6 +466,15 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                         sorted(uf.component(anchor) | uf.component(other)),
                         f"Exact remote {remote!r} matched observations that an explicit split/reject decision keeps separate.",
                         evidence=[{"kind": "normalized_remote", "value": remote}],
+                        severity="warning",
+                        reason_automation_stopped=(
+                            "An exact normalized remote matched observations that an explicit "
+                            "split/reject decision keeps in separate conceptual projects."
+                        ),
+                        resolution_actions=[
+                            "Review the split/reject decision to confirm it is still intended.",
+                            "Supersede the negative decision if the observations are the same project after all.",
+                        ],
                     )
                 )
                 continue
@@ -654,6 +729,16 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                     obs_ids,
                     f"Compatibility project_key {original!r} resolves to {len(project_ids)} canonical projects; no automatic merge was performed.",
                     evidence=[{"kind": "project_key_hint", "value": original}],
+                    severity="warning",
+                    reason_automation_stopped=(
+                        "A compatibility project_key resolves to more than one canonical project; "
+                        "names and project keys are referents, not automatic identity authority."
+                    ),
+                    resolution_actions=[
+                        "Add a merge decision if the observations are the same conceptual project.",
+                        "Add a canonical_key decision to assign a stable operator-approved key.",
+                        "Add a reject_match decision if they are genuinely distinct projects.",
+                    ],
                 )
             )
 

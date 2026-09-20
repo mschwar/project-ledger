@@ -19,6 +19,7 @@ registered sources
  -> exact-remote identity evidence + explicit decisions
  -> identity evidence model (records + scoring, P2.3)
  -> canonical project IDs + resolved-field provenance (P2.5)
+ -> first-class identity review queue (P2.6)
  -> canonical projects + identity review
  -> system manifest
  -> ledger orient / ledger resolve / ledger sources
@@ -49,12 +50,19 @@ append/supersede oriented (never silently rewritten): a superseded decision is i
 for the compile, and a `supersede` referencing an unknown decision becomes a bounded
 `DECISION_SUPERSEDE_UNKNOWN` review.
 
-> The **canonical-ID compiler (P2.5)** now guarantees a distinct `canonical_project_id`
-> per conceptual project: a normalized remote is only used as the anchor when it is
-> unique to one project across the compile, so a split/reject that keeps two
-> observations sharing an exact remote in separate projects no longer collides. Each
-> canonical project also carries a `resolved_fields` claim-provenance map explaining
-> which observation/decision/evidence produced its `project_key` and `display_name`.
+The **canonical-ID compiler (P2.5)** now guarantees a distinct `canonical_project_id`
+per conceptual project: a normalized remote is only used as the anchor when it is
+unique to one project across the compile, so a split/reject that keeps two
+observations sharing an exact remote in separate projects no longer collides. Each
+canonical project also carries a `resolved_fields` claim-provenance map explaining
+which observation/decision/evidence produced its `project_key` and `display_name`.
+
+The **identity review queue (P2.6)** is now first-class: every review item carries
+`severity`, `reason_automation_stopped`, `resolution_actions`, and `evidence`, and
+decision-scoped reviews (`DECISION_SUPERSEDE_UNKNOWN`) carry a non-empty
+`affected_decision_ids` referent so two distinct unknown-target reviews no longer
+collapse to one `review_id` (a data-loss bug fixed in P2.6). Observation-scoped
+review IDs are unchanged.
 
 Still not implemented:
 
