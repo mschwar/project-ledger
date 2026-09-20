@@ -273,11 +273,14 @@ Covered resolutions:
 This closes the Gate C guarantee that "a resolved identity question does not recur on
 unchanged inputs" for every resolvable review type.
 
-A review-resolution gap surfaced by the ratchet probe is recorded as a future spec:
-`docs/work/FUTURE-SPEC-project-key-ambiguous-resolution-actions-20260919.md` — the
-`PROJECT_KEY_AMBIGUOUS` `resolution_actions` advertise `canonical_key`/`reject_match`
-as resolutions, but only `merge` actually clears the review (the ambiguity is computed
-on the raw key hint, not the resolved canonical key).
+A review-resolution gap surfaced by the ratchet probe is now **closed as P2.8** (it was
+originally recorded as `docs/work/FUTURE-SPEC-project-key-ambiguous-resolution-actions-20260919.md`):
+the `PROJECT_KEY_AMBIGUOUS` `resolution_actions` advertised `canonical_key`/`reject_match`
+as resolutions, but only `merge` actually cleared the review (the ambiguity is computed
+on the raw key hint, not the resolved canonical key). P2.8 computes the ambiguity on the
+resolved key so a distinct `canonical_key` clears the review, and corrects the advertised
+actions to the two paths that actually clear (`merge`, `canonical_key`). See
+`docs/work/P2.8-PROJECT-KEY-AMBIGUOUS-RESOLUTION-20260919.md`.
 
 ---
 
