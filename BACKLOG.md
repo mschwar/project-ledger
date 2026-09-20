@@ -48,11 +48,18 @@ The following are implemented on `main` and must not be re-created as new work:
 
 ### P1.1 Freeze compatibility observation contract
 
-Deliver:
-
-- documented compatibility envelope and major/minor policy;
-- a golden compatibility fixture preventing accidental field-meaning drift;
-- explicit unsupported-major behavior.
+**Complete (2026-09-20).** The flat compatibility observation contract is now
+explicit and version-pinned: `docs/COMPATIBILITY.md` documents the envelope
+(`generated_at` / `config_path` / `entry_count` / `entries[]`), the exact ordered
+36-field entry list, and a semver major/minor policy; the golden fixture
+`tests/fixtures/compat-contract.json` + `tests/test_compat_contract.py` assert
+`ledger.models.CSV_FIELDS == fixture entry_fields` exactly, so a field rename,
+reorder, removal, or unapproved addition fails the drift test; and the compile
+boundary now rejects an unsupported `format` (`COMPAT_FORMAT_UNSUPPORTED`) or
+schema major (`COMPAT_MAJOR_UNSUPPORTED`) explicitly via
+`ledger/compat_contract.py` rather than guessing through (CLI exit 2, stable
+code). A same-major newer minor is tolerated; a missing version marker defaults to
+supported v0 (unchanged `build_ledger.py` producer output). Suite 102 -> 112 tests.
 
 ### P1.4 Minimal epistemic claim/evidence contract
 

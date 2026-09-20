@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from . import COMPAT_FLAT_SCHEMA_VERSION, COMPILER_VERSION, MANIFEST_SCHEMA_VERSION, OBSERVATION_SCHEMA_VERSION
+from .compat_contract import check_compat_schema
 from .config import describe_sources, read_config, validate_config
 from .contracts import capability
 from .ids import digest_json, observation_id_for, stable_id
@@ -24,6 +25,7 @@ def read_compat_output(path: Path) -> dict:
         raise ValueError(f"Compatibility observation input is invalid JSON: {path}: {exc}") from exc
     if not isinstance(payload, dict) or not isinstance(payload.get("entries"), list):
         raise ValueError(f"Compatibility observation input must contain an entries array: {path}")
+    check_compat_schema(payload)
     return payload
 
 

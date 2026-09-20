@@ -57,8 +57,8 @@ This tranche deliberately does **not** introduce canonical projects, semantic de
 
 ### Contract/version foundation
 
-- freeze/version current flat observation JSON as compatibility output beyond the current compatibility-version declaration;
-- define explicit major/minor compatibility and migration policy;
+- freeze/version current flat observation JSON as compatibility output beyond the current compatibility-version declaration — **done (P1.1)**;
+- define explicit major/minor compatibility and migration policy — **done (P1.1)**: `docs/COMPATIBILITY.md` §3 (semver major/minor); unsupported major/format rejected explicitly at the compile boundary (`COMPAT_MAJOR_UNSUPPORTED` / `COMPAT_FORMAT_UNSUPPORTED`) via `ledger/compat_contract.py`;
 - add executable schema validation for generated manifest/observation artifacts.
 
 ### Source/freshness model
