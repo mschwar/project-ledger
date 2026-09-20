@@ -5,7 +5,6 @@ import shutil
 import subprocess
 import uuid
 from pathlib import Path
-from unittest import mock
 
 import unittest
 
@@ -13,7 +12,6 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import build_ledger
 from ledger.models import (
     classify_project_type,
     coerce_bool,
