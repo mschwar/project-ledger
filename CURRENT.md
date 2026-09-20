@@ -15,6 +15,7 @@ Implemented:
 ```text
 registered sources
  -> compatibility scan
+ -> frozen v0 compatibility observation contract (P1.1)
  -> typed manifestation observations
  -> exact-remote identity evidence + explicit decisions
  -> identity evidence model (records + scoring, P2.3)

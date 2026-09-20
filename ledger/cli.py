@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from .compiler import compile_state, load_manifest, orient_payload
+from .compat_contract import LedgerCompatError
 from .config import LedgerConfigError, describe_sources, read_config, validate_config
 from .identity import resolve_payload
 
@@ -181,6 +182,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
     except LedgerConfigError as exc:
+        print(f"{exc.code}: {exc}", file=sys.stderr)
+        return 2
+    except LedgerCompatError as exc:
         print(f"{exc.code}: {exc}", file=sys.stderr)
         return 2
     except (OSError, ValueError) as exc:

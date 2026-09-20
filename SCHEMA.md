@@ -17,6 +17,16 @@ Do not treat a target field as implemented merely because it appears in this doc
 
 `build_ledger.py` still emits one flat project-like record. Preserve this while migration proceeds.
 
+> **Frozen (P1.1).** The flat compatibility observation contract is now explicit
+> and version-pinned. The envelope (`generated_at`, `config_path`, `entry_count`,
+> `entries[]`), the exact ordered entry-field list below, and the major/minor
+> policy are documented in `docs/COMPATIBILITY.md`, enforced by
+> `ledger/compat_contract.py` (unsupported major/format fails explicitly with
+> stable codes), and pinned by the golden fixture
+> `tests/fixtures/compat-contract.json`. The entry fields below must equal
+> `ledger.models.CSV_FIELDS` exactly — the drift test fails on any rename,
+> reorder, removal, or unapproved addition.
+
 ## Identity compatibility fields
 
 - `project_hash` — deterministic hash of current `project_key` basis; **not** a canonical project ID.
@@ -852,11 +862,11 @@ A sidecar is a declaration source attached to an observation. If multiple observ
 
 These compatibility rules remain important hardening work. The first identity slice avoids depending on unfinished declaration semantics by using only exact observed remote identity plus explicit durable decisions:
 
-1. preserve the flat compatibility output as an explicit v0 contract;
+1. preserve the flat compatibility output as an explicit v0 contract — **done (P1.1)**: frozen in `docs/COMPATIBILITY.md` + `tests/fixtures/compat-contract.json`;
 2. introduce typed entity collections beside it rather than silently changing field meanings;
 3. validate generated schemas at compile boundaries;
-4. define major/minor compatibility behavior and migration notes;
-5. reject or explicitly degrade on unsupported major versions;
+4. define major/minor compatibility behavior and migration notes — **done (P1.1)**: semver major/minor/patch policy in `docs/COMPATIBILITY.md` §3;
+5. reject or explicitly degrade on unsupported major versions — **done (P1.1)**: `ledger/compat_contract.py` rejects an unsupported `format` (`COMPAT_FORMAT_UNSUPPORTED`) and an unsupported schema major (`COMPAT_MAJOR_UNSUPPORTED`) at the compile boundary rather than guessing through; no version marker defaults to supported v0;
 6. let generated view versions evolve without changing immutable entity identity.
 
 ## Recommendations for agents
