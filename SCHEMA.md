@@ -125,7 +125,11 @@ path
 path_state            known | unavailable
 status                available | unavailable
 status_reason
-freshness_state       currently conservative; usually unknown
+result_state          observed | observed_empty | unavailable
+observation_count
+freshness_state       known | unknown | unavailable
+content_as_of         nullable; authoritative upstream content timestamp
+content_as_of_basis   nullable; which upstream field supplied content_as_of
 probe_as_of           nullable current probe timestamp evidence
 probe_fingerprint
 artifacts[]
@@ -139,6 +143,40 @@ compat_snapshot_basis
 `probe_fingerprint` is a cheap fingerprint of the current source probe inputs available to Wave 1. For inventory-policy sources it includes inventory/policy artifact hashes. For live filesystems it currently includes locator/access/root-stat evidence and is **not a recursive content digest**.
 
 It must not be interpreted as proof that all descendant content is unchanged.
+
+### Source result and freshness semantics (P1.5)
+
+Each configured source additionally carries a materialized `result_state` that
+distinguishes three real scan outcomes:
+
+- `unavailable` — the source root/inventory artifacts could not be accessed, so nothing
+  could be observed from it (`status` is `unavailable`);
+- `observed_empty` — the source was probed successfully (healthy) but contributed zero
+  observations. This is a deliberate distinction: a healthy-but-empty source is not
+  broken and must not be treated as `unavailable`;
+- `observed` — the source was probed successfully and contributed at least one
+  observation.
+
+`observation_count` is the number of typed observations resolved to that source in this
+compile.
+
+`freshness_state` is honest about what can be known:
+
+- `unknown` — a source was observed, but no authoritative upstream timestamp is available
+  to claim how fresh its content is. Freshness is never invented from compile time or
+  path mtime.
+- `known` — a genuine authoritative content timestamp was supplied by an upstream source
+  and is exposed as `content_as_of` with `content_as_of_basis` naming the field that
+  supplied it. Authoritative priority is git remote-ref committer date
+  (`compat.entry.last_remote_ref_at`), then git HEAD commit date
+  (`compat.entry.head_commit_at`), then filesystem last-touch time
+  (`compat.entry.last_touch_at`).
+- `unavailable` — the source could not be probed, so its content freshness is unknown by
+  definition.
+
+`probe_as_of`/`probe_fingerprint` remain the current-probe evidence and are deliberately
+separate from the source's content `as_of`; a probe time is not inventing content
+freshness.
 
 ## 1.2 Compatibility source/run snapshot
 
@@ -250,6 +288,7 @@ digest
 ```text
 state                                  ok | degraded
 source_unavailable_count
+observed_empty_source_count
 unresolved_observation_source_count
 identity_review_count
 ```

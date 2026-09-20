@@ -24,6 +24,7 @@ registered sources
  -> resolved identity questions do not recur under identical inputs (P2.7 ratchet)
  -> PROJECT_KEY_AMBIGUOUS resolves via canonical_key + honest resolution_actions (P2.8)
   -> divergent sidecar declarations surface as a bounded review (P1.4)
+  -> explicit source result/freshness semantics: unavailable vs observed_empty vs observed; content_as_of only from authoritative upstream evidence (P1.5)
   -> canonical projects + identity review
   -> system manifest
   -> ledger orient / ledger resolve / ledger sources

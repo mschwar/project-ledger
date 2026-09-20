@@ -7,7 +7,7 @@ from pathlib import Path
 from . import COMPAT_FLAT_SCHEMA_VERSION, COMPILER_VERSION, MANIFEST_SCHEMA_VERSION, OBSERVATION_SCHEMA_VERSION
 from .compat_contract import check_compat_schema
 from .config import describe_sources, read_config, validate_config
-from .contracts import capability
+from .contracts import SOURCE_RESULT_STATES, capability
 from .ids import digest_json, observation_id_for, stable_id
 from .identity import materialize_identity
 
@@ -36,6 +36,91 @@ def _resolve_source(source_label: str, sources: list[dict]) -> tuple[str, str]:
         if source_label == label or source_label.startswith(label + ":"):
             return source["source_id"], "resolved"
     return stable_id("src", "unresolved", source_label), "unresolved"
+
+
+def _iso_max(*values: str) -> str | None:
+    """Return the latest ISO-8601 timestamp among non-empty values, else None.
+
+    Parses each value as a timezone-aware datetime rather than comparing strings
+    lexically, so mixed offset representations (``+00:00`` vs ``Z``) compare by
+    instant, not by text. Malformed/unparseable values are ignored (treated as
+    absent) so a bad upstream timestamp cannot poison source freshness.
+    """
+    latest: datetime | None = None
+    latest_original: str | None = None
+    for value in values:
+        if not value:
+            continue
+        try:
+            parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if parsed.tzinfo is None:
+            continue  # not a timezone-bearing timestamp; do not invent timezone
+        if latest is None or parsed > latest:
+            latest = parsed
+            latest_original = value
+    return latest_original
+
+
+def _source_content_as_of(observations: list[dict]) -> tuple[str | None, str | None]:
+    """Derive the strongest authoritative upstream-as-of evidence for a source.
+
+    P1.5: only claim a content timestamp where an upstream source actually
+    supplies it as evidence. We never invent freshness. Authoritative priority is
+    the git remote-ref committer date, then the local HEAD commit date, then the
+    filesystem last-touch time. If no observation supplies any of these, the source
+    freshness stays unknown (both returned values None).
+    """
+    remote_ref_candidates: list[str] = []
+    head_commit_candidates: list[str] = []
+    last_touch_candidates: list[str] = []
+    for observation in observations:
+        compat = observation.get("compat_entry") or {}
+        remote_ref = str(compat.get("last_remote_ref_at", "") or "").strip()
+        head_commit = str(compat.get("head_commit_at", "") or "").strip()
+        last_touch = str(compat.get("last_touch_at", "") or "").strip()
+        if remote_ref:
+            remote_ref_candidates.append(remote_ref)
+        if head_commit:
+            head_commit_candidates.append(head_commit)
+        if last_touch:
+            last_touch_candidates.append(last_touch)
+
+    # Only claim an as_of + basis together, and only where authoritative evidence
+    # produced a usable timezone-bearing instant. Each candidate class is evaluated
+    # in priority order; the first that yields a usable as_of wins.
+    for candidates, basis_claim in (
+        (remote_ref_candidates, "compat.entry.last_remote_ref_at"),
+        (head_commit_candidates, "compat.entry.head_commit_at"),
+        (last_touch_candidates, "compat.entry.last_touch_at"),
+    ):
+        if not candidates:
+            continue
+        candidate_as_of = _iso_max(*candidates)
+        if candidate_as_of is not None:
+            return candidate_as_of, basis_claim
+    return None, None
+
+
+def _classify_source_result(
+    *,
+    status: str,
+    observation_count: int,
+) -> str:
+    """Classify a source's materialized result into the P1.5 observed vocabulary.
+
+    ``unavailable``   - the source root/artifacts could not be accessed (failed to
+                        probe), so nothing could be observed from it;
+    ``observed_empty`` - the source was probed successfully but contributed zero
+                        observations (a real, distinguishable outcome - the source is
+                        healthy but empty, not broken);
+    ``observed``      - the source was probed successfully and contributed >= 1
+                        observation.
+    """
+    if status != "available":
+        return "unavailable"
+    return "observed" if observation_count > 0 else "observed_empty"
 
 
 def compile_state(
@@ -73,6 +158,7 @@ def compile_state(
 
     observations: list[dict] = []
     unresolved_source_count = 0
+    observations_by_source: dict[str, list[dict]] = {}
     for entry in compat["entries"]:
         if not isinstance(entry, dict):
             raise ValueError("Each compatibility entry must be a JSON object.")
@@ -81,23 +167,54 @@ def compile_state(
         if resolution == "unresolved":
             unresolved_source_count += 1
         snapshot_id = snapshot_id_by_source.get(source_id) or stable_id("snap", source_id, observed_at)
-        observations.append(
-            {
-                "schema_version": OBSERVATION_SCHEMA_VERSION,
-                "observation_id": observation_id_for(entry, source_id),
-                "source_id": source_id,
-                "snapshot_id": snapshot_id,
-                "source_resolution": resolution,
-                "observed_at": observed_at,
-                "project_key": str(entry.get("project_key", "")).strip() or None,
-                "location": str(entry.get("path", "")).strip()
-                or str(entry.get("canonical_url", "")).strip()
-                or None,
-                "compat_entry": entry,
-            }
-        )
+        observation = {
+            "schema_version": OBSERVATION_SCHEMA_VERSION,
+            "observation_id": observation_id_for(entry, source_id),
+            "source_id": source_id,
+            "snapshot_id": snapshot_id,
+            "source_resolution": resolution,
+            "observed_at": observed_at,
+            "project_key": str(entry.get("project_key", "")).strip() or None,
+            "location": str(entry.get("path", "")).strip()
+            or str(entry.get("canonical_url", "")).strip()
+            or None,
+            "compat_entry": entry,
+        }
+        observations.append(observation)
+        observations_by_source.setdefault(source_id, []).append(observation)
 
     observations.sort(key=lambda item: item["observation_id"])
+
+    # P1.5: enrich each source record with its materialized result state and the
+    # strongest authoritative upstream content-as-of evidence (never invented).
+    observed_empty_count = 0
+    for source in sources:
+        source_observations = observations_by_source.get(source["source_id"], [])
+        observation_count = len(source_observations)
+        result_state = _classify_source_result(
+            status=source["status"],
+            observation_count=observation_count,
+        )
+        if result_state == "observed_empty":
+            observed_empty_count += 1
+        content_as_of, content_as_of_basis = _source_content_as_of(source_observations)
+        source["result_state"] = result_state
+        source["observation_count"] = observation_count
+        source["content_as_of"] = content_as_of
+        source["content_as_of_basis"] = content_as_of_basis
+        # Freshness is only ever 'known' when an upstream source actually supplied
+        # authoritative timestamp evidence (git remote-ref / HEAD commit). An empty
+        # but healthy source is not 'stale' or 'known' — it was successfully observed
+        # to contain nothing. An unavailable source simply has no known freshness.
+        if result_state == "unavailable":
+            source["freshness_state"] = "unavailable"
+        elif content_as_of is not None:
+            source["freshness_state"] = "known"
+        else:
+            source["freshness_state"] = "unknown"
+        if result_state not in SOURCE_RESULT_STATES:
+            raise ValueError(f"Invalid source result_state: {result_state}")
+
     source_unavailable_count = sum(1 for source in sources if source["status"] != "available")
     health_state = "degraded" if source_unavailable_count or unresolved_source_count else "ok"
 
@@ -142,6 +259,7 @@ def compile_state(
         "health": {
             "state": health_state,
             "source_unavailable_count": source_unavailable_count,
+            "observed_empty_source_count": observed_empty_count,
             "unresolved_observation_source_count": unresolved_source_count,
             "identity_review_count": review_payload["review_count"],
         },
@@ -182,7 +300,7 @@ def compile_state(
         "limitations": [
             "Canonical identity auto-merges only exact normalized repository remotes; names and compatibility project_key values are referents, not automatic identity authority.",
             "Non-remote duplicate manifestations require an explicit identity decision until stronger typed declaration contracts land.",
-            "Source freshness is reported as unknown unless an upstream source contract supplies stronger semantics.",
+            "Source freshness is reported as known only where an upstream source supplies authoritative timestamp evidence (git remote-ref or HEAD commit); otherwise it is honestly unknown rather than invented.",
             "Compatibility snapshot IDs are scoped by source and the v0 output generated_at; v0 does not preserve native per-source snapshot metadata.",
             "Current-state/session fields inside compatibility entries remain legacy declarations until the later current-state resolver lands.",
         ],

@@ -112,14 +112,27 @@ Each source record in the manifest contains:
 - machine/storage hints;
 - path and path state;
 - current source status and reason;
-- `freshness_state`;
+- `result_state` (`observed` | `observed_empty` | `unavailable`), `observation_count`;
+- `freshness_state` (`known` | `unknown` | `unavailable`);
+- `content_as_of` / `content_as_of_basis` — authoritative upstream content timestamp where one exists;
 - current probe timestamp evidence where available;
 - current `probe_fingerprint`;
 - required inventory/policy artifact states and hashes where applicable.
 
 `probe_fingerprint` is a cheap current probe/checkpoint hint, **not a cryptographic digest of every live filesystem descendant**. Inventory-policy fingerprints are stronger because they include durable inventory/policy artifact hashes. Wave 5 may use stronger adapter-specific checkpoints for incremental invalidation.
 
-`freshness_state` is currently conservative and normally `unknown`; stronger freshness policy is Tranche 1B.
+### Source result and freshness (P1.5)
+
+Each source carries a materialized `result_state` distinguishing `unavailable`
+(unprobeable) from `observed_empty` (healthy but contributed zero observations) from
+`observed` (contributed at least one). `observation_count` is the resolved count.
+
+`freshness_state` is honest: it is `known` only when an upstream source supplied
+authoritative timestamp evidence, exposed as `content_as_of` + `content_as_of_basis`
+(authoritative priority: git remote-ref committer date, then HEAD commit date, then
+filesystem last-touch). It is `unknown` for an observed source with no such evidence —
+freshness is never invented from compile time or path mtime — and `unavailable` for an
+unprobeable source.
 
 ## Failure containment
 
