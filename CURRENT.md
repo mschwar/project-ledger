@@ -22,9 +22,10 @@ registered sources
  -> first-class identity review queue (P2.6)
  -> resolved identity questions do not recur under identical inputs (P2.7 ratchet)
  -> PROJECT_KEY_AMBIGUOUS resolves via canonical_key + honest resolution_actions (P2.8)
- -> canonical projects + identity review
- -> system manifest
- -> ledger orient / ledger resolve / ledger sources
+  -> divergent sidecar declarations surface as a bounded review (P1.4)
+  -> canonical projects + identity review
+  -> system manifest
+  -> ledger orient / ledger resolve / ledger sources
 ```
 
 This crosses both the **estate observation/orientation** boundary and the first **conceptual project identity** boundary.

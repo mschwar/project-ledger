@@ -350,7 +350,7 @@
     {
       "case_id": "estate-5",
       "title": "Divergent sidecar declarations on a same-remote project stay claims, not truth",
-      "note": "Two observations of the same project (same remote) carry conflicting project_key sidecar claims (north vs south). Exact remote merges them into one project; the conflicting declarations remain distinct hints and the project keeps remote as its stable key. No last-write-wins and no review — remote authority holds.",
+      "note": "Two observations of the same project (same remote) carry conflicting project_key sidecar claims (north vs south). Exact remote merges them into one project; the conflicting declarations remain distinct hints and the project keeps remote as its stable key. No last-write-wins: the divergence is surfaced as a DIVERGENT_SIDECAR_DECLARATIONS review (P1.4) rather than silently absorbed by remote authority. The merge stands; a canonical_key decision resolves the review.",
       "observations": [
         {
           "schema_version": "1.0.0",
@@ -414,8 +414,18 @@
             }
           ]
         },
-        "review_count": 0,
-        "reviews": []
+        "review_count": 1,
+        "reviews": [
+          {
+            "review_id": "rev_d3b18b3ac86c85fe7885227b",
+            "code": "DIVERGENT_SIDECAR_DECLARATIONS",
+            "affected_observation_ids": [
+              "m5-north",
+              "m5-south"
+            ],
+            "state": "open"
+          }
+        ]
       }
     },
     {

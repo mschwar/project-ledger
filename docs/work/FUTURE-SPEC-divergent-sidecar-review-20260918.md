@@ -1,6 +1,7 @@
 # Future Spec — Surface divergent sidecar declarations as a review
 
-- Status: **proposed / not landed**
+- Status: **landed** (2026-09-19, programme P1.4 — see
+  `docs/work/P1.4-EPISTEMIC-CLAIM-CONTRACT-20260919.md`)
 - Date: 2026-09-18 (UTC)
 - Node: Matthews-MacBook-Air-3 (Hermes child node)
 - Repo: `github.com/mschwar/project-ledger`
@@ -50,15 +51,17 @@ This is deliberately queued behind P1.4 (epistemic claim/evidence contract) and 
 (review ratchet), so it does not introduce ad hoc conflict semantics into the first
 conservative slice.
 
-## Acceptance criteria (when it lands)
+## Acceptance criteria (landed with P1.4, 2026-09-19)
 
-- [ ] A merge of two same-remote observations with conflicting `project_key` sidecars
-      opens a `DIVERGENT_SIDECAR_DECLARATIONS` review referencing both observations.
-- [ ] The existing `estate-5` fixture is updated to reflect the new expected review
-      (its semantics otherwise unchanged).
-- [ ] A field-resolution policy or durable decision can resolve the review without
-      last-write-wins.
-- [ ] Full suite still passes after the fixture update.
+- [x] A merge of two same-remote observations with conflicting `project_key` sidecars
+      opens a `DIVERGENT_SIDECAR_DECLARATIONS` review referencing both observations
+      (`ledger/identity.py`; coverage in `tests/test_p14_epistemic_claims.py`).
+- [x] The existing `estate-5` fixture is updated to reflect the new expected review
+      (its semantics otherwise unchanged — remote key, both hints, merge intact).
+- [x] A field-resolution policy (a `canonical_key` decision choosing the authoritative
+      key) resolves the review without last-write-wins, and it does not recur on
+      unchanged inputs (the P2.8-style ratchet).
+- [x] Full suite still passes after the fixture update (102 tests).
 
 ## Explicitly out of scope now
 

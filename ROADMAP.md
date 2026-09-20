@@ -69,10 +69,13 @@ This tranche deliberately does **not** introduce canonical projects, semantic de
 
 ### Epistemic model
 
-- formalize observed/declaration/inference/decision claim envelopes;
-- evidence references;
-- confidence semantics;
-- field-resolution policy interface.
+- formalize observed/declaration/inference/decision claim envelopes — **minimal slice done (P1.4)**:
+  `ledger/claims.py` provides `declared`/`observed`/`inferred` claim kinds (only `declared`
+  emitted today) and divergence detection;
+- evidence references — **done (P2.3 / P1.4)**;
+- confidence semantics (reserved);
+- field-resolution policy interface — **minimal rule done (P1.4)**: `canonical_key` resolves
+  divergent sidecar declarations without last-write-wins.
 
 ### Validation
 

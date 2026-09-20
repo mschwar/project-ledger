@@ -432,7 +432,13 @@ Current review codes include:
 - `AUTO_MATCH_BLOCKED_BY_DECISION` (warning);
 - `DECISION_REFERENCE_UNAVAILABLE` (warning);
 - `DECISION_CONFLICT` (error);
-- `DECISION_SUPERSEDE_UNKNOWN` (warning).
+- `DECISION_SUPERSEDE_UNKNOWN` (warning);
+- `DIVERGENT_SIDECAR_DECLARATIONS` (warning) — two observations that merged into one
+  canonical project carry conflicting sidecar `project_key` declarations. The merge
+  stands; the compiler does not pick a value by last-write-wins (SCHEMA.md §6). It
+  resolves when the operator assigns a `canonical_key` (authoritative key) via the
+  P2.8-style ratchet. Computed from the minimal epistemic claim surface in
+  `ledger/claims.py` (programme P1.4).
 
 ### Exact resolve contract
 
@@ -605,6 +611,13 @@ A typed statement about an observation or canonical project:
 - optional freshness/expiry policy
 
 Claims preserve why a canonical value exists.
+
+> Note (implemented, P1.4): a minimal subset of this contract is executable in
+> `ledger/claims.py`. `claim_kind` currently emits `declared` (sidecar-declared values,
+> e.g. `project_key`); `observed`/`inferred` are reserved vocabulary. `divergent_declarations`
+> surfaces conflicting sidecar declarations, which the identity compiler turns into a
+> bounded `DIVERGENT_SIDECAR_DECLARATIONS` review (see §1.7). This is deliberately only
+> what canonical identity needs immediately, not a generalized knowledge framework.
 
 ## 2.3 Identity evidence
 
