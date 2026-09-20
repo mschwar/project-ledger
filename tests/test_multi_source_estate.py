@@ -104,7 +104,7 @@ class MultiSourceEstateAcceptance(unittest.TestCase):
         self.assertEqual(project["identity_anchor"]["value"], "github.com/mschwar/osprey")
         self.assertEqual(reviews["review_count"], 0)
 
-    def test_estate_5_divergent_sidecar_keeps_remote_key_and_both_hints_without_review(self) -> None:
+    def test_estate_5_divergent_sidecar_keeps_remote_key_and_hints_opens_review(self) -> None:
         case = next(c for c in self.cases if c["case_id"] == "estate-5")
         canonical, reviews = self._compile_case(case)
         self.assertEqual(canonical["canonical_project_count"], 1)
@@ -112,7 +112,11 @@ class MultiSourceEstateAcceptance(unittest.TestCase):
         # Remote is the stable key, not either conflicting sidecar claim.
         self.assertEqual(project["project_key"], "github.com/mschwar/north")
         self.assertEqual(set(project["project_key_hints"]), {"north", "south"})
-        self.assertEqual(reviews["review_count"], 0)
+        # No last-write-wins (P1.4): the divergence is surfaced, the merge stands.
+        self.assertEqual(reviews["review_count"], 1)
+        item = reviews["items"][0]
+        self.assertEqual(item["code"], "DIVERGENT_SIDECAR_DECLARATIONS")
+        self.assertEqual(set(item["affected_observation_ids"]), {"m5-north", "m5-south"})
 
     def test_estate_2_renamed_project_resolves_by_both_paths(self) -> None:
         # The fixture pins one canonical project for the moved path pair; confirm both

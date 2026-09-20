@@ -753,6 +753,63 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                 )
             )
 
+    # Divergent sidecar declarations (P1.4): when two observations that merged into
+    # ONE canonical project (by exact remote or explicit decision) carry conflicting
+    # sidecar project_key declarations, surface a bounded review instead of letting
+    # remote authority silently absorb the ambiguity (SCHEMA.md §6: "emit
+    # claims/conflict/review; do not use last-write-wins"). The merge stands; the
+    # review is advisory until a field-resolution policy (a canonical_key decision)
+    # chooses the authoritative key. An operator-chosen canonical_key for the project
+    # supersedes the divergence, so the review does not recur (P2.8-style ratchet).
+    from .claims import divergent_declarations
+
+    for project in projects:
+        member_ids = project["observation_ids"]
+        if len(member_ids) < 2:
+            continue
+        if project.get("canonical_key_decision_id"):
+            # The operator chose the authoritative project key; the divergent
+            # declarations are superseded by an explicit durable decision.
+            continue
+        claims = divergent_declarations([by_id[oid] for oid in member_ids])
+        if not claims:
+            continue
+        divergent_fields = sorted({str(claim["field"]) for claim in claims})
+        detail_parts = []
+        for field in divergent_fields:
+            values = sorted({str(claim["value"]) for claim in claims if claim["field"] == field})
+            detail_parts.append(field + "=" + ",".join(values))
+        add_review(
+            _review(
+                "DIVERGENT_SIDECAR_DECLARATIONS",
+                member_ids,
+                "Observations merged into one canonical project declare conflicting "
+                "sidecar values: " + "; ".join(detail_parts) + ".",
+                evidence=[
+                    {
+                        "kind": "sidecar_declaration",
+                        "claim_kind": claim["claim_kind"],
+                        "field": claim["field"],
+                        "value": claim["value"],
+                        "observation_id": claim["subject_id"],
+                        "source_id": claim["source_id"],
+                    }
+                    for claim in claims
+                ],
+                severity="warning",
+                reason_automation_stopped=(
+                    "Two or more observations that merged (same exact normalized remote "
+                    "or explicit decision) carry conflicting sidecar declaration(s) for "
+                    "an identity field. The merge is left intact; the compiler does not "
+                    "choose a value by last-write-wins."
+                ),
+                resolution_actions=[
+                    "Assign a canonical_key decision to choose the authoritative project_key.",
+                    "If the observations are genuinely distinct projects, split/reject and review the identity.",
+                ],
+            )
+        )
+
     canonical_payload = {
         "schema_version": CANONICAL_PROJECT_SCHEMA_VERSION,
         "compiler_version": COMPILER_VERSION,

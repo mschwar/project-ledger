@@ -56,12 +56,23 @@ Deliver:
 
 ### P1.4 Minimal epistemic claim/evidence contract
 
-Deliver only what canonical identity needs immediately:
+**Complete (2026-09-19).** A minimal typed claim surface — `ledger/claims.py`
+(`declared`/`observed`/`inferred` claim kinds; only `declared` emitted today) — plus a
+`DIVERGENT_SIDECAR_DECLARATIONS` review that surfaces conflicting sidecar `project_key`
+declarations on a merged project instead of silently absorbing them (SCHEMA.md §6).
+Resolvable by a `canonical_key` decision without last-write-wins, with no recurrence on
+unchanged inputs (P2.8-style ratchet). See
+`docs/work/P1.4-EPISTEMIC-CLAIM-CONTRACT-20260919.md` and
+`tests/test_p14_epistemic_claims.py`. Deliberately only what canonical identity needs
+immediately — not a generalized knowledge framework. `confidence` for inference remains
+reserved vocabulary (no inferred claim is emitted yet). Suite 94 -> 102 tests.
+
+Original deliverable shape (delivered in minimal scope only):
 
 - observed/declaration/inference envelopes;
 - evidence references;
-- confidence for inference;
-- a small field-resolution policy interface.
+- confidence for inference (reserved);
+- a small field-resolution policy interface (the `canonical_key` field-resolution rule).
 
 Do not build a generalized knowledge framework.
 
@@ -245,8 +256,10 @@ referent that is fed into the `review_id` material, so each distinct unknown-tar
 review gets a distinct ID. Observation-scoped review IDs are unchanged (pinned
 fixtures preserved).
 
-Divergent sidecar declarations affecting identity remain gated behind P1.4/P2.7 (see
-`docs/work/FUTURE-SPEC-divergent-sidecar-review-20260918.md`).
+Divergent sidecar declarations affecting identity are now **landed (P1.4)**: merged
+projects with conflicting `project_key` declarations open a bounded
+`DIVERGENT_SIDECAR_DECLARATIONS` review instead of silently absorbing them (see
+`docs/work/P1.4-EPISTEMIC-CLAIM-CONTRACT-20260919.md`).
 
 ## P2.7 Resolution ratchet tests
 
