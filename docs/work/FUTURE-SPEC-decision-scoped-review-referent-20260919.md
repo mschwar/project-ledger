@@ -1,6 +1,8 @@
 # Future Spec — Give `DECISION_SUPERSEDE_UNKNOWN` review a decision-scoped referent instead of empty `observation_ids`
 
-- Status: **proposed / not landed**
+- Status: **landed (P2.6, 2026-09-19)** — implemented in `ledger/identity.py` `_review`
+  and covered by `tests/test_p26_review_queue.py`. The `affected_decision_ids` referent
+  and the review_id-collision fix are now on `main`.
 - Date: 2026-09-19 (UTC)
 - Node: Matthews-MacBook-Air-3 (Hermes child node)
 - Repo: `github.com/mschwar/project-ledger`

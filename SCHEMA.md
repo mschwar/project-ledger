@@ -400,13 +400,35 @@ review_count
 items[]
 ```
 
+Each review item is first-class (P2.6):
+
+```text
+review_id
+code
+state            (open)
+severity         (warning | error)
+affected_observation_ids[]
+affected_decision_ids[]   (decision-scoped reviews only; empty otherwise)
+detail
+reason_automation_stopped
+resolution_actions[]
+evidence[]
+```
+
+`affected_observation_ids` stays present (possibly empty) for backward
+compatibility. Decision-scoped reviews (e.g. `DECISION_SUPERSEDE_UNKNOWN`) carry a
+non-empty `affected_decision_ids` referent so the review is about the decision, not
+observations; that referent is fed into the `review_id` material so two distinct
+decision-scoped reviews never collapse to one `review_id` (a data-loss bug fixed in
+P2.6). Observation-scoped review IDs are unchanged.
+
 Current review codes include:
 
-- `PROJECT_KEY_AMBIGUOUS`;
-- `AUTO_MATCH_BLOCKED_BY_DECISION`;
-- `DECISION_REFERENCE_UNAVAILABLE`;
-- `DECISION_CONFLICT`;
-- `DECISION_SUPERSEDE_UNKNOWN`.
+- `PROJECT_KEY_AMBIGUOUS` (warning);
+- `AUTO_MATCH_BLOCKED_BY_DECISION` (warning);
+- `DECISION_REFERENCE_UNAVAILABLE` (warning);
+- `DECISION_CONFLICT` (error);
+- `DECISION_SUPERSEDE_UNKNOWN` (warning).
 
 ### Exact resolve contract
 
@@ -678,14 +700,19 @@ First-class ambiguity/error requiring bounded resolution:
 - `review_id`
 - type/code
 - severity/impact
-- affected entity IDs
+- affected entity IDs (`affected_observation_ids[]`, `affected_decision_ids[]`)
 - evidence refs/summary
-- exact reason automated resolution stopped
-- candidate resolution actions
+- exact reason automated resolution stopped (`reason_automation_stopped`)
+- candidate resolution actions (`resolution_actions[]`)
 - confidence
 - opened/updated timestamps
 - state: open, resolved, superseded
 - resolution decision ID when closed
+
+The identity review queue (`state/review-queue.json`) implements the first-class
+envelope for its current codes (severity, reason automation stopped, resolution
+actions, decision-scoped referents). Confidence, timestamps, and the
+resolved/superseded states are the P2.7 review-ratchet concern.
 
 ## 2.9 Change event
 

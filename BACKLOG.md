@@ -226,15 +226,27 @@ observation/decision/evidence produced its `project_key` and `display_name`. Cov
 
 ## P2.6 Identity review queue
 
-Deliver stable review items for:
+**Complete.** The review queue is now first-class (`ledger/identity.py` `_review` +
+`tests/test_p26_review_queue.py`; total suite 87). Every review item carries
+`severity`, `reason_automation_stopped`, `resolution_actions`, and `evidence`, and
+the review codes cover the P2.6 categories:
 
-- ambiguous match;
-- probable duplicate;
-- conflicting strong identity evidence;
-- split suspicion;
-- divergent declarations affecting identity.
+- ambiguous match — `PROJECT_KEY_AMBIGUOUS` (warning);
+- conflicting strong identity evidence — `DECISION_CONFLICT` (error);
+- split suspicion / blocked auto-match — `AUTO_MATCH_BLOCKED_BY_DECISION` (warning);
+- decision reference unavailable — `DECISION_REFERENCE_UNAVAILABLE` (warning);
+- decision-scoped supersede-unknown — `DECISION_SUPERSEDE_UNKNOWN` (warning).
 
-Each item includes evidence, reason automation stopped, severity, and resolution actions.
+This also fixed a genuine data-loss defect: two `DECISION_SUPERSEDE_UNKNOWN` reviews
+referencing two different unknown decisions previously collapsed to one `review_id`
+(empty `affected_observation_ids` hashed into the ID material), silently dropping the
+first review. Decision-scoped reviews now carry a non-empty `affected_decision_ids`
+referent that is fed into the `review_id` material, so each distinct unknown-target
+review gets a distinct ID. Observation-scoped review IDs are unchanged (pinned
+fixtures preserved).
+
+Divergent sidecar declarations affecting identity remain gated behind P1.4/P2.7 (see
+`docs/work/FUTURE-SPEC-divergent-sidecar-review-20260918.md`).
 
 ## P2.7 Resolution ratchet tests
 

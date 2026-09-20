@@ -154,8 +154,12 @@ evidence). The R0 reality cases remain as the production proof pin.
 
 ### Review queue
 
-- first-class identity review items with stable IDs, evidence, severity, resolution actions;
-- resolved review items ratchet into durable decisions/tests.
+- first-class identity review items with stable IDs, evidence, severity, reason
+  automation stopped, resolution actions — **done (P2.6)**: every review item carries
+  `severity`, `reason_automation_stopped`, `resolution_actions`, and `evidence`;
+  decision-scoped reviews carry a non-empty `affected_decision_ids` referent (fixing
+  a review_id collision that silently dropped distinct supersede-unknown reviews);
+- resolved review items ratchet into durable decisions/tests — **P2.7**.
 
 Gate C exit remains broader than the first slice:
 
