@@ -424,7 +424,11 @@ P2.6). Observation-scoped review IDs are unchanged.
 
 Current review codes include:
 
-- `PROJECT_KEY_AMBIGUOUS` (warning);
+- `PROJECT_KEY_AMBIGUOUS` (warning) — a project key resolves to more than one
+  canonical project; computed on each project's *resolved* key (canonical_key override
+  applied), so a distinct `canonical_key` disambiguates and clears it. A `merge` also
+  clears it; a `reject_match` confirms distinctness but does not clear a shared human
+  key (P2.8);
 - `AUTO_MATCH_BLOCKED_BY_DECISION` (warning);
 - `DECISION_REFERENCE_UNAVAILABLE` (warning);
 - `DECISION_CONFLICT` (error);

@@ -1,6 +1,14 @@
 # Future Spec — `PROJECT_KEY_AMBIGUOUS` resolution actions are misleading
 
-- Status: **proposed / not landed**
+- Status: **landed (P2.8, 2026-09-19)** — implemented in `ledger/identity.py`; the
+  `PROJECT_KEY_AMBIGUOUS` review is now computed on each canonical project's
+  *resolved* `project_key` (canonical_key override applied), so a `canonical_key`
+  decision that assigns a distinct key to one of two same-key projects
+  disambiguates and clears the review. `resolution_actions` were corrected to match
+  the compiler (`merge` and `canonical_key` clear; a `reject_match` confirms
+  distinctness but does **not** clear a shared human key). Raw `project_key` hints
+  remain reachable as `project_key_hint` referents. Genuinely-unresolved same-key
+  review IDs are unchanged (r0 `the-garden` and estate fixtures preserved).
 - Date: 2026-09-19 (UTC)
 - Node: Matthews-MacBook-Air-3 (Hermes child node)
 - Repo: `github.com/mschwar/project-ledger`
@@ -63,7 +71,8 @@ Two observations `obs-a` / `obs-b` with distinct remotes (`github.com/x/a.git`,
 
 ## Proposed direction (pick one on a future work unit)
 
-**Option A — compute the ambiguity on resolved keys.** Change the `_review` trigger
+**Option A — compute the ambiguity on resolved keys. *(ACCEPTED / landed in P2.8)*
+Change the `_review` trigger
 to group by the canonical project's *resolved* `project_key` (with the
 `canonical_key` override applied) rather than the raw hint. Then an operator who
 assigns a distinct `canonical_key` to one of two same-key projects successfully
@@ -77,7 +86,10 @@ is preserved.
 intended (the review is a *warning that a human key is shared*, not a fixable-by-key
 condition), then trim the advertised actions to the one that works (`merge`) and
 clarify in `detail`/`reason_automation_stopped` that a `canonical_key` override does
-not close the warning because the raw hint remains shared.
+not close the warning because the raw hint remains shared. *(Partially folded into
+A in P2.8: the `resolution_actions` were corrected to advertise only the two paths
+that actually clear — `merge` and `canonical_key` — and the `reason_automation_stopped`
+now states that a `reject_match` does not clear a shared human key.)*
 
 **Option C — record the ineffective-action attempt as a durable decision.** When an
 operator issues a `canonical_key` / `reject_match` while a `PROJECT_KEY_AMBIGUOUS`
@@ -87,15 +99,18 @@ warning because the raw hint is shared." (Largest surface; only if A/B are rejec
 
 ## Acceptance criteria (when it lands)
 
-- [ ] The P2.7 ratchet is not regressed: whatever is chosen, the `merge` resolution
+- [x] The P2.7 ratchet is not regressed: whatever is chosen, the `merge` resolution
       for `PROJECT_KEY_AMBIGUOUS` still clears the review on identical inputs.
-- [ ] The advertised `resolution_actions` on `PROJECT_KEY_AMBIGUOUS` are consistent
+- [x] The advertised `resolution_actions` on `PROJECT_KEY_AMBIGUOUS` are consistent
       with actual compiler behavior (either the review clears after `canonical_key`
-      in option A, or the actions are corrected in option B).
-- [ ] The raw `project_key` hint remains reachable as a `project_key_hint` referent.
-- [ ] Pinned review-ID fixtures and existing estate/reality fixtures are unchanged
+      in option A, or the actions are corrected in option B). *(A + B: `canonical_key`
+      now clears the review and the actions advertise `merge`/`canonical_key` only.)*
+- [x] The raw `project_key` hint remains reachable as a `project_key_hint` referent.
+- [x] Pinned review-ID fixtures and existing estate/reality fixtures are unchanged
       except where the chosen option deliberately changes this review's semantics.
-- [ ] Full suite still passes (`python3 -m unittest discover -s tests`).
+      *(r0 `the-garden` review ID `rev_08eb96a0b8b7722ac70b2a20` and the estate-3/4
+      review IDs are preserved; only the disambiguated-case output changes.)*
+- [x] Full suite still passes (`python3 -m unittest discover -s tests`). *(94 tests.)*
 
 ## Explicitly out of scope now
 

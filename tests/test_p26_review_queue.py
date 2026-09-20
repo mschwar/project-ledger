@@ -81,6 +81,16 @@ class ReviewEnvelopeTests(unittest.TestCase):
         self.assertEqual(
             item["affected_observation_ids"], ["obs-a", "obs-b"]
         )
+        # P2.7/t_92cca8a6 Option A: the advertised actions must match the compiler.
+        # canonical_key disambiguates (clears); reject_match does not clear a shared key.
+        self.assertIn(
+            "Assign a distinct canonical_key to disambiguate the shared project key.",
+            [str(a) for a in item["resolution_actions"]],
+        )
+        self.assertNotIn(
+            "Add a reject_match decision if they are genuinely distinct projects.",
+            [str(a) for a in item["resolution_actions"]],
+        )
 
     def test_decision_conflict_review_is_error_severity(self) -> None:
         obs = [

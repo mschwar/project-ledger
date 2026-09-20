@@ -21,6 +21,7 @@ registered sources
  -> canonical project IDs + resolved-field provenance (P2.5)
  -> first-class identity review queue (P2.6)
  -> resolved identity questions do not recur under identical inputs (P2.7 ratchet)
+ -> PROJECT_KEY_AMBIGUOUS resolves via canonical_key + honest resolution_actions (P2.8)
  -> canonical projects + identity review
  -> system manifest
  -> ledger orient / ledger resolve / ledger sources
@@ -74,9 +75,20 @@ question does not recur on unchanged inputs. Covered resolutions: `merge` closes
 `PROJECT_KEY_AMBIGUOUS`; superseding the conflicting negative decision closes
 `DECISION_CONFLICT` and `AUTO_MATCH_BLOCKED_BY_DECISION`; superseding the stale
 decision closes `DECISION_REFERENCE_UNAVAILABLE`; adding the referenced decision closes
-`DECISION_SUPERSEDE_UNKNOWN`. A review-resolution gap found by the probe (the
-`PROJECT_KEY_AMBIGUOUS` `resolution_actions` advertise `canonical_key`/`reject_match`,
-but only `merge` clears the review) is recorded as a future spec, not fixed here.
+`DECISION_SUPERSEDE_UNKNOWN`.
+
+The **`PROJECT_KEY_AMBIGUOUS` resolution-results gap (P2.8)** is now closed: the review
+is computed on each canonical project's *resolved* `project_key` (canonical_key
+override applied) rather than the raw compatibility hint, so a `canonical_key` decision
+that assigns a distinct key to one of two same-key projects now disambiguates and
+clears the review — matching the advertised `resolution_actions`. The actions were
+corrected to the two paths that actually clear (`merge` and `canonical_key`); a
+`reject_match` confirms distinctness but, with the human key still shared, does not
+clear the warning (now stated in `reason_automation_stopped`). Genuinely-unresolved
+same-key review IDs (r0 `the-garden`, estate-3/4) are unchanged; raw hints remain
+reachable as `project_key_hint` referents. This previously surfaced as a
+documentation/semantics inconsistency recorded as a future spec (t_92cca8a6), not a
+data-loss or correctness bug.
 
 Still not implemented:
 

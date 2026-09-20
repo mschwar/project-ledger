@@ -708,36 +708,47 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
 
     projects.sort(key=lambda item: item["canonical_project_id"])
 
-    # A compatibility project_key is a useful exact referent, but not automatic merge
-    # authority. Surface collisions so agents do not mistake a clean-looking key for identity.
+    # A project_key is a useful exact referent, but not automatic merge authority.
+    # Surface collisions so agents do not mistake a clean-looking key for identity.
+    # The ambiguity is computed on each canonical project's RESOLVED project_key
+    # (the canonical_key override applied), not the raw compatibility hint: an
+    # operator who assigns a distinct canonical_key to one of two same-key projects
+    # thereby disambiguates the projects and clears the review (the advertised
+    # resolution path now matches the compiler — t_92cca8a6, Option A). The raw hint
+    # remains reachable as a project_key_hint referent on each project. A genuine
+    # unresolved same-key collision (no disambiguating key) still opens the review.
     key_to_projects: dict[str, set[str]] = {}
     key_to_observations: dict[str, set[str]] = {}
-    for obs_id, item in facts.items():
-        key = item["project_key"]
+    key_label_by_folded: dict[str, str] = {}
+    for project in projects:
+        key = str(project.get("project_key") or "").strip()
         if not key:
             continue
         folded = key.casefold()
-        key_to_projects.setdefault(folded, set()).add(obs_to_project[obs_id])
-        key_to_observations.setdefault(folded, set()).add(obs_id)
+        key_to_projects.setdefault(folded, set()).add(project["canonical_project_id"])
+        for obs_id in project["observation_ids"]:
+            key_to_observations.setdefault(folded, set()).add(obs_id)
+        key_label_by_folded.setdefault(folded, key)
     for folded, project_ids in sorted(key_to_projects.items()):
         if len(project_ids) > 1:
             obs_ids = sorted(key_to_observations[folded])
-            original = next(facts[obs_id]["project_key"] for obs_id in obs_ids if facts[obs_id]["project_key"])
+            original = key_label_by_folded[folded]
             add_review(
                 _review(
                     "PROJECT_KEY_AMBIGUOUS",
                     obs_ids,
-                    f"Compatibility project_key {original!r} resolves to {len(project_ids)} canonical projects; no automatic merge was performed.",
-                    evidence=[{"kind": "project_key_hint", "value": original}],
+                    f"Project key {original!r} resolves to {len(project_ids)} canonical projects; no automatic merge was performed.",
+                    evidence=[{"kind": "project_key", "value": original}],
                     severity="warning",
                     reason_automation_stopped=(
-                        "A compatibility project_key resolves to more than one canonical project; "
-                        "names and project keys are referents, not automatic identity authority."
+                        "A resolved project key is shared by more than one canonical project; "
+                        "names and project keys are referents, not automatic identity authority. "
+                        "A reject_match alone does not clear this warning because the human key "
+                        "remains shared across the distinct projects."
                     ),
                     resolution_actions=[
                         "Add a merge decision if the observations are the same conceptual project.",
-                        "Add a canonical_key decision to assign a stable operator-approved key.",
-                        "Add a reject_match decision if they are genuinely distinct projects.",
+                        "Assign a distinct canonical_key to disambiguate the shared project key.",
                     ],
                 )
             )

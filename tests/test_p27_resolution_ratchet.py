@@ -158,6 +158,79 @@ class ProjectKeyAmbiguousRatchetTests(unittest.TestCase):
         self.assertEqual(project["merge_decision_ids"], ["dec-garden-merge"])
         assert_decision_reference(self, project, "dec-garden-merge")
 
+    def test_canonical_key_decision_resolves_by_disambiguating(self) -> None:
+        # Option A (t_92cca8a6): the projected_key ambiguity is computed on each
+        # project's RESOLVED project_key, so an operator who assigns a distinct
+        # canonical_key to one of two same-key projects disambiguates and clears the
+        # review — the advertised resolution_actions now match the compiler.
+        _, before = compile_identity(self.obs, EMPTY_DECISIONS)
+        self.assertIn("PROJECT_KEY_AMBIGUOUS", review_codes(before))
+
+        # Resolve once: assign a distinct stable key to one of the two projects.
+        resolved = {
+            "schema_version": SCHEMA,
+            "decisions": [
+                decision(
+                    "dec-garden-key",
+                    type="canonical_key",
+                    observation_id="obs-a",
+                    key="garden-a",
+                    authority="operator",
+                )
+            ],
+        }
+        can, after = compile_identity(self.obs, resolved)
+        self.assertNotIn("PROJECT_KEY_AMBIGUOUS", review_codes(after))
+        self.assertEqual(after["review_count"], 0)
+
+        # The two projects stay distinct (canonical_key never changes membership),
+        # each with its own resolved key; the raw hint survives as a referent.
+        self.assertEqual(len(can["projects"]), 2)
+        keys = {p["project_key"]: p for p in can["projects"]}
+        self.assertEqual(set(keys), {"garden", "garden-a"})
+        for key in ("garden", "garden-a"):
+            hints = set(keys[key]["project_key_hints"])
+            self.assertIn("garden", hints, "raw hint must remain a project_key_hint")
+
+        # Identical observations do not re-open the review.
+        _, third = compile_identity(self.obs, resolved)
+        self.assertEqual(third["review_count"], 0)
+
+        # Explain path: the canonical_key decision is discoverable in state.
+        keyed = keys["garden-a"]
+        assert_decision_reference(self, keyed, "dec-garden-key")
+        self.assertEqual(keyed["canonical_key_decision_id"], "dec-garden-key")
+
+    def test_reject_match_does_not_clear_shared_key_warning(self) -> None:
+        # A reject_match confirms the two projects are genuinely distinct but leaves
+        # the human key shared across them, so the shared-key warning must stay open.
+        # This pins that the (now corrected) resolution_actions exclude reject_match.
+        _, before = compile_identity(self.obs, EMPTY_DECISIONS)
+        self.assertIn("PROJECT_KEY_AMBIGUOUS", review_codes(before))
+        original_id = next(i["review_id"] for i in before["items"] if i["code"] == "PROJECT_KEY_AMBIGUOUS")
+
+        decided = {
+            "schema_version": SCHEMA,
+            "decisions": [
+                decision(
+                    "dec-garden-reject",
+                    type="reject_match",
+                    left_observation_id="obs-a",
+                    right_observation_id="obs-b",
+                    authority="operator",
+                )
+            ],
+        }
+        _, after = compile_identity(self.obs, decided)
+        self.assertIn("PROJECT_KEY_AMBIGUOUS", review_codes(after))
+        keep = next(i for i in after["items"] if i["code"] == "PROJECT_KEY_AMBIGUOUS")
+        self.assertEqual(keep["review_id"], original_id)
+        # The advertised actions no longer promise reject_match resolves it.
+        self.assertNotIn(
+            "Add a reject_match decision if they are genuinely distinct projects.",
+            [str(a) for a in keep["resolution_actions"]],
+        )
+
 
 class DecisionConflictRatchetTests(unittest.TestCase):
     """DECISION_CONFLICT (positive vs negative decision) is resolved by superseding
