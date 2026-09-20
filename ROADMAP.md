@@ -63,8 +63,8 @@ This tranche deliberately does **not** introduce canonical projects, semantic de
 
 ### Source/freshness model
 
-- strengthen source `as_of` / freshness semantics where upstream sources provide authoritative timestamps;
-- distinguish unavailable vs stale vs successfully-observed-empty source outcomes in the materialized contracts;
+- strengthen source `as_of` / freshness semantics where upstream sources provide authoritative timestamps — **done (P1.5)**: `content_as_of` / `content_as_of_basis` derived only from genuine upstream evidence (git remote-ref > HEAD commit > filesystem last-touch), never invented from compile time or path mtime;
+- distinguish unavailable vs stale vs successfully-observed-empty source outcomes in the materialized contracts — **done (P1.5)**: per-source `result_state` (`observed` / `observed_empty` / `unavailable`) + `observation_count` and manifest-health `observed_empty_source_count`; `freshness_state` is `known`/`unknown`/`unavailable` and honest about what can be known;
 - add previous-snapshot/checkpoint links needed for later incremental operation.
 
 ### Epistemic model

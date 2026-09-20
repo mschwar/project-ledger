@@ -4,6 +4,7 @@ SUPPORTED_DISCOVERY_MODES = frozenset({"children", "git_repos", "self", "invento
 VALUE_STATES = frozenset({"known", "unknown", "unavailable", "stale", "absent", "conflicted", "not_applicable"})
 CAPABILITY_STATES = frozenset({"available", "unavailable", "degraded"})
 SOURCE_HEALTH_STATES = frozenset({"available", "unavailable", "degraded"})
+SOURCE_RESULT_STATES = frozenset({"observed", "observed_empty", "unavailable"})
 
 
 def capability(state: str, *, reason_code: str | None = None, detail: str | None = None) -> dict:

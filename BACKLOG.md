@@ -85,13 +85,16 @@ Do not build a generalized knowledge framework.
 
 ### P1.5 Tighten freshness/result semantics
 
-Deliver:
-
-- unavailable vs successfully-observed-empty distinction;
-- stronger `as_of` semantics where an upstream source actually supplies evidence;
-- no invented freshness when it cannot be known.
-
-Defer elaborate checkpoint/history machinery until incremental compilation needs it.
+**Complete (2026-09-20).** Each source in the manifest now carries a materialized
+`result_state` (`observed` / `observed_empty` / `unavailable`) and an
+`observation_count`, distinguishing a source that was probed successfully but yielded
+zero observations (healthy-but-empty) from a genuinely unavailable source. `freshness_state`
+is honest: `known` only where an upstream source supplied authoritative timestamp evidence
+(exposed as `content_as_of` + `content_as_of_basis`; authoritative priority git remote-ref >
+HEAD commit > filesystem last-touch), `unknown` for an observed source with no such evidence
+(never invented from compile time or path mtime), and `unavailable` for an unprobeable
+source. Manifest schema 1.1.0 -> 1.2.0 adds these fields plus a `health.observed_empty_source_count`.
+See `docs/work/P1.5-FRESHNESS-20260920.md` and `tests/test_p15_freshness.py`. Suite 112 -> 122 tests.
 
 ### P1.7 Sidecar as versioned declaration source
 
@@ -176,7 +179,8 @@ every estate column:
 - same-name unrelated project (stays separate; `PROJECT_KEY_AMBIGUOUS` review);
 - missing remote (no strong evidence -> separate by default, ambiguity surfaced);
 - divergent sidecars (same remote, conflicting `project_key` claims -> remote stays the
-  stable key, both hints preserved, no last-write-wins, no review);
+  stable key, both hints preserved, no last-write-wins; a bounded
+  `DIVERGENT_SIDECAR_DECLARATIONS` review opens per P1.4/P2.6);
 - inventory-only observation (valid singleton anchored by observation);
 - inaccessible source (a decision referencing an unavailable observation becomes a
   bounded `DECISION_REFERENCE_UNAVAILABLE` review; present observations still compile);
