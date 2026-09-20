@@ -250,13 +250,34 @@ Divergent sidecar declarations affecting identity remain gated behind P1.4/P2.7 
 
 ## P2.7 Resolution ratchet tests
 
-For each review resolution type:
+**Complete.** Every first-class review type that a durable decision can resolve is
+now pinned by `tests/test_p27_resolution_ratchet.py` (5 tests; total suite 92),
+asserting the full review-resolution loop for each:
 
-- resolve once;
-- persist decision;
-- rerun identical inputs;
-- assert review does not recur;
-- assert explain path identifies decision.
+- resolve once -> persist a durable decision -> rerun with **identical** observations
+  -> the review does not recur -> the durable decision that resolved it is
+  discoverable in the compiled state a future `ledger explain` (P3.6) will read.
+
+Covered resolutions:
+
+- `PROJECT_KEY_AMBIGUOUS`          -> a merge decision unites the two same-key projects;
+- `DECISION_CONFLICT`              -> superseding the conflicting negative decision lets
+  the positive merge apply;
+- `AUTO_MATCH_BLOCKED_BY_DECISION` -> superseding the blocking negative decision lets the
+  exact normalized remote auto-merge;
+- `DECISION_REFERENCE_UNAVAILABLE` -> superseding the stale decision stops a missing source
+  from blocking present observations;
+- `DECISION_SUPERSEDE_UNKNOWN`     -> adding the referenced decision gives an earlier
+  supersede a known target.
+
+This closes the Gate C guarantee that "a resolved identity question does not recur on
+unchanged inputs" for every resolvable review type.
+
+A review-resolution gap surfaced by the ratchet probe is recorded as a future spec:
+`docs/work/FUTURE-SPEC-project-key-ambiguous-resolution-actions-20260919.md` — the
+`PROJECT_KEY_AMBIGUOUS` `resolution_actions` advertise `canonical_key`/`reject_match`
+as resolutions, but only `merge` actually clears the review (the ambiguity is computed
+on the raw key hint, not the resolved canonical key).
 
 ---
 

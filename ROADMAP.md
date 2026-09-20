@@ -159,7 +159,11 @@ evidence). The R0 reality cases remain as the production proof pin.
   `severity`, `reason_automation_stopped`, `resolution_actions`, and `evidence`;
   decision-scoped reviews carry a non-empty `affected_decision_ids` referent (fixing
   a review_id collision that silently dropped distinct supersede-unknown reviews);
-- resolved review items ratchet into durable decisions/tests — **P2.7**.
+- resolved review items ratchet into durable decisions/tests — **done (P2.7)**:
+  `tests/test_p27_resolution_ratchet.py` pins, for each review type a durable decision
+  can resolve, that resolving once + persisting the decision clears the review on
+  re-run with identical observations and that the resolving decision is discoverable
+  in the compiled state (the future `ledger explain` read path);
 
 Gate C exit remains broader than the first slice:
 
