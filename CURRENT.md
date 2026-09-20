@@ -20,6 +20,7 @@ registered sources
  -> identity evidence model (records + scoring, P2.3)
  -> canonical project IDs + resolved-field provenance (P2.5)
  -> first-class identity review queue (P2.6)
+ -> resolved identity questions do not recur under identical inputs (P2.7 ratchet)
  -> canonical projects + identity review
  -> system manifest
  -> ledger orient / ledger resolve / ledger sources
@@ -63,6 +64,19 @@ decision-scoped reviews (`DECISION_SUPERSEDE_UNKNOWN`) carry a non-empty
 `affected_decision_ids` referent so two distinct unknown-target reviews no longer
 collapse to one `review_id` (a data-loss bug fixed in P2.6). Observation-scoped
 review IDs are unchanged.
+
+The **resolution ratchet (P2.7)** now pins, for every first-class review type that a
+durable decision can resolve, the full review-resolution loop: resolve once, persist
+the decision, rerun with identical observations, assert the review does not recur,
+and assert the resolving decision is discoverable in the compiled state a future
+`ledger explain` will read. This closes the Gate C guarantee that a resolved identity
+question does not recur on unchanged inputs. Covered resolutions: `merge` closes
+`PROJECT_KEY_AMBIGUOUS`; superseding the conflicting negative decision closes
+`DECISION_CONFLICT` and `AUTO_MATCH_BLOCKED_BY_DECISION`; superseding the stale
+decision closes `DECISION_REFERENCE_UNAVAILABLE`; adding the referenced decision closes
+`DECISION_SUPERSEDE_UNKNOWN`. A review-resolution gap found by the probe (the
+`PROJECT_KEY_AMBIGUOUS` `resolution_actions` advertise `canonical_key`/`reject_match`,
+but only `merge` clears the review) is recorded as a future spec, not fixed here.
 
 Still not implemented:
 
