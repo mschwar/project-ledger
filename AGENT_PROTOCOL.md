@@ -34,7 +34,7 @@ Before acting, know:
 - which requested capabilities are actually available in the manifest;
 - whether the task is product work, source ingestion, identity work, review resolution, or downstream project work.
 
-Current boundary: `orient` describes the estate and `resolve` can perform exact canonical resolution. Preferred-location/current-state/project-capsule queries remain later work.
+Current boundary: `orient` describes the estate, `resolve` performs exact canonical resolution, `show` loads bounded project capsules (`state/projects/<canonical_project_id>.json`), and `locate` returns the preferred working location and ranked observations with reason codes. `explain`, `review`, and structured session receipts remain later work.
 
 ## 2. RESOLVE
 

@@ -33,11 +33,12 @@ As of September 18, 2026:
 
 - `main` is product authority and contains the converged multi-source compatibility scanner plus the executable Wave 1 agent substrate.
 - preferred refresh is `python -m ledger refresh`; automation can use `--no-markdown-mirror`.
-- implemented agent commands are `validate`, `refresh`, `compile`, `orient`, and `sources`.
-- generated Wave 1 state is `state/system-manifest.json` plus `state/observations.json`; `state/` is rebuildable and gitignored.
+- implemented agent commands are `validate`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, and `locate`.
+- generated Wave 1/2/3 state is `state/system-manifest.json`, `state/observations.json`, `state/canonical-projects.json`, `state/identity-evidence.json`, `state/review-queue.json`, and `state/projects/<canonical_project_id>.json`; `state/` is rebuildable and gitignored.
 - stable source IDs, compatibility snapshot IDs, manifestation-oriented observation IDs, source probes/health, explicit capability states, and degraded-source containment are implemented.
-- the first canonical identity slice is implemented: exact normalized repository remotes auto-merge; durable merge/split/reject/alias decisions are compiler inputs; canonical projects and identity review are materialized; `ledger resolve` is available.
-- project capsules, preferred-location resolution, `show/locate/explain`, structured session receipts/current-state resolution, and Project Ledger's semantic change feed are not implemented yet.
+- the first canonical identity slice is implemented: exact normalized repository remotes auto-merge; durable merge/split/reject/alias/canonical_key/supersede decisions are compiler inputs; canonical projects and identity review are materialized; `ledger resolve` is available.
+- the first Wave 3 read-plane slice (`P3.2`, `P3.4`, `P3.5`) is implemented: bounded project capsules (`state/projects/<canonical_project_id>.json` with a `16 KiB` size budget), explainable preferred-location resolution (`live > mirror > backup > inventory` with reason codes and confidence), `ledger show <project>`, and `ledger locate <project>`.
+- `explain`, `review`, structured session receipts/current-state resolution, and Project Ledger's semantic change feed are not implemented yet.
 - homelab owns the deployed reality-provider seam and consumes the non-mutating refresh contract; Project Ledger continues to own source/project schema and identity semantics.
 - the committed human ledger is historical evidence, not proof of current production freshness. A live provider proof on the intended homelab node has now been completed (2026-09-19, see `docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md`).
 
@@ -83,12 +84,14 @@ python -m ledger compile
 python -m ledger orient
 python -m ledger sources
 python -m ledger resolve <referent>
+python -m ledger show <project>
+python -m ledger locate <project>
 python -m unittest discover -s tests
 ```
 
 The compatibility entrypoint `python build_ledger.py` remains supported during migration.
 
-Commands such as `show`, `locate`, `explain`, `review`, `changes`, and `record-session` remain unavailable until their stated gate lands. Consume the manifest capability map rather than inferring capability from prose.
+Commands such as `explain`, `review`, `changes`, and `record-session` remain unavailable until their stated gate lands. Consume the manifest capability map rather than inferring capability from prose.
 
 ## Definition of done
 
