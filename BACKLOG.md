@@ -308,180 +308,84 @@ actions to the two paths that actually clear (`merge`, `canonical_key`). See
 
 ---
 
-# P3 — Agent read plane
+# P3 — Agent read plane and Reality Provider
 
 ## P3.1 Canonical system manifest
 
-Upgrade manifest to include:
-
-- canonical project count vs observation count;
-- review burden;
-- material change counts;
-- canonical/query artifact pointers;
-- source health summary.
+**Complete.** `state/system-manifest.json` includes `counts` (`sources`, `observations`, `canonical_projects`, `project_capsules`, `identity_evidence`, `review_items`), `health`, `capabilities`, `artifacts` (including `canonical_markdown` and `project_capsules`), and per-source health/freshness.
 
 ## P3.2 Project capsule contract
 
 **Complete (2026-10-29).** Implemented in `ledger/capsules.py` (`PROJECT_CAPSULE_SCHEMA_VERSION = "1.0.0"`), materialized at `state/projects/<canonical_project_id>.json` for every canonical project during `compile_state` / `materialize_identity`, and registered as an `available` capability in `state/system-manifest.json` (`counts.project_capsules`, `artifacts.project_capsules`). Each capsule includes:
 
 - canonical ID, `project_key`, `display_name`, sorted `aliases`, bounded `purpose` (`<= 240` chars), `canonical_url`, `normalized_remotes`, `identity_anchor`, and bounded `resolved_fields` provenance;
+- `gbrain_source_slug` and `gbrain` cross-link (`source_slug`, `project_slug`, `page_key`, `match_basis`);
 - explicit `as_of` and `freshness` block (`state`, `input_observed_at`, `content_as_of`, `content_as_of_basis`, available/unavailable observation counts);
-- `preferred_location` (`state`, `observation_id`, `source_id`, `source_class`, `location`, `confidence`, `reason_codes`, `explanation`);
-- `git_facts` and bounded `current_state` placeholder (`WAVE4_NOT_IMPLEMENTED` for session receipts);
-- ranked `observations[]` summaries with explicit `reason_codes` and `score_components`;
-- open `review` summaries and progressive-disclosure `pointers` (including external `task_system` and `knowledge_system` links);
+- `preferred_location` (`state`, `observation_id`, `source_id`, `source_class`, `location`, `confidence`, `reason_codes`, `git_drift`, `warning_codes`, `warnings`, `explanation`);
+- `git_facts` (including `upstream_ref`, `ahead_count`, `behind_count`, `dirty`, `drift_state`, `warnings`) and bounded `current_state`;
+- ranked `observations[]` summaries with explicit `reason_codes`, `score_components`, and `git_drift`;
+- open `review` summaries and progressive-disclosure `pointers` (including `machina` `task_system` and `gbrain` `knowledge_system` links);
 - enforced `16 KiB` (`CAPSULE_MAX_BYTES = 16384`, `CAPSULE_MAX_OBSERVATION_SUMMARIES = 25`) context budget recorded in `budget`.
 
 ## P3.3 Resolve command
 
-`ledger resolve <referent>` supports canonical ID, key/alias, URL, known path, source-native identifier, and fuzzy name only when ambiguity is surfaced.
-
-JSON output first.
+**Complete (2026-10-29).** `ledger resolve <referent> [--state-dir DIR] [--json]` resolves canonical ID, `project_key`, alias, remote URL, or known path (`0` resolved, `3` ambiguous, `4` unresolved), and returns `canonical_project_id`, `project_key`, `gbrain_source_slug`, `gbrain`, `preferred_location`, and git upstream drift `warnings` for Reality Provider consumers (`machina`, `Hermes`).
 
 ## P3.4 Show command
 
-**Complete (2026-10-29).** `ledger show <project> [--state-dir DIR] [--json]` resolves any project referent via `resolve_payload` and returns the materialized project capsule with explicit `as_of` and `schema_version` (`0` resolved, `3` ambiguous without guessing, `4` unresolved, `2` operational error).
+**Complete (2026-10-29).** `ledger show <project> [--state-dir DIR] [--json]` resolves any project referent via `resolve_payload` and returns the materialized project capsule with explicit `as_of`, `gbrain` cross-link, `preferred_location`, and `warnings` (`0` resolved, `3` ambiguous without guessing, `4` unresolved, `2` operational error).
 
 ## P3.5 Preferred-location resolver + locate command
 
-**Complete (2026-10-29).** `rank_project_observations` and `ledger locate <project> [--state-dir DIR] [--json]` rank observations deterministically using accessibility (`ACCESSIBLE_SOURCE` vs `INVENTORY_ONLY_LOCATOR` / `SOURCE_UNAVAILABLE`), source class (`live` > `mirror` > `backup` > `inventory`), canonical remote match (`CANONICAL_REMOTE_MATCH`), recent session continuity (`RECENT_SESSION_EVIDENCE`), git commit/branch state (`GIT_WORKTREE`, `PRIMARY_BRANCH`), primary active root (`PRIMARY_ACTIVE_ROOT`), and upstream content freshness (`FRESH_REMOTE_REF`, `FRESH_GIT_COMMIT`, `FRESH_FILESYSTEM_TOUCH`). Coverage in `tests/test_wave3_capsules_and_locate.py` (suite `122 -> 129` tests).
+**Complete (2026-10-29).** `rank_project_observations` and `ledger locate <project> [--state-dir DIR] [--json]` rank observations deterministically using accessibility (`ACCESSIBLE_SOURCE` vs `INVENTORY_ONLY_LOCATOR` / `SOURCE_UNAVAILABLE`), source class (`live` > `mirror` > `backup` > `inventory`), canonical remote match (`CANONICAL_REMOTE_MATCH`), recent session continuity (`RECENT_SESSION_EVIDENCE`), git commit/branch state (`GIT_WORKTREE`, `PRIMARY_BRANCH`), primary active root (`PRIMARY_ACTIVE_ROOT`), and upstream content freshness (`FRESH_REMOTE_REF`, `FRESH_GIT_COMMIT`, `FRESH_FILESYSTEM_TOUCH`), and surface live git upstream drift warnings (`GIT_BEHIND_UPSTREAM`, `GIT_MAIN_BEHIND_ORIGIN`, `GIT_AHEAD_OF_UPSTREAM`, `GIT_DIRTY_WORKTREE`).
 
 ## P3.6 Explain command
 
-Support explanation for:
+**Complete (2026-10-29).** Implemented in `ledger/explain.py` and exposed as `ledger explain <referent> [--state-dir DIR] [--identity-decisions PATH] [--json]`. Explains from compiled artifacts and durable decisions — without fresh model improvisation:
 
-- why observations merged/separated;
-- why a canonical field was selected;
-- why a location was preferred;
-- why review was opened.
-
-Must use stored evidence/policy, not fresh model improvisation.
+- canonical projects (`subject_kind = "canonical_project"`): identity unification (`identity_anchor`, `unifying_authority`, `strong_reason_code`, `merge_decision_ids`, `cross_project_weak_overlaps`), `resolved_fields` provenance (`project_key`, `display_name`, `gbrain_source_slug`), `preferred_location` and git drift `warnings`, `gbrain` cross-link, applied `decisions`, and open `review` items;
+- observations (`subject_kind = "observation"`): canonical project membership, location ranking, and identity anchor;
+- review items (`subject_kind = "review_item"`): `code`, `severity`, `reason_automation_stopped`, `resolution_actions`, and `evidence`;
+- identity decisions (`subject_kind = "identity_decision"`): active vs superseded state, `superseded_by`, affected observations, and affected canonical projects.
 
 ## P3.7 Human canonical ledger view
 
-Rebuild Markdown around canonical projects with expandable/linkable observation provenance. Never label raw observation count as project count.
+**Complete (2026-10-29).** Implemented in `ledger/human_view.py` and materialized at `state/canonical-projects.md` (`manifest["artifacts"]["canonical_markdown"]`). Presents canonical project count distinctly from raw observation count, with preferred locations, GBrain sources, git drift warnings, and expandable `<details>` multi-manifestation provenance.
 
 ---
 
-# P4 — Accretive state and receipts
+# P4–P6 — Realigned Ecosystem Integration (2026-10-29)
 
-## P4.1 Session receipt schema
+> **Realigned (2026-10-29):** Since September 2026, `machina` owns the Work Unit / Attempt / Receipt kernel, `homelab` owns worktree leases, and `gbrain` owns semantic/entity search. Project Ledger does **not** build a competing session-receipt store (`P4.1`–`P4.2` retired in favor of `machina`) or a custom local-LLM deduplication pipeline (`P5.4` replaced by frontier zero-shot triage).
 
-Implement compact factual receipts with:
+## Reality Provider for `machina` & `homelab` (Complete — 2026-10-29)
 
-- canonical project ID/reference;
-- timestamp/actor/node;
-- base/result refs;
-- landed state;
-- work summary/material areas;
-- verification;
-- unresolved discoveries;
-- continuation point;
-- PR/commit/task/evidence links.
+- `ledger resolve <referent>` and `ledger locate <project>` act as the authoritative Reality Provider before spawning a worker: returning `canonical_project_id`, authoritative checkout path (`preferred_location.location`), and live git drift warnings (`warning: local main is N commits behind origin/main`, `warning: local working tree at ... has uncommitted changes`).
+- Capsules link `pointers.task_system` to `provider: "machina"`.
 
-## P4.2 Record-session command/integration
+## GBrain Source Cross-Linking (Complete — 2026-10-29)
 
-Add `ledger record-session` or equivalent ingestion path. It should be safe/idempotent and should not require agents to rewrite canonical views.
+- `ledger/gbrain.py` maps each canonical project in `state/canonical-projects.json` and `state/projects/<id>.json` to its registered `ai-server` GBrain source slug (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry`, or `default`) and `projects/<project_slug>` page key.
 
-## P4.3 Current-state resolution policies
+## Frontier Zero-Shot Triage on `cross_project_weak_overlaps` (Complete — 2026-10-29)
 
-Resolve:
+- `ledger/triage.py` and `ledger review [--approve-candidates]` replace Wave 5's local-LLM matcher.
+- `registry/weak-overlap-triage-candidates.json` contains 33 frontier-triaged candidate decisions (`merge`, `reject_match`, and companion `canonical_key` decisions) covering all 21 `cross_project_weak_overlaps` in `state/identity-evidence.json`, ready for one-click human approval via `python3 -m ledger review --approve-candidates`.
 
-- lifecycle;
-- latest trusted session;
-- next step;
-- preferred working observation;
-- state freshness;
-- sidecar/receipt conflicts.
+## Remaining Optional Future Backlog
 
-## P4.4 Divergent sidecar handling
-
-Fixture and implement:
-
-- two copies of one canonical project with different sidecars;
-- claims remain visible;
-- field-specific policy resolves or opens review;
-- no last-write-wins.
-
-## P4.5 Semantic change feed
-
-Deliver `state/changes.json` and query command for material changes between trusted runs.
-
-## P4.6 Session-end prompt migration
-
-Update prompts so agents prefer structured receipt + compile when available, with sidecar fallback during compatibility period.
-
----
-
-# P5 — Incremental resource economy
-
-## P5.1 Source fingerprint/checkpoint cache
-
-Skip unchanged source extraction safely.
-
-## P5.2 Dependency invalidation graph
-
-Track affected:
-
-```text
-source -> observation -> identity component -> canonical project -> signal/view
-```
-
-Recompile only affected scope.
-
-## P5.3 Derived-view digest cache
-
-Cache capsules/summaries keyed by evidence/state digests.
-
-## P5.4 Semantic escalation adapter
-
-Only after deterministic canonicalization is mature:
-
-- optional cheap/local model for ambiguous semantic evidence;
-- structured prompt/input from existing review evidence;
-- confidence threshold;
-- no automatic consequential merge without policy;
-- record model/version/result as inference evidence.
-
-## P5.5 Cost instrumentation
-
-Measure per run:
-
-- sources rescanned/skipped;
-- observations changed;
-- projects recompiled;
-- reviews opened/resolved;
-- semantic/local/frontier calls;
-- cache hits.
-
-The goal is to make repeated estate operation visibly cheaper.
-
----
-
-# P6 — Integration and portfolio intelligence
-
-Only after Gates C/D/E are satisfied:
-
-- task-system canonical project ID linking;
-- work-candidate export without task ownership creep;
-- GBrain/knowledge pointers by canonical project ID;
-- cross-node preferred-location/capability resolution;
-- Mission Control/UI over the same manifest/capsule/review contracts;
-- canonical-project lifecycle/freshness analytics;
-- scheduled source health/compile;
-- optional SQLite/query materialization if justified.
+- **P4.5 Semantic change feed**: `state/changes.json` and `ledger changes --since <run_id>` for estate-level delta reporting between trusted runs.
+- **P5.1 Source fingerprint/checkpoint cache**: skip unchanged source extraction when scan duration warrants it.
 
 ---
 
 # Explicitly deferred / anti-backlog
 
-Do **not** prioritize these before their prerequisites:
+Do **not** prioritize these:
 
+- competing session-receipt store or task/work-unit kernel (owned by `machina`);
+- competing worktree lease manager (owned by `homelab`);
+- custom local-LLM semantic deduplication pipeline or entity search engine (owned by `gbrain` + frontier zero-shot triage);
 - heavy local/web UI;
-- model-first semantic dedupe;
 - broad new ingestion adapter spree;
-- real-time watchers/distributed service;
-- complex task fields/workflows inside Project Ledger;
-- deep document/knowledge ingestion;
-- optimization that bypasses correctness fixtures;
 - direct hand-editing of canonical compiled project files.

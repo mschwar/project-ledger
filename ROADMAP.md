@@ -178,140 +178,78 @@ Gate C exit remains broader than the first slice:
 
 ---
 
-# Wave 3 — Agent read plane
+# Wave 3 — Agent read plane and Canonical Reality Provider
 
-Goal: make correct project orientation/resolution cheap enough to be the default agent behavior.
+Status: **complete (2026-10-29)**.
+
+Goal: make correct project orientation/resolution cheap enough to be the default agent behavior, and expose the authoritative Reality Provider contract for `machina`, `homelab`, and `gbrain`.
 
 Deliverables:
 
-### Project capsules
+### Project capsules (`P3.2` — done)
 
 - `state/projects/<canonical_project_id>.json`;
-- bounded identity/purpose/current topology summary;
-- ranked observation/location summaries;
+- bounded identity/purpose/current topology summary (`16 KiB` size budget);
+- ranked observation/location summaries with explicit reason codes and confidence;
+- GBrain source and project-page cross-links (`gbrain_source_slug`, `gbrain.page_key`);
+- git upstream ahead/behind and dirty working-tree drift warnings (`git_drift`, `warnings`);
 - freshness/conflict/review pointers;
 - deeper evidence pointers rather than payload duplication.
 
-### Query CLI/API
+### Query CLI/API (`P3.3`–`P3.6` — done)
 
 Already available from Wave 1: `ledger orient`, `ledger sources`.
 
-Wave 3 additions:
+Wave 3 additions (all implemented):
 
-- `ledger resolve`;
-- `ledger show`;
-- `ledger locate`;
-- `ledger explain`;
-- `ledger review`.
+- `ledger resolve <referent>` — returns `canonical_project_id`, `gbrain_source_slug`, `preferred_location`, and git drift `warnings`;
+- `ledger show <project>`;
+- `ledger locate <project>`;
+- `ledger explain <referent>`;
+- `ledger review [--approve-candidates]`.
 
-### Preferred-location resolver
+### Preferred-location resolver (`P3.5` — done)
 
 - source class/accessibility/git freshness/operator policy inputs;
-- ranked locations with reason codes/confidence;
+- ranked locations with reason codes/confidence and live git upstream drift warnings (`GIT_BEHIND_UPSTREAM`, `GIT_MAIN_BEHIND_ORIGIN`, `GIT_AHEAD_OF_UPSTREAM`, `GIT_DIRTY_WORKTREE`);
 - never hidden heuristics.
 
-### Human views
+### Human views (`P3.7` — done)
 
-Rebuild Markdown/CSV around canonical projects plus expandable observation provenance rather than presenting raw observations as though they were project counts.
+- `state/canonical-projects.md` rendered around canonical projects with preferred locations, GBrain sources, warnings, and expandable `<details>` observation provenance rather than presenting raw observations as project counts.
 
-Gate D exit:
+Gate D exit (satisfied):
 
-- a cold agent can orient and resolve/load a project with a few stable calls/reads;
-- it normally does not need repo archaeology or full observation datasets;
-- identity/location recommendations are explainable.
-
----
-
-# Wave 4 — Accretive current state and receipts
-
-Goal: make every material session improve continuity for future agents.
-
-Deliverables:
-
-### Session receipts
-
-- structured receipt schema;
-- project/git/task/evidence pointers;
-- landed state and verification;
-- unresolved discoveries and continuation point.
-
-### Current-state resolver
-
-- lifecycle state;
-- last trusted session;
-- next continuation point;
-- state freshness/conflict semantics;
-- sidecars treated as declaration sources, not last-write-wins truth.
-
-### Change feed
-
-- semantic changes between trusted runs;
-- observation and canonical-project deltas;
-- materiality classification.
-
-### Review/state ratchet
-
-- review resolution creates durable decision;
-- real failures/ambiguities become fixtures when appropriate;
-- stale session/declaration conflicts surface explicitly.
-
-Gate E exit:
-
-- after material agent work, the next agent can continue from capsule + receipt without replaying the prior conversation;
-- multiple divergent declarations are visible and resolvable;
-- change since last trusted run is explicit.
+- a cold agent or worker spawner (`machina`, `Hermes`) can orient and resolve/locate a project with a single call;
+- it receives `canonical_project_id`, the authoritative checkout path on `ai-server`, GBrain source/page cross-links, and explicit git drift warnings;
+- identity/location/field decisions are deterministically explainable via `ledger explain`.
 
 ---
 
-# Wave 5 — Incremental compilation and resource economy
+# Waves 4–6 — Realigned Ecosystem Division of Labor (2026-10-29)
 
-Goal: make the system cheap enough to run routinely across the estate.
+> **Architectural update (2026-10-29):** The September 2026 roadmap originally planned for Project Ledger to build its own session-receipt engine (Wave 4) and its own local-LLM semantic matcher (Wave 5). Since September:
+>
+> - **`machina`** owns the **Work Unit / Attempt / Receipt kernel** (`work/units`, `work/receipts`, `work/programmes`);
+> - **`homelab`** owns **worktree leases** and scheduled provider execution (`project-ledger-discovery-watchdog.sh`);
+> - **`gbrain`** owns **semantic/entity search and cross-session memory** (`gbrain` sources + `projects/<slug>` pages).
+>
+> Building a competing receipt store or a custom local-LLM deduplication pipeline inside Project Ledger is explicitly retired to prevent duplication.
 
-Deliverables:
+## Realigned Reality Provider Responsibilities (Implemented)
 
-- source fingerprints/checkpoints (fingerprints begin in Wave 1; this wave uses them for invalidation);
-- skip unchanged extraction;
-- delta propagation from source -> observations -> identity components -> canonical projects -> views;
-- cached semantic summaries keyed by evidence digests;
-- deterministic heuristic confidence thresholds;
-- optional cheap/local semantic matcher for unresolved low-stakes identity evidence;
-- frontier/human escalation only for consequential ambiguity;
-- compile/query performance instrumentation.
+1. **Authoritative Reality Provider for `machina` & `homelab`**:
+   - `ledger resolve <referent>` and `ledger locate <project>` tell `machina` and `Hermes` before spawning a worker: the `canonical_project_id`, the authoritative checkout path on `ai-server`, and explicit git working-tree drift warnings (e.g., `"warning: local main is 20 commits behind origin/main"`).
+   - `machina` owns work-unit and attempt receipts; Project Ledger capsules point `pointers.task_system` to `machina`.
+2. **Cross-Linking `canonical_project_id` to `gbrain` Sources**:
+   - Every canonical project in `state/canonical-projects.json` and `state/projects/<id>.json` maps to its registered `gbrain` source slug (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry`, or `default`) and `projects/<project_slug>` page key (`ledger/gbrain.py`), so resolving a project yields both deterministic git/filesystem truth (from Project Ledger) and semantic history/decisions (from GBrain).
+3. **Frontier Zero-Shot Triage on `cross_project_weak_overlaps`**:
+   - Replaces Wave 5's custom local-model deduplication pipeline with a single frontier agent pass over `state/identity-evidence.json` + repo READMEs, emitting a candidate decision batch (`registry/weak-overlap-triage-candidates.json`) inspectable via `ledger review` and promotable via one-click human approval (`ledger review --approve-candidates`).
 
-Gate F exit:
+## Remaining Optional Future Slices
 
-- routine runs primarily process deltas;
-- expensive semantic reasoning is exceptional and measurable;
-- unchanged estates produce near-zero semantic churn/reasoning cost.
-
----
-
-# Wave 6 — Downstream control-plane integration and portfolio intelligence
-
-Goal: make Project Ledger the shared project-identity/state substrate rather than an isolated tool.
-
-Integration ownership:
-
-- Project Ledger publishes stable reality contracts;
-- AGENT05 consumes them as reality/evidence inside its execution-control grammar rather than owning a competing ledger;
-- homelab deploys/schedules/queries Project Ledger on the real fleet rather than owning a competing identity schema.
-
-Deliverables may include:
-
-- stable plugin/query contract for homelab agents across nodes;
-- AGENT05 adapter from manifest/capsules into Situation Model / Control Packet reality inputs;
-- task-system project-ID linking/work-candidate handoff;
-- GBrain/knowledge pointers keyed to canonical project IDs;
-- Mission Control/operator UI consuming manifest/capsules/review/change data;
-- portfolio analytics based on canonical projects and trusted history;
-- scheduled compiles/source health checks;
-- optional SQLite/materialized query store if justified by query volume.
-
-Gate G exit:
-
-- downstream systems consume canonical IDs/views rather than reimplementing identity;
-- task and knowledge systems remain separate owners of their domains;
-- the UI is a view over the same contracts agents use.
+- **Semantic change feed (`P4.5`)**: `state/changes.json` and `ledger changes --since <run_id>` for estate-level delta reporting between refresh runs.
+- **Incremental source checkpointing (`P5.1`)**: skip unchanged source extraction when scan duration warrants it.
 
 ---
 
@@ -323,27 +261,19 @@ Leads every wave. Schema, IDs, epistemic types, authority/freshness, compatibili
 
 ## Programme B — Source sensing
 
-Adapters, inventory policy, source health, fingerprints. Expand only when coverage value exceeds added identity/review burden.
+Adapters, inventory policy, source health, fingerprints, git working-tree drift sensing. Expand only when coverage value exceeds added identity/review burden.
 
 ## Programme C — Identity and decisions
 
-Canonicalization, aliases, merge/split, evidence, review ratchet.
+Canonicalization, aliases, merge/split, evidence, frontier zero-shot weak-overlap triage, review ratchet.
 
 ## Programme D — Agent experience
 
-Manifest, capsules, query commands, explainability, bounded context.
+Manifest, capsules, query commands (`orient`, `sources`, `resolve`, `show`, `locate`, `explain`, `review`), bounded context.
 
-## Programme E — Accretive state
+## Programme E — Ecosystem integration
 
-Receipts, current-state resolution, change feed, durable decisions.
-
-## Programme F — Resource economy
-
-Incremental invalidation, caches, local/cheap reasoning ladder, instrumentation.
-
-## Programme G — Integration
-
-Task/knowledge/control-plane links without ownership creep.
+`machina` (Work Unit / Attempt / Receipt kernel), `homelab` (worktree leases & watchdog seam), and `gbrain` (`gbrain_source_slug` & `projects/<slug>` cross-links) without ownership creep.
 
 ## Sequencing rule
 
@@ -351,6 +281,6 @@ Do not let higher layers compensate for missing lower-layer contracts. In partic
 
 - do not build rich analytics on raw observation counts before canonical identity;
 - do not build a heavy UI before the agent query/read model;
-- do not add model-heavy deduplication before deterministic evidence/decision contracts;
+- do not build a competing receipt/task store against `machina` or a competing semantic search/LLM matcher against `gbrain`;
 - do not add many ingestion sources faster than identity/review capacity can absorb them;
-- do not duplicate AGENT05's execution grammar or homelab's WorkSpec/task plane inside Project Ledger.
+- do not duplicate AGENT05/`machina` execution grammar or `homelab` worktree leases inside Project Ledger.

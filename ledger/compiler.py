@@ -293,6 +293,7 @@ def compile_state(
             "compat_observations": str(compat_output_path),
             "typed_observations": str(observations_path),
             "canonical_projects": str(canonical_path),
+            "canonical_markdown": str(state_dir / "canonical-projects.md"),
             "project_capsules": str(capsules_dir),
             "identity_evidence": str(evidence_path),
             "review_queue": str(review_path),

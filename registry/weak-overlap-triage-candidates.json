@@ -1,0 +1,342 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-10-29T03:35:00Z",
+  "triage_method": "frontier_zero_shot_readme_and_evidence_pass",
+  "source_run_id": "run_8cec83146cacce545dff94c3",
+  "candidates": [
+    {
+      "decision_id": "dec_triage_agent_os_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_0ef8500cd40225c893746859",
+        "obs_8e34b0cd367a91947de57108"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:agent-os inventory manifestation and /central/repos/active/agent-os (github.com/mschwar/agent-os) are the same agent-os repository."
+    },
+    {
+      "decision_id": "dec_triage_agent_os_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_8e34b0cd367a91947de57108",
+      "key": "github.com/mschwar/agent-os",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/agent-os over matty-pc inventory key google-drive:agent-os."
+    },
+    {
+      "decision_id": "dec_triage_white_rabbit_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_128ca37a8e8f71df0611b79b",
+        "obs_3f044b92e89cb88b23ad455f",
+        "obs_9ddd0040fce7668f9c3aa442"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:white-rabbit inventory entry is the off-host manifestation of github.com/mschwar/white-rabbit."
+    },
+    {
+      "decision_id": "dec_triage_tsle_team_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_2611569afe37ebe344f849ce",
+        "obs_330dc8b78ee698583e0b69f0"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/active/2026.TSLE.TEAM_internal-MS and matty-pc:2026.TSLE.TEAM_internal-MS are the same internal team workspace."
+    },
+    {
+      "decision_id": "dec_triage_tsle_team_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_2611569afe37ebe344f849ce",
+      "key": "2026-tsle-team_internal-ms",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key 2026-tsle-team_internal-ms over google-drive:2026.tsle.team_internal-ms."
+    },
+    {
+      "decision_id": "dec_triage_project_ledger_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_284c730562a98efa43602cb6",
+        "obs_f0b59c4cb6f5e691384c753a"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:project-ledger inventory entry and /central/repos/active/project-ledger are the same Project Ledger repository."
+    },
+    {
+      "decision_id": "dec_triage_project_ledger_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_f0b59c4cb6f5e691384c753a",
+      "key": "github.com/mschwar/project-ledger",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/project-ledger over google-drive:project-ledger."
+    },
+    {
+      "decision_id": "dec_triage_gstack_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_2f867ffdd26615c4da53124e",
+        "obs_57da745a9614140c31a7c7de"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/agent-tooling/gstack-main and matty-pc:gstack-main are the same gstack repository."
+    },
+    {
+      "decision_id": "dec_triage_gstack_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_2f867ffdd26615c4da53124e",
+      "key": "gstack",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key gstack over google-drive:gstack-main."
+    },
+    {
+      "decision_id": "dec_triage_elemental_inc_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_30f8966f1aeb6531dbb32698",
+        "obs_a9fe172e4ff3050229fe4105"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/active/elemental-inc and matty-pc:elemental-inc are the same Elemental Inc repository."
+    },
+    {
+      "decision_id": "dec_triage_elemental_inc_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_30f8966f1aeb6531dbb32698",
+      "key": "github.com/mschwar/elemental-inc",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/elemental-inc over google-drive:elemental-inc."
+    },
+    {
+      "decision_id": "dec_triage_scrollytelling_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_4f33d1499e11ac827181eec3",
+        "obs_7093a00a06d67874eacdb995"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:scrollytelling and /central/repos/active/scrollytelling (github.com/mschwar/scrollytelling) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_scrollytelling_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_7093a00a06d67874eacdb995",
+      "key": "scrollytelling",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key scrollytelling over google-drive:scrollytelling."
+    },
+    {
+      "decision_id": "dec_triage_awesome_hermes_vs_paperclip_reject_20261029",
+      "type": "reject_match",
+      "left_observation_id": "obs_612b1fb5fcdd93671c517b3b",
+      "right_observation_id": "obs_ff176558e49705dc134a002b",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/agent-tooling/awesome-hermes-agent-main and /central/repos/agent-tooling/paperclip are completely unrelated repositories whose READMEs both begin with `<p align=\"center\">`."
+    },
+    {
+      "decision_id": "dec_triage_context_project_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_671fcc1f0eb50480aacaacef",
+        "obs_f69938867fd6567892533140"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:context-project and /central/repos/active/context-project (github.com/mschwar/context-project) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_context_project_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_f69938867fd6567892533140",
+      "key": "context-project",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key context-project over google-drive:context-project."
+    },
+    {
+      "decision_id": "dec_triage_slopvault_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_6b6abeb67481b130de3285d9",
+        "obs_a4f6324981613ac5091b065b"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:slopvault and /central/repos/active/slopvault (github.com/mschwar/slopvault) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_slopvault_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_a4f6324981613ac5091b065b",
+      "key": "github.com/mschwar/slopvault",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key github.com/mschwar/slopvault over google-drive:slopvault."
+    },
+    {
+      "decision_id": "dec_triage_gbrain_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_7a040f3f2560435ce378b777",
+        "obs_e54ac482342bc70d95df74d2"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/agent-tooling/gbrain-master (unversioned v0.18 snapshot) and /central/repos/agent-tooling/gbrain-candidate (git clone of github.com/garrytan/gbrain) are both local manifestations of Garry Tan's GBrain."
+    },
+    {
+      "decision_id": "dec_triage_gbrain_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_e54ac482342bc70d95df74d2",
+      "key": "gbrain",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key gbrain so `ledger resolve gbrain` and `ledger locate gbrain` resolve to the git-backed gbrain-candidate checkout."
+    },
+    {
+      "decision_id": "dec_triage_substrate_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_86f186797eb3a2c0080e84ad",
+        "obs_f2c910768f3d82e82d55dd34"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/active/substrate (github.com/mschwar/substrate) and matty-pc:substrate are the same project."
+    },
+    {
+      "decision_id": "dec_triage_substrate_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_86f186797eb3a2c0080e84ad",
+      "key": "substrate",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key substrate over google-drive:substrate."
+    },
+    {
+      "decision_id": "dec_triage_bahai_consultation_guide_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_8709a2bcb7e7dcc898cfe501",
+        "obs_fa9843b912ce166c5e3fc679"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:bahai-consultation-guide and /central/repos/active/bahai-consultation-guide are the same project."
+    },
+    {
+      "decision_id": "dec_triage_bahai_consultation_guide_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_fa9843b912ce166c5e3fc679",
+      "key": "bahai-consultation-guide",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key bahai-consultation-guide over google-drive:bahai-consultation-guide."
+    },
+    {
+      "decision_id": "dec_triage_civstrate_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_96eebea5b6d6c2af9528485e",
+        "obs_c0a543afb1afaed2fa3f5ba9"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:civstrate and /central/repos/active/civstrate (github.com/mschwar/civstrate) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_civstrate_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_c0a543afb1afaed2fa3f5ba9",
+      "key": "github.com/mschwar/civstrate",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key github.com/mschwar/civstrate over google-drive:civstrate."
+    },
+    {
+      "decision_id": "dec_triage_common_project_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_9e2344fc75b7dbcf541df2d8",
+        "obs_d108e2975d6225f4f50ddeea"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:common-project and /central/repos/active/common-project (github.com/mschwar/common-project) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_common_project_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_d108e2975d6225f4f50ddeea",
+      "key": "common-project",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key common-project over google-drive:common-project."
+    },
+    {
+      "decision_id": "dec_triage_song_clean_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_a71c0864d1426f490084f947",
+        "obs_e9d952b160c21d6bc565d39b"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:song-clean and /central/projects/song-clean are the same project."
+    },
+    {
+      "decision_id": "dec_triage_song_clean_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_e9d952b160c21d6bc565d39b",
+      "key": "song-clean",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key song-clean over google-drive:song-clean."
+    },
+    {
+      "decision_id": "dec_triage_homelab_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_b4d97e0f5318ed3ba8d08f11",
+        "obs_cc508b56483db8d8e146107a",
+        "obs_f0c43e37fa8e90f8dafd9d52"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:homelab inventory entry is the Windows workstation manifestation of mschwar/homelab."
+    },
+    {
+      "decision_id": "dec_triage_reality_ledger_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_d04229543f0f27e9cda304c7",
+        "obs_e78c1dfefc3786c34da9bf7a",
+        "obs_ff6d12c1314cbd63cebd7d61"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:reality-ledger inventory entry is the off-host manifestation of github.com/mschwar/reality-ledger."
+    },
+    {
+      "decision_id": "dec_triage_reality_ledger_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_e78c1dfefc3786c34da9bf7a",
+      "key": "reality-ledger",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-29T03:35:00Z",
+      "rationale": "Select authoritative key reality-ledger over google-drive:reality-ledger."
+    }
+  ]
+}

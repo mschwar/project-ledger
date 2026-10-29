@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-10-29T03:09:40Z",
-  "last_session_summary": "Audited ledger_config.json post-CONV-001 (added central-agent-tooling, central-research-ml, and 3813-patio roots -> 17 sources, 156 observations, 151 canonical projects), recorded durable identity decisions in registry/identity-decisions.json (clearing the-garden PROJECT_KEY_AMBIGUOUS and homelab/white-rabbit DIVERGENT_SIDECAR_DECLARATIONS -> 0 open review items), and implemented Wave 3 read plane (P3.2 bounded project capsules at state/projects/<id>.json, P3.4 ledger show, and P3.5 preferred-location resolver + ledger locate; 129 unit tests passing).",
-  "next_step": "Proceed to Wave 3 closeout (P3.6 ledger explain, P3.7 human canonical ledger view, and ledger review) followed by Wave 4 (structured session receipts and current-state resolver).",
+  "last_session_at": "2026-10-29T03:50:00Z",
+  "last_session_summary": "Completed Wave 3 read plane and Reality Provider integration for machina, homelab, and gbrain: added git working-tree drift sensing and pre-spawn warnings to ledger resolve/locate/show, cross-linked canonical_project_id to gbrain sources (gbrain_source_slug + projects/<slug> page keys), implemented P3.6 ledger explain, P3.7 state/canonical-projects.md human canonical view, and ledger review + registry/weak-overlap-triage-candidates.json frontier zero-shot triage covering all 21 live cross_project_weak_overlaps (133 unit tests passing).",
+  "next_step": "Review and approve weak-overlap triage candidates via `python3 -m ledger review --approve-candidates`, wire machina/homelab pre-spawn checks to `ledger resolve`/`ledger locate`, or proceed to Wave 6 semantic change feed (`state/changes.json` + `ledger changes`).",
   "last_push_at": ""
 }

@@ -34,7 +34,7 @@ Before acting, know:
 - which requested capabilities are actually available in the manifest;
 - whether the task is product work, source ingestion, identity work, review resolution, or downstream project work.
 
-Current boundary: `orient` describes the estate, `resolve` performs exact canonical resolution, `show` loads bounded project capsules (`state/projects/<canonical_project_id>.json`), and `locate` returns the preferred working location and ranked observations with reason codes. `explain`, `review`, and structured session receipts remain later work.
+Current boundary: `orient` describes the estate, `resolve` performs exact canonical resolution (returning `canonical_project_id`, `gbrain_source_slug`, `preferred_location`, and git working-tree drift warnings), `show` loads bounded project capsules (`state/projects/<canonical_project_id>.json`), `locate` returns the preferred working location and ranked observations with reason codes and git drift warnings, `explain` returns provenance for any canonical project, observation, review item, or identity decision, and `review` lists open reviews plus frontier zero-shot weak-overlap triage candidates (`--approve-candidates`). Semantic change feed (`changes`) remains later work; `machina` owns session/attempt receipts.
 
 ## 2. RESOLVE
 

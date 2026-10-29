@@ -424,6 +424,8 @@ schema_version
 canonical_project_id
 project_key
 display_name
+gbrain_source_slug
+gbrain
 resolved_fields
 observation_ids[]
 identity_anchor
@@ -437,7 +439,9 @@ canonical_key_decision_id
 
 Current canonical IDs are deterministic under unchanged identity evidence. A single normalized remote is the preferred anchor; explicit merge decisions anchor multi-remote/non-remote merged groups; otherwise a singleton observation anchors the project. A normalized remote is only used as the anchor when it is **unique to one project** across the whole compile — when a split/reject keeps two observations that share an exact remote in separate projects, each falls back to a membership-scoped anchor so the two projects never share a `canonical_project_id` (P2.5).
 
-`resolved_fields` records claim provenance for each resolved canonical field (`project_key`, `display_name`): which observation/decision/evidence produced the value, so a cold agent can see *why* a canonical value exists without re-running archaeology. Provenance kinds are `decision` (canonical_key), `declaration` (project_key sidecar), `observed` (remote/name), or `derived` (fallback).
+`resolved_fields` records claim provenance for each resolved canonical field (`project_key`, `display_name`, `gbrain_source_slug`): which observation/decision/evidence produced the value, so a cold agent can see *why* a canonical value exists without re-running archaeology. Provenance kinds are `decision` (canonical_key), `declaration` (project_key sidecar), `observed` (remote/name/corpus path), or `derived` (fallback).
+
+`gbrain_source_slug` and `gbrain` cross-link each canonical project to its registered GBrain source on `ai-server` (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry` with `/central/registry/mirrors/` excluded, or `default`) and canonical `projects/<project_slug>` page key.
 
 This first slice does not yet claim the full eventual immutable-ID registry semantics described later in this document.
 
@@ -800,32 +804,41 @@ This powers delta-first agent operation.
 
 ---
 
-# 3. Target agent materialized views
+# 3. Agent materialized views (Implemented)
 
 ## Project capsule
 
-Planned:
+Generated:
 
 ```text
 state/projects/<canonical_project_id>.json
 ```
 
-Suggested contents:
+Contents (bounded within `16 KiB` per capsule):
 
-- canonical ID/key/aliases
-- display name/purpose
-- lifecycle/current state
-- last trusted session + next step
-- canonical URL/repo
-- ranked observation/location summaries
-- preferred location with reason codes
-- freshest git facts
-- freshness/as-of
-- open review/conflict summaries
-- task/knowledge pointers
-- evidence/query pointers
+- `canonical_project_id`, `project_key`, `display_name`, `aliases[]`, `normalized_remotes[]`
+- `gbrain_source_slug` and `gbrain` (`source_slug`, `project_slug`, `page_key`, `matched_corpus_path`, `basis`, `confidence`)
+- `summary` (`description`, `lifecycle_status`, `tags`, `shared`, `storage_scope`)
+- `continuity` (`last_session_at`, `last_session_summary`, `next_step`, `source_observation_id`, `freshness`)
+- `preferred_location` (`observation_id`, `source_id`, `source_role`, `path`, `canonical_url`, `reason_codes[]`, `confidence`, `git_drift`, `warning_codes[]`, `warnings[]`)
+- `warnings[]` (top-level git working-tree drift warnings for `machina` / `homelab` pre-spawn checks, e.g. `"warning: local main is 20 commits behind origin/main"`)
+- `ranked_observations[]` (compact summaries ranked by `live > mirror > backup > inventory` with reason codes and `git_drift`)
+- `git_facts` (freshest git commit/branch/remote facts plus `drift` summary)
+- `freshness` (`state`, `content_as_of`, `content_as_of_basis`, `observed_at`)
+- `open_reviews[]` and `divergent_declarations[]`
+- `pointers` (`task_system.provider = "machina"`, `knowledge_system.provider = "gbrain"`, `evidence_refs`)
 
-The capsule should omit deep evidence payloads unless needed for normal orientation.
+The capsule omits deep raw compatibility payloads unless needed via `ledger explain`.
+
+## Human canonical ledger view
+
+Generated:
+
+```text
+state/canonical-projects.md
+```
+
+Renders one row per canonical project (`project_key`, `canonical_project_id`, preferred location + role, GBrain source slug, observation count, and status/warnings) plus expandable `<details>` provenance for multi-manifestation projects (`P3.7`).
 
 ## Review queue / change feed
 
