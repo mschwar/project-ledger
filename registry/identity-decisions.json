@@ -1,4 +1,43 @@
 {
   "schema_version": "1.0.0",
-  "decisions": []
+  "decisions": [
+    {
+      "decision_id": "dec_the_garden_merge_20261029",
+      "type": "merge",
+      "observation_ids": [
+        "obs_ae0625819f15a3d3b080671f",
+        "obs_f6554456613bfca1cfa76246"
+      ],
+      "authority": "operator",
+      "decided_at": "2026-10-29T03:06:00Z",
+      "evidence": [
+        "rev_08eb96a0b8b7722ac70b2a20"
+      ],
+      "rationale": "Both /central/git/the_garden and /central/repos/active/the_garden are local checkouts of the same legacy OpenClaw workspace (identical AGENTS.md/IDENTITY.md/TOOLS.md/USER.md and sidecar project_key='the-garden') with no git remote."
+    },
+    {
+      "decision_id": "dec_homelab_canonical_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_cc508b56483db8d8e146107a",
+      "key": "homelab",
+      "authority": "operator",
+      "decided_at": "2026-10-29T03:06:00Z",
+      "evidence": [
+        "rev_33a0d27dfe758baa47198409"
+      ],
+      "rationale": "Select authoritative short key 'homelab' from the live /central/repos/infra/homelab sidecar over the mirror's remote-derived key."
+    },
+    {
+      "decision_id": "dec_white_rabbit_canonical_key_20261029",
+      "type": "canonical_key",
+      "observation_id": "obs_9ddd0040fce7668f9c3aa442",
+      "key": "white-rabbit",
+      "authority": "operator",
+      "decided_at": "2026-10-29T03:06:00Z",
+      "evidence": [
+        "rev_b30f91d35d28f573059e2a40"
+      ],
+      "rationale": "Select authoritative short key 'white-rabbit' across merged /central/repos/active/white-rabbit and /central/white-rabbit manifestations."
+    }
+  ]
 }

@@ -155,7 +155,8 @@ class Wave1SubstrateTests(unittest.TestCase):
             self.assertIn("typed_observations", orientation["available_capabilities"])
             self.assertIn("canonical_projects", orientation["available_capabilities"])
             self.assertIn("review_queue", orientation["available_capabilities"])
-            self.assertIn("project_capsules", orientation["unavailable_capabilities"])
+            self.assertIn("project_capsules", orientation["available_capabilities"])
+            self.assertIn("change_feed", orientation["unavailable_capabilities"])
 
     def test_compat_snapshot_changes_when_observation_run_changes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

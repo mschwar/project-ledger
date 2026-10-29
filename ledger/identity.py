@@ -832,7 +832,10 @@ def materialize_identity(
     state_dir: Path,
     run_id: str,
     compiled_at: str,
+    sources: list[dict] | None = None,
+    input_observed_at: str | None = None,
 ) -> tuple[dict, dict]:
+    from .capsules import materialize_capsules
     from .evidence import build_identity_evidence
 
     state_dir = state_dir.resolve()
@@ -852,6 +855,19 @@ def materialize_identity(
     evidence_path = state_dir / "identity-evidence.json"
     evidence_path.write_text(
         json.dumps(identity_evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    observed_at = input_observed_at or (
+        str(observations[0].get("observed_at") or "") if observations else ""
+    ) or compiled_at
+    materialize_capsules(
+        canonical_payload=canonical,
+        observations=observations,
+        sources=sources,
+        review_payload=reviews,
+        state_dir=state_dir,
+        run_id=run_id,
+        compiled_at=compiled_at,
+        input_observed_at=observed_at,
     )
     return canonical, reviews
 

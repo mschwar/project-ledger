@@ -88,13 +88,14 @@ Current constants from `ledger/__init__.py`:
 
 ```text
 COMPILER_VERSION                    = 0.2.0
-MANIFEST_SCHEMA_VERSION             = 1.1.0
+MANIFEST_SCHEMA_VERSION             = 1.2.0
 OBSERVATION_SCHEMA_VERSION          = 1.0.0
 COMPAT_FLAT_SCHEMA_VERSION          = 0.1.0
 CANONICAL_PROJECT_SCHEMA_VERSION    = 1.0.0
 IDENTITY_DECISION_SCHEMA_VERSION    = 1.0.0
 IDENTITY_EVIDENCE_SCHEMA_VERSION    = 1.0.0
 REVIEW_QUEUE_SCHEMA_VERSION         = 1.0.0
+PROJECT_CAPSULE_SCHEMA_VERSION      = 1.0.0
 ```
 
 Full compatibility/migration policy for these versions is still Gate B work. Unsupported future major versions must eventually fail/degrade explicitly rather than being guessed through.
@@ -299,10 +300,12 @@ identity_review_count
 sources
 observations
 canonical_projects
+project_capsules
+identity_evidence
 review_items
 ```
 
-Canonical project and identity-review counts are now concrete integers. Unimplemented capability counts should continue to use explicit null/absence rather than being silently coerced to zero.
+Canonical project, project capsule, identity-evidence, and identity-review counts are concrete integers. Unimplemented capability counts should continue to use explicit null/absence rather than being silently coerced to zero.
 
 ### capabilities
 
@@ -320,11 +323,12 @@ Current available capabilities:
 - `typed_observations`
 - `source_health`
 - `canonical_projects`
+- `identity_evidence`
+- `project_capsules`
 - `review_queue`
 
 Current explicit unavailable capabilities:
 
-- `project_capsules` — `WAVE3_NOT_IMPLEMENTED`
 - `change_feed` — `WAVE4_NOT_IMPLEMENTED`
 
 Agents must prefer this executable capability map over inference from design prose.

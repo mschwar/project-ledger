@@ -26,11 +26,13 @@ registered sources
   -> divergent sidecar declarations surface as a bounded review (P1.4)
   -> explicit source result/freshness semantics: unavailable vs observed_empty vs observed; content_as_of only from authoritative upstream evidence (P1.5)
   -> canonical projects + identity review
+  -> preferred-location resolver + ranked observations with reason codes/confidence (P3.5)
+  -> bounded project capsules at state/projects/<canonical_project_id>.json (P3.2)
   -> system manifest
-  -> ledger orient / ledger resolve / ledger sources
+  -> ledger orient / ledger resolve / ledger show / ledger locate / ledger sources
 ```
 
-This crosses both the **estate observation/orientation** boundary and the first **conceptual project identity** boundary.
+This crosses the **estate observation/orientation** boundary, the first **conceptual project identity** boundary, and the first **agent read-plane / preferred-location** boundary (`P3.2`, `P3.4`, `P3.5`).
 
 Identity is deliberately conservative:
 
@@ -96,14 +98,11 @@ data-loss or correctness bug.
 Still not implemented:
 
 ```text
-preferred working location
- -> project capsules
+ledger explain / ledger review
  -> structured current state / session receipts
  -> semantic change feed
  -> incremental compilation
 ```
-
-The next software constraint is intentionally **not preselected**. R0 live provider proof must now test the identity slice against the real estate before R3 is authorized.
 
 ## Current commands
 
@@ -115,6 +114,8 @@ python -m ledger compile
 python -m ledger orient
 python -m ledger sources
 python -m ledger resolve <referent>
+python -m ledger show <project>
+python -m ledger locate <project>
 python -m unittest discover -s tests
 ```
 

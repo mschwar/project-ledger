@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-09-18T06:44:16Z",
-  "last_session_summary": "Reality-to-identity programme crossed the first canonical identity boundary: exact normalized repository remotes plus explicit durable decisions now compile canonical projects/review state, and ledger resolve returns resolved, ambiguous, or unresolved exact outcomes.",
-  "next_step": "R0 live provider proof is complete and the committed ledger_config.json template has been reconciled with the live ai-server root set (three dead roots removed, marked [Needs validation]). Next: synthesize the next software constraint from demonstrated use before authorizing preferred-location/current-state work.",
+  "last_session_at": "2026-10-29T03:09:40Z",
+  "last_session_summary": "Audited ledger_config.json post-CONV-001 (added central-agent-tooling, central-research-ml, and 3813-patio roots -> 17 sources, 156 observations, 151 canonical projects), recorded durable identity decisions in registry/identity-decisions.json (clearing the-garden PROJECT_KEY_AMBIGUOUS and homelab/white-rabbit DIVERGENT_SIDECAR_DECLARATIONS -> 0 open review items), and implemented Wave 3 read plane (P3.2 bounded project capsules at state/projects/<id>.json, P3.4 ledger show, and P3.5 preferred-location resolver + ledger locate; 129 unit tests passing).",
+  "next_step": "Proceed to Wave 3 closeout (P3.6 ledger explain, P3.7 human canonical ledger view, and ledger review) followed by Wave 4 (structured session receipts and current-state resolver).",
   "last_push_at": ""
 }

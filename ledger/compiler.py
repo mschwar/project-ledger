@@ -240,8 +240,11 @@ def compile_state(
         state_dir=state_dir,
         run_id=run_id,
         compiled_at=compiled_at,
+        sources=sources,
+        input_observed_at=observed_at,
     )
     canonical_path = state_dir / "canonical-projects.json"
+    capsules_dir = state_dir / "projects"
     review_path = state_dir / "review-queue.json"
     evidence_path = state_dir / "identity-evidence.json"
     evidence_payload = json.loads(evidence_path.read_text(encoding="utf-8"))
@@ -267,6 +270,7 @@ def compile_state(
             "sources": len(sources),
             "observations": len(observations),
             "canonical_projects": canonical_payload["canonical_project_count"],
+            "project_capsules": canonical_payload["canonical_project_count"],
             "identity_evidence": evidence_payload["identity_evidence_count"],
             "review_items": review_payload["review_count"],
         },
@@ -277,11 +281,7 @@ def compile_state(
             "source_health": capability("available"),
             "canonical_projects": capability("available"),
             "identity_evidence": capability("available"),
-            "project_capsules": capability(
-                "unavailable",
-                reason_code="WAVE3_NOT_IMPLEMENTED",
-                detail="Project capsules are not implemented yet.",
-            ),
+            "project_capsules": capability("available"),
             "review_queue": capability("available"),
             "change_feed": capability(
                 "unavailable",
@@ -293,6 +293,7 @@ def compile_state(
             "compat_observations": str(compat_output_path),
             "typed_observations": str(observations_path),
             "canonical_projects": str(canonical_path),
+            "project_capsules": str(capsules_dir),
             "identity_evidence": str(evidence_path),
             "review_queue": str(review_path),
             "system_manifest": str(manifest_path),

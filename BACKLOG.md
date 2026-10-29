@@ -322,17 +322,15 @@ Upgrade manifest to include:
 
 ## P3.2 Project capsule contract
 
-Define and materialize bounded capsules containing:
+**Complete (2026-10-29).** Implemented in `ledger/capsules.py` (`PROJECT_CAPSULE_SCHEMA_VERSION = "1.0.0"`), materialized at `state/projects/<canonical_project_id>.json` for every canonical project during `compile_state` / `materialize_identity`, and registered as an `available` capability in `state/system-manifest.json` (`counts.project_capsules`, `artifacts.project_capsules`). Each capsule includes:
 
-- ID/key/aliases;
-- purpose/current state placeholder;
-- canonical URL/repo;
-- ranked observation summaries;
-- freshness;
-- conflicts/review;
-- evidence/task/knowledge pointers.
-
-Set and test a deliberate size/context budget.
+- canonical ID, `project_key`, `display_name`, sorted `aliases`, bounded `purpose` (`<= 240` chars), `canonical_url`, `normalized_remotes`, `identity_anchor`, and bounded `resolved_fields` provenance;
+- explicit `as_of` and `freshness` block (`state`, `input_observed_at`, `content_as_of`, `content_as_of_basis`, available/unavailable observation counts);
+- `preferred_location` (`state`, `observation_id`, `source_id`, `source_class`, `location`, `confidence`, `reason_codes`, `explanation`);
+- `git_facts` and bounded `current_state` placeholder (`WAVE4_NOT_IMPLEMENTED` for session receipts);
+- ranked `observations[]` summaries with explicit `reason_codes` and `score_components`;
+- open `review` summaries and progressive-disclosure `pointers` (including external `task_system` and `knowledge_system` links);
+- enforced `16 KiB` (`CAPSULE_MAX_BYTES = 16384`, `CAPSULE_MAX_OBSERVATION_SUMMARIES = 25`) context budget recorded in `budget`.
 
 ## P3.3 Resolve command
 
@@ -342,20 +340,11 @@ JSON output first.
 
 ## P3.4 Show command
 
-`ledger show <project>` returns project capsule with explicit `as_of` and schema version.
+**Complete (2026-10-29).** `ledger show <project> [--state-dir DIR] [--json]` resolves any project referent via `resolve_payload` and returns the materialized project capsule with explicit `as_of` and `schema_version` (`0` resolved, `3` ambiguous without guessing, `4` unresolved, `2` operational error).
 
 ## P3.5 Preferred-location resolver + locate command
 
-Implement explainable ranking from:
-
-- source class;
-- accessibility;
-- canonical remote match;
-- git freshness/divergence;
-- recent trusted-session location;
-- operator/node policy.
-
-Output ranked observations + reason codes/confidence.
+**Complete (2026-10-29).** `rank_project_observations` and `ledger locate <project> [--state-dir DIR] [--json]` rank observations deterministically using accessibility (`ACCESSIBLE_SOURCE` vs `INVENTORY_ONLY_LOCATOR` / `SOURCE_UNAVAILABLE`), source class (`live` > `mirror` > `backup` > `inventory`), canonical remote match (`CANONICAL_REMOTE_MATCH`), recent session continuity (`RECENT_SESSION_EVIDENCE`), git commit/branch state (`GIT_WORKTREE`, `PRIMARY_BRANCH`), primary active root (`PRIMARY_ACTIVE_ROOT`), and upstream content freshness (`FRESH_REMOTE_REF`, `FRESH_GIT_COMMIT`, `FRESH_FILESYSTEM_TOUCH`). Coverage in `tests/test_wave3_capsules_and_locate.py` (suite `122 -> 129` tests).
 
 ## P3.6 Explain command
 

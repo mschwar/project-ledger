@@ -6,6 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from .capsules import locate_payload, show_payload
 from .compiler import compile_state, load_manifest, orient_payload
 from .compat_contract import LedgerCompatError
 from .config import LedgerConfigError, describe_sources, read_config, validate_config
@@ -57,6 +58,19 @@ def _parser() -> argparse.ArgumentParser:
     resolve.add_argument("referent")
     resolve.add_argument("--state-dir", default="state")
     resolve.add_argument("--json", action="store_true")
+
+    show = sub.add_parser("show", help="Load the bounded project capsule for a project referent.")
+    show.add_argument("referent")
+    show.add_argument("--state-dir", default="state")
+    show.add_argument("--json", action="store_true")
+
+    locate = sub.add_parser(
+        "locate",
+        help="Resolve the preferred working location and ranked observations for a project.",
+    )
+    locate.add_argument("referent")
+    locate.add_argument("--state-dir", default="state")
+    locate.add_argument("--json", action="store_true")
     return parser
 
 
@@ -148,6 +162,67 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"unresolved {payload['referent']!r}")
             return {"resolved": 0, "ambiguous": 3, "unresolved": 4}[payload["status"]]
 
+        if args.command == "show":
+            payload = show_payload(Path(args.state_dir), args.referent)
+            if args.json:
+                _print_json(payload)
+            elif payload["status"] == "resolved":
+                pref = payload["preferred_location"]
+                print(f"project: {payload['canonical_project_id']} ({payload['project_key']})")
+                print(f"display name: {payload['display_name']}")
+                print(f"schema: {payload['schema_version']}")
+                print(f"as-of: {payload['as_of']}")
+                print(
+                    f"freshness: {payload['freshness']['state']} "
+                    f"(content_as_of={payload['freshness']['content_as_of']})"
+                )
+                print(
+                    f"preferred location: {pref['location']} "
+                    f"[{pref['state']}/{pref['confidence']}] "
+                    f"({', '.join(pref['reason_codes'])})"
+                )
+                print(f"observations: {payload['observation_count']}")
+                print(f"open reviews: {payload['review']['open_review_count']}")
+                print(f"capsule: {payload['pointers']['capsule_path']}")
+            elif payload["status"] == "ambiguous":
+                print(f"ambiguous {payload['referent']!r}: {payload['candidate_count']} candidates")
+                for candidate in payload["candidates"]:
+                    print(
+                        f"  {candidate['canonical_project_id']}\t{candidate['project_key']}\t"
+                        f"{candidate['display_name']}"
+                    )
+            else:
+                print(f"unresolved {payload['referent']!r}")
+            return {"resolved": 0, "ambiguous": 3, "unresolved": 4}[payload["status"]]
+
+        if args.command == "locate":
+            payload = locate_payload(Path(args.state_dir), args.referent)
+            if args.json:
+                _print_json(payload)
+            elif payload["status"] == "resolved":
+                pref = payload["preferred_location"]
+                print(f"project: {payload['canonical_project_id']} ({payload['project_key']})")
+                print(
+                    f"preferred: {pref['location']} "
+                    f"[{pref['state']}/{pref['confidence']}] "
+                    f"({', '.join(pref['reason_codes'])})"
+                )
+                for loc in payload["locations"]:
+                    print(
+                        f"  #{loc['rank']}\t{loc['observation_id']}\t{loc['source_class']}\t"
+                        f"{loc['source_status']}\t{loc['location']}\t{','.join(loc['reason_codes'])}"
+                    )
+            elif payload["status"] == "ambiguous":
+                print(f"ambiguous {payload['referent']!r}: {payload['candidate_count']} candidates")
+                for candidate in payload["candidates"]:
+                    print(
+                        f"  {candidate['canonical_project_id']}\t{candidate['project_key']}\t"
+                        f"{candidate['display_name']}"
+                    )
+            else:
+                print(f"unresolved {payload['referent']!r}")
+            return {"resolved": 0, "ambiguous": 3, "unresolved": 4}[payload["status"]]
+
         manifest = load_manifest(Path(args.state_dir))
         if args.command == "orient":
             payload = orient_payload(manifest)
@@ -162,6 +237,8 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"observations: {payload['counts']['observations']}")
                 if payload["counts"].get("canonical_projects") is not None:
                     print(f"canonical projects: {payload['counts']['canonical_projects']}")
+                if payload["counts"].get("project_capsules") is not None:
+                    print(f"project capsules: {payload['counts']['project_capsules']}")
                 if payload["counts"].get("review_items") is not None:
                     print(f"identity review: {payload['counts']['review_items']}")
                 print("available: " + ", ".join(payload["available_capabilities"]))
