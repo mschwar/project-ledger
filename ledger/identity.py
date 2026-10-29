@@ -302,6 +302,7 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
     # Imported lazily to avoid a module-load cycle: evidence.py imports identity.py's
     # observation_facts, which must be fully defined before evidence is imported here.
     from .evidence import project_identity_evidence
+    from .gbrain import resolve_gbrain_link
 
     by_id = {str(item.get("observation_id", "")): item for item in observations}
     if "" in by_id or len(by_id) != len(observations):
@@ -646,6 +647,27 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                 ],
             }
 
+        gbrain_link = resolve_gbrain_link(
+            {
+                "canonical_project_id": canonical_project_id,
+                "project_key": project_key,
+                "display_name": display_name,
+                "observation_ids": member_ids,
+            },
+            by_id,
+        )
+        gbrain_prov_entry: dict[str, object] = {
+            "kind": "declared" if str(gbrain_link["match_basis"]).startswith("declared_sidecar") else "derived",
+            "value": gbrain_link["match_basis"],
+            "reason_code": "GBRAIN_SOURCE_MAP",
+        }
+        if gbrain_link.get("matched_observation_id"):
+            gbrain_prov_entry["observation_id"] = gbrain_link["matched_observation_id"]
+        resolved_fields["gbrain_source_slug"] = {
+            "value": gbrain_link["source_slug"],
+            "provenance": [gbrain_prov_entry],
+        }
+
         referents: list[dict] = [
             {"kind": "canonical_project_id", "value": canonical_project_id},
             {"kind": "project_key", "value": project_key},
@@ -701,6 +723,8 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             "canonical_key_decision_id": canonical_key_decision["decision_id"]
             if canonical_key_decision is not None
             else None,
+            "gbrain_source_slug": gbrain_link["source_slug"],
+            "gbrain": gbrain_link,
         }
         projects.append(project)
         for obs_id in member_ids:
@@ -944,12 +968,29 @@ def resolve_payload(state_dir: Path, referent: str) -> dict:
     if len(finalists) == 1:
         item = finalists[0]
         project = item["project"]
+        preferred_location: dict | None = None
+        warnings: list[str] = []
+        capsule_path = state_dir.resolve() / "projects" / f"{project['canonical_project_id']}.json"
+        if capsule_path.is_file():
+            try:
+                capsule = json.loads(capsule_path.read_text(encoding="utf-8"))
+                if isinstance(capsule, dict):
+                    preferred_location = capsule.get("preferred_location")
+                    if isinstance(preferred_location, dict):
+                        warnings = list(preferred_location.get("warnings") or [])
+            except (OSError, json.JSONDecodeError):
+                preferred_location = None
+                warnings = []
         return {
             "status": "resolved",
             "referent": query,
             "canonical_project_id": project["canonical_project_id"],
             "project_key": project["project_key"],
             "display_name": project["display_name"],
+            "gbrain_source_slug": project.get("gbrain_source_slug"),
+            "gbrain": project.get("gbrain"),
+            "preferred_location": preferred_location,
+            "warnings": warnings,
             "matched_by": item["matched_by"],
             "observation_ids": project["observation_ids"],
         }

@@ -26,13 +26,16 @@ registered sources
   -> divergent sidecar declarations surface as a bounded review (P1.4)
   -> explicit source result/freshness semantics: unavailable vs observed_empty vs observed; content_as_of only from authoritative upstream evidence (P1.5)
   -> canonical projects + identity review
-  -> preferred-location resolver + ranked observations with reason codes/confidence (P3.5)
+  -> preferred-location resolver + ranked observations with reason codes/confidence + git working-tree drift sensing (P3.5 / Reality Provider)
+  -> gbrain source cross-linking (`gbrain_source_slug` + `gbrain` metadata on canonical projects and capsules)
   -> bounded project capsules at state/projects/<canonical_project_id>.json (P3.2)
+  -> human canonical ledger view at state/canonical-projects.md (P3.7)
+  -> frontier zero-shot weak-overlap triage candidates (`registry/weak-overlap-triage-candidates.json` + `ledger review --approve-candidates`)
   -> system manifest
-  -> ledger orient / ledger resolve / ledger show / ledger locate / ledger sources
+  -> ledger orient / ledger resolve / ledger show / ledger locate / ledger explain / ledger review / ledger sources
 ```
 
-This crosses the **estate observation/orientation** boundary, the first **conceptual project identity** boundary, and the first **agent read-plane / preferred-location** boundary (`P3.2`, `P3.4`, `P3.5`).
+This crosses the **estate observation/orientation** boundary, the **conceptual project identity** boundary, the full **Wave 3 agent read-plane** boundary (`P3.1`–`P3.7`), and the **Reality Provider seam** for `machina`, `homelab`, and `gbrain`.
 
 Identity is deliberately conservative:
 
@@ -95,12 +98,17 @@ reachable as `project_key_hint` referents. This previously surfaced as a
 documentation/semantics inconsistency recorded as a future spec (t_92cca8a6), not a
 data-loss or correctness bug.
 
+The **Wave 3 agent read plane (`P3.1`–`P3.7`) and Reality Provider seam (`P4.1`–`P4.4`, `P5.1`–`P5.3`)** are now implemented:
+- `ledger resolve <referent>`, `ledger locate <project>`, and `ledger show <project>` return the authoritative checkout path (`preferred_location.path`), `gbrain_source_slug` / `gbrain` cross-links (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry`, `default`, with `/central/registry/mirrors/` excluded), and explicit git working-tree drift warnings (`GIT_BEHIND_UPSTREAM`, `GIT_MAIN_BEHIND_ORIGIN`, `GIT_AHEAD_OF_UPSTREAM`, `GIT_DETACHED_HEAD`, `GIT_DIRTY_WORKTREE`).
+- `ledger explain <referent>` (`P3.6`) returns full provenance across canonical projects, observations, review items, and identity decisions.
+- `state/canonical-projects.md` (`P3.7`) provides a human-auditable canonical ledger view with preferred locations, GBrain sources, git drift warnings, and expandable multi-manifestation provenance.
+- `ledger review` and `registry/weak-overlap-triage-candidates.json` (`P5.1`–`P5.3`) replace Wave 5's legacy custom local-LLM deduplication pipeline with a frontier zero-shot triage batch covering all 21 live `cross_project_weak_overlaps` for one-click human approval (`ledger review --approve-candidates`).
+- Competing session-receipt storage (originally Wave 4) is retired in favor of `machina` (which owns Work Unit / Attempt / Receipt kernel state) and `homelab` (which owns worktree leases).
+
 Still not implemented:
 
 ```text
-ledger explain / ledger review
- -> structured current state / session receipts
- -> semantic change feed
+semantic change feed (state/changes.json + ledger changes)
  -> incremental compilation
 ```
 
@@ -116,6 +124,8 @@ python -m ledger sources
 python -m ledger resolve <referent>
 python -m ledger show <project>
 python -m ledger locate <project>
+python -m ledger explain <referent>
+python -m ledger review [--approve-candidates] [--decision-id ID]
 python -m unittest discover -s tests
 ```
 

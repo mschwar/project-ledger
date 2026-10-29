@@ -24,7 +24,10 @@ from datetime import datetime
 from pathlib import Path
 
 from . import COMPILER_VERSION, PROJECT_CAPSULE_SCHEMA_VERSION
+from .gbrain import resolve_gbrain_link
+from .human_view import write_canonical_markdown
 from .identity import observation_facts, resolve_payload
+from .sources.git import resolve_observation_git_drift
 
 CAPSULE_MAX_BYTES = 16384
 CAPSULE_MAX_OBSERVATION_SUMMARIES = 25
@@ -160,6 +163,7 @@ def rank_project_observations(
         session_epoch = _iso_epoch(session_at)
 
         content_as_of, content_basis, freshness_reason, content_epoch = _observation_content_as_of(compat)
+        git_drift = resolve_observation_git_drift(obs, compat)
 
         reasons: list[str] = []
         if source_status != "available":
@@ -217,6 +221,9 @@ def rank_project_observations(
             "git": git_enabled,
             "head_branch": head_branch,
             "head_commit": head_commit,
+            "git_drift": git_drift,
+            "warning_codes": list(git_drift.get("warning_codes", [])),
+            "warnings": list(git_drift.get("warnings", [])),
             "content_as_of": content_as_of,
             "content_as_of_basis": content_basis,
             "canonical_remote_match": canonical_remote_match,
@@ -253,6 +260,20 @@ def rank_project_observations(
             "location": None,
             "confidence": "none",
             "reason_codes": ["SOURCE_UNAVAILABLE"],
+            "git_drift": {
+                "state": "not_applicable",
+                "head_branch": None,
+                "head_commit": None,
+                "upstream_ref": None,
+                "ahead_count": None,
+                "behind_count": None,
+                "main_behind_count": None,
+                "dirty": None,
+                "warning_codes": [],
+                "warnings": [],
+            },
+            "warning_codes": [],
+            "warnings": [],
             "explanation": "No observations are available for this canonical project.",
         }
         return ranked, preferred
@@ -289,6 +310,9 @@ def rank_project_observations(
         "location": top["location"],
         "confidence": pref_confidence,
         "reason_codes": list(top["reason_codes"]),
+        "git_drift": dict(top["git_drift"]),
+        "warning_codes": list(top["warning_codes"]),
+        "warnings": list(top["warnings"]),
         "explanation": pref_explanation,
     }
     return ranked, preferred
@@ -352,6 +376,7 @@ def _project_git_facts(ranked_observations: list[dict], observations_by_id: dict
         head_commit_at = str(compat.get("head_commit_at") or "").strip() or None
         last_remote_ref_at = str(compat.get("last_remote_ref_at") or "").strip() or None
         remote_url = str(compat.get("remote_url") or compat.get("canonical_url") or "").strip() or None
+        git_drift = item.get("git_drift") or {}
         state = "known" if (head_commit or head_branch or remote_url) else "unknown"
         return {
             "state": state,
@@ -361,6 +386,14 @@ def _project_git_facts(ranked_observations: list[dict], observations_by_id: dict
             "head_commit_at": head_commit_at,
             "last_remote_ref_at": last_remote_ref_at,
             "remote_url": remote_url,
+            "upstream_ref": git_drift.get("upstream_ref"),
+            "ahead_count": git_drift.get("ahead_count"),
+            "behind_count": git_drift.get("behind_count"),
+            "main_behind_count": git_drift.get("main_behind_count"),
+            "dirty": git_drift.get("dirty"),
+            "drift_state": git_drift.get("state", "unknown"),
+            "warning_codes": list(git_drift.get("warning_codes", [])),
+            "warnings": list(git_drift.get("warnings", [])),
         }
     return {
         "state": "not_applicable",
@@ -370,6 +403,14 @@ def _project_git_facts(ranked_observations: list[dict], observations_by_id: dict
         "head_commit_at": None,
         "last_remote_ref_at": None,
         "remote_url": None,
+        "upstream_ref": None,
+        "ahead_count": None,
+        "behind_count": None,
+        "main_behind_count": None,
+        "dirty": None,
+        "drift_state": "not_applicable",
+        "warning_codes": [],
+        "warnings": [],
     }
 
 
@@ -482,6 +523,13 @@ def build_project_capsule(
     freshness = _project_freshness(ranked_observations, observations_by_id, input_observed_at)
     git_facts = _project_git_facts(ranked_observations, observations_by_id)
     current_state = _project_current_state(ranked_observations, observations_by_id)
+    gbrain_link = (
+        dict(project["gbrain"])
+        if isinstance(project.get("gbrain"), dict)
+        else resolve_gbrain_link(project, observations_by_id)
+    )
+    gbrain_source_slug = str(project.get("gbrain_source_slug") or gbrain_link["source_slug"])
+    capsule_warnings = list(preferred_location.get("warnings") or [])
 
     shown_count = min(len(ranked_observations), max_observation_summaries)
     observations_truncated = shown_count < len(ranked_observations)
@@ -516,8 +564,11 @@ def build_project_capsule(
             "normalized_remotes": list(project.get("normalized_remotes", [])),
             "identity_anchor": dict(project.get("identity_anchor", {})),
             "resolved_fields": bounded_resolved_fields,
+            "gbrain_source_slug": gbrain_source_slug,
+            "gbrain": gbrain_link,
             "freshness": freshness,
             "preferred_location": preferred_location,
+            "warnings": capsule_warnings,
             "git_facts": git_facts,
             "current_state": current_state,
             "observation_count": len(ranked_observations),
@@ -537,13 +588,18 @@ def build_project_capsule(
                 "canonical_key_decision_id": project.get("canonical_key_decision_id"),
                 "task_system": {
                     "state": "external",
+                    "provider": "machina",
                     "canonical_project_id": canonical_id,
                     "project_key": project["project_key"],
                 },
                 "knowledge_system": {
                     "state": "external",
+                    "provider": "gbrain",
                     "canonical_project_id": canonical_id,
                     "project_key": project["project_key"],
+                    "gbrain_source_slug": gbrain_source_slug,
+                    "gbrain_project_slug": gbrain_link["project_slug"],
+                    "gbrain_page_key": gbrain_link["page_key"],
                 },
             },
             "budget": {
@@ -611,10 +667,22 @@ def materialize_capsules(
         if existing.name not in active_filenames:
             existing.unlink()
 
+    canonical_md_path = write_canonical_markdown(
+        output_path=state_dir / "canonical-projects.md",
+        capsules=capsules,
+        source_count=len(sources or []),
+        observation_count=len(observations),
+        review_count=len(review_items),
+        run_id=run_id,
+        compiled_at=compiled_at,
+        input_observed_at=input_observed_at,
+    )
+
     return {
         "schema_version": PROJECT_CAPSULE_SCHEMA_VERSION,
         "capsule_count": len(capsules),
         "capsules_dir": str(capsules_dir),
+        "canonical_markdown_path": str(canonical_md_path),
         "capsules": capsules,
     }
 
@@ -665,7 +733,10 @@ def locate_payload(state_dir: Path, referent: str) -> dict:
         "canonical_project_id": capsule["canonical_project_id"],
         "project_key": capsule["project_key"],
         "display_name": capsule["display_name"],
+        "gbrain_source_slug": capsule.get("gbrain_source_slug"),
+        "gbrain": capsule.get("gbrain"),
         "preferred_location": capsule["preferred_location"],
+        "warnings": list(capsule.get("warnings") or []),
         "candidate_count": capsule["observation_count"],
         "locations": capsule["observations"],
     }

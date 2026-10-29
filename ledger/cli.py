@@ -10,7 +10,9 @@ from .capsules import locate_payload, show_payload
 from .compiler import compile_state, load_manifest, orient_payload
 from .compat_contract import LedgerCompatError
 from .config import LedgerConfigError, describe_sources, read_config, validate_config
+from .explain import explain_payload
 from .identity import resolve_payload
+from .triage import approve_candidate_decisions, review_payload
 
 
 def _print_json(value: object) -> None:
@@ -71,6 +73,36 @@ def _parser() -> argparse.ArgumentParser:
     locate.add_argument("referent")
     locate.add_argument("--state-dir", default="state")
     locate.add_argument("--json", action="store_true")
+
+    explain = sub.add_parser(
+        "explain",
+        help="Explain canonical project identity, resolved fields, preferred location, reviews, or decisions.",
+    )
+    explain.add_argument("referent")
+    explain.add_argument("--state-dir", default="state")
+    explain.add_argument("--identity-decisions", default="registry/identity-decisions.json")
+    explain.add_argument("--json", action="store_true")
+
+    review = sub.add_parser(
+        "review",
+        help="Inspect open identity review items and frontier zero-shot weak-overlap triage candidates.",
+    )
+    review.add_argument("--state-dir", default="state")
+    review.add_argument("--candidates", default="registry/weak-overlap-triage-candidates.json")
+    review.add_argument("--identity-decisions", default="registry/identity-decisions.json")
+    review.add_argument(
+        "--approve-candidates",
+        action="store_true",
+        help="Approve and merge candidate decisions from --candidates into --identity-decisions.",
+    )
+    review.add_argument(
+        "--decision-id",
+        action="append",
+        dest="decision_ids",
+        default=None,
+        help="Optional candidate decision_id(s) to approve selectively with --approve-candidates.",
+    )
+    review.add_argument("--json", action="store_true")
     return parser
 
 
@@ -151,6 +183,20 @@ def main(argv: list[str] | None = None) -> int:
                     f"resolved {payload['referent']!r} -> {payload['canonical_project_id']} "
                     f"({payload['project_key']})"
                 )
+                if payload.get("gbrain_source_slug"):
+                    gbrain = payload.get("gbrain") or {}
+                    print(
+                        f"gbrain: {payload['gbrain_source_slug']} "
+                        f"({gbrain.get('page_key', '')})"
+                    )
+                pref = payload.get("preferred_location")
+                if isinstance(pref, dict) and pref.get("location"):
+                    print(
+                        f"checkout: {pref['location']} "
+                        f"[{pref.get('state')}/{pref.get('confidence')}]"
+                    )
+                for warning in payload.get("warnings") or []:
+                    print(warning)
             elif payload["status"] == "ambiguous":
                 print(f"ambiguous {payload['referent']!r}: {payload['candidate_count']} candidates")
                 for candidate in payload["candidates"]:
@@ -168,10 +214,15 @@ def main(argv: list[str] | None = None) -> int:
                 _print_json(payload)
             elif payload["status"] == "resolved":
                 pref = payload["preferred_location"]
+                gbrain = payload.get("gbrain") or {}
                 print(f"project: {payload['canonical_project_id']} ({payload['project_key']})")
                 print(f"display name: {payload['display_name']}")
                 print(f"schema: {payload['schema_version']}")
                 print(f"as-of: {payload['as_of']}")
+                print(
+                    f"gbrain: {payload.get('gbrain_source_slug')} "
+                    f"({gbrain.get('page_key')}, basis={gbrain.get('match_basis')})"
+                )
                 print(
                     f"freshness: {payload['freshness']['state']} "
                     f"(content_as_of={payload['freshness']['content_as_of']})"
@@ -181,6 +232,8 @@ def main(argv: list[str] | None = None) -> int:
                     f"[{pref['state']}/{pref['confidence']}] "
                     f"({', '.join(pref['reason_codes'])})"
                 )
+                for warning in payload.get("warnings") or []:
+                    print(warning)
                 print(f"observations: {payload['observation_count']}")
                 print(f"open reviews: {payload['review']['open_review_count']}")
                 print(f"capsule: {payload['pointers']['capsule_path']}")
@@ -201,12 +254,19 @@ def main(argv: list[str] | None = None) -> int:
                 _print_json(payload)
             elif payload["status"] == "resolved":
                 pref = payload["preferred_location"]
+                gbrain = payload.get("gbrain") or {}
                 print(f"project: {payload['canonical_project_id']} ({payload['project_key']})")
+                print(
+                    f"gbrain: {payload.get('gbrain_source_slug')} "
+                    f"({gbrain.get('page_key')})"
+                )
                 print(
                     f"preferred: {pref['location']} "
                     f"[{pref['state']}/{pref['confidence']}] "
                     f"({', '.join(pref['reason_codes'])})"
                 )
+                for warning in payload.get("warnings") or []:
+                    print(warning)
                 for loc in payload["locations"]:
                     print(
                         f"  #{loc['rank']}\t{loc['observation_id']}\t{loc['source_class']}\t"
@@ -222,6 +282,67 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(f"unresolved {payload['referent']!r}")
             return {"resolved": 0, "ambiguous": 3, "unresolved": 4}[payload["status"]]
+
+        if args.command == "explain":
+            payload = explain_payload(
+                Path(args.state_dir),
+                args.referent,
+                decisions_path=Path(args.identity_decisions),
+            )
+            if args.json:
+                _print_json(payload)
+            elif payload["status"] == "resolved":
+                print(f"subject: {payload['subject_kind']} ({payload['referent']!r})")
+                print(payload["explanation"])
+                for warning in payload.get("warnings") or []:
+                    print(warning)
+            elif payload["status"] == "ambiguous":
+                print(f"ambiguous {payload['referent']!r}: {payload['candidate_count']} candidates")
+                for candidate in payload["candidates"]:
+                    print(
+                        f"  {candidate['canonical_project_id']}\t{candidate['project_key']}\t"
+                        f"{candidate['display_name']}"
+                    )
+            else:
+                print(f"unresolved {payload['referent']!r}")
+            return {"resolved": 0, "ambiguous": 3, "unresolved": 4}[payload["status"]]
+
+        if args.command == "review":
+            if args.approve_candidates:
+                approval = approve_candidate_decisions(
+                    candidates_path=Path(args.candidates),
+                    decisions_path=Path(args.identity_decisions),
+                    decision_ids=args.decision_ids,
+                )
+                if args.json:
+                    _print_json(approval)
+                else:
+                    print(
+                        f"approved {approval['approved_count']} candidate decision(s) -> "
+                        f"{approval['decisions_path']} (total={approval['total_decisions']})"
+                    )
+                return 0
+
+            payload = review_payload(
+                Path(args.state_dir),
+                candidates_path=Path(args.candidates),
+                decisions_path=Path(args.identity_decisions),
+            )
+            if args.json:
+                _print_json(payload)
+            else:
+                print(f"open identity reviews: {payload['review_count']}")
+                for item in payload["items"]:
+                    print(f"  {item['review_id']}\t{item['code']}\t{item['severity']}\t{item['detail']}")
+                print(
+                    f"cross-project weak overlaps: {payload['untriaged_weak_overlap_count']} untriaged "
+                    f"(of {payload['weak_overlap_count']} total)"
+                )
+                print(
+                    f"frontier candidate decisions: {payload['pending_candidate_count']} pending approval "
+                    f"({payload['approved_candidate_count']} already approved)"
+                )
+            return 0
 
         manifest = load_manifest(Path(args.state_dir))
         if args.command == "orient":

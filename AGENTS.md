@@ -29,18 +29,18 @@ Target-state agents should normally orient through `ledger orient` / `state/syst
 
 ## Current state
 
-As of September 18, 2026:
+As of October 29, 2026:
 
-- `main` is product authority and contains the converged multi-source compatibility scanner plus the executable Wave 1 agent substrate.
+- `main` is product authority and contains the converged multi-source compatibility scanner plus the executable Wave 1/2/3 agent substrate and Reality Provider seam for `machina`, `homelab`, and `gbrain`.
 - preferred refresh is `python -m ledger refresh`; automation can use `--no-markdown-mirror`.
-- implemented agent commands are `validate`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, and `locate`.
-- generated Wave 1/2/3 state is `state/system-manifest.json`, `state/observations.json`, `state/canonical-projects.json`, `state/identity-evidence.json`, `state/review-queue.json`, and `state/projects/<canonical_project_id>.json`; `state/` is rebuildable and gitignored.
+- implemented agent commands are `validate`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, `locate`, `explain`, and `review`.
+- generated Wave 1/2/3 state is `state/system-manifest.json`, `state/observations.json`, `state/canonical-projects.json`, `state/canonical-projects.md`, `state/identity-evidence.json`, `state/review-queue.json`, and `state/projects/<canonical_project_id>.json`; `state/` is rebuildable and gitignored.
 - stable source IDs, compatibility snapshot IDs, manifestation-oriented observation IDs, source probes/health, explicit capability states, and degraded-source containment are implemented.
-- the first canonical identity slice is implemented: exact normalized repository remotes auto-merge; durable merge/split/reject/alias/canonical_key/supersede decisions are compiler inputs; canonical projects and identity review are materialized; `ledger resolve` is available.
-- the first Wave 3 read-plane slice (`P3.2`, `P3.4`, `P3.5`) is implemented: bounded project capsules (`state/projects/<canonical_project_id>.json` with a `16 KiB` size budget), explainable preferred-location resolution (`live > mirror > backup > inventory` with reason codes and confidence), `ledger show <project>`, and `ledger locate <project>`.
-- `explain`, `review`, structured session receipts/current-state resolution, and Project Ledger's semantic change feed are not implemented yet.
-- homelab owns the deployed reality-provider seam and consumes the non-mutating refresh contract; Project Ledger continues to own source/project schema and identity semantics.
-- the committed human ledger is historical evidence, not proof of current production freshness. A live provider proof on the intended homelab node has now been completed (2026-09-19, see `docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md`).
+- canonical identity is implemented: exact normalized repository remotes auto-merge; durable merge/split/reject/alias/canonical_key/supersede decisions are compiler inputs; canonical projects and identity review are materialized; `ledger resolve` is available.
+- the full Wave 3 read plane (`P3.1`–`P3.7`) is implemented: bounded project capsules (`state/projects/<canonical_project_id>.json` with a `16 KiB` size budget), explainable preferred-location resolution (`live > mirror > backup > inventory` with reason codes, confidence, and git working-tree drift warnings), GBrain source cross-linking (`gbrain_source_slug` and `gbrain` metadata), `ledger show <project>`, `ledger locate <project>`, `ledger explain <referent>`, `ledger review [--approve-candidates]`, and the human canonical ledger view (`state/canonical-projects.md`).
+- frontier zero-shot weak-overlap triage (`registry/weak-overlap-triage-candidates.json` + `ledger review --approve-candidates`) replaces the legacy Wave 5 custom local-LLM matcher plan; `machina` owns the Work Unit / Attempt / Receipt kernel (retiring the legacy Wave 4 competing receipt store), `homelab` owns worktree leases and the deployed reality-provider seam, and `gbrain` owns semantic/entity search.
+- Project Ledger's semantic change feed (`state/changes.json`, `ledger changes`) and incremental compilation are not implemented yet.
+- the committed human ledger is historical evidence, not proof of current production freshness. A live provider proof on the intended homelab node has now been completed (2026-09-19, see `docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md`), and post-`CONV-001` roots + weak-overlap triage candidates are captured on `ai-server`.
 
 The observation -> canonical identity boundary has now been crossed conservatively. Do not broaden automatic matching beyond exact remote identity without evidence/decision contracts. `CURRENT.md` is the canonical frontier pointer; the next software constraint is chosen only after live provider proof/synthesis.
 
@@ -86,12 +86,14 @@ python -m ledger sources
 python -m ledger resolve <referent>
 python -m ledger show <project>
 python -m ledger locate <project>
+python -m ledger explain <referent>
+python -m ledger review [--approve-candidates] [--decision-id ID]
 python -m unittest discover -s tests
 ```
 
 The compatibility entrypoint `python build_ledger.py` remains supported during migration.
 
-Commands such as `explain`, `review`, `changes`, and `record-session` remain unavailable until their stated gate lands. Consume the manifest capability map rather than inferring capability from prose.
+Commands such as `changes` remain unavailable until their stated gate lands (`machina` owns work-unit/attempt/receipt recording). Consume the manifest capability map rather than inferring capability from prose.
 
 ## Definition of done
 
