@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .capsules import locate_payload, show_payload
 from .changes import SUPPORTED_CHANGE_ENTITY_KINDS, changes_payload
+from .checkpoints import CHECKPOINT_FILENAME
 from .compiler import compile_state, load_manifest, orient_payload
 from .compat_contract import LedgerCompatError
 from .config import LedgerConfigError, describe_sources, read_config, validate_config
@@ -41,6 +42,11 @@ def _parser() -> argparse.ArgumentParser:
         "--no-markdown-mirror",
         action="store_true",
         help="Do not update docs/ledgers/projects-ledger.md; intended for external provider automation.",
+    )
+    refresh.add_argument(
+        "--full-scan",
+        action="store_true",
+        help="Bypass source checkpoint cache and force full extraction across all sources.",
     )
     refresh.add_argument("--json", action="store_true")
 
@@ -177,22 +183,30 @@ def main(argv: list[str] | None = None) -> int:
             repo_root = Path(__file__).resolve().parents[1]
             config_path = Path(args.config).resolve()
             output_dir = Path(args.output_dir).resolve()
+            checkpoint_path = Path(args.state_dir).resolve() / CHECKPOINT_FILENAME
             if args.no_markdown_mirror:
                 from .compat import scan_without_markdown_mirror
 
-                scan_without_markdown_mirror(config_path=config_path, output_dir=output_dir)
-            else:
-                scan = subprocess.run(
-                    [
-                        sys.executable,
-                        str(repo_root / "build_ledger.py"),
-                        "--config",
-                        str(config_path),
-                        "--output-dir",
-                        str(output_dir),
-                    ],
-                    check=False,
+                scan_without_markdown_mirror(
+                    config_path=config_path,
+                    output_dir=output_dir,
+                    checkpoint_path=checkpoint_path,
+                    full_scan=bool(args.full_scan),
                 )
+            else:
+                cmd = [
+                    sys.executable,
+                    str(repo_root / "build_ledger.py"),
+                    "--config",
+                    str(config_path),
+                    "--output-dir",
+                    str(output_dir),
+                    "--checkpoint-file",
+                    str(checkpoint_path),
+                ]
+                if args.full_scan:
+                    cmd.append("--full-scan")
+                scan = subprocess.run(cmd, check=False)
                 if scan.returncode != 0:
                     print(f"LEDGER_SCAN_FAILED: build_ledger.py exited {scan.returncode}", file=sys.stderr)
                     return scan.returncode or 2
@@ -451,6 +465,14 @@ def main(argv: list[str] | None = None) -> int:
                         f"change events: {payload['counts']['change_events']} "
                         f"(baseline={chg_meta.get('baseline_state', 'unknown')})"
                     )
+                cp_meta = payload.get("checkpoints")
+                if isinstance(cp_meta, dict) and cp_meta.get("state") in {"active", "bypassed"}:
+                    print(
+                        f"checkpoints: {cp_meta['state']} "
+                        f"(hits={cp_meta.get('hit_source_count', 0)}/{cp_meta.get('source_count', 0)}, "
+                        f"reused={cp_meta.get('reused_candidate_count', 0)}, "
+                        f"rebuilt={cp_meta.get('rebuilt_candidate_count', 0)})"
+                    )
                 print("available: " + ", ".join(payload["available_capabilities"]))
                 if payload["unavailable_capabilities"]:
                     print("not yet available: " + ", ".join(payload["unavailable_capabilities"]))
@@ -462,9 +484,10 @@ def main(argv: list[str] | None = None) -> int:
                 _print_json(sources)
             else:
                 for source in sources:
+                    cp_status = source.get("checkpoint_status", "not_applicable")
                     print(
                         f"{source['source_id']}\t{source['status']}\t{source['source_class']}\t"
-                        f"{source['label']}\t{source['path']}"
+                        f"{source['label']}\t{source['path']}\tcheckpoint={cp_status}"
                     )
             return 0
 

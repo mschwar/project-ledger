@@ -5,7 +5,13 @@ from pathlib import Path
 import build_ledger
 
 
-def scan_without_markdown_mirror(*, config_path: Path, output_dir: Path) -> dict[str, Path]:
+def scan_without_markdown_mirror(
+    *,
+    config_path: Path,
+    output_dir: Path,
+    checkpoint_path: Path | None = None,
+    full_scan: bool = False,
+) -> dict[str, Path]:
     """Run the compatibility scanner without mutating the repository mirror.
 
     External provider consumers need the same CSV/JSON/Markdown compatibility
@@ -16,7 +22,18 @@ def scan_without_markdown_mirror(*, config_path: Path, output_dir: Path) -> dict
     config_path = config_path.resolve()
     output_dir = build_ledger.ensure_output_dir(output_dir.resolve())
     config = build_ledger.read_json(config_path)
-    entries = build_ledger.collect_entries(config, config_path.parent, output_dir)
+    if checkpoint_path is not None:
+        from .checkpoints import collect_entries_incremental
+
+        entries, _ = collect_entries_incremental(
+            config,
+            config_path.parent,
+            output_dir,
+            checkpoint_path=checkpoint_path.resolve(),
+            bypass_cache=full_scan,
+        )
+    else:
+        entries = build_ledger.collect_entries(config, config_path.parent, output_dir)
     root_summaries = build_ledger.summarize_roots(config, config_path.parent)
 
     csv_path = output_dir / "projects.csv"

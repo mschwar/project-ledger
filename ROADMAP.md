@@ -244,13 +244,11 @@ Gate D exit (satisfied):
 2. **Cross-Linking `canonical_project_id` to `gbrain` Sources**:
    - Every canonical project in `state/canonical-projects.json` and `state/projects/<id>.json` maps to its registered `gbrain` source slug (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry`, or `default`) and `projects/<project_slug>` page key (`ledger/gbrain.py`), so resolving a project yields both deterministic git/filesystem truth (from Project Ledger) and semantic history/decisions (from GBrain).
 3. **Frontier Zero-Shot Triage on `cross_project_weak_overlaps`**:
-   - Replaces Wave 5's custom local-model deduplication pipeline with a single frontier agent pass over `state/identity-evidence.json` + repo READMEs, emitting a candidate decision batch (`registry/weak-overlap-triage-candidates.json`) inspectable via `ledger review` and promotable via one-click human approval (`ledger review --approve-candidates`). The initial 21 weak-overlap candidate pairs (33 durable decisions) were approved into `registry/identity-decisions.json` on 2026-10-30.
+   - Replaces Wave 5's custom local-model deduplication pipeline with a single frontier agent pass over `state/identity-evidence.json` + repo READMEs, emitting a candidate decision batch (`registry/weak-overlap-triage-candidates.json`) inspectable via `ledger review` and promotable via one-click human approval (`ledger review --approve-candidates`). Batch 1 (21 pairs / 33 durable decisions) was approved into `registry/identity-decisions.json` on 2026-10-30, and Batch 2 (29 candidate decisions covering all 19 remaining post-`CONV-001` weak overlaps) is queued for approval.
 4. **Semantic Change Feed (`P4.5`)**:
    - Materializes `state/changes.json` and bounded semantic run snapshots `state/runs/<run_id>.json` (`ledger changes [--since <run_id>] [--project <referent>]` and `ledger explain <chg_...>`) for estate-level delta reporting across refresh/compile runs without raw timestamp churn, preserving offline-source vs removed-project distinction.
-
-## Remaining Optional Future Slices
-
-- **Incremental source checkpointing (`P5.1`)**: skip unchanged source extraction when scan duration warrants it.
+5. **Incremental Source & Candidate Checkpointing (`P5.1`)**:
+   - Materializes `state/source-checkpoints.json` (`ledger/checkpoints.py`, `ledger refresh [--full-scan]`) with pure-Python `.git`, README, sidecar, bounded descendant-tree, and inventory fingerprints so unchanged candidates skip `git` subprocess bursts while preserving byte-identical compatibility entries.
 
 ---
 

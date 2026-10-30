@@ -157,6 +157,7 @@ class Wave1SubstrateTests(unittest.TestCase):
             self.assertIn("review_queue", orientation["available_capabilities"])
             self.assertIn("project_capsules", orientation["available_capabilities"])
             self.assertIn("change_feed", orientation["available_capabilities"])
+            self.assertIn("source_checkpoints", orientation["available_capabilities"])
             self.assertEqual(orientation["unavailable_capabilities"], [])
 
     def test_compat_snapshot_changes_when_observation_run_changes(self) -> None:

@@ -81,6 +81,16 @@ def parse_args() -> argparse.Namespace:
         default="output",
         help="Directory for generated CSV/JSON/Markdown outputs. Defaults to output/.",
     )
+    parser.add_argument(
+        "--checkpoint-file",
+        default=None,
+        help="Optional source checkpoint JSON path for incremental P5.1 extraction.",
+    )
+    parser.add_argument(
+        "--full-scan",
+        action="store_true",
+        help="Bypass source checkpoint cache and force full extraction when --checkpoint-file is set.",
+    )
     return parser.parse_args()
 
 
@@ -219,7 +229,19 @@ def main() -> int:
     config_path = resolve_path(args.config, script_dir)
     output_dir = ensure_output_dir(resolve_path(args.output_dir, script_dir))
     config = read_json(config_path)
-    entries = collect_entries(config, config_path.parent, output_dir)
+    if args.checkpoint_file:
+        from ledger.checkpoints import collect_entries_incremental
+
+        checkpoint_path = resolve_path(args.checkpoint_file, script_dir)
+        entries, _ = collect_entries_incremental(
+            config,
+            config_path.parent,
+            output_dir,
+            checkpoint_path=checkpoint_path,
+            bypass_cache=bool(args.full_scan),
+        )
+    else:
+        entries = collect_entries(config, config_path.parent, output_dir)
     root_summaries = summarize_roots(config, config_path.parent)
 
     csv_path = output_dir / "projects.csv"

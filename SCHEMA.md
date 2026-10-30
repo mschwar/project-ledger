@@ -97,6 +97,7 @@ IDENTITY_EVIDENCE_SCHEMA_VERSION    = 1.0.0
 REVIEW_QUEUE_SCHEMA_VERSION         = 1.0.0
 PROJECT_CAPSULE_SCHEMA_VERSION      = 1.0.0
 CHANGE_FEED_SCHEMA_VERSION          = 1.0.0
+SOURCE_CHECKPOINT_SCHEMA_VERSION    = 1.0.0
 ```
 
 Full compatibility/migration policy for these versions is still Gate B work. Unsupported future major versions must eventually fail/degrade explicitly rather than being guessed through.
@@ -134,6 +135,11 @@ content_as_of         nullable; authoritative upstream content timestamp
 content_as_of_basis   nullable; which upstream field supplied content_as_of
 probe_as_of           nullable current probe timestamp evidence
 probe_fingerprint
+checkpoint_status     hit | partial | miss | unavailable | bypassed | not_applicable
+checkpoint_fingerprint nullable adapter-native extraction checkpoint digest (P5.1)
+last_extracted_at     nullable ISO-8601 timestamp when extraction last executed
+reused_candidate_count
+rebuilt_candidate_count
 artifacts[]
 compat_snapshot_id
 compat_snapshot_as_of
@@ -273,6 +279,7 @@ config
 health
 counts
 changes
+checkpoints
 sources
 capabilities
 artifacts
@@ -325,13 +332,14 @@ Current available capabilities:
 - `compat_observations`
 - `typed_observations`
 - `source_health`
+- `source_checkpoints`
 - `canonical_projects`
 - `identity_evidence`
 - `project_capsules`
 - `review_queue`
 - `change_feed`
 
-All Wave 1–4 materialized view capabilities in `system-manifest.json` are now `available`. Agents must prefer this executable capability map over inference from design prose.
+All Wave 1–5 materialized view and incremental checkpoint capabilities in `system-manifest.json` are now `available`. Agents must prefer this executable capability map over inference from design prose.
 
 ## 1.5 New semantic state vocabulary
 
@@ -869,6 +877,29 @@ changes[]
 `ledger changes [--since <run_id>] [--project <referent>] [--entity-kind <kind>] [--change-type <code>] [--json]` queries the latest materialized feed or computes net multi-hop deltas since any retained `run_id` (`0` ok, `3` ambiguous project referent, `4` unresolved `--since` baseline or `--project` referent, `2` operational error). Individual `chg_...` IDs are also explainable via `ledger explain <change_id>`.
 
 The current review queue is identity-focused; broader current-state/schema review families remain later work.
+
+## Source checkpoints (P5.1)
+
+Generated during `ledger refresh` (or `build_ledger.py --checkpoint-file`):
+
+```text
+state/source-checkpoints.json
+```
+
+Envelope:
+
+```text
+schema_version          = SOURCE_CHECKPOINT_SCHEMA_VERSION (1.0.0)
+compiler_version
+updated_at
+config_digest
+output_dir
+mode                    incremental | bypassed
+summary                 source_count, hit_source_count, partial_source_count, miss_source_count, unavailable_source_count, bypassed_source_count, candidate_count, reused_candidate_count, rebuilt_candidate_count
+sources                 map of source_id -> per-source checkpoint & candidate cache
+```
+
+Unlike Wave 1's shallow `probe_fingerprint`, `checkpoint_fingerprint` hashes effective source/default configuration, pure-Python `.git` ref/HEAD/config state (including gitfile worktrees), `.obsidian` presence, `README` and sidecar bytes, and bounded descendant tree `(rel_path, st_mtime_ns, st_size)` state so unchanged candidates skip `git` subprocess bursts while preserving byte-identical compatibility entries. `ledger refresh --full-scan` bypasses and refreshes the checkpoint file.
 
 ---
 

@@ -8,8 +8,8 @@ Operate and extend Project Ledger safely while preserving its role as a project-
 
 ```bash
 python -m ledger validate
-python -m ledger refresh
-python -m ledger refresh --no-markdown-mirror
+python -m ledger refresh [--full-scan]
+python -m ledger refresh --no-markdown-mirror [--full-scan]
 python -m ledger compile
 python -m ledger orient
 python -m ledger sources
