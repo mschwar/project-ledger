@@ -30,12 +30,13 @@ registered sources
   -> gbrain source cross-linking (`gbrain_source_slug` + `gbrain` metadata on canonical projects and capsules)
   -> bounded project capsules at state/projects/<canonical_project_id>.json (P3.2)
   -> human canonical ledger view at state/canonical-projects.md (P3.7)
-  -> frontier zero-shot weak-overlap triage candidates (`registry/weak-overlap-triage-candidates.json` + `ledger review --approve-candidates`)
+  -> frontier zero-shot weak-overlap triage candidates (`registry/weak-overlap-triage-candidates.json` + `ledger review --approve-candidates`, initial 21 overlaps / 33 decisions approved into `registry/identity-decisions.json`)
+  -> Wave 4 semantic change feed (`state/changes.json` + bounded `state/runs/<run_id>.json` + `ledger changes`, P4.5)
   -> system manifest
-  -> ledger orient / ledger resolve / ledger show / ledger locate / ledger explain / ledger review / ledger sources
+  -> ledger orient / ledger resolve / ledger show / ledger locate / ledger explain / ledger review / ledger changes / ledger sources
 ```
 
-This crosses the **estate observation/orientation** boundary, the **conceptual project identity** boundary, the full **Wave 3 agent read-plane** boundary (`P3.1`–`P3.7`), and the **Reality Provider seam** for `machina`, `homelab`, and `gbrain`.
+This crosses the **estate observation/orientation** boundary, the **conceptual project identity** boundary, the full **Wave 3 agent read-plane** boundary (`P3.1`–`P3.7`), the **Wave 4 semantic change-feed** boundary (`P4.5`), and the **Reality Provider seam** for `machina`, `homelab`, and `gbrain`.
 
 Identity is deliberately conservative:
 
@@ -102,14 +103,14 @@ The **Wave 3 agent read plane (`P3.1`–`P3.7`) and Reality Provider seam (`P4.1
 - `ledger resolve <referent>`, `ledger locate <project>`, and `ledger show <project>` return the authoritative checkout path (`preferred_location.path`), `gbrain_source_slug` / `gbrain` cross-links (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry`, `default`, with `/central/registry/mirrors/` excluded), and explicit git working-tree drift warnings (`GIT_BEHIND_UPSTREAM`, `GIT_MAIN_BEHIND_ORIGIN`, `GIT_AHEAD_OF_UPSTREAM`, `GIT_DETACHED_HEAD`, `GIT_DIRTY_WORKTREE`).
 - `ledger explain <referent>` (`P3.6`) returns full provenance across canonical projects, observations, review items, and identity decisions.
 - `state/canonical-projects.md` (`P3.7`) provides a human-auditable canonical ledger view with preferred locations, GBrain sources, git drift warnings, and expandable multi-manifestation provenance.
-- `ledger review` and `registry/weak-overlap-triage-candidates.json` (`P5.1`–`P5.3`) replace Wave 5's legacy custom local-LLM deduplication pipeline with a frontier zero-shot triage batch covering all 21 live `cross_project_weak_overlaps` for one-click human approval (`ledger review --approve-candidates`).
+- `ledger review` and `registry/weak-overlap-triage-candidates.json` (`P5.1`–`P5.3`) replace Wave 5's legacy custom local-LLM deduplication pipeline with a frontier zero-shot triage batch; the 21 queued weak-overlap pairs (33 durable `merge`, `canonical_key`, and `reject_match` decisions) have been approved into `registry/identity-decisions.json` (36 total decisions).
+- `state/changes.json`, bounded run snapshots at `state/runs/<run_id>.json` (`RUN_HISTORY_MAX_RUNS = 50`), and `ledger changes [--since <run_id>] [--project <referent>] [--entity-kind <kind>] [--change-type <code>]` (`P4.5`) provide zero-churn semantic estate deltas across runs (distinguishing `PROJECT_MERGED`, `PROJECT_SPLIT`, `PROJECT_REANCHORED`, and `PROJECT_UNAVAILABLE` from `PROJECT_ADDED` / `PROJECT_REMOVED`), and `ledger explain <change_id>` explains individual change events.
 - Competing session-receipt storage (originally Wave 4) is retired in favor of `machina` (which owns Work Unit / Attempt / Receipt kernel state) and `homelab` (which owns worktree leases).
 
 Still not implemented:
 
 ```text
-semantic change feed (state/changes.json + ledger changes)
- -> incremental compilation
+incremental source checkpointing / selective recompilation (P5.1)
 ```
 
 ## Current commands
@@ -126,6 +127,7 @@ python -m ledger show <project>
 python -m ledger locate <project>
 python -m ledger explain <referent>
 python -m ledger review [--approve-candidates] [--decision-id ID]
+python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
 python -m unittest discover -s tests
 ```
 

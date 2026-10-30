@@ -367,14 +367,19 @@ actions to the two paths that actually clear (`merge`, `canonical_key`). See
 
 - `ledger/gbrain.py` maps each canonical project in `state/canonical-projects.json` and `state/projects/<id>.json` to its registered `ai-server` GBrain source slug (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry`, or `default`) and `projects/<project_slug>` page key.
 
-## Frontier Zero-Shot Triage on `cross_project_weak_overlaps` (Complete — 2026-10-29)
+## Frontier Zero-Shot Triage on `cross_project_weak_overlaps` (Complete — 2026-10-30)
 
 - `ledger/triage.py` and `ledger review [--approve-candidates]` replace Wave 5's local-LLM matcher.
-- `registry/weak-overlap-triage-candidates.json` contains 33 frontier-triaged candidate decisions (`merge`, `reject_match`, and companion `canonical_key` decisions) covering all 21 `cross_project_weak_overlaps` in `state/identity-evidence.json`, ready for one-click human approval via `python3 -m ledger review --approve-candidates`.
+- `registry/weak-overlap-triage-candidates.json` contained 33 frontier-triaged candidate decisions (`merge`, `reject_match`, and companion `canonical_key` decisions) covering the initial 21 `cross_project_weak_overlaps`; all 33 candidate decisions were approved and promoted into `registry/identity-decisions.json` on 2026-10-30 (total 36 durable identity decisions, consolidating live canonical projects `207 -> 190`).
+
+## P4.5 Semantic change feed (Complete — 2026-10-30)
+
+- Implemented in `ledger/changes.py` and wired into `compile_state`, `orient`, `explain`, and `ledger changes`.
+- Materializes `state/changes.json` (`CHANGE_FEED_SCHEMA_VERSION = "1.0.0"`) plus a bounded compact semantic run-history ring buffer at `state/runs/<run_id>.json` (`RUN_HISTORY_MAX_RUNS = 50`), automatically backfilling pre-Wave-4 `state/` artifacts prior to overwrite.
+- Supports `ledger changes [--since <run_id>] [--project <referent>] [--entity-kind <kind>] [--change-type <code>] [--json]` and `ledger explain <chg_...>`, suppressing raw `scan_time`/mtime churn while distinguishing `PROJECT_UNAVAILABLE`/`OBSERVATION_UNAVAILABLE` (offline source) from `PROJECT_REMOVED`/`OBSERVATION_REMOVED`.
 
 ## Remaining Optional Future Backlog
 
-- **P4.5 Semantic change feed**: `state/changes.json` and `ledger changes --since <run_id>` for estate-level delta reporting between trusted runs.
 - **P5.1 Source fingerprint/checkpoint cache**: skip unchanged source extraction when scan duration warrants it.
 
 ---

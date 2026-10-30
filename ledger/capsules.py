@@ -583,6 +583,7 @@ def build_project_capsule(
                 "observations_path": str(state_dir / "observations.json"),
                 "identity_evidence_path": str(state_dir / "identity-evidence.json"),
                 "review_queue_path": str(state_dir / "review-queue.json"),
+                "change_feed_path": str(state_dir / "changes.json"),
                 "observation_ids": list(project.get("observation_ids", [])),
                 "merge_decision_ids": list(project.get("merge_decision_ids", [])),
                 "canonical_key_decision_id": project.get("canonical_key_decision_id"),
