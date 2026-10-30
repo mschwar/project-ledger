@@ -371,7 +371,7 @@ actions to the two paths that actually clear (`merge`, `canonical_key`). See
 
 - `ledger/triage.py` and `ledger review [--approve-candidates]` replace Wave 5's local-LLM matcher.
 - Batch 1 (`registry/weak-overlap-triage-candidates.json`): 33 frontier-triaged candidate decisions covering the initial 21 `cross_project_weak_overlaps` were approved into `registry/identity-decisions.json` on 2026-10-30 (`207 -> 190` canonical projects).
-- Batch 2 (`registry/weak-overlap-triage-candidates.json`): 29 frontier-triaged candidate decisions (`merge`, `reject_match`, and companion `canonical_key` decisions) covering all 19 remaining post-`CONV-001` weak overlaps are queued and validated for one-click approval via `python3 -m ledger review --approve-candidates`.
+- Batch 2 (`registry/weak-overlap-triage-candidates.json`): 29 frontier-triaged candidate decisions (`merge`, `reject_match`, and companion `canonical_key` decisions) covering all 19 remaining post-`CONV-001` weak overlaps were approved into `registry/identity-decisions.json` on 2026-10-30 (`190 -> 176` canonical projects, `65` total active decisions, `0` open identity reviews, and `0` untriaged weak overlaps).
 
 ## P4.5 Semantic change feed (Complete — 2026-10-30)
 
