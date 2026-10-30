@@ -337,7 +337,7 @@ actions to the two paths that actually clear (`merge`, `canonical_key`). See
 
 ## P3.5 Preferred-location resolver + locate command
 
-**Complete (2026-10-29).** `rank_project_observations` and `ledger locate <project> [--state-dir DIR] [--json]` rank observations deterministically using accessibility (`ACCESSIBLE_SOURCE` vs `INVENTORY_ONLY_LOCATOR` / `SOURCE_UNAVAILABLE`), source class (`live` > `mirror` > `backup` > `inventory`), canonical remote match (`CANONICAL_REMOTE_MATCH`), recent session continuity (`RECENT_SESSION_EVIDENCE`), git commit/branch state (`GIT_WORKTREE`, `PRIMARY_BRANCH`), primary active root (`PRIMARY_ACTIVE_ROOT`), and upstream content freshness (`FRESH_REMOTE_REF`, `FRESH_GIT_COMMIT`, `FRESH_FILESYSTEM_TOUCH`), and surface live git upstream drift warnings (`GIT_BEHIND_UPSTREAM`, `GIT_MAIN_BEHIND_ORIGIN`, `GIT_AHEAD_OF_UPSTREAM`, `GIT_DIRTY_WORKTREE`).
+**Complete (2026-10-30).** `rank_project_observations` and `ledger locate <project> [--state-dir DIR] [--json]` rank observations deterministically using accessibility (`ACCESSIBLE_SOURCE` vs `INVENTORY_ONLY_LOCATOR` / `SOURCE_UNAVAILABLE`), source class (`live` > `mirror` > `backup` > `inventory`), canonical remote match (`CANONICAL_REMOTE_MATCH`), recent session continuity (`RECENT_SESSION_EVIDENCE`), git worktree presence (`GIT_WORKTREE`), primary active root (`PRIMARY_ACTIVE_ROOT`), upstream content freshness (`FRESH_REMOTE_REF`, `FRESH_GIT_COMMIT`, `FRESH_FILESYSTEM_TOUCH`), and primary-branch tie-breaking (`PRIMARY_BRANCH`), and surface live git upstream drift warnings (`GIT_BEHIND_UPSTREAM`, `GIT_MAIN_BEHIND_ORIGIN`, `GIT_AHEAD_OF_UPSTREAM`, `GIT_DIRTY_WORKTREE`).
 
 ## P3.6 Explain command
 

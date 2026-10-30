@@ -203,9 +203,9 @@ def rank_project_observations(
             -int(has_session),
             -session_epoch,
             -int(has_git_commit),
-            -int(primary_branch),
             -int(primary_active_root),
             -content_epoch,
+            -int(primary_branch),
             obs_id,
         )
 

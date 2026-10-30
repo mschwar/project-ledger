@@ -750,6 +750,8 @@ class SemanticChangeFeedTests(unittest.TestCase):
                 )
                 prev = snap
             self.assertEqual(payload["available_run_ids"], ["run_seq_2", "run_seq_3", "run_seq_4"])
+            self.assertEqual(payload["review_count"], 0)
+            self.assertEqual(payload["untriaged_weak_overlap_count"], 0)
             retained_files = sorted(p.name for p in (state_dir / "runs").glob("*.json"))
             self.assertEqual(
                 retained_files,
