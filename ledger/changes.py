@@ -731,6 +731,10 @@ def diff_run_snapshots(
             "previous_compiled_at": None,
             "previous_input_observed_at": None,
             "change_count": 0,
+            "review_count": int((current.get("counts") or {}).get("review_items", 0) or 0),
+            "untriaged_weak_overlap_count": int(
+                (current.get("counts") or {}).get("untriaged_weak_overlaps", 0) or 0
+            ),
             "summary": {
                 "by_entity_kind": {},
                 "by_change_type": {},
@@ -760,6 +764,10 @@ def diff_run_snapshots(
             "previous_compiled_at": previous.get("compiled_at"),
             "previous_input_observed_at": previous.get("input_observed_at"),
             "change_count": 0,
+            "review_count": int((current.get("counts") or {}).get("review_items", 0) or 0),
+            "untriaged_weak_overlap_count": int(
+                (current.get("counts") or {}).get("untriaged_weak_overlaps", 0) or 0
+            ),
             "summary": {
                 "by_entity_kind": {},
                 "by_change_type": {},
@@ -1447,6 +1455,10 @@ def diff_run_snapshots(
         "previous_compiled_at": previous.get("compiled_at"),
         "previous_input_observed_at": previous.get("input_observed_at"),
         "change_count": len(events),
+        "review_count": int((current.get("counts") or {}).get("review_items", 0) or 0),
+        "untriaged_weak_overlap_count": int(
+            (current.get("counts") or {}).get("untriaged_weak_overlaps", 0) or 0
+        ),
         "summary": {
             "by_entity_kind": dict(sorted(by_entity_kind.items())),
             "by_change_type": dict(sorted(by_change_type.items())),

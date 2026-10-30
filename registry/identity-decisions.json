@@ -662,6 +662,118 @@
       "observation_id": "obs_f80eddc0612dc7f9f2d938d2",
       "rationale": "Select post-rename authoritative repository key github.com/mschwar/gamma-steamdb over github.com/mschwar/steam-db-mattified.",
       "type": "canonical_key"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_supersede_gbrain_merge_20261030",
+      "rationale": "Supersede dec_triage_gbrain_merge_20261029 after archiving redundant secondary checkouts /central/repos/agent-tooling/gbrain-candidate and /central/repos/agent-tooling/gbrain-master to /central/archive/batch2-retired-checkouts-20261030/.",
+      "supersedes_decision_id": "dec_triage_gbrain_merge_20261029",
+      "type": "supersede"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_supersede_gbrain_key_20261030",
+      "rationale": "Supersede dec_triage_gbrain_key_20261029 after archiving gbrain-candidate; replaced by dec_retire_gbrain_key_20261030 on canonical checkout /central/repos/agent-tooling/gbrain.",
+      "supersedes_decision_id": "dec_triage_gbrain_key_20261029",
+      "type": "supersede"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_supersede_gbrain_fork_merge_20261030",
+      "rationale": "Supersede dec_triage_gbrain_fork_merge_20261030 after archiving gbrain-candidate and gbrain-master; /central/repos/agent-tooling/gbrain is now the sole live checkout.",
+      "supersedes_decision_id": "dec_triage_gbrain_fork_merge_20261030",
+      "type": "supersede"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_gbrain_key_20261030",
+      "key": "gbrain",
+      "observation_id": "obs_f3592d156806752ed9defd52",
+      "rationale": "Retain canonical key gbrain anchored to surviving canonical checkout /central/repos/agent-tooling/gbrain.",
+      "type": "canonical_key"
+    },
+    {
+      "alias": "github.com/garrytan/gbrain",
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_gbrain_upstream_alias_20261030",
+      "observation_id": "obs_f3592d156806752ed9defd52",
+      "rationale": "Preserve upstream remote referent github.com/garrytan/gbrain as an approved alias after archiving gbrain-candidate.",
+      "type": "alias"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_supersede_song_clean_merge_20261030",
+      "rationale": "Supersede dec_triage_song_clean_merge_20261029 after archiving empty stub /central/projects/song-clean to /central/archive/batch2-retired-checkouts-20261030/.",
+      "supersedes_decision_id": "dec_triage_song_clean_merge_20261029",
+      "type": "supersede"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_supersede_song_clean_key_20261030",
+      "rationale": "Supersede dec_triage_song_clean_key_20261029 after archiving /central/projects/song-clean; replaced by dec_retire_song_clean_key_20261030 on /central/repos/apps/song-clean.",
+      "supersedes_decision_id": "dec_triage_song_clean_key_20261029",
+      "type": "supersede"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_supersede_song_clean_apps_merge_20261030",
+      "rationale": "Supersede 3-way dec_triage_song_clean_apps_merge_20261030 after archiving /central/projects/song-clean; replaced by 2-way dec_retire_song_clean_merge_20261030.",
+      "supersedes_decision_id": "dec_triage_song_clean_apps_merge_20261030",
+      "type": "supersede"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_song_clean_merge_20261030",
+      "observation_ids": [
+        "obs_84e116b893245d4e427f442d",
+        "obs_a71c0864d1426f490084f947"
+      ],
+      "rationale": "Unify surviving canonical checkout /central/repos/apps/song-clean and matty-pc:song-clean after archiving empty stub /central/projects/song-clean.",
+      "type": "merge"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_song_clean_key_20261030",
+      "key": "song-clean",
+      "observation_id": "obs_84e116b893245d4e427f442d",
+      "rationale": "Retain canonical key song-clean anchored to /central/repos/apps/song-clean.",
+      "type": "canonical_key"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_supersede_gamma_steamdb_merge_20261030",
+      "rationale": "Supersede dec_triage_gamma_steamdb_merge_20261030 after archiving pre-rename checkout /central/repos/apps/steam-db-mattified to /central/archive/batch2-retired-checkouts-20261030/.",
+      "supersedes_decision_id": "dec_triage_gamma_steamdb_merge_20261030",
+      "type": "supersede"
+    },
+    {
+      "authority": "operator",
+      "alias": "steam-db-mattified",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_gamma_steamdb_legacy_alias_20261030",
+      "observation_id": "obs_f80eddc0612dc7f9f2d938d2",
+      "rationale": "Preserve legacy pre-rename name steam-db-mattified as an approved alias for /central/repos/active/gamma-steamdb.",
+      "type": "alias"
+    },
+    {
+      "authority": "operator",
+      "alias": "github.com/mschwar/steam-db-mattified",
+      "decided_at": "2026-10-30T16:10:00Z",
+      "decision_id": "dec_retire_gamma_steamdb_legacy_remote_alias_20261030",
+      "observation_id": "obs_f80eddc0612dc7f9f2d938d2",
+      "rationale": "Preserve legacy pre-rename repository key github.com/mschwar/steam-db-mattified as an approved alias for /central/repos/active/gamma-steamdb.",
+      "type": "alias"
     }
   ],
   "schema_version": "1.0.0"

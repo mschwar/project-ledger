@@ -214,6 +214,79 @@ class PreferredLocationResolverTests(unittest.TestCase):
         self.assertEqual(preferred["confidence"], "low")
         self.assertIn("INVENTORY_ONLY_LOCATOR", preferred["reason_codes"])
 
+    def test_primary_active_root_on_worker_branch_outranks_idle_secondary_primary_branch(self) -> None:
+        frozen_secondary = _obs(
+            "obs-secondary-apps",
+            source_id="central-apps",
+            source_label="central-apps",
+            path="/central/repos/apps/steam-db-mattified",
+            remote_url="https://github.com/mschwar/gamma-steamdb.git",
+            head_branch="master",
+            head_commit="f3eca62",
+            head_commit_at="2026-08-23T13:52:11-06:00",
+            last_remote_ref_at="2026-08-23T13:52:11-06:00",
+            last_touch_at="2026-08-23T13:52:11-06:00",
+        )
+        active_worker = _obs(
+            "obs-active-gamma",
+            source_id="central-active",
+            source_label="central-active",
+            path="/central/repos/active/gamma-steamdb",
+            remote_url="https://github.com/mschwar/gamma-steamdb.git",
+            head_branch="c007/C007-W001-U01-machina-thin-waist",
+            head_commit="3006a90",
+            head_commit_at="2026-10-30T15:50:48+00:00",
+            last_remote_ref_at="2026-10-30T15:50:48+00:00",
+            last_touch_at="2026-10-30T15:50:48+00:00",
+        )
+        observations = [frozen_secondary, active_worker]
+        canonical, _ = compile_identity(observations, {"schema_version": "1.0.0", "decisions": []})
+        project = canonical["projects"][0]
+        sources_by_id = {
+            "central-apps": {"source_id": "central-apps", "source_class": "live", "status": "available"},
+            "central-active": {"source_id": "central-active", "source_class": "live", "status": "available"},
+        }
+        ranked, preferred = rank_project_observations(
+            project,
+            {o["observation_id"]: o for o in observations},
+            sources_by_id=sources_by_id,
+        )
+        self.assertEqual([item["observation_id"] for item in ranked], ["obs-active-gamma", "obs-secondary-apps"])
+        self.assertEqual(preferred["observation_id"], "obs-active-gamma")
+        self.assertIn("PRIMARY_ACTIVE_ROOT", preferred["reason_codes"])
+        self.assertNotIn("PRIMARY_BRANCH", preferred["reason_codes"])
+
+    def test_recent_content_as_of_outranks_stale_primary_branch_between_secondary_roots(self) -> None:
+        stale_main = _obs(
+            "obs-stale-main",
+            source_id="central-projects",
+            source_label="central-projects",
+            path="/central/projects/service",
+            head_branch="main",
+            last_remote_ref_at="2026-05-01T00:00:00Z",
+        )
+        fresh_branch = _obs(
+            "obs-fresh-branch",
+            source_id="central-apps",
+            source_label="central-apps",
+            path="/central/repos/apps/service",
+            head_branch="feat/worker-slice",
+            last_remote_ref_at="2026-10-30T00:00:00Z",
+        )
+        observations = [stale_main, fresh_branch]
+        canonical, _ = compile_identity(observations, {"schema_version": "1.0.0", "decisions": []})
+        project = canonical["projects"][0]
+        sources_by_id = {
+            "central-projects": {"source_id": "central-projects", "source_class": "live", "status": "available"},
+            "central-apps": {"source_id": "central-apps", "source_class": "live", "status": "available"},
+        }
+        _, preferred = rank_project_observations(
+            project,
+            {o["observation_id"]: o for o in observations},
+            sources_by_id=sources_by_id,
+        )
+        self.assertEqual(preferred["observation_id"], "obs-fresh-branch")
+
 
 class CapsuleBudgetAndMaterializationTests(unittest.TestCase):
     def test_capsule_enforces_size_and_observation_summary_budget(self) -> None:
