@@ -68,6 +68,7 @@ def explain_payload(
     observations_payload = _load_json_if_exists(state_dir / "observations.json") or {
         "observations": []
     }
+    changes_payload = _load_json_if_exists(state_dir / "changes.json") or {"changes": []}
     if decisions_path is not None and decisions_path.is_file():
         decisions_payload = load_identity_decisions(decisions_path)
     else:
@@ -85,7 +86,25 @@ def explain_payload(
         for obs_id in project.get("observation_ids", []):
             obs_to_project[obs_id] = project
 
-    # 1. Exact review_id match (`rev_...`)
+    # 1. Exact change_id match (`chg_...`)
+    for change in changes_payload.get("changes", []):
+        if str(change.get("change_id", "")).casefold() == query.casefold():
+            return {
+                "status": "resolved",
+                "subject_kind": "change_event",
+                "referent": query,
+                "compiler_version": COMPILER_VERSION,
+                "change": change,
+                "explanation": (
+                    f"Change {change['change_id']} ({change['change_type']}, "
+                    f"entity={change['entity_kind']}:{change['entity_id']}, "
+                    f"severity={change.get('severity')}, materiality={change.get('materiality')}) "
+                    f"between {change.get('previous_run_id')} and {change.get('run_id')}: "
+                    f"{change.get('summary')}"
+                ),
+            }
+
+    # 2. Exact review_id match (`rev_...`)
     for review in reviews_payload.get("items", []):
         if str(review.get("review_id", "")).casefold() == query.casefold():
             affected_projects = sorted(

@@ -5,10 +5,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from . import COMPAT_FLAT_SCHEMA_VERSION, COMPILER_VERSION, MANIFEST_SCHEMA_VERSION, OBSERVATION_SCHEMA_VERSION
+from .changes import build_run_snapshot, capture_pre_compile_baseline, materialize_changes
 from .compat_contract import check_compat_schema
 from .config import describe_sources, read_config, validate_config
 from .contracts import SOURCE_RESULT_STATES, capability
-from .ids import digest_json, observation_id_for, stable_id
+from .ids import digest_json, observation_id_for, path_digest, stable_id
 from .identity import materialize_identity
 
 
@@ -143,7 +144,21 @@ def compile_state(
     compiled_at = generated_at or now_utc()
     observed_at = str(compat.get("generated_at") or compiled_at)
     config_digest = digest_json(config)
-    run_id = stable_id("run", compiled_at, config_digest, str(compat_output_path))
+    compat_digest = path_digest(compat_output_path)
+    decisions_digest = (
+        path_digest(identity_decisions_path.resolve())
+        if identity_decisions_path is not None and identity_decisions_path.is_file()
+        else "none"
+    )
+    run_id = stable_id(
+        "run",
+        compiled_at,
+        config_digest,
+        str(compat_output_path),
+        compat_digest,
+        decisions_digest,
+    )
+    previous_snapshot = capture_pre_compile_baseline(state_dir, current_run_id=run_id)
 
     sources = describe_sources(config, config_path.parent)
     snapshot_id_by_source: dict[str, str] = {}
@@ -247,7 +262,33 @@ def compile_state(
     capsules_dir = state_dir / "projects"
     review_path = state_dir / "review-queue.json"
     evidence_path = state_dir / "identity-evidence.json"
+    changes_path = state_dir / "changes.json"
     evidence_payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+
+    capsules_by_id: dict[str, dict] = {}
+    for proj in canonical_payload.get("projects", []):
+        pid = proj["canonical_project_id"]
+        cap_file = capsules_dir / f"{pid}.json"
+        if cap_file.is_file():
+            capsules_by_id[pid] = json.loads(cap_file.read_text(encoding="utf-8"))
+
+    current_snapshot = build_run_snapshot(
+        run_id=run_id,
+        compiled_at=compiled_at,
+        input_observed_at=observed_at,
+        health_state=health_state,
+        sources=sources,
+        observations=observations,
+        canonical_projects=canonical_payload.get("projects", []),
+        review_items=review_payload.get("items", []),
+        cross_project_weak_overlaps=evidence_payload.get("cross_project_weak_overlaps", []),
+        capsules_by_id=capsules_by_id,
+    )
+    change_feed_payload = materialize_changes(
+        previous_snapshot=previous_snapshot,
+        current_snapshot=current_snapshot,
+        state_dir=state_dir,
+    )
 
     manifest = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
@@ -273,6 +314,14 @@ def compile_state(
             "project_capsules": canonical_payload["canonical_project_count"],
             "identity_evidence": evidence_payload["identity_evidence_count"],
             "review_items": review_payload["review_count"],
+            "change_events": change_feed_payload["change_count"],
+        },
+        "changes": {
+            "baseline_state": change_feed_payload["baseline_state"],
+            "previous_run_id": change_feed_payload["previous_run_id"],
+            "change_count": change_feed_payload["change_count"],
+            "by_change_type": change_feed_payload["summary"]["by_change_type"],
+            "by_severity": change_feed_payload["summary"]["by_severity"],
         },
         "sources": sources,
         "capabilities": {
@@ -283,11 +332,7 @@ def compile_state(
             "identity_evidence": capability("available"),
             "project_capsules": capability("available"),
             "review_queue": capability("available"),
-            "change_feed": capability(
-                "unavailable",
-                reason_code="WAVE4_NOT_IMPLEMENTED",
-                detail="Historical semantic change feed is not implemented yet.",
-            ),
+            "change_feed": capability("available"),
         },
         "artifacts": {
             "compat_observations": str(compat_output_path),
@@ -297,6 +342,7 @@ def compile_state(
             "project_capsules": str(capsules_dir),
             "identity_evidence": str(evidence_path),
             "review_queue": str(review_path),
+            "change_feed": str(changes_path),
             "system_manifest": str(manifest_path),
         },
         "limitations": [
@@ -335,6 +381,7 @@ def orient_payload(manifest: dict) -> dict:
         "input_observed_at": manifest.get("input_observed_at"),
         "health": manifest.get("health"),
         "counts": manifest.get("counts"),
+        "changes": manifest.get("changes"),
         "available_capabilities": sorted(available),
         "unavailable_capabilities": sorted(unavailable),
     }

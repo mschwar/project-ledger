@@ -28,17 +28,19 @@ The `ledger/` package now adds:
 ```text
 compatibility observations
  -> stable source/snapshot/observation identity
- -> source probes/health
+ -> source probes/health + git working-tree drift
  -> typed observations
- -> exact normalized remote identity + durable identity decisions
- -> canonical projects + review queue
+ -> exact normalized remote identity + durable identity decisions + frontier zero-shot triage
+ -> canonical projects + review queue + GBrain cross-links
+ -> bounded project capsules + preferred-location resolution + human canonical view
+ -> semantic run snapshots (state/runs/) + semantic change feed (state/changes.json)
  -> system manifest
- -> ledger orient / ledger sources / ledger resolve
+ -> ledger orient / sources / resolve / show / locate / explain / review / changes
 ```
 
 The identity layer is intentionally conservative. Exact normalized repository remote is the only automatic merge rule. Names/project-key hints are referents, not identity authority. Explicit committed decisions can merge/split/reject/alias, assign a canonical human key, and supersede a prior decision.
 
-Still absent: project capsules, preferred-location/current-state resolution, receipts, semantic change feed, and incremental compilation.
+Still absent: incremental source checkpointing (`P5.1`); work-unit/attempt/session receipts are owned by `machina`.
 
 The next architecture constraint must be selected after the live provider proof rather than inferred from roadmap order.
 

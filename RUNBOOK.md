@@ -14,14 +14,19 @@ python -m ledger compile
 python -m ledger orient
 python -m ledger sources
 python -m ledger resolve <referent>
+python -m ledger show <project>
+python -m ledger locate <project>
+python -m ledger explain <referent>
+python -m ledger review [--approve-candidates] [--decision-id ID]
+python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
 python -m unittest discover -s tests
 ```
 
 The compatibility scanner remains directly available as `python build_ledger.py`.
 
-Implemented today: `validate`, `refresh`, `compile`, `orient`, `sources`, and exact `resolve`.
+Implemented today: `validate`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, `locate`, `explain`, `review`, and `changes`.
 
-Not yet implemented: `show`, `locate`, `explain`, `review`, `changes`, and `record-session`. The manifest capability map is the executable source of truth.
+Session/attempt receipts are owned by `machina` (Project Ledger does not expose a competing `record-session` store). The manifest capability map is the executable source of truth.
 
 ## Authority rule
 
@@ -53,16 +58,17 @@ For system-development work:
 3. `AGENT_PROTOCOL.md`;
 4. only the task-relevant architecture/schema/runbook/roadmap sections.
 
-The intended later project-level path remains:
+The project-level read path is:
 
 ```text
 ledger orient
  -> ledger resolve <referent>
  -> ledger show <canonical project>
  -> ledger locate <canonical project>
+ -> ledger changes [--since <run_id>] [--project <canonical project>]
 ```
 
-`orient` and exact `resolve` exist today. `show` and `locate` do not; do not invent them from design prose.
+All five agent read commands (`orient`, `resolve`, `show`, `locate`, and `changes`), plus `sources`, `explain`, and `review`, exist today.
 
 A real-source refresh must always be qualified by the sources actually accessible in that run. Code freshness and ledger-data freshness are separate facts.
 

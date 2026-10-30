@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from .capsules import locate_payload, show_payload
+from .changes import SUPPORTED_CHANGE_ENTITY_KINDS, changes_payload
 from .compiler import compile_state, load_manifest, orient_payload
 from .compat_contract import LedgerCompatError
 from .config import LedgerConfigError, describe_sources, read_config, validate_config
@@ -103,6 +104,36 @@ def _parser() -> argparse.ArgumentParser:
         help="Optional candidate decision_id(s) to approve selectively with --approve-candidates.",
     )
     review.add_argument("--json", action="store_true")
+
+    changes = sub.add_parser(
+        "changes",
+        help="Inspect semantic estate changes since the previous or a specified compiled run.",
+    )
+    changes.add_argument("--state-dir", default="state")
+    changes.add_argument(
+        "--since",
+        default=None,
+        dest="since_run_id",
+        help="Optional historical run_id baseline to diff against current state.",
+    )
+    changes.add_argument(
+        "--project",
+        default=None,
+        dest="project_referent",
+        help="Optional canonical project referent (or historical project ID/key) to filter changes.",
+    )
+    changes.add_argument(
+        "--entity-kind",
+        default=None,
+        choices=sorted(SUPPORTED_CHANGE_ENTITY_KINDS),
+        help="Optional entity_kind filter.",
+    )
+    changes.add_argument(
+        "--change-type",
+        default=None,
+        help="Optional change_type code filter (e.g. PROJECT_MERGED, PROJECT_GIT_DRIFT_CHANGED).",
+    )
+    changes.add_argument("--json", action="store_true")
     return parser
 
 
@@ -344,6 +375,58 @@ def main(argv: list[str] | None = None) -> int:
                 )
             return 0
 
+        if args.command == "changes":
+            payload = changes_payload(
+                Path(args.state_dir),
+                since_run_id=args.since_run_id,
+                project_referent=args.project_referent,
+                entity_kind=args.entity_kind,
+                change_type=args.change_type,
+            )
+            status = payload.get("status", "ok")
+            if args.json:
+                _print_json(payload)
+            elif status == "ok":
+                print(f"run: {payload['run_id']} (compiled {payload.get('compiled_at')})")
+                print(
+                    f"baseline: {payload.get('previous_run_id') or 'none'} "
+                    f"({payload.get('baseline_state')})"
+                )
+                print(f"changes: {payload['change_count']}")
+                deltas = (payload.get("summary") or {}).get("count_deltas") or {}
+                non_zero_deltas = [
+                    f"{k} {v['before']} -> {v['after']} ({v['delta']:+d})"
+                    for k, v in deltas.items()
+                    if isinstance(v.get("delta"), int) and v["delta"] != 0
+                ]
+                if non_zero_deltas:
+                    print("deltas: " + ", ".join(non_zero_deltas))
+                for ev in payload.get("changes", []):
+                    print(
+                        f"  [{ev['severity']}] {ev['change_type']}\t"
+                        f"{ev['entity_kind']}:{ev['entity_id']}\t{ev['summary']}"
+                    )
+            elif status == "unresolved_baseline":
+                print(
+                    f"unresolved baseline {payload.get('requested_since_run_id')!r} "
+                    f"({payload.get('reason_code')}): {payload.get('detail')}"
+                )
+            elif status == "ambiguous":
+                print(f"ambiguous {payload['referent']!r}: {payload['candidate_count']} candidates")
+                for candidate in payload["candidates"]:
+                    print(
+                        f"  {candidate['canonical_project_id']}\t{candidate['project_key']}\t"
+                        f"{candidate['display_name']}"
+                    )
+            else:
+                print(f"unresolved {payload.get('referent')!r}")
+            return {
+                "ok": 0,
+                "ambiguous": 3,
+                "unresolved": 4,
+                "unresolved_baseline": 4,
+            }.get(status, 2)
+
         manifest = load_manifest(Path(args.state_dir))
         if args.command == "orient":
             payload = orient_payload(manifest)
@@ -362,6 +445,12 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"project capsules: {payload['counts']['project_capsules']}")
                 if payload["counts"].get("review_items") is not None:
                     print(f"identity review: {payload['counts']['review_items']}")
+                if payload["counts"].get("change_events") is not None:
+                    chg_meta = payload.get("changes") or {}
+                    print(
+                        f"change events: {payload['counts']['change_events']} "
+                        f"(baseline={chg_meta.get('baseline_state', 'unknown')})"
+                    )
                 print("available: " + ", ".join(payload["available_capabilities"]))
                 if payload["unavailable_capabilities"]:
                     print("not yet available: " + ", ".join(payload["unavailable_capabilities"]))

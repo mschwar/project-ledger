@@ -96,6 +96,7 @@ IDENTITY_DECISION_SCHEMA_VERSION    = 1.0.0
 IDENTITY_EVIDENCE_SCHEMA_VERSION    = 1.0.0
 REVIEW_QUEUE_SCHEMA_VERSION         = 1.0.0
 PROJECT_CAPSULE_SCHEMA_VERSION      = 1.0.0
+CHANGE_FEED_SCHEMA_VERSION          = 1.0.0
 ```
 
 Full compatibility/migration policy for these versions is still Gate B work. Unsupported future major versions must eventually fail/degrade explicitly rather than being guessed through.
@@ -271,6 +272,7 @@ input_observed_at
 config
 health
 counts
+changes
 sources
 capabilities
 artifacts
@@ -303,9 +305,10 @@ canonical_projects
 project_capsules
 identity_evidence
 review_items
+change_events
 ```
 
-Canonical project, project capsule, identity-evidence, and identity-review counts are concrete integers. Unimplemented capability counts should continue to use explicit null/absence rather than being silently coerced to zero.
+Canonical project, project capsule, identity-evidence, identity-review, and change-event counts are concrete integers. Unimplemented capability counts should continue to use explicit null/absence rather than being silently coerced to zero.
 
 ### capabilities
 
@@ -326,12 +329,9 @@ Current available capabilities:
 - `identity_evidence`
 - `project_capsules`
 - `review_queue`
+- `change_feed`
 
-Current explicit unavailable capabilities:
-
-- `change_feed` — `WAVE4_NOT_IMPLEMENTED`
-
-Agents must prefer this executable capability map over inference from design prose.
+All Wave 1–4 materialized view capabilities in `system-manifest.json` are now `available`. Agents must prefer this executable capability map over inference from design prose.
 
 ## 1.5 New semantic state vocabulary
 
@@ -790,17 +790,19 @@ resolved/superseded states are the P2.7 review-ratchet concern.
 
 ## 2.9 Change event
 
-Derived semantic change between trusted compiled runs:
+Derived semantic change between trusted compiled runs (implemented in `ledger/changes.py`, `CHANGE_FEED_SCHEMA_VERSION = "1.0.0"`):
 
-- `change_id`
-- previous/current run IDs
-- entity ID
-- change type
-- before/after references or compact values
-- materiality/severity
-- provenance
+- `change_id` — deterministic `stable_id("chg", previous_run_id, run_id, entity_kind, entity_id, change_type)`
+- `previous_run_id` / `run_id` — baseline and current compiled run IDs
+- `entity_kind` (`source` | `canonical_project` | `observation` | `review_item` | `identity_decision`) and `entity_id`
+- `canonical_project_id` and `project_key` (populated for project/observation events where known)
+- `change_type` — stable code (`SOURCE_ADDED`, `SOURCE_REMOVED`, `SOURCE_STATUS_CHANGED`, `SOURCE_RESULT_STATE_CHANGED`, `OBSERVATION_ADDED`, `OBSERVATION_REMOVED`, `OBSERVATION_UNAVAILABLE`, `PROJECT_ADDED`, `PROJECT_REMOVED`, `PROJECT_UNAVAILABLE`, `PROJECT_MERGED`, `PROJECT_SPLIT`, `PROJECT_REANCHORED`, `PROJECT_MEMBERSHIP_CHANGED`, `PROJECT_KEY_CHANGED`, `PROJECT_PREFERRED_LOCATION_CHANGED`, `PROJECT_GIT_STATE_CHANGED`, `PROJECT_GIT_DRIFT_CHANGED`, `PROJECT_GBRAIN_CHANGED`, `PROJECT_CONTINUITY_CHANGED`, `REVIEW_OPENED`, `REVIEW_RESOLVED`, `NEGATIVE_DECISION_APPLIED`, `NEGATIVE_DECISION_REMOVED`)
+- `materiality` (`high` | `material` | `low`) and `severity` (`error` | `warning` | `info`)
+- `summary` — bounded one-line explanation
+- `before` / `after` — compact structured values
+- `provenance` — structured source/observation/decision/review/anchor references
 
-This powers delta-first agent operation.
+This powers delta-first agent operation without false churn on run/probe timestamps or false deletion when a source goes offline (`PROJECT_UNAVAILABLE` / `OBSERVATION_UNAVAILABLE`).
 
 ---
 
@@ -842,13 +844,29 @@ Renders one row per canonical project (`project_key`, `canonical_project_id`, pr
 
 ## Review queue / change feed
 
-`state/review-queue.json` is implemented for the first identity slice.
+`state/review-queue.json` and `state/changes.json` (plus bounded semantic run snapshots in `state/runs/<run_id>.json`, up to `RUN_HISTORY_MAX_RUNS = 50`) are implemented.
 
-Still planned:
+`state/changes.json` envelope:
 
 ```text
-state/changes.json
+schema_version          = CHANGE_FEED_SCHEMA_VERSION (1.0.0)
+compiler_version
+status                  ok | unresolved_baseline
+baseline_state          initial_baseline | compared | same_run
+run_id
+compiled_at
+input_observed_at
+previous_run_id         nullable (null on initial_baseline)
+previous_compiled_at    nullable
+previous_input_observed_at nullable
+change_count
+summary                 by_entity_kind, by_change_type, by_severity, by_materiality, count_deltas
+available_run_ids[]
+pointers                changes_path, runs_dir, system_manifest_path
+changes[]
 ```
+
+`ledger changes [--since <run_id>] [--project <referent>] [--entity-kind <kind>] [--change-type <code>] [--json]` queries the latest materialized feed or computes net multi-hop deltas since any retained `run_id` (`0` ok, `3` ambiguous project referent, `4` unresolved `--since` baseline or `--project` referent, `2` operational error). Individual `chg_...` IDs are also explainable via `ledger explain <change_id>`.
 
 The current review queue is identity-focused; broader current-state/schema review families remain later work.
 

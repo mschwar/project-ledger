@@ -45,7 +45,12 @@ Generated agent projections are:
 state/system-manifest.json
 state/observations.json
 state/canonical-projects.json
+state/canonical-projects.md
+state/identity-evidence.json
 state/review-queue.json
+state/changes.json
+state/runs/<run_id>.json
+state/projects/<canonical_project_id>.json
 ```
 
 `state/` is intentionally gitignored: it is rebuildable compiled state, not canon.
@@ -59,6 +64,11 @@ python -m ledger compile
 python -m ledger orient
 python -m ledger sources
 python -m ledger resolve <referent>
+python -m ledger show <project>
+python -m ledger locate <project>
+python -m ledger explain <referent>
+python -m ledger review [--approve-candidates] [--decision-id ID]
+python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
 ```
 
 Use `--json` on the agent-facing commands when machine-readable output is preferred.
@@ -93,25 +103,25 @@ registered sources
  -> current source probes + compatibility source/run snapshots
  -> compatibility observations
  -> typed observations
- -> exact-remote identity evidence + explicit identity decisions
- -> canonical projects + identity review
- -> system manifest / orient / exact resolve
+ -> exact-remote identity evidence + explicit identity decisions + frontier zero-shot triage
+ -> canonical projects + identity review + GBrain cross-links
+ -> bounded project capsules + preferred-location resolution + human canonical view
+ -> semantic run history + semantic change feed (state/changes.json)
+ -> system manifest / orient / sources / resolve / show / locate / explain / review / changes
 ```
 
 Automatic identity is intentionally conservative:
 
 - exact normalized repository remote is the only automatic merge authority;
 - compatibility `project_key` values and names are referents, not automatic merge authority;
-- explicit committed decisions can merge, split, reject a match, or add an alias;
+- explicit committed decisions can merge, split, reject a match, assign a canonical key, supersede, or add an alias;
 - ambiguous exact referents remain explicit.
 
-Still unavailable:
+Still optional / external:
 
 ```text
-project capsules / show / locate / explain
- -> structured session receipts / current-state resolver
- -> Project Ledger semantic change feed
- -> incremental compilation
+incremental source checkpointing (P5.1)
+work-unit / attempt / session receipts (owned by machina)
 ```
 
 Canonical project count is now distinct from observation count and is reported in the manifest.
