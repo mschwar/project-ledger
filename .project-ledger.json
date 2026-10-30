@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-10-30T15:51:00Z",
-  "last_session_summary": "Pushed main, generated Batch 2 frontier zero-shot triage candidates (29 candidate decisions in registry/weak-overlap-triage-candidates.json covering all 19 remaining post-CONV-001 weak overlaps), and implemented P5.1 source/candidate fingerprint checkpoint caching (ledger/checkpoints.py, state/source-checkpoints.json, ledger refresh [--full-scan], cutting warm refresh scan overhead from ~32.3s cold / ~7.7s hot-VFS uncached scan to ~2.7s while preserving byte-identical compatibility entries; 143 unit tests passing).",
-  "next_step": "Review and approve the 29 queued post-CONV-001 candidate decisions via `python3 -m ledger review --approve-candidates` (consolidating canonical projects 190 -> 176 with 0 untriaged weak overlaps).",
+  "last_session_at": "2026-10-30T15:57:00Z",
+  "last_session_summary": "Promoted all 29 queued Batch 2 frontier triage candidate decisions into registry/identity-decisions.json (62 approved triage candidates, 65 total durable decisions), consolidating live canonical projects 190 -> 176 across 214 observations with 0 open identity reviews and 0 untriaged cross-project weak overlaps; all 143 unit tests passing with P5.1 source checkpointing active.",
+  "next_step": "Reconcile multi-checkout preferred-location tie-breaking (e.g. active feature-branch checkouts in /central/repos/active vs idle main checkouts in secondary roots like /central/repos/apps/steam-db-mattified) or retire duplicate legacy checkouts (/central/repos/apps/steam-db-mattified, gbrain-candidate/gbrain-master, /central/projects/song-clean) and wire machina/homelab pre-spawn drift checks to `ledger resolve --json`.",
   "last_push_at": ""
 }
