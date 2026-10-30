@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-10-29T03:35:00Z",
+  "generated_at": "2026-10-30T15:35:00Z",
   "triage_method": "frontier_zero_shot_readme_and_evidence_pass",
-  "source_run_id": "run_8cec83146cacce545dff94c3",
+  "source_run_id": "run_b8dfd06ba6e6f4fae72ae2c9",
   "candidates": [
     {
       "decision_id": "dec_triage_agent_os_merge_20261029",
@@ -337,6 +337,297 @@
       "authority": "reviewed_agent",
       "decided_at": "2026-10-29T03:35:00Z",
       "rationale": "Select authoritative key reality-ledger over google-drive:reality-ledger."
+    },
+    {
+      "decision_id": "dec_triage_lee_grapple_hook_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_0aff3d60cd8664a1e4eba2cc",
+        "obs_602a0ce6dfff4e120af68597"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:lee-grapple-hook (verified remote mschwar/lee-grapple-hook in matty-pc reconciliation) and /central/repos/active/lee-grapple-hook (github.com/mschwar/lee-grapple-hook) are the same TetherGrip Pursuit Lock repository."
+    },
+    {
+      "decision_id": "dec_triage_lee_grapple_hook_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_602a0ce6dfff4e120af68597",
+      "key": "github.com/mschwar/lee-grapple-hook",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/lee-grapple-hook over google-drive:lee-grapple-hook."
+    },
+    {
+      "decision_id": "dec_triage_flow_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_0c05fef5140af5e6084b6505",
+        "obs_5c876f6fc20d9f7d7c80fc3e"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/agent-tooling/flow (github.com/mschwar/flow) and matty-pc:flow (verified remote mschwar/flow in matty-pc reconciliation) are the same Flow repository."
+    },
+    {
+      "decision_id": "dec_triage_flow_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_0c05fef5140af5e6084b6505",
+      "key": "github.com/mschwar/flow",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/flow over google-drive:flow."
+    },
+    {
+      "decision_id": "dec_triage_bahai_9yr_plan_kb_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_1302816be8f2e7b3bb819428",
+        "obs_442e7c05eec7a23a13be858a"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:bahai-9yr-plan-kb (verified remote mschwar/bahai-9yr-plan-kb in matty-pc reconciliation) and /central/repos/active/bahai-9yr-plan-kb (github.com/mschwar/bahai-9yr-plan-kb) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_bahai_9yr_plan_kb_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_442e7c05eec7a23a13be858a",
+      "key": "github.com/mschwar/bahai-9yr-plan-kb",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/bahai-9yr-plan-kb over google-drive:bahai-9yr-plan-kb."
+    },
+    {
+      "decision_id": "dec_triage_toned_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_2556e18a83891301d610b0d9",
+        "obs_ee0d284a178fec57cad06062"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/apps/toned (github.com/mschwar/toned, EarScaffold) and matty-pc:toned (verified remote mschwar/toned in matty-pc reconciliation) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_toned_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_2556e18a83891301d610b0d9",
+      "key": "github.com/mschwar/toned",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/toned over google-drive:toned."
+    },
+    {
+      "decision_id": "dec_triage_cpr_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_2d5bcf2d6b2e33e60752bedd",
+        "obs_e7327884d5a94c970dd1ff50"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:cpr (verified remote mschwar/cpr in matty-pc reconciliation) and /central/repos/agent-tooling/cpr (github.com/mschwar/cpr, Context Project Runtime) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_cpr_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_e7327884d5a94c970dd1ff50",
+      "key": "github.com/mschwar/cpr",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/cpr over google-drive:cpr."
+    },
+    {
+      "decision_id": "dec_triage_prompts_vs_prompt_refinery_reject_20261030",
+      "type": "reject_match",
+      "left_observation_id": "obs_2f29d73d48b88259acf8ac05",
+      "right_observation_id": "obs_5c7642d413f1b326e5be0d11",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/agent-tooling/prompts (github.com/mschwar/prompts, Prompt Library Obsidian vault, root 2afa02a) and /central/repos/agent-tooling/prompt-refinery (github.com/mschwar/prompt-refinery, separate LLM-as-a-Judge evaluation repo per Refinery.md, root c56c862) are distinct repositories sharing a copied Directory Summary README heading."
+    },
+    {
+      "decision_id": "dec_triage_agent_tooling_prompts_vs_active_prompts_reject_20261030",
+      "type": "reject_match",
+      "left_observation_id": "obs_2f29d73d48b88259acf8ac05",
+      "right_observation_id": "obs_f600fe76d48e273577420ea0",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/agent-tooling/prompts (github.com/mschwar/prompts Gemforge prompt library) and /central/repos/active/prompts (VibeCoding universal coding_rules.md / system1_foreman.md folder) are distinct prompt collections."
+    },
+    {
+      "decision_id": "dec_triage_ai_field_briefing_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_336a1d72291c2cd6101030e6",
+        "obs_ace0d02862ecdf1f216276a3"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/research-ml/ai-field-briefing (github.com/mschwar/ai-field-briefing) and matty-pc:ai-field-briefing (verified remote mschwar/ai-field-briefing in matty-pc reconciliation) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_ai_field_briefing_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_336a1d72291c2cd6101030e6",
+      "key": "github.com/mschwar/ai-field-briefing",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/ai-field-briefing over google-drive:ai-field-briefing."
+    },
+    {
+      "decision_id": "dec_triage_project_eidos_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_482dbfeae7a1a8515ce22be8",
+        "obs_b701fb9af2aadd709fab04b0"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:project-eidos (verified remote mschwar/project-eidos in matty-pc reconciliation) and /central/repos/apps/project-eidos (github.com/mschwar/project-eidos) are the same Project Eidos repository."
+    },
+    {
+      "decision_id": "dec_triage_project_eidos_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_b701fb9af2aadd709fab04b0",
+      "key": "github.com/mschwar/project-eidos",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/project-eidos over google-drive:project-eidos."
+    },
+    {
+      "decision_id": "dec_triage_prompt_refinery_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_5c7642d413f1b326e5be0d11",
+        "obs_9b2b77ed032e0f7f722dcb7a"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/agent-tooling/prompt-refinery (github.com/mschwar/prompt-refinery, commit c56c862) and matty-pc:prompt-refinery (verified remote mschwar/prompt-refinery at commit c56c862) are the same repository."
+    },
+    {
+      "decision_id": "dec_triage_prompt_refinery_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_5c7642d413f1b326e5be0d11",
+      "key": "github.com/mschwar/prompt-refinery",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/prompt-refinery over google-drive:prompt-refinery."
+    },
+    {
+      "decision_id": "dec_triage_pitch_perfect_vs_consultlink_reject_20261030",
+      "type": "reject_match",
+      "left_observation_id": "obs_774c2052079fe3475f823bdc",
+      "right_observation_id": "obs_7b8612ab06d408f30c865354",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/apps/pitch-perfect (github.com/mschwar/pitch-perfect) and /central/repos/active/consultlink---baha'i-consultation-guide are completely unrelated applications whose Google AI Studio boilerplate READMEs both begin with `<div align=\"center\">`."
+    },
+    {
+      "decision_id": "dec_triage_gbrain_fork_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_7a040f3f2560435ce378b777",
+        "obs_e54ac482342bc70d95df74d2",
+        "obs_f3592d156806752ed9defd52"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/agent-tooling/gbrain (github.com/mschwar/gbrain v0.47.4.0, sharing root commit 3144971c with gbrain-candidate github.com/garrytan/gbrain and gbrain-master) is the active local fork/deployment of GBrain; existing dec_triage_gbrain_key_20261029 retains canonical key `gbrain`."
+    },
+    {
+      "decision_id": "dec_triage_song_clean_apps_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_84e116b893245d4e427f442d",
+        "obs_a71c0864d1426f490084f947",
+        "obs_e9d952b160c21d6bc565d39b"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/apps/song-clean (github.com/mschwar/song-clean at commit e82eb10), matty-pc:song-clean (verified remote mschwar/song-clean at commit e82eb10), and /central/projects/song-clean (sidecar directory) are manifestations of the same song-clean project; existing dec_triage_song_clean_key_20261029 retains canonical key `song-clean`."
+    },
+    {
+      "decision_id": "dec_triage_orgatlas_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_998dc5640c04088c65968b7d",
+        "obs_9df94fbbac1356c1bcbf43e1"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:orgatlas (verified remote mschwar/orgatlas at commit 9aa5a24) and /central/repos/active/orgatlas (github.com/mschwar/orgatlas at commit 9aa5a24) are the same repository."
+    },
+    {
+      "decision_id": "dec_triage_orgatlas_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_9df94fbbac1356c1bcbf43e1",
+      "key": "github.com/mschwar/orgatlas",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/orgatlas over google-drive:orgatlas."
+    },
+    {
+      "decision_id": "dec_triage_lee_ai_learning_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_ad585eeb24937433b1df04a5",
+        "obs_ef88b09e106bd02c32b099c1"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:lee-ai-learning and /central/repos/research-ml/lee-ai-learning (github.com/mschwar/lee-ai-learning, whose README explicitly links C:/Users/Matty/Documents/lee-ai-learning/CHEAT_SHEET.md) are the same project."
+    },
+    {
+      "decision_id": "dec_triage_lee_ai_learning_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_ef88b09e106bd02c32b099c1",
+      "key": "github.com/mschwar/lee-ai-learning",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/lee-ai-learning over google-drive:lee-ai-learning."
+    },
+    {
+      "decision_id": "dec_triage_ledger_2_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_d975853f706afbd57e4cfc12",
+        "obs_e9c36d463cf68f1c19282287"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: matty-pc:ledger (verified remote https://github.com/mschwar/ledger-2.git in matty-pc reconciliation) and /central/repos/apps/ledger-2 (github.com/mschwar/ledger-2, personal evidence & CV Ledger) are the same repository."
+    },
+    {
+      "decision_id": "dec_triage_ledger_2_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_e9c36d463cf68f1c19282287",
+      "key": "github.com/mschwar/ledger-2",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select authoritative repository key github.com/mschwar/ledger-2 over google-drive:ledger."
+    },
+    {
+      "decision_id": "dec_triage_gamma_steamdb_merge_20261030",
+      "type": "merge",
+      "observation_ids": [
+        "obs_ecd4a2b739dc8c2a825815f6",
+        "obs_f80eddc0612dc7f9f2d938d2"
+      ],
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/apps/steam-db-mattified (github.com/mschwar/steam-db-mattified, final commit f3eca62 `chore: rename project and package to gamma-steamdb`) and /central/repos/active/gamma-steamdb (github.com/mschwar/gamma-steamdb) share root commit 876e8aa1 and are the pre-rename and post-rename checkouts of Gamma SteamDB."
+    },
+    {
+      "decision_id": "dec_triage_gamma_steamdb_key_20261030",
+      "type": "canonical_key",
+      "observation_id": "obs_f80eddc0612dc7f9f2d938d2",
+      "key": "github.com/mschwar/gamma-steamdb",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-10-30T15:35:00Z",
+      "rationale": "Select post-rename authoritative repository key github.com/mschwar/gamma-steamdb over github.com/mschwar/steam-db-mattified."
     }
   ]
 }

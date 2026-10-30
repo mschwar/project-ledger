@@ -12,8 +12,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-10-30T14:55:00Z",
-  "last_session_summary": "Approved the 21 queued weak-overlap triage candidate pairs (33 durable decisions promoted from registry/weak-overlap-triage-candidates.json into registry/identity-decisions.json, consolidating live canonical projects 207 -> 190 and reducing untriaged weak overlaps 40 -> 19) and implemented Wave 4 P4.5 semantic change feed (ledger/changes.py, state/changes.json, state/runs/<run_id>.json ring buffer with pre-Wave-4 state backfill, ledger changes [--since] [--project], and ledger explain <chg_...> with 138 unit tests passing).",
-  "next_step": "Triage the 19 newly discovered post-migration weak overlaps in state/identity-evidence.json via a frontier candidate batch or implement P5.1 source fingerprint/checkpoint cache if scan duration warrants it.",
+  "last_session_at": "2026-10-30T15:51:00Z",
+  "last_session_summary": "Pushed main, generated Batch 2 frontier zero-shot triage candidates (29 candidate decisions in registry/weak-overlap-triage-candidates.json covering all 19 remaining post-CONV-001 weak overlaps), and implemented P5.1 source/candidate fingerprint checkpoint caching (ledger/checkpoints.py, state/source-checkpoints.json, ledger refresh [--full-scan], cutting warm refresh scan overhead from ~32.3s cold / ~7.7s hot-VFS uncached scan to ~2.7s while preserving byte-identical compatibility entries; 143 unit tests passing).",
+  "next_step": "Review and approve the 29 queued post-CONV-001 candidate decisions via `python3 -m ledger review --approve-candidates` (consolidating canonical projects 190 -> 176 with 0 untriaged weak overlaps).",
   "last_push_at": ""
 }

@@ -370,7 +370,8 @@ actions to the two paths that actually clear (`merge`, `canonical_key`). See
 ## Frontier Zero-Shot Triage on `cross_project_weak_overlaps` (Complete — 2026-10-30)
 
 - `ledger/triage.py` and `ledger review [--approve-candidates]` replace Wave 5's local-LLM matcher.
-- `registry/weak-overlap-triage-candidates.json` contained 33 frontier-triaged candidate decisions (`merge`, `reject_match`, and companion `canonical_key` decisions) covering the initial 21 `cross_project_weak_overlaps`; all 33 candidate decisions were approved and promoted into `registry/identity-decisions.json` on 2026-10-30 (total 36 durable identity decisions, consolidating live canonical projects `207 -> 190`).
+- Batch 1 (`registry/weak-overlap-triage-candidates.json`): 33 frontier-triaged candidate decisions covering the initial 21 `cross_project_weak_overlaps` were approved into `registry/identity-decisions.json` on 2026-10-30 (`207 -> 190` canonical projects).
+- Batch 2 (`registry/weak-overlap-triage-candidates.json`): 29 frontier-triaged candidate decisions (`merge`, `reject_match`, and companion `canonical_key` decisions) covering all 19 remaining post-`CONV-001` weak overlaps are queued and validated for one-click approval via `python3 -m ledger review --approve-candidates`.
 
 ## P4.5 Semantic change feed (Complete — 2026-10-30)
 
@@ -378,9 +379,11 @@ actions to the two paths that actually clear (`merge`, `canonical_key`). See
 - Materializes `state/changes.json` (`CHANGE_FEED_SCHEMA_VERSION = "1.0.0"`) plus a bounded compact semantic run-history ring buffer at `state/runs/<run_id>.json` (`RUN_HISTORY_MAX_RUNS = 50`), automatically backfilling pre-Wave-4 `state/` artifacts prior to overwrite.
 - Supports `ledger changes [--since <run_id>] [--project <referent>] [--entity-kind <kind>] [--change-type <code>] [--json]` and `ledger explain <chg_...>`, suppressing raw `scan_time`/mtime churn while distinguishing `PROJECT_UNAVAILABLE`/`OBSERVATION_UNAVAILABLE` (offline source) from `PROJECT_REMOVED`/`OBSERVATION_REMOVED`.
 
-## Remaining Optional Future Backlog
+## P5.1 Source fingerprint/checkpoint cache (Complete — 2026-10-30)
 
-- **P5.1 Source fingerprint/checkpoint cache**: skip unchanged source extraction when scan duration warrants it.
+- Implemented in `ledger/checkpoints.py` (`SOURCE_CHECKPOINT_SCHEMA_VERSION = "1.0.0"`) after live `ai-server` benchmarking measured ~`32.3s` uncached full-scan time across the 17 sources (234 candidates).
+- Persists `state/source-checkpoints.json` and exposes `capabilities.source_checkpoints = "available"`, `manifest.checkpoints`, and per-source `checkpoint_status` (`hit | partial | miss | unavailable | bypassed | not_applicable`), `checkpoint_fingerprint`, and `last_extracted_at`.
+- Skips `git` subprocess bursts and redundant metadata extraction on unchanged candidates while preserving byte-identical compatibility entries; supports `--full-scan` on `ledger refresh` to force full reconciliation.
 
 ---
 

@@ -43,6 +43,7 @@ Generated agent projections are:
 
 ```text
 state/system-manifest.json
+state/source-checkpoints.json
 state/observations.json
 state/canonical-projects.json
 state/canonical-projects.md
@@ -59,7 +60,8 @@ state/projects/<canonical_project_id>.json
 
 ```bash
 python -m ledger validate
-python -m ledger refresh
+python -m ledger refresh [--full-scan]
+python -m ledger refresh --no-markdown-mirror [--full-scan]
 python -m ledger compile
 python -m ledger orient
 python -m ledger sources
@@ -100,7 +102,7 @@ Implemented now:
 
 ```text
 registered sources
- -> current source probes + compatibility source/run snapshots
+ -> current source probes + incremental source/candidate extraction checkpoints (P5.1) + compatibility source/run snapshots
  -> compatibility observations
  -> typed observations
  -> exact-remote identity evidence + explicit identity decisions + frontier zero-shot triage
@@ -117,11 +119,12 @@ Automatic identity is intentionally conservative:
 - explicit committed decisions can merge, split, reject a match, assign a canonical key, supersede, or add an alias;
 - ambiguous exact referents remain explicit.
 
-Still optional / external:
+Owned externally in the fleet:
 
 ```text
-incremental source checkpointing (P5.1)
 work-unit / attempt / session receipts (owned by machina)
+worktree leases & scheduled provider execution (owned by homelab)
+semantic / entity search & cross-session memory (owned by gbrain)
 ```
 
 Canonical project count is now distinct from observation count and is reported in the manifest.

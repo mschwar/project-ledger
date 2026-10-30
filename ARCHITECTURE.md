@@ -26,7 +26,7 @@ config
 The `ledger/` package now adds:
 
 ```text
-compatibility observations
+compatibility observations + incremental source/candidate checkpoints (state/source-checkpoints.json)
  -> stable source/snapshot/observation identity
  -> source probes/health + git working-tree drift
  -> typed observations
@@ -40,7 +40,7 @@ compatibility observations
 
 The identity layer is intentionally conservative. Exact normalized repository remote is the only automatic merge rule. Names/project-key hints are referents, not identity authority. Explicit committed decisions can merge/split/reject/alias, assign a canonical human key, and supersede a prior decision.
 
-Still absent: incremental source checkpointing (`P5.1`); work-unit/attempt/session receipts are owned by `machina`.
+Work-unit/attempt/session receipts are owned externally by `machina`; worktree leases are owned by `homelab`; semantic/entity search is owned by `gbrain`.
 
 The next architecture constraint must be selected after the live provider proof rather than inferred from roadmap order.
 

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from . import COMPAT_FLAT_SCHEMA_VERSION, COMPILER_VERSION, MANIFEST_SCHEMA_VERSION, OBSERVATION_SCHEMA_VERSION
 from .changes import build_run_snapshot, capture_pre_compile_baseline, materialize_changes
+from .checkpoints import CHECKPOINT_FILENAME, load_source_checkpoints
 from .compat_contract import check_compat_schema
 from .config import describe_sources, read_config, validate_config
 from .contracts import SOURCE_RESULT_STATES, capability
@@ -233,6 +234,64 @@ def compile_state(
     source_unavailable_count = sum(1 for source in sources if source["status"] != "available")
     health_state = "degraded" if source_unavailable_count or unresolved_source_count else "ok"
 
+    checkpoint_file = state_dir / CHECKPOINT_FILENAME
+    checkpoint_payload = load_source_checkpoints(checkpoint_file)
+    checkpoint_matched = (
+        isinstance(checkpoint_payload, dict)
+        and checkpoint_payload.get("config_digest") == config_digest
+    )
+    cp_sources = (
+        checkpoint_payload.get("sources", {})
+        if checkpoint_matched and isinstance(checkpoint_payload, dict)
+        else {}
+    )
+    for source in sources:
+        src_cp = cp_sources.get(source["source_id"]) if isinstance(cp_sources, dict) else None
+        if isinstance(src_cp, dict):
+            source["checkpoint_status"] = str(src_cp.get("checkpoint_status") or "not_applicable")
+            source["checkpoint_fingerprint"] = src_cp.get("checkpoint_fingerprint")
+            source["last_extracted_at"] = src_cp.get("last_extracted_at")
+            source["reused_candidate_count"] = int(src_cp.get("reused_candidate_count", 0))
+            source["rebuilt_candidate_count"] = int(src_cp.get("rebuilt_candidate_count", 0))
+        else:
+            source["checkpoint_status"] = "not_applicable"
+            source["checkpoint_fingerprint"] = None
+            source["last_extracted_at"] = None
+            source["reused_candidate_count"] = 0
+            source["rebuilt_candidate_count"] = 0
+
+    if checkpoint_matched and isinstance(checkpoint_payload, dict):
+        cp_summary = dict(checkpoint_payload.get("summary") or {})
+        checkpoints_block = {
+            "state": "bypassed" if checkpoint_payload.get("mode") == "bypassed" else "active",
+            "updated_at": checkpoint_payload.get("updated_at"),
+            "source_count": int(cp_summary.get("source_count", len(sources))),
+            "hit_source_count": int(cp_summary.get("hit_source_count", 0)),
+            "partial_source_count": int(cp_summary.get("partial_source_count", 0)),
+            "miss_source_count": int(cp_summary.get("miss_source_count", 0)),
+            "unavailable_source_count": int(
+                cp_summary.get("unavailable_source_count", source_unavailable_count)
+            ),
+            "bypassed_source_count": int(cp_summary.get("bypassed_source_count", 0)),
+            "candidate_count": int(cp_summary.get("candidate_count", 0)),
+            "reused_candidate_count": int(cp_summary.get("reused_candidate_count", 0)),
+            "rebuilt_candidate_count": int(cp_summary.get("rebuilt_candidate_count", 0)),
+        }
+    else:
+        checkpoints_block = {
+            "state": "not_applicable",
+            "updated_at": None,
+            "source_count": len(sources),
+            "hit_source_count": 0,
+            "partial_source_count": 0,
+            "miss_source_count": 0,
+            "unavailable_source_count": source_unavailable_count,
+            "bypassed_source_count": 0,
+            "candidate_count": 0,
+            "reused_candidate_count": 0,
+            "rebuilt_candidate_count": 0,
+        }
+
     state_dir.mkdir(parents=True, exist_ok=True)
     observations_path = state_dir / "observations.json"
     manifest_path = state_dir / "system-manifest.json"
@@ -323,11 +382,13 @@ def compile_state(
             "by_change_type": change_feed_payload["summary"]["by_change_type"],
             "by_severity": change_feed_payload["summary"]["by_severity"],
         },
+        "checkpoints": checkpoints_block,
         "sources": sources,
         "capabilities": {
             "compat_observations": capability("available"),
             "typed_observations": capability("available"),
             "source_health": capability("available"),
+            "source_checkpoints": capability("available"),
             "canonical_projects": capability("available"),
             "identity_evidence": capability("available"),
             "project_capsules": capability("available"),
@@ -337,6 +398,7 @@ def compile_state(
         "artifacts": {
             "compat_observations": str(compat_output_path),
             "typed_observations": str(observations_path),
+            "source_checkpoints": str(checkpoint_file),
             "canonical_projects": str(canonical_path),
             "canonical_markdown": str(state_dir / "canonical-projects.md"),
             "project_capsules": str(capsules_dir),
@@ -382,6 +444,7 @@ def orient_payload(manifest: dict) -> dict:
         "health": manifest.get("health"),
         "counts": manifest.get("counts"),
         "changes": manifest.get("changes"),
+        "checkpoints": manifest.get("checkpoints"),
         "available_capabilities": sorted(available),
         "unavailable_capabilities": sorted(unavailable),
     }
