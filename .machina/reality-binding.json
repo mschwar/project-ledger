@@ -1,0 +1,30 @@
+{
+  "advisory_warning_codes": [],
+  "blocking_warning_codes": [],
+  "canonical_project_id": "prj_f07b53d92d07b50328ad46c8",
+  "display_name": "Project Ledger",
+  "gate_reason": null,
+  "gbrain_page_key": "projects/project-ledger",
+  "gbrain_source_slug": "active-repos",
+  "git_drift": {
+    "ahead_count": 0,
+    "behind_count": 0,
+    "dirty": false,
+    "head_branch": "main",
+    "head_commit": "d5b090b392c949beb8ede586b32f9f7306303c9f",
+    "main_behind_count": null,
+    "state": "clean",
+    "upstream_ref": "origin/main",
+    "warning_codes": [],
+    "warnings": []
+  },
+  "preferred_location": "/central/repos/active/project-ledger",
+  "preferred_location_state": "resolved",
+  "project_key": "github.com/mschwar/project-ledger",
+  "referent": "prj_f07b53d92d07b50328ad46c8",
+  "resolution_status": "resolved",
+  "result": "PREFLIGHT_OK",
+  "schema_version": 1,
+  "warning_codes": [],
+  "warnings": []
+}

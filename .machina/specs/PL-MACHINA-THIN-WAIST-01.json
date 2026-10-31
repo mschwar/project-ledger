@@ -1,0 +1,20 @@
+{
+  "id": "PL-MACHINA-THIN-WAIST-01",
+  "title": "Onboard Project Ledger onto Machina thin waist (Consumer Adapter v1)",
+  "objective": "Expose Project Ledger domain truth and Machina generic execution control through scripts/machina_adapter.sh orient and map without importing another consumer's lifecycle vocabulary or mutating canonical identity decisions or source checkouts.",
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-MACHINA-THIN-WAIST-01.json",
+      "add scripts/machina_adapter.sh",
+      "add tests/test_machina_thin_waist.py",
+      "run python3 -m ledger validate and python3 -m unittest discover -s tests"
+    ],
+    "forbidden": [
+      "mutate registry/identity-decisions.json or registered source checkouts",
+      "add an execution_state field to ledger_config.json, CURRENT.md, SCHEMA.md, or state/system-manifest.json",
+      "create a competing task or session receipt store inside Project Ledger"
+    ]
+  },
+  "initial_next_action": "Implement scripts/machina_adapter.sh orient and fail-closed map against ledger_config.json, CURRENT.md, SYSTEM.md, SCHEMA.md, registry/identity-decisions.json, ledger validate, and state/system-manifest.json, then checkpoint before running verification tests.",
+  "completion": "scripts/machina_adapter.sh orient emits valid Orient Packet v1, map fails closed on missing or invalid Project Ledger surfaces, degraded system-manifest health, and behind-origin/main drift, python3 -m ledger validate passes, and python3 -m unittest discover -s tests passes."
+}
