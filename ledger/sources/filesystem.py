@@ -92,33 +92,44 @@ def discover_children(
 
 def discover_git_repos(root_path: Path, exclude_names: set[str], max_depth: int) -> list[Path]:
     results: list[Path] = []
-    for root, dirs, _files in os.walk(root_path, topdown=True):
-        root_path_current = Path(root)
-        try:
-            depth = len(root_path_current.relative_to(root_path).parts)
-        except ValueError:
-            depth = 0
+    if not safe_path_is_dir(root_path):
+        return results
 
-        filtered_dirs = []
-        for dirname in dirs:
-            candidate = root_path_current / dirname
-            if dirname in exclude_names:
-                continue
-            if depth + 1 > max_depth:
-                continue
-            try:
-                if candidate.is_symlink():
-                    continue
-            except OSError:
-                continue
-            filtered_dirs.append(dirname)
-        dirs[:] = filtered_dirs
-
+    stack: list[tuple[str, int]] = [(str(root_path), 0)]
+    while stack:
+        curr_dir, depth = stack.pop()
         try:
-            if ".git" in dirs or safe_path_exists(root_path_current / ".git"):
-                results.append(root_path_current)
+            with os.scandir(curr_dir) as it:
+                entries = list(it)
         except OSError:
             continue
+
+        has_git_marker = False
+        sub_dirs: list[tuple[str, int]] = []
+        for entry in entries:
+            name = entry.name
+            if name == ".git":
+                try:
+                    if not entry.is_symlink() or safe_path_exists(Path(entry.path)):
+                        has_git_marker = True
+                except OSError:
+                    pass
+                continue
+            if name in exclude_names or depth + 1 > max_depth:
+                continue
+            try:
+                if entry.is_symlink():
+                    continue
+                if entry.is_dir(follow_symlinks=False):
+                    sub_dirs.append((entry.path, depth + 1))
+            except OSError:
+                continue
+
+        if has_git_marker:
+            results.append(Path(curr_dir))
+        for sd in sub_dirs:
+            stack.append(sd)
+
     return sorted(results, key=lambda item: str(item).lower())
 
 

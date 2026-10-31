@@ -1,0 +1,20 @@
+{
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-STRATEGIC-UNLOCK-02.json, ledger/structural_ctx.py, and tests/test_u2_u4_structural_ctx_and_perf.py",
+      "edit ledger/capsules.py, ledger/checkpoints.py, ledger/changes.py, ledger/compiler.py, ledger/config.py, ledger/identity.py, ledger/sources/filesystem.py, and build_ledger.py",
+      "run uvx --offline ruff check ., python3 -m ledger validate, and python3 -m unittest discover -s tests"
+    ],
+    "forbidden": [
+      "write any file or byte into external target repositories or /central/repos/active/machina",
+      "introduce execution_state into Project Ledger domain surfaces or schemas",
+      "add em dashes to .machina/specs/*.json, scripts/machina_adapter.sh, or tests/test_machina_thin_waist.py"
+    ]
+  },
+  "completion": "All accessible local repositories synthesize schema-valid capsule['ctx'] blocks (source_format='compiled_structural_scan' when .ctx is absent, preferring explicit .ctx artifacts when present) with zero writes to target worktrees and 100% of capsules <= 16384 bytes; warm `ledger refresh --no-markdown-mirror` runs in < 1.0s while preserving 100% cache invalidation fidelity and byte-identical compatibility entries; ruff check . and unittest suite pass.",
+  "id": "PL-STRATEGIC-UNLOCK-02",
+  "initial_next_action": "Implement ledger/structural_ctx.py, wire ctx_resolver and checkpoint caching in capsules.py/compiler.py/identity.py, optimize filesystem.py/checkpoints.py/changes.py/identity.py for < 1.0s warm refresh, and verify with tests/test_u2_u4_structural_ctx_and_perf.py.",
+  "objective": "Deliver Strategic Unlocks U2 and U4: (1) implement a pure-Python stdlib read-only structural skeleton extractor (ledger/structural_ctx.py) and compile-stage checkpoint caching so capsule['ctx'] activates across all accessible local repositories under Architectural Law 10 without writing into target worktrees while still preferring explicit on-disk .ctx artifacts; and (2) push warm `ledger refresh --no-markdown-mirror` on ai-server below 1.0s via os.scandir git-repo discovery, single-pass os.scandir candidate fingerprinting, fast run-snapshot header scanning, and direct canonical-projects historical-ID carry-forward.",
+  "schema_version": 1,
+  "title": "Read-only fleet-wide structural ctx capsule compiler and sub-second warm ledger refresh"
+}

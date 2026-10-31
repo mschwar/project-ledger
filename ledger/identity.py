@@ -999,6 +999,7 @@ def _enrich_historical_project_ids_from_state(canonical: dict, state_dir: Path) 
             obs_to_current_pid[str(oid)] = pid
 
     historical_records: list[dict] = []
+    loaded_prior_canonical = False
     prior_canonical_path = state_dir / "canonical-projects.json"
     if prior_canonical_path.is_file():
         try:
@@ -1007,21 +1008,23 @@ def _enrich_historical_project_ids_from_state(canonical: dict, state_dir: Path) 
                 historical_records.extend(
                     p for p in prior_payload["projects"] if isinstance(p, dict)
                 )
+                loaded_prior_canonical = True
         except (OSError, json.JSONDecodeError):
             pass
 
-    runs_dir = state_dir / "runs"
-    if runs_dir.is_dir():
-        for snap_path in sorted(runs_dir.glob("run_*.json")):
-            try:
-                snap = json.loads(snap_path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                continue
-            if not isinstance(snap, dict) or not isinstance(snap.get("projects"), dict):
-                continue
-            for snap_proj in snap["projects"].values():
-                if isinstance(snap_proj, dict):
-                    historical_records.append(snap_proj)
+    if not loaded_prior_canonical:
+        runs_dir = state_dir / "runs"
+        if runs_dir.is_dir():
+            for snap_path in sorted(runs_dir.glob("run_*.json")):
+                try:
+                    snap = json.loads(snap_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                if not isinstance(snap, dict) or not isinstance(snap.get("projects"), dict):
+                    continue
+                for snap_proj in snap["projects"].values():
+                    if isinstance(snap_proj, dict):
+                        historical_records.append(snap_proj)
 
     hist_id_to_targets: dict[str, set[str]] = {}
     hist_id_cased: dict[str, str] = {}
@@ -1080,7 +1083,9 @@ def materialize_identity(
     sources: list[dict] | None = None,
     input_observed_at: str | None = None,
     git_drift_resolver: Callable[[dict, dict], dict] | None = None,
+    ctx_resolver: Callable[[dict, Path], dict | None] | None = None,
     lineage_path: Path | None = None,
+    out_artifacts: dict | None = None,
 ) -> tuple[dict, dict]:
     from .capsules import materialize_capsules
     from .evidence import build_identity_evidence
@@ -1113,7 +1118,7 @@ def materialize_identity(
     observed_at = input_observed_at or (
         str(observations[0].get("observed_at") or "") if observations else ""
     ) or compiled_at
-    materialize_capsules(
+    capsules_result = materialize_capsules(
         canonical_payload=canonical,
         observations=observations,
         sources=sources,
@@ -1123,7 +1128,11 @@ def materialize_identity(
         compiled_at=compiled_at,
         input_observed_at=observed_at,
         git_drift_resolver=git_drift_resolver,
+        ctx_resolver=ctx_resolver,
     )
+    if isinstance(out_artifacts, dict):
+        out_artifacts["identity_evidence"] = identity_evidence
+        out_artifacts["capsules"] = capsules_result.get("capsules", [])
     return canonical, reviews
 
 
