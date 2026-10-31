@@ -13,7 +13,7 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-10-31T05:00:00Z",
+  "last_session_at": "2026-10-31T05:06:00Z",
   "last_session_summary": "Fixed P5.1 ephemeral-output-dir checkpoint cache misses (pinned in tests/test_checkpoints.py), eliminated all remaining /tmp/tmp.* paths across system-manifest.json, capsules, changes.json, and source-checkpoints.json via portable_artifact_path(), added schemas/project-ledger-sidecar.schema.json + load_sidecar() HEAD-drift stale_sidecar warnings (P1.7), retired duplicate top-level roots (3813-patio, proxy-lead, white-rabbit -> 14 active sources, 207 observations, 176 canonical projects, 0 open reviews), ingested ctx structural capsules (.ctx/skeleton.json, fleet-capsule.json, Tier-2/Tier-1 CONTEXT.md) into capsules.py, retired cloud-VM PR workflow triggers to workflow_dispatch + ops/merge-policy.json, and removed tests/.tmp.",
   "next_step": "Keep 15m incremental and daily full-scan homelab discovery watchdog timers active with warm source-checkpoint hits and refresh stale May 19 sidecars in sibling active repositories as they are touched.",
   "last_push_at": ""
