@@ -1,0 +1,22 @@
+{
+  "id": "PL-GAP-CLOSEOUT-02",
+  "title": "Close continuity, identity-lineage, and compile-performance gaps G3, G4, and G5",
+  "objective": "Ingest read-only .machina/state.json continuity into project capsules without importing Machina lifecycle vocabulary, retain historical_canonical_id referents across PROJECT_REANCHORED transitions, precompute observation facts with inverted referent buckets in build_identity_evidence, and cache sidecar/git-drift envelopes across unchanged checkpointed refresh runs.",
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-GAP-CLOSEOUT-02.json",
+      "edit ledger/capsules.py and tests/test_wave3_capsules_and_locate.py",
+      "edit ledger/identity.py, ledger/changes.py, and tests/test_p25_canonical_ids.py",
+      "edit ledger/evidence.py and tests/test_identity_evidence.py",
+      "edit ledger/sources/git.py, ledger/checkpoints.py, ledger/compiler.py, ledger/cli.py, and tests/test_p51_checkpoints.py",
+      "run python3 -m ledger validate and python3 -m unittest discover -s tests"
+    ],
+    "forbidden": [
+      "mutate registered external source checkouts",
+      "add an execution_state field to ledger_config.json, CURRENT.md, SCHEMA.md, or state/system-manifest.json",
+      "create a competing task or session receipt store inside Project Ledger"
+    ]
+  },
+  "initial_next_action": "Implement read-only .machina/state.json capsule continuity ingestion (G4), historical_canonical_id referent retention across anchor upgrades and run history (G5), and compile-stage checkpoint caching plus inverted-bucket identity evidence scoring (G3), then checkpoint before running full unittest verification.",
+  "completion": "Capsules replace WAVE4_NOT_IMPLEMENTED with OWNED_BY_MACHINA and read-only .machina/state.json continuity, historical prj_* IDs resolve cleanly after anchor upgrades, warm checkpointed refreshes skip compile-stage sidecar and git-drift subprocesses, and python3 -m unittest discover -s tests passes."
+}

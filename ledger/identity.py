@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from itertools import combinations
 from pathlib import Path
 from urllib.parse import urlparse
@@ -684,6 +685,51 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             for url in sorted(facts[obs_id]["raw_urls"]):
                 referents.append({"kind": "raw_url", "value": url, "observation_id": obs_id})
             referents.extend(aliases_by_observation.get(obs_id, []))
+            obs_anchor_id = stable_id("prj", "observation", obs_id)
+            if obs_anchor_id != canonical_project_id:
+                referents.append(
+                    {
+                        "kind": "historical_canonical_id",
+                        "value": obs_anchor_id,
+                        "observation_id": obs_id,
+                        "basis": "observation_anchor",
+                    }
+                )
+        if merge_decision_ids:
+            combined_merge_id = stable_id("prj", "merge_decision", "|".join(merge_decision_ids))
+            if combined_merge_id != canonical_project_id:
+                referents.append(
+                    {
+                        "kind": "historical_canonical_id",
+                        "value": combined_merge_id,
+                        "basis": "merge_decision_anchor",
+                    }
+                )
+            for merge_dec_id in merge_decision_ids:
+                single_merge_id = stable_id("prj", "merge_decision", merge_dec_id)
+                if single_merge_id != canonical_project_id:
+                    referents.append(
+                        {
+                            "kind": "historical_canonical_id",
+                            "value": single_merge_id,
+                            "decision_id": merge_dec_id,
+                            "basis": "merge_decision_anchor",
+                        }
+                    )
+        for obs_id in member_ids:
+            for alias_ref in aliases_by_observation.get(obs_id, []):
+                norm_alias_remote = normalize_remote_identity(str(alias_ref.get("value") or ""))
+                if norm_alias_remote:
+                    alias_remote_id = stable_id("prj", "normalized_remote", norm_alias_remote)
+                    if alias_remote_id != canonical_project_id:
+                        referents.append(
+                            {
+                                "kind": "historical_canonical_id",
+                                "value": alias_remote_id,
+                                "decision_id": alias_ref.get("decision_id"),
+                                "basis": "alias_normalized_remote_anchor",
+                            }
+                        )
 
         # Stable de-duplication without throwing away why a referent exists.
         seen_refs: set[tuple[str, str]] = set()
@@ -731,6 +777,14 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             obs_to_project[obs_id] = canonical_project_id
 
     projects.sort(key=lambda item: item["canonical_project_id"])
+    active_project_ids = {item["canonical_project_id"].casefold() for item in projects}
+    for project in projects:
+        project["referents"] = [
+            ref
+            for ref in project["referents"]
+            if ref.get("kind") != "historical_canonical_id"
+            or str(ref.get("value", "")).casefold() not in active_project_ids
+        ]
     disambiguate_project_gbrain_links(projects)
 
     # A project_key is a useful exact referent, but not automatic merge authority.
@@ -895,6 +949,92 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
     return canonical_payload, review_payload
 
 
+def _enrich_historical_project_ids_from_state(canonical: dict, state_dir: Path) -> None:
+    """Carry forward unambiguous historical ``prj_*`` IDs across re-anchored compiles."""
+    projects = canonical.get("projects")
+    if not isinstance(projects, list) or not projects:
+        return
+
+    active_ids_folded = {str(p["canonical_project_id"]).casefold() for p in projects}
+    projects_by_id = {str(p["canonical_project_id"]): p for p in projects}
+    obs_to_current_pid: dict[str, str] = {}
+    for proj in projects:
+        pid = str(proj["canonical_project_id"])
+        for oid in proj.get("observation_ids", []):
+            obs_to_current_pid[str(oid)] = pid
+
+    historical_records: list[dict] = []
+    prior_canonical_path = state_dir / "canonical-projects.json"
+    if prior_canonical_path.is_file():
+        try:
+            prior_payload = json.loads(prior_canonical_path.read_text(encoding="utf-8"))
+            if isinstance(prior_payload, dict) and isinstance(prior_payload.get("projects"), list):
+                historical_records.extend(
+                    p for p in prior_payload["projects"] if isinstance(p, dict)
+                )
+        except (OSError, json.JSONDecodeError):
+            pass
+
+    runs_dir = state_dir / "runs"
+    if runs_dir.is_dir():
+        for snap_path in sorted(runs_dir.glob("run_*.json")):
+            try:
+                snap = json.loads(snap_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if not isinstance(snap, dict) or not isinstance(snap.get("projects"), dict):
+                continue
+            for snap_proj in snap["projects"].values():
+                if isinstance(snap_proj, dict):
+                    historical_records.append(snap_proj)
+
+    hist_id_to_targets: dict[str, set[str]] = {}
+    hist_id_cased: dict[str, str] = {}
+    for rec in historical_records:
+        hist_obs = [str(oid) for oid in rec.get("observation_ids", []) if str(oid).strip()]
+        matching_current = {obs_to_current_pid[oid] for oid in hist_obs if oid in obs_to_current_pid}
+        if len(matching_current) != 1:
+            continue
+        target_pid = next(iter(matching_current))
+        candidate_hids: list[str] = []
+        raw_pid = str(rec.get("canonical_project_id") or "").strip()
+        if raw_pid.startswith("prj_"):
+            candidate_hids.append(raw_pid)
+        for ref in rec.get("referents", []) if isinstance(rec.get("referents"), list) else []:
+            if isinstance(ref, dict) and ref.get("kind") == "historical_canonical_id":
+                ref_val = str(ref.get("value") or "").strip()
+                if ref_val.startswith("prj_"):
+                    candidate_hids.append(ref_val)
+        for hid in candidate_hids:
+            folded = hid.casefold()
+            if folded in active_ids_folded:
+                continue
+            hist_id_cased.setdefault(folded, hid)
+            hist_id_to_targets.setdefault(folded, set()).add(target_pid)
+
+    for folded_hid in sorted(hist_id_to_targets):
+        targets = hist_id_to_targets[folded_hid]
+        if len(targets) != 1:
+            continue
+        target_pid = next(iter(targets))
+        target_proj = projects_by_id.get(target_pid)
+        if target_proj is None:
+            continue
+        existing_keys = {
+            (str(r.get("kind")), str(r.get("value", "")).casefold())
+            for r in target_proj.get("referents", [])
+            if isinstance(r, dict)
+        }
+        if ("historical_canonical_id", folded_hid) not in existing_keys:
+            target_proj["referents"].append(
+                {
+                    "kind": "historical_canonical_id",
+                    "value": hist_id_cased[folded_hid],
+                    "basis": "run_history_reanchor",
+                }
+            )
+
+
 def materialize_identity(
     *,
     observations: list[dict],
@@ -904,6 +1044,7 @@ def materialize_identity(
     compiled_at: str,
     sources: list[dict] | None = None,
     input_observed_at: str | None = None,
+    git_drift_resolver: Callable[[dict, dict], dict] | None = None,
 ) -> tuple[dict, dict]:
     from .capsules import materialize_capsules
     from .evidence import build_identity_evidence
@@ -912,6 +1053,7 @@ def materialize_identity(
     state_dir.mkdir(parents=True, exist_ok=True)
     decisions = load_identity_decisions(decisions_path)
     canonical, reviews = compile_identity(observations, decisions)
+    _enrich_historical_project_ids_from_state(canonical, state_dir)
     canonical.update({"run_id": run_id, "compiled_at": compiled_at})
     reviews.update({"run_id": run_id, "compiled_at": compiled_at})
 
@@ -938,6 +1080,7 @@ def materialize_identity(
         run_id=run_id,
         compiled_at=compiled_at,
         input_observed_at=observed_at,
+        git_drift_resolver=git_drift_resolver,
     )
     return canonical, reviews
 
@@ -957,6 +1100,7 @@ def load_canonical_projects(state_dir: Path) -> dict:
 
 _RESOLVE_PRIORITY = {
     "canonical_project_id": 0,
+    "historical_canonical_id": 1,
     "normalized_remote": 1,
     "path": 1,
     "decision_alias": 1,

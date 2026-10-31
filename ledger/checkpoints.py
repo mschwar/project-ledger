@@ -150,6 +150,7 @@ def git_repo_fingerprint(directory: Path) -> str | None:
 
     for label, target in (
         ("HEAD", git_dir / "HEAD"),
+        ("index", git_dir / "index"),
         ("config", common_dir / "config"),
         ("packed-refs", common_dir / "packed-refs"),
     ):
@@ -269,6 +270,12 @@ def filesystem_candidate_fingerprint(
             _file_bytes_sha256(sidecar_path),
         ],
     )
+    machina_state_path = directory / ".machina" / "state.json"
+    _feed(
+        h,
+        "machina_state",
+        _file_bytes_sha256(machina_state_path if safe_path_exists(machina_state_path) else None),
+    )
 
     shallow_rels = sorted(
         fp.relative_to(directory).as_posix()
@@ -380,6 +387,12 @@ def inventory_candidate_fingerprint(
                 sidecar_path.relative_to(filesystem_path).as_posix() if sidecar_path else None,
                 _file_bytes_sha256(sidecar_path),
             ],
+        )
+        machina_state_path = filesystem_path / ".machina" / "state.json"
+        _feed(
+            h,
+            "machina_state",
+            _file_bytes_sha256(machina_state_path if safe_path_exists(machina_state_path) else None),
         )
         _feed(h, "git_fp", git_repo_fingerprint(filesystem_path))
 
@@ -649,11 +662,24 @@ def collect_entries_incremental(
                 entry = adapter.build(candidate, root_cfg, defaults, output_dir)
                 included = entry is not None
 
-            current_cands[cand_key] = {
+            cand_record: dict[str, object] = {
                 "fingerprint": cand_fp,
                 "included": included,
                 "entry": entry,
             }
+            if (
+                included
+                and cand_fp is not None
+                and isinstance(cached_cand, dict)
+                and cached_cand.get("fingerprint") == cand_fp
+                and cached_cand.get("compile_cache_fingerprint") == cand_fp
+            ):
+                cand_record["compile_cache_fingerprint"] = cand_fp
+                if isinstance(cached_cand.get("sidecar_envelope"), dict):
+                    cand_record["sidecar_envelope"] = cached_cand["sidecar_envelope"]
+                if isinstance(cached_cand.get("git_drift"), dict):
+                    cand_record["git_drift"] = cached_cand["git_drift"]
+            current_cands[cand_key] = cand_record
             if entry is not None:
                 source_entries += 1
                 entries.append(entry)

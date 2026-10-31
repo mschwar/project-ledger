@@ -18,7 +18,7 @@ from ..models import normalize_remote_url, repo_name_from_remote
 def git_output(directory: Path, *args: str) -> str:
     try:
         proc = subprocess.run(
-            ["git", "-C", str(directory), *args],
+            ["git", "--no-optional-locks", "-C", str(directory), *args],
             capture_output=True,
             text=True,
             check=False,

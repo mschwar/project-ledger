@@ -253,7 +253,13 @@ def observation_evidence(observation: dict) -> list[dict]:
     return records
 
 
-def score_pair(left: dict, right: dict) -> dict:
+def score_pair(
+    left: dict,
+    right: dict,
+    *,
+    left_facts: dict | None = None,
+    right_facts: dict | None = None,
+) -> dict:
     """Score whether two *observations* are related, and on what basis.
 
     Returns a verdict: ``strong_match`` (exact normalized remote shared), ``weak``
@@ -263,8 +269,8 @@ def score_pair(left: dict, right: dict) -> dict:
     left_id = str(left.get("observation_id", ""))
     right_id = str(right.get("observation_id", ""))
     ids = sorted({left_id, right_id})
-    left_facts = observation_facts(left)
-    right_facts = observation_facts(right)
+    left_facts = left_facts if left_facts is not None else observation_facts(left)
+    right_facts = right_facts if right_facts is not None else observation_facts(right)
 
     verdict: str = "none"
     records: list[dict] = []
@@ -332,6 +338,8 @@ def score_pair(left: dict, right: dict) -> dict:
 def project_identity_evidence(
     project: dict,
     observations_by_id: dict[str, dict],
+    *,
+    facts_by_id: dict[str, dict] | None = None,
 ) -> tuple[list[dict], dict]:
     """Records + scoring for ONE canonical project (its members' evidence, unifying
     evidence, weak overlaps, and an evidence summary). Called by the compiler so the
@@ -385,7 +393,12 @@ def project_identity_evidence(
     for left_id, right_id in combinations(member_ids, 2):
         if left_id not in observations_by_id or right_id not in observations_by_id:
             continue
-        pair = score_pair(observations_by_id[left_id], observations_by_id[right_id])
+        pair = score_pair(
+            observations_by_id[left_id],
+            observations_by_id[right_id],
+            left_facts=facts_by_id.get(left_id) if facts_by_id is not None else None,
+            right_facts=facts_by_id.get(right_id) if facts_by_id is not None else None,
+        )
         if pair["verdict"] == "weak":
             weak_overlap_pair_count += 1
 
@@ -478,6 +491,7 @@ def build_identity_evidence(
         for o in observations
         if str(o.get("observation_id", ""))
     }
+    facts_by_id = {oid: observation_facts(obs) for oid, obs in by_id.items()}
 
     # A canonical project is keyed by its (unique) observation membership rather than
     # its canonical_project_id, because two *distinct* projects can briefly share a
@@ -489,7 +503,9 @@ def build_identity_evidence(
     evidence_list: list[dict] = []
     for project in canonical_payload.get("projects", []):
         member_key = "|".join(sorted(project["observation_ids"]))
-        project_evidence, summary = project_identity_evidence(project, by_id)
+        project_evidence, summary = project_identity_evidence(
+            project, by_id, facts_by_id=facts_by_id
+        )
         projects_by_members[member_key] = {
             "canonical_project_id": project["canonical_project_id"],
             "observation_ids": sorted(project["observation_ids"]),
@@ -502,18 +518,53 @@ def build_identity_evidence(
     projects_sorted = sorted(projects_by_members)
 
     # Cross-project weak overlaps + negatives: pairs that share a referent across
-    # DISTINCT projects, or that a negative decision keeps apart. These are recorded
-    # to make "weak name/semantic similarity clearly marked as weak" explicit and to
-    # keep negative/conflict evidence visible at the store level.
+    # DISTINCT projects, or that a negative decision keeps apart. Pre-index observations
+    # into inverted referent buckets (folded names, non-empty folded project_key, and
+    # normalized paths) plus negative_by_pair so candidate generation scales with actual
+    # referent collisions rather than O(N^2) pairwise observation_facts() calls.
     negative_by_pair = negative_decision_ids_by_pair(decisions_payload)
+    name_buckets: dict[str, list[str]] = {}
+    key_buckets: dict[str, list[str]] = {}
+    path_buckets: dict[str, list[str]] = {}
+    for obs_id in sorted(project_of_obs):
+        obs_facts = facts_by_id.get(obs_id)
+        if obs_facts is None:
+            continue
+        for folded_name in {_fold(v) for v in obs_facts["names"]}:
+            name_buckets.setdefault(folded_name, []).append(obs_id)
+        raw_key = obs_facts["project_key"]
+        if raw_key:
+            key_buckets.setdefault(_fold(raw_key), []).append(obs_id)
+        for path_val in obs_facts["paths"]:
+            path_buckets.setdefault(path_val, []).append(obs_id)
+
+    candidate_pairs: set[tuple[str, str]] = set()
+    for bucket_map in (name_buckets, key_buckets, path_buckets):
+        for bucket_ids in bucket_map.values():
+            if len(bucket_ids) < 2:
+                continue
+            for left_id, right_id in combinations(bucket_ids, 2):
+                if project_of_obs[left_id] != project_of_obs[right_id]:
+                    candidate_pairs.add((left_id, right_id))
+    for left_id, right_id in negative_by_pair:
+        if (
+            left_id in project_of_obs
+            and right_id in project_of_obs
+            and project_of_obs[left_id] != project_of_obs[right_id]
+        ):
+            candidate_pairs.add(_pair(left_id, right_id))
+
     cross_project: list[dict] = []
-    for left_id, right_id in combinations(sorted(project_of_obs), 2):
+    for left_id, right_id in sorted(candidate_pairs):
         left_members = project_of_obs[left_id]
         right_members = project_of_obs[right_id]
-        if left_members == right_members:
-            continue
         pair_key = _pair(left_id, right_id)
-        scored = score_pair(by_id[left_id], by_id[right_id])
+        scored = score_pair(
+            by_id[left_id],
+            by_id[right_id],
+            left_facts=facts_by_id[left_id],
+            right_facts=facts_by_id[right_id],
+        )
         if scored["verdict"] != "weak" and pair_key not in negative_by_pair:
             continue
         records = scored["evidence"]

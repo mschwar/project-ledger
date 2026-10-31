@@ -1611,12 +1611,26 @@ def changes_payload(
         if resolution["status"] == "ambiguous":
             return resolution
         if resolution["status"] == "resolved":
-            target_pid = resolution["canonical_project_id"]
-            target_key = resolution.get("project_key")
-            filtered = [
-                ev for ev in filtered if _event_touches_project(ev, target_pid, target_key)
-            ]
-            filters_applied["canonical_project_id"] = target_pid
+            matched_by = resolution.get("matched_by") or []
+            matched_only_historical_id = bool(matched_by) and all(
+                isinstance(ref, dict) and ref.get("kind") == "historical_canonical_id"
+                for ref in matched_by
+            )
+            historical_matches = (
+                [ev for ev in filtered if _event_touches_project(ev, query, None)]
+                if matched_only_historical_id
+                else []
+            )
+            if historical_matches:
+                filtered = historical_matches
+                filters_applied["historical_project_referent"] = query
+            else:
+                target_pid = resolution["canonical_project_id"]
+                target_key = resolution.get("project_key")
+                filtered = [
+                    ev for ev in filtered if _event_touches_project(ev, target_pid, target_key)
+                ]
+                filters_applied["canonical_project_id"] = target_pid
         else:
             # Allow querying a historical project ID or key that was just removed/merged/split.
             historical_matches = [

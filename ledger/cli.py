@@ -178,12 +178,18 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _compile_from_paths(args: argparse.Namespace, *, input_json: Path) -> dict:
+def _compile_from_paths(
+    args: argparse.Namespace,
+    *,
+    input_json: Path,
+    use_checkpoint_compile_cache: bool = False,
+) -> dict:
     return compile_state(
         config_path=Path(args.config),
         compat_output_path=input_json,
         state_dir=Path(args.state_dir),
         identity_decisions_path=Path(args.identity_decisions),
+        use_checkpoint_compile_cache=use_checkpoint_compile_cache,
     )
 
 
@@ -245,7 +251,11 @@ def main(argv: list[str] | None = None) -> int:
                 if scan.returncode != 0:
                     print(f"LEDGER_SCAN_FAILED: build_ledger.py exited {scan.returncode}", file=sys.stderr)
                     return scan.returncode or 2
-            manifest = _compile_from_paths(args, input_json=output_dir / "projects.json")
+            manifest = _compile_from_paths(
+                args,
+                input_json=output_dir / "projects.json",
+                use_checkpoint_compile_cache=True,
+            )
             _print_compile_result(manifest, args.state_dir, args.json)
             return 0
 
