@@ -181,6 +181,29 @@ class SidecarValidationUnitTests(unittest.TestCase):
             loaded_fresh = load_sidecar(fresh_repo / ".project-ledger.json")
             self.assertFalse(loaded_fresh.get("_stale_sidecar"))
 
+            # 3. PR branch modifying .project-ledger.json and merged via `--no-ff` merge commit
+            # must also treat HEAD as fresh (`git log -1 -m`).
+            subprocess.run(["git", "-C", str(fresh_repo), "checkout", "-q", "-b", "feat/update-sidecar"], check=True)
+            (fresh_repo / ".project-ledger.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0.0",
+                        "project_key": "fresh-repo",
+                        "last_session_at": "2020-01-02T00:00:00Z",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "-C", str(fresh_repo), "add", ".project-ledger.json"], check=True)
+            subprocess.run(["git", "-C", str(fresh_repo), "commit", "-q", "-m", "update sidecar on PR"], check=True)
+            subprocess.run(["git", "-C", str(fresh_repo), "checkout", "-q", "main"], check=True)
+            subprocess.run(
+                ["git", "-C", str(fresh_repo), "merge", "--no-ff", "-q", "-m", "Merge PR #1", "feat/update-sidecar"],
+                check=True,
+            )
+            loaded_merged = load_sidecar(fresh_repo / ".project-ledger.json")
+            self.assertFalse(loaded_merged.get("_stale_sidecar"))
+
 
 class SidecarCompilerIntegrationTests(unittest.TestCase):
     def test_refresh_and_compile_surface_invalid_sidecars_and_stale_sidecar_warnings(self) -> None:
