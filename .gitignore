@@ -3,7 +3,6 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .venv/
-tests/.tmp/
 tests/__pycache__/
 output/
 state/

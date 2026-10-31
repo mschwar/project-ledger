@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import json
-import shutil
 import subprocess
 import sys
+import tempfile
 import unittest
-import uuid
 from pathlib import Path
 from unittest import mock
 
@@ -13,18 +12,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import build_ledger  # noqa: E402
 
-TMP_ROOT = Path(__file__).resolve().parent / ".tmp"
-TMP_ROOT.mkdir(exist_ok=True)
-
 
 class ScratchDir:
     def __enter__(self) -> Path:
-        self.path = TMP_ROOT / uuid.uuid4().hex
-        self.path.mkdir(parents=True, exist_ok=False)
-        return self.path
+        self._tmp = tempfile.TemporaryDirectory()
+        return Path(self._tmp.name)
 
     def __exit__(self, exc_type, exc, tb) -> None:
-        shutil.rmtree(self.path, ignore_errors=True)
+        self._tmp.cleanup()
 
 
 class ProjectLedgerTests(unittest.TestCase):

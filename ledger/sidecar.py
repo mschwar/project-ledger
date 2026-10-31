@@ -355,7 +355,7 @@ def check_sidecar_head_drift(
         head_epoch = parse_iso_datetime(live_head_at)
         if declared_epoch is not None and head_epoch is not None and declared_epoch < head_epoch:
             sidecar_last_commit = git_output(
-                target_dir, "log", "-1", "--format=%H", "--", str(sidecar_path)
+                target_dir, "log", "-1", "-m", "--format=%H", "--", str(sidecar_path)
             )
             if sidecar_last_commit.strip().lower() != live_head.strip().lower():
                 warnings.append(
