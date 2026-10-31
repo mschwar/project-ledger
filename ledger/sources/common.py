@@ -158,10 +158,16 @@ def infer_storage_scope(directory: Path, canonical_url: str) -> str:
 def load_sidecar(sidecar_path: Path | None) -> dict:
     if not sidecar_path:
         return {}
-    try:
-        return read_json(sidecar_path)
-    except Exception as exc:  # noqa: BLE001
-        return {"_sidecar_error": str(exc)}
+    from ..sidecar import validate_sidecar_file
+
+    envelope, accepted = validate_sidecar_file(sidecar_path)
+    result = dict(accepted)
+    if envelope["issues"]:
+        result["_sidecar_error"] = "; ".join(
+            str(issue.get("detail") or issue.get("code") or "invalid sidecar")
+            for issue in envelope["issues"]
+        )
+    return result
 
 
 def parse_readme_summary(readme_path: Path | None) -> tuple[str, str]:

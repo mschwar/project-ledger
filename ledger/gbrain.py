@@ -59,8 +59,10 @@ def normalize_gbrain_slug(raw: str | None) -> str:
 def _match_observation_gbrain_source(observation: dict) -> tuple[str | None, str | None]:
     """Return ``(source_slug, match_basis)`` if ``observation`` maps to a GBrain corpus."""
     compat = observation.get("compat_entry") if isinstance(observation.get("compat_entry"), dict) else {}
+    sidecar = observation.get("sidecar") if isinstance(observation.get("sidecar"), dict) else {}
+    decls = sidecar.get("declarations") if isinstance(sidecar.get("declarations"), dict) else {}
     for field in ("gbrain_source_slug", "gbrain_source"):
-        declared = str(compat.get(field) or observation.get(field) or "").strip()
+        declared = str(decls.get(field) or compat.get(field) or observation.get(field) or "").strip()
         if declared:
             return normalize_gbrain_slug(declared), f"declared_sidecar:{field}"
 
@@ -125,3 +127,55 @@ def resolve_gbrain_link(project: dict, observations_by_id: dict[str, dict]) -> d
         "match_basis": "default_brain_source",
         "matched_observation_id": None,
     }
+
+
+def disambiguate_project_gbrain_links(projects: list[dict]) -> None:
+    """Ensure distinct canonical projects never collide on the same ``gbrain.page_key``.
+
+    When two or more distinct canonical projects derive the same base ``project_slug``
+    (for example ``github.com/mschwar/the-garden`` and local-only ``the_garden``), the
+    highest-priority project (remote-anchored first, then ``active-repos`` corpus, then
+    lexical ``canonical_project_id``) retains ``projects/<slug>``, and secondary projects
+    receive a deterministic ``projects/<slug>-<id6>`` key within ``GBRAIN_SLUG_MAX_LEN``.
+    """
+    by_page_key: dict[str, list[dict]] = {}
+    for project in projects:
+        gbrain = project.get("gbrain")
+        if not isinstance(gbrain, dict):
+            continue
+        page_key = str(gbrain.get("page_key") or "").strip()
+        if page_key:
+            by_page_key.setdefault(page_key, []).append(project)
+
+    used_keys: set[str] = set(by_page_key.keys())
+    for page_key in sorted(by_page_key):
+        group = by_page_key[page_key]
+        if len(group) <= 1:
+            continue
+
+        def _priority(proj: dict) -> tuple[int, int, str]:
+            has_remote = 0 if proj.get("normalized_remotes") else 1
+            in_active = 0 if proj.get("gbrain_source_slug") == "active-repos" else 1
+            return (has_remote, in_active, str(proj.get("canonical_project_id") or ""))
+
+        ordered = sorted(group, key=_priority)
+        for secondary in ordered[1:]:
+            cid = str(secondary.get("canonical_project_id") or "")
+            raw_suffix = re.sub(r"[^a-z0-9]", "", cid.removeprefix("prj_").lower())[:6] or "alt"
+            gbrain = dict(secondary["gbrain"])
+            base_slug = str(gbrain.get("project_slug") or "project")
+            max_base = max(1, GBRAIN_SLUG_MAX_LEN - len(raw_suffix) - 1)
+            candidate_slug = f"{base_slug[:max_base].rstrip('-')}-{raw_suffix}"
+            candidate_key = f"projects/{candidate_slug}"
+            counter = 2
+            while candidate_key in used_keys:
+                extra = f"{raw_suffix}{counter}"[:8]
+                max_b = max(1, GBRAIN_SLUG_MAX_LEN - len(extra) - 1)
+                candidate_slug = f"{base_slug[:max_b].rstrip('-')}-{extra}"
+                candidate_key = f"projects/{candidate_slug}"
+                counter += 1
+            used_keys.add(candidate_key)
+            gbrain["project_slug"] = candidate_slug
+            gbrain["page_key"] = candidate_key
+            gbrain["disambiguated_from"] = page_key
+            secondary["gbrain"] = gbrain

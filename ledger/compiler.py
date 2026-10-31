@@ -12,6 +12,7 @@ from .config import describe_sources, read_config, validate_config
 from .contracts import SOURCE_RESULT_STATES, capability
 from .ids import digest_json, observation_id_for, path_digest, stable_id
 from .identity import materialize_identity
+from .sidecar import inspect_entry_sidecar
 
 
 def now_utc() -> str:
@@ -183,6 +184,19 @@ def compile_state(
         if resolution == "unresolved":
             unresolved_source_count += 1
         snapshot_id = snapshot_id_by_source.get(source_id) or stable_id("snap", source_id, observed_at)
+        sidecar_envelope = inspect_entry_sidecar(entry)
+        raw_project_key = str(entry.get("project_key", "")).strip() or None
+        if (
+            sidecar_envelope.get("present")
+            and sidecar_envelope.get("status") == "invalid"
+            and "project_key" not in (sidecar_envelope.get("declarations") or {})
+            and any(
+                issue.get("field") in {None, "schema_version", "project_key"}
+                for issue in (sidecar_envelope.get("issues") or [])
+            )
+            and not str(entry.get("remote_url") or "").strip()
+        ):
+            raw_project_key = None
         observation = {
             "schema_version": OBSERVATION_SCHEMA_VERSION,
             "observation_id": observation_id_for(entry, source_id),
@@ -190,10 +204,11 @@ def compile_state(
             "snapshot_id": snapshot_id,
             "source_resolution": resolution,
             "observed_at": observed_at,
-            "project_key": str(entry.get("project_key", "")).strip() or None,
+            "project_key": raw_project_key,
             "location": str(entry.get("path", "")).strip()
             or str(entry.get("canonical_url", "")).strip()
             or None,
+            "sidecar": sidecar_envelope,
             "compat_entry": entry,
         }
         observations.append(observation)
@@ -387,6 +402,7 @@ def compile_state(
         "capabilities": {
             "compat_observations": capability("available"),
             "typed_observations": capability("available"),
+            "sidecar_declarations": capability("available"),
             "source_health": capability("available"),
             "source_checkpoints": capability("available"),
             "canonical_projects": capability("available"),
@@ -394,6 +410,7 @@ def compile_state(
             "project_capsules": capability("available"),
             "review_queue": capability("available"),
             "change_feed": capability("available"),
+            "gbrain_page_sync": capability("available"),
         },
         "artifacts": {
             "compat_observations": str(compat_output_path),

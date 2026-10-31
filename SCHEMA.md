@@ -239,6 +239,7 @@ source_resolution      resolved | unresolved
 observed_at
 project_key            nullable compatibility hint/claim
 location               nullable
+sidecar                versioned sidecar declaration envelope (P1.7: present, path, status, declared_schema_version, normalized_schema_version, declarations, issues)
 compat_entry           complete legacy record
 ```
 

@@ -1,4 +1,5 @@
 {
+  "schema_version": "1.0.0",
   "project_key": "github.com/mschwar/project-ledger",
   "display_name": "Project Ledger",
   "description": "Project-reality compiler for distributed project sources, typed observations, and evolving canonical identity.",
@@ -12,8 +13,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-10-30T16:17:00Z",
-  "last_session_summary": "Fixed rank_project_observations so PRIMARY_ACTIVE_ROOT and content_as_of outrank idle secondary PRIMARY_BRANCH checkouts; archived 4 redundant Batch 2 secondary checkouts (steam-db-mattified, gbrain-candidate, gbrain-master, /central/projects/song-clean) with append-only supersession/re-anchoring decisions (176 canonical projects across 210 observations, 0 open reviews, 0 untriaged weak overlaps); exposed top-level untriaged_weak_overlap_count on ledger changes --json; reconciled 9 mechanical git-drift checkouts across /central; all 145 unit tests passing.",
-  "next_step": "Monitor scheduled homelab discovery watchdog incremental/full-scan runs and triage the remaining 16 repositories with substantive uncommitted edits, deletions, mirrors, or PII.",
+  "last_session_at": "2026-10-31T02:39:00Z",
+  "last_session_summary": "Landed P1.7 versioned sidecar declaration validation (ledger/sidecar.py, observation['sidecar'], SIDECAR_DECLARATION_INVALID review, 66/66 live /central sidecars valid), collision-free GBrain page_key disambiguation + idempotent GBrain projects/<slug>.md Reality Provider projector (ledger/gbrain_pages.py + ledger sync-gbrain), and P0.2 remote branch hygiene (9 legacy origin/* branches archived into verified git bundle and pruned so main is sole authority); 151/151 unit tests passing.",
+  "next_step": "Keep scheduled 15m/daily homelab discovery watchdog + sync-gbrain active and resolve the 4 queued operator/domain git-drift WorkSpecs on the homelab board.",
   "last_push_at": ""
 }
