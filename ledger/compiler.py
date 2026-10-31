@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -364,6 +365,15 @@ def compile_state(
         state_dir=state_dir,
     )
 
+    output_root = state_dir.resolve().parent
+
+    def _rel_artifact(path: Path) -> str:
+        resolved = path.resolve()
+        try:
+            return resolved.relative_to(output_root).as_posix()
+        except ValueError:
+            return Path(os.path.relpath(resolved, start=state_dir.resolve())).as_posix()
+
     manifest = {
         "schema_version": MANIFEST_SCHEMA_VERSION,
         "compiler_version": COMPILER_VERSION,
@@ -413,16 +423,16 @@ def compile_state(
             "gbrain_page_sync": capability("available"),
         },
         "artifacts": {
-            "compat_observations": str(compat_output_path),
-            "typed_observations": str(observations_path),
-            "source_checkpoints": str(checkpoint_file),
-            "canonical_projects": str(canonical_path),
-            "canonical_markdown": str(state_dir / "canonical-projects.md"),
-            "project_capsules": str(capsules_dir),
-            "identity_evidence": str(evidence_path),
-            "review_queue": str(review_path),
-            "change_feed": str(changes_path),
-            "system_manifest": str(manifest_path),
+            "compat_observations": _rel_artifact(compat_output_path),
+            "typed_observations": _rel_artifact(observations_path),
+            "source_checkpoints": _rel_artifact(checkpoint_file),
+            "canonical_projects": _rel_artifact(canonical_path),
+            "canonical_markdown": _rel_artifact(state_dir / "canonical-projects.md"),
+            "project_capsules": _rel_artifact(capsules_dir),
+            "identity_evidence": _rel_artifact(evidence_path),
+            "review_queue": _rel_artifact(review_path),
+            "change_feed": _rel_artifact(changes_path),
+            "system_manifest": _rel_artifact(manifest_path),
         },
         "limitations": [
             "Canonical identity auto-merges only exact normalized repository remotes; names and compatibility project_key values are referents, not automatic identity authority.",

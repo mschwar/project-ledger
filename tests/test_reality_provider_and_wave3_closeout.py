@@ -18,14 +18,14 @@ import json
 import subprocess
 import tempfile
 import unittest
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 
 from ledger import cli
 from ledger.compiler import compile_state
 from ledger.explain import explain_payload
-from ledger.gbrain import normalize_gbrain_slug, resolve_gbrain_link
+from ledger.gbrain import normalize_gbrain_slug
 from ledger.identity import compile_identity, resolve_payload
 from ledger.sources.git import inspect_git_worktree_state
 from ledger.triage import approve_candidate_decisions, review_payload
@@ -280,8 +280,9 @@ class ExplainAndReviewCloseoutTests(unittest.TestCase):
                 generated_at="2026-10-29T03:10:00Z",
             )
 
-            # P3.7: canonical-projects.md materialized and registered.
-            md_path = Path(manifest["artifacts"]["canonical_markdown"])
+            # P3.7: canonical-projects.md materialized and registered as a portable relative path.
+            self.assertEqual(manifest["artifacts"]["canonical_markdown"], "state/canonical-projects.md")
+            md_path = state_dir.parent / manifest["artifacts"]["canonical_markdown"]
             self.assertTrue(md_path.is_file())
             md_text = md_path.read_text(encoding="utf-8")
             self.assertIn("# Canonical Project Ledger", md_text)

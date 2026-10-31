@@ -454,6 +454,60 @@ class P51SourceCheckpointTests(unittest.TestCase):
             self.assertEqual(rc4, 0)
             self.assertIsNotNone(load_source_checkpoints(cp_path))
 
+    def test_refresh_across_distinct_staging_output_dirs_hits_checkpoints_and_emits_portable_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config_path, _, _, _ = self._build_mixed_estate(root)
+            stage1 = root / "stage-run-1"
+            stage2 = root / "stage-run-2"
+            (stage1 / "output").mkdir(parents=True)
+            (stage1 / "state").mkdir(parents=True)
+            (stage2 / "output").mkdir(parents=True)
+            (stage2 / "state").mkdir(parents=True)
+
+            def _run_cli(argv: list[str]) -> int:
+                buf = io.StringIO()
+                with contextlib.redirect_stdout(buf):
+                    return cli.main(argv)
+
+            rc1 = _run_cli(
+                [
+                    "refresh",
+                    "--config",
+                    str(config_path),
+                    "--output-dir",
+                    str(stage1 / "output"),
+                    "--state-dir",
+                    str(stage1 / "state"),
+                    "--no-markdown-mirror",
+                ]
+            )
+            self.assertEqual(rc1, 0)
+            cp1 = stage1 / "state" / CHECKPOINT_FILENAME
+            self.assertTrue(cp1.is_file())
+            (stage2 / "state" / CHECKPOINT_FILENAME).write_bytes(cp1.read_bytes())
+
+            rc2 = _run_cli(
+                [
+                    "refresh",
+                    "--config",
+                    str(config_path),
+                    "--output-dir",
+                    str(stage2 / "output"),
+                    "--state-dir",
+                    str(stage2 / "state"),
+                    "--no-markdown-mirror",
+                ]
+            )
+            self.assertEqual(rc2, 0)
+            m2 = load_manifest(stage2 / "state")
+            self.assertEqual(m2["checkpoints"]["rebuilt_candidate_count"], 0)
+            self.assertGreater(m2["checkpoints"]["hit_source_count"], 0)
+            self.assertGreater(m2["checkpoints"]["reused_candidate_count"], 0)
+            for key, rel_path in m2["artifacts"].items():
+                self.assertFalse(Path(rel_path).is_absolute(), f"Artifact {key} leaked absolute path: {rel_path}")
+                self.assertNotIn(str(stage2), rel_path)
+
     def test_committed_triage_candidate_batches_validate_cleanly(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]
         candidates_path = repo_root / "registry" / "weak-overlap-triage-candidates.json"
