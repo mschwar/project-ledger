@@ -304,14 +304,22 @@ def _ingest_changed_pages(
             "gbrain_synced": False,
         }
 
+    # Explicitly pin --source default and --no-pull:
+    # 1. Without --source default, running inside /central/repos/active/project-ledger
+    #    causes GBrain's local_path resolver to bind to source_id='active-repos'.
+    # 2. Without --no-pull, uncommitted write-through MCP edits elsewhere in /home/prime/brain
+    #    could cause git pull to abort before importing projects/*.md.
     sync_proc = subprocess.run(
         [
             resolved_bin,
             "sync",
+            "--source",
+            "default",
             "--repo",
             str(brain_dir),
             "--src-subpath",
             "projects",
+            "--no-pull",
             "--no-embed",
             "--no-extract",
         ],

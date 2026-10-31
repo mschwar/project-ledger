@@ -259,7 +259,18 @@ class GBrainPageProjectorTests(unittest.TestCase):
             calls = [json.loads(line) for line in fake_gbrain_log.read_text(encoding="utf-8").splitlines()]
             self.assertEqual(
                 calls,
-                [["sync", "--repo", str(brain_dir.resolve()), "--src-subpath", "projects", "--no-embed", "--no-extract"]],
+                [[
+                    "sync",
+                    "--source",
+                    "default",
+                    "--repo",
+                    str(brain_dir.resolve()),
+                    "--src-subpath",
+                    "projects",
+                    "--no-pull",
+                    "--no-embed",
+                    "--no-extract",
+                ]],
             )
 
 
