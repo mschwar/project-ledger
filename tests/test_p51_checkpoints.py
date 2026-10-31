@@ -529,6 +529,72 @@ class P51SourceCheckpointTests(unittest.TestCase):
             validated = load_identity_decisions(temp_decisions)
             self.assertEqual(len(validated["decisions"]), 62)
 
+    def test_warm_refresh_reuses_compile_stage_sidecar_and_git_drift_and_invalidates_on_dirty_index(self) -> None:
+        import ledger.compiler as compiler_mod
+        import ledger.sources.git as git_mod
+        from ledger.capsules import show_payload
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config_path, output_dir, state_dir, paths = self._build_mixed_estate(root)
+
+            def _run_refresh() -> int:
+                buf = io.StringIO()
+                with contextlib.redirect_stdout(buf):
+                    return cli.main(
+                        [
+                            "refresh",
+                            "--config",
+                            str(config_path),
+                            "--output-dir",
+                            str(output_dir),
+                            "--state-dir",
+                            str(state_dir),
+                            "--no-markdown-mirror",
+                        ]
+                    )
+
+            # 1. Cold refresh populates both extraction and compile-stage checkpoint caches.
+            self.assertEqual(_run_refresh(), 0)
+
+            # 2. Warm refresh with zero changes must invoke ZERO compile-stage sidecar or git-drift probes.
+            with (
+                mock.patch.object(
+                    compiler_mod,
+                    "inspect_entry_sidecar",
+                    side_effect=AssertionError("warm refresh must reuse cached sidecar_envelope"),
+                ),
+                mock.patch.object(
+                    git_mod,
+                    "inspect_git_worktree_state",
+                    side_effect=AssertionError("warm refresh must reuse cached git_drift"),
+                ),
+            ):
+                self.assertEqual(_run_refresh(), 0)
+
+            # 3. Uncommitted working-tree modification in repo_a invalidates repo_a's fingerprint
+            #    and surfaces GIT_DIRTY_WORKTREE while repo_b stays cached.
+            (paths["repo_a"] / "uncommitted.txt").write_text("dirty edit\n", encoding="utf-8")
+            real_worktree_probe = git_mod.inspect_git_worktree_state
+            probed_dirs: list[Path] = []
+
+            def spy_worktree(directory: Path) -> dict:
+                probed_dirs.append(directory.resolve())
+                return real_worktree_probe(directory)
+
+            with mock.patch.object(git_mod, "inspect_git_worktree_state", side_effect=spy_worktree):
+                self.assertEqual(_run_refresh(), 0)
+
+            self.assertEqual(probed_dirs, [paths["repo_a"].resolve()])
+            alpha_cap = show_payload(state_dir, "github.com/example/alpha")
+            self.assertIn("GIT_DIRTY_WORKTREE", alpha_cap["git_facts"]["warning_codes"])
+
+            # 4. Staging (`git add`) updates `.git/index` and invalidates git_repo_fingerprint.
+            fp_before_stage = git_repo_fingerprint(paths["repo_a"])
+            subprocess.run(["git", "add", "uncommitted.txt"], cwd=paths["repo_a"], check=True, capture_output=True)
+            fp_after_stage = git_repo_fingerprint(paths["repo_a"])
+            self.assertNotEqual(fp_before_stage, fp_after_stage)
+
 
 if __name__ == "__main__":
     unittest.main()

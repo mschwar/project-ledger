@@ -709,6 +709,104 @@ class CtxTier2CapsuleIngestionTests(unittest.TestCase):
             self.assertEqual(cap_t1["ctx"]["total_files"], 20)
             self.assertEqual(cap_t1["ctx"]["subsystem_count"], 8)
             self.assertEqual(cap_t1["purpose"], "Tier-1 ctx manifest overview summary.")
+            self.assertEqual(
+                cap_t1["current_state"]["session_receipts_reason_code"], "OWNED_BY_MACHINA"
+            )
+            self.assertEqual(cap_t1["current_state"]["session_receipts_state"], "unavailable")
+            self.assertEqual(
+                cap_t1["current_state"]["machina_continuity"]["state"], "not_present"
+            )
+
+    def test_capsule_ingests_read_only_machina_continuity_without_lifecycle_vocabulary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            state_dir = base / "state"
+            repo_machina = base / "repo-machina"
+            (repo_machina / ".machina").mkdir(parents=True)
+            (repo_machina / ".machina" / "state.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "sequence": 14,
+                        "slice": 2,
+                        "updated_at": "2026-10-31T18:00:00Z",
+                        "active_unit": {
+                            "id": "UNIT-02",
+                            "title": "Close capsule continuity gap",
+                        },
+                        "last_completed": {
+                            "slice": 1,
+                            "summary": "Completed UNIT-01 thin-waist proof.",
+                            "timestamp": "2026-10-31T17:30:00Z",
+                            "unit": {"id": "UNIT-01", "title": "Thin waist"},
+                        },
+                        "last_checkpoint": {
+                            "slice": 2,
+                            "summary": "Checkpointed UNIT-02 capsule continuity implementation.",
+                            "timestamp": "2026-10-31T17:55:00Z",
+                        },
+                        "next_action": "Run full unittest suite and open PR.",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            repo_corrupt = base / "repo-corrupt"
+            (repo_corrupt / ".machina").mkdir(parents=True)
+            (repo_corrupt / ".machina" / "state.json").write_text("{corrupt", encoding="utf-8")
+
+            obs_list = [
+                _obs(
+                    "obs_machina",
+                    project_key="repo-machina",
+                    name="Repo Machina",
+                    path=str(repo_machina),
+                    remote_url="https://github.com/example/repo-machina.git",
+                    last_session_at="2026-05-19T12:00:00Z",
+                    last_session_summary="Stale May sidecar summary.",
+                    next_step="Stale May next step.",
+                ),
+                _obs(
+                    "obs_corrupt",
+                    project_key="repo-corrupt",
+                    name="Repo Corrupt",
+                    path=str(repo_corrupt),
+                    remote_url="https://github.com/example/repo-corrupt.git",
+                    last_session_at="2026-05-19T12:00:00Z",
+                    last_session_summary="Fallback sidecar summary.",
+                ),
+            ]
+            materialize_identity(
+                observations=obs_list,
+                decisions_path=None,
+                state_dir=state_dir,
+                run_id="run-machina-cont",
+                compiled_at="2026-10-31T18:05:00Z",
+            )
+
+            cap = show_payload(state_dir, "repo-machina")
+            cs = cap["current_state"]
+            self.assertEqual(cs["session_receipts_state"], "external_provider")
+            self.assertEqual(cs["session_receipts_reason_code"], "OWNED_BY_MACHINA")
+            self.assertEqual(cs["last_session_at"], "2026-10-31T17:55:00Z")
+            self.assertEqual(
+                cs["last_session_summary"],
+                "Checkpointed UNIT-02 capsule continuity implementation.",
+            )
+            self.assertEqual(cs["next_step"], "Run full unittest suite and open PR.")
+            mc = cs["machina_continuity"]
+            self.assertEqual(mc["state"], "available")
+            self.assertEqual(mc["observation_id"], "obs_machina")
+            self.assertEqual(mc["active_unit_id"], "UNIT-02")
+            self.assertEqual(mc["last_completed_unit_id"], "UNIT-01")
+            self.assertNotIn("execution_" + "state", json.dumps(cap))
+
+            cap_bad = show_payload(state_dir, "repo-corrupt")
+            self.assertEqual(cap_bad["current_state"]["session_receipts_state"], "unavailable")
+            self.assertEqual(cap_bad["current_state"]["machina_continuity"]["state"], "not_present")
+            self.assertEqual(
+                cap_bad["current_state"]["last_session_summary"], "Fallback sidecar summary."
+            )
 
 
 if __name__ == "__main__":

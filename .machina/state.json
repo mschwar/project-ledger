@@ -5,23 +5,23 @@
   "frontier": null,
   "last_checkpoint": {
     "slice": 1,
-    "summary": "Implemented G1 (gbrain_pages.py git_facts), G2/claims.py (absent P1.7 sidecar claim guard), G6 (shadowed symlink suppression across discover_children, collect_entries, and collect_entries_incremental), and resilient Machina orient packet assertions.",
-    "timestamp": "2026-10-31T19:18:33.341607Z"
+    "summary": "Implemented G4 (.machina/state.json capsule continuity ingestion), G5 (historical_canonical_id referent retention across anchor upgrades and run history), and G3 (--no-optional-locks, .git/index fingerprint, compile-stage checkpoint caching, and inverted-bucket identity evidence scoring) with unit tests.",
+    "timestamp": "2026-10-31T19:34:03.324709Z"
   },
   "last_completed": {
     "slice": 2,
-    "summary": "Verified PL-GAP-CLOSEOUT-01 (G1 gbrain_pages git_facts, G2/claims absent sidecar guard, G6 shadowed symlink suppression, and 166/166 unittests passing).",
-    "timestamp": "2026-10-31T19:19:43.282676Z",
+    "summary": "Verified PL-GAP-CLOSEOUT-02: G4 (.machina/state.json read-only continuity ingestion + OWNED_BY_MACHINA), G5 (historical_canonical_id referent retention across anchor upgrades and run history), and G3 (--no-optional-locks, .git/index fingerprint, compile-stage checkpoint caching, and inverted-bucket identity evidence scoring), with 170/170 unittests passing.",
+    "timestamp": "2026-10-31T19:39:15.678336Z",
     "unit": {
-      "id": "PL-GAP-CLOSEOUT-01",
-      "spec": ".machina/units/PL-GAP-CLOSEOUT-01.json",
-      "spec_digest": "a33198ca47e27c961ebd333b41b2ed217548b9c790cee7bde3d7e44e0284063f",
-      "title": "Close correctness gaps G1, G2, and G6 (GBrain git_facts, sidecar declaration claims, symlink discovery, and Machina orient test)"
+      "id": "PL-GAP-CLOSEOUT-02",
+      "spec": ".machina/units/PL-GAP-CLOSEOUT-02.json",
+      "spec_digest": "a9cc62b49f7b320fbedcbc44a0a863573af76c2353f69c8b14d1c9c55841838a",
+      "title": "Close continuity, identity-lineage, and compile-performance gaps G3, G4, and G5"
     }
   },
   "next_action": null,
   "schema_version": 1,
-  "sequence": 11,
+  "sequence": 16,
   "slice": 2,
-  "updated_at": "2026-10-31T19:19:43.284958Z"
+  "updated_at": "2026-10-31T19:39:15.678766Z"
 }

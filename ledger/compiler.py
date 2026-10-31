@@ -6,7 +6,7 @@ from pathlib import Path
 
 from . import COMPAT_FLAT_SCHEMA_VERSION, COMPILER_VERSION, MANIFEST_SCHEMA_VERSION, OBSERVATION_SCHEMA_VERSION
 from .changes import build_run_snapshot, capture_pre_compile_baseline, materialize_changes
-from .checkpoints import CHECKPOINT_FILENAME, load_source_checkpoints
+from .checkpoints import CHECKPOINT_FILENAME, load_source_checkpoints, write_source_checkpoints
 from .compat_contract import check_compat_schema
 from .config import describe_sources, read_config, validate_config
 from .contracts import SOURCE_RESULT_STATES, capability
@@ -14,6 +14,7 @@ from .ids import digest_json, observation_id_for, path_digest, stable_id
 from .identity import materialize_identity
 from .models import portable_artifact_path
 from .sidecar import inspect_entry_sidecar
+from .sources.git import resolve_observation_git_drift
 
 
 def now_utc() -> str:
@@ -127,6 +128,35 @@ def _classify_source_result(
     return "observed" if observation_count > 0 else "observed_empty"
 
 
+def _lookup_checkpoint_candidate(
+    cp_sources: dict,
+    source_id: str,
+    location: str | None,
+) -> dict | None:
+    if not location or not isinstance(cp_sources, dict):
+        return None
+    src_cp = cp_sources.get(source_id)
+    if not isinstance(src_cp, dict) or not isinstance(src_cp.get("candidates"), dict):
+        return None
+    cands = src_cp["candidates"]
+    loc_text = str(location).strip()
+    if not loc_text:
+        return None
+    if loc_text.startswith("/"):
+        try:
+            resolved_key = str(Path(loc_text).resolve()).lower()
+        except OSError:
+            resolved_key = loc_text.lower()
+        cand = cands.get(resolved_key) or cands.get(loc_text.lower())
+        return cand if isinstance(cand, dict) else None
+    lower_loc = loc_text.lower()
+    cand = cands.get(lower_loc)
+    if cand is None and ":" in lower_loc:
+        remote_part, inv_part = lower_loc.split(":", 1)
+        cand = cands.get(f"inventory::{remote_part}::{inv_part}") or cands.get(inv_part)
+    return cand if isinstance(cand, dict) else None
+
+
 def compile_state(
     *,
     config_path: Path,
@@ -134,6 +164,7 @@ def compile_state(
     state_dir: Path,
     identity_decisions_path: Path | None = None,
     generated_at: str | None = None,
+    use_checkpoint_compile_cache: bool = False,
 ) -> dict:
     config_path = config_path.resolve()
     compat_output_path = compat_output_path.resolve()
@@ -174,6 +205,31 @@ def compile_state(
         source["compat_snapshot_as_of"] = observed_at
         source["compat_snapshot_basis"] = "compat_output.generated_at"
 
+    checkpoint_file = state_dir / CHECKPOINT_FILENAME
+    checkpoint_payload = load_source_checkpoints(checkpoint_file)
+    checkpoint_matched = (
+        isinstance(checkpoint_payload, dict)
+        and checkpoint_payload.get("config_digest") == config_digest
+    )
+    cp_sources = (
+        checkpoint_payload.get("sources", {})
+        if checkpoint_matched and isinstance(checkpoint_payload, dict)
+        else {}
+    )
+    allow_compile_cache_read = bool(
+        use_checkpoint_compile_cache
+        and checkpoint_matched
+        and isinstance(checkpoint_payload, dict)
+        and checkpoint_payload.get("mode") != "bypassed"
+    )
+    allow_compile_cache_write = bool(
+        use_checkpoint_compile_cache
+        and checkpoint_matched
+        and isinstance(checkpoint_payload, dict)
+    )
+    obs_cand_by_id: dict[str, dict] = {}
+    pending_git_drift_by_obs: dict[str, dict] = {}
+
     observations: list[dict] = []
     unresolved_source_count = 0
     observations_by_source: dict[str, list[dict]] = {}
@@ -185,7 +241,23 @@ def compile_state(
         if resolution == "unresolved":
             unresolved_source_count += 1
         snapshot_id = snapshot_id_by_source.get(source_id) or stable_id("snap", source_id, observed_at)
-        sidecar_envelope = inspect_entry_sidecar(entry)
+        entry_location = (
+            str(entry.get("path", "")).strip()
+            or str(entry.get("canonical_url", "")).strip()
+            or None
+        )
+        cand = _lookup_checkpoint_candidate(cp_sources, source_id, entry_location)
+        cand_fp = cand.get("fingerprint") if isinstance(cand, dict) else None
+        if (
+            allow_compile_cache_read
+            and cand_fp
+            and cand.get("compile_cache_fingerprint") == cand_fp
+            and isinstance(cand.get("sidecar_envelope"), dict)
+            and "_sidecar_envelope" not in entry
+        ):
+            sidecar_envelope = dict(cand["sidecar_envelope"])
+        else:
+            sidecar_envelope = inspect_entry_sidecar(entry)
         raw_project_key = str(entry.get("project_key", "")).strip() or None
         if (
             sidecar_envelope.get("present")
@@ -198,20 +270,21 @@ def compile_state(
             and not str(entry.get("remote_url") or "").strip()
         ):
             raw_project_key = None
+        obs_id = observation_id_for(entry, source_id)
         observation = {
             "schema_version": OBSERVATION_SCHEMA_VERSION,
-            "observation_id": observation_id_for(entry, source_id),
+            "observation_id": obs_id,
             "source_id": source_id,
             "snapshot_id": snapshot_id,
             "source_resolution": resolution,
             "observed_at": observed_at,
             "project_key": raw_project_key,
-            "location": str(entry.get("path", "")).strip()
-            or str(entry.get("canonical_url", "")).strip()
-            or None,
+            "location": entry_location,
             "sidecar": sidecar_envelope,
             "compat_entry": entry,
         }
+        if isinstance(cand, dict) and cand_fp:
+            obs_cand_by_id[obs_id] = cand
         observations.append(observation)
         observations_by_source.setdefault(source_id, []).append(observation)
 
@@ -250,17 +323,6 @@ def compile_state(
     source_unavailable_count = sum(1 for source in sources if source["status"] != "available")
     health_state = "degraded" if source_unavailable_count or unresolved_source_count else "ok"
 
-    checkpoint_file = state_dir / CHECKPOINT_FILENAME
-    checkpoint_payload = load_source_checkpoints(checkpoint_file)
-    checkpoint_matched = (
-        isinstance(checkpoint_payload, dict)
-        and checkpoint_payload.get("config_digest") == config_digest
-    )
-    cp_sources = (
-        checkpoint_payload.get("sources", {})
-        if checkpoint_matched and isinstance(checkpoint_payload, dict)
-        else {}
-    )
     for source in sources:
         src_cp = cp_sources.get(source["source_id"]) if isinstance(cp_sources, dict) else None
         if isinstance(src_cp, dict):
@@ -324,6 +386,28 @@ def compile_state(
     }
     observations_path.write_text(json.dumps(observation_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
+    def _resolve_git_drift_with_cache(obs: dict, compat_entry: dict) -> dict:
+        oid = str(obs.get("observation_id") or "")
+        cand = obs_cand_by_id.get(oid)
+        cand_fp = cand.get("fingerprint") if isinstance(cand, dict) else None
+        has_explicit_drift = any(
+            key in compat_entry
+            for key in ("behind_count", "ahead_count", "upstream_ref", "dirty", "main_behind_count")
+        )
+        if (
+            allow_compile_cache_read
+            and cand_fp
+            and cand.get("compile_cache_fingerprint") == cand_fp
+            and isinstance(cand.get("git_drift"), dict)
+            and not bool(compat_entry.get("tree_scan_truncated"))
+            and not has_explicit_drift
+        ):
+            return dict(cand["git_drift"])
+        drift = resolve_observation_git_drift(obs, compat_entry)
+        if isinstance(cand, dict) and cand_fp and not has_explicit_drift:
+            pending_git_drift_by_obs[oid] = drift
+        return drift
+
     canonical_payload, review_payload = materialize_identity(
         observations=observations,
         decisions_path=identity_decisions_path,
@@ -332,7 +416,27 @@ def compile_state(
         compiled_at=compiled_at,
         sources=sources,
         input_observed_at=observed_at,
+        git_drift_resolver=_resolve_git_drift_with_cache if allow_compile_cache_write else None,
     )
+    if allow_compile_cache_write and isinstance(checkpoint_payload, dict):
+        for obs in observations:
+            oid = obs["observation_id"]
+            cand = obs_cand_by_id.get(oid)
+            if not isinstance(cand, dict) or not cand.get("fingerprint"):
+                continue
+            cand_fp = cand["fingerprint"]
+            prior_drift = (
+                cand.get("git_drift")
+                if cand.get("compile_cache_fingerprint") == cand_fp
+                and isinstance(cand.get("git_drift"), dict)
+                else None
+            )
+            cand["compile_cache_fingerprint"] = cand_fp
+            cand["sidecar_envelope"] = obs["sidecar"]
+            drift_val = pending_git_drift_by_obs.get(oid) or prior_drift
+            if isinstance(drift_val, dict):
+                cand["git_drift"] = drift_val
+        write_source_checkpoints(checkpoint_file, checkpoint_payload)
     canonical_path = state_dir / "canonical-projects.json"
     capsules_dir = state_dir / "projects"
     review_path = state_dir / "review-queue.json"

@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -574,11 +575,14 @@ def rank_project_observations(
     project: dict,
     observations_by_id: dict[str, dict],
     sources_by_id: dict[str, dict] | None = None,
+    *,
+    git_drift_resolver: Callable[[dict, dict], dict] | None = None,
 ) -> tuple[list[dict], dict]:
     """Rank a canonical project's observations and resolve its preferred location.
 
     Returns ``(ranked_observations, preferred_location)``.
     """
+    drift_fn = git_drift_resolver or resolve_observation_git_drift
     sources_map = sources_by_id or {}
     project_remotes = {str(r).casefold() for r in project.get("normalized_remotes", []) if str(r).strip()}
     member_ids = sorted(set(project.get("observation_ids", [])))
@@ -659,7 +663,7 @@ def rank_project_observations(
         session_epoch = _iso_epoch(session_at)
 
         content_as_of, content_basis, freshness_reason, content_epoch = _observation_content_as_of(compat)
-        git_drift = resolve_observation_git_drift(obs, compat)
+        git_drift = drift_fn(obs, compat)
 
         obs_warning_codes = list(git_drift.get("warning_codes", []))
         obs_warnings = list(git_drift.get("warnings", []))
@@ -946,6 +950,89 @@ def _project_git_facts(ranked_observations: list[dict], observations_by_id: dict
     }
 
 
+def _read_machina_continuity(location: str | None) -> dict[str, Any] | None:
+    """Read bounded session/unit continuity from ``.machina/state.json`` in read-only mode.
+
+    Intentional boundary: Project Ledger does not import Machina lifecycle state
+    vocabulary or run a competing receipt store; it extracts read-only continuity
+    timestamps, unit identifiers, summaries, and ``next_action`` hints.
+    """
+    loc = str(location or "").strip()
+    if not loc or not loc.startswith("/"):
+        return None
+    state_file = Path(loc) / ".machina" / "state.json"
+    if not state_file.is_file():
+        return None
+    try:
+        raw = json.loads(state_file.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(raw, dict):
+        return None
+
+    updated_at = str(raw.get("updated_at") or "").strip() or None
+    active_unit = raw.get("active_unit") if isinstance(raw.get("active_unit"), dict) else None
+    active_unit_id = str(active_unit.get("id") or "").strip() or None if active_unit else None
+    active_unit_title = (
+        str(active_unit.get("title") or "").strip()[:CAPSULE_PURPOSE_MAX_CHARS] or None
+        if active_unit
+        else None
+    )
+
+    last_completed = raw.get("last_completed") if isinstance(raw.get("last_completed"), dict) else None
+    lc_unit = (
+        last_completed.get("unit")
+        if (last_completed and isinstance(last_completed.get("unit"), dict))
+        else None
+    )
+    last_completed_unit_id = str(lc_unit.get("id") or "").strip() or None if lc_unit else None
+    last_completed_at = str(last_completed.get("timestamp") or "").strip() or None if last_completed else None
+    last_completed_summary = (
+        str(last_completed.get("summary") or "").strip()[:CAPSULE_PURPOSE_MAX_CHARS] or None
+        if last_completed
+        else None
+    )
+
+    last_checkpoint = raw.get("last_checkpoint") if isinstance(raw.get("last_checkpoint"), dict) else None
+    last_checkpoint_at = (
+        str(last_checkpoint.get("timestamp") or "").strip() or None if last_checkpoint else None
+    )
+    last_checkpoint_summary = (
+        str(last_checkpoint.get("summary") or "").strip()[:CAPSULE_PURPOSE_MAX_CHARS] or None
+        if last_checkpoint
+        else None
+    )
+    next_action = str(raw.get("next_action") or "").strip()[:CAPSULE_PURPOSE_MAX_CHARS] or None
+
+    receipt_candidates: list[tuple[float, str | None, str | None]] = []
+    if last_completed_at or last_completed_summary:
+        receipt_candidates.append(
+            (_iso_epoch(last_completed_at), last_completed_at, last_completed_summary)
+        )
+    if last_checkpoint_at or last_checkpoint_summary:
+        receipt_candidates.append(
+            (_iso_epoch(last_checkpoint_at), last_checkpoint_at, last_checkpoint_summary)
+        )
+    latest_at: str | None = None
+    latest_summary: str | None = None
+    if receipt_candidates:
+        receipt_candidates.sort(key=lambda item: item[0], reverse=True)
+        _, latest_at, latest_summary = receipt_candidates[0]
+    elif updated_at:
+        latest_at = updated_at
+
+    return {
+        "updated_at": updated_at,
+        "active_unit_id": active_unit_id,
+        "active_unit_title": active_unit_title,
+        "last_completed_unit_id": last_completed_unit_id,
+        "last_completed_at": last_completed_at,
+        "latest_receipt_at": latest_at,
+        "latest_receipt_summary": latest_summary,
+        "next_action": next_action,
+    }
+
+
 def _project_current_state(ranked_observations: list[dict], observations_by_id: dict[str, dict]) -> dict:
     lifecycle_state = "unknown"
     lifecycle_basis = "unknown"
@@ -953,6 +1040,8 @@ def _project_current_state(ranked_observations: list[dict], observations_by_id: 
     last_session_summary: str | None = None
     next_step: str | None = None
     tags: set[str] = set()
+    machina_info: dict[str, Any] | None = None
+    machina_obs_id: str | None = None
 
     for item in ranked_observations:
         obs = observations_by_id.get(item["observation_id"]) or {}
@@ -972,12 +1061,56 @@ def _project_current_state(ranked_observations: list[dict], observations_by_id: 
             for tag in raw_tags:
                 if str(tag or "").strip():
                     tags.add(str(tag).strip())
+        if machina_info is None and item.get("score_components", {}).get("accessible_worktree"):
+            candidate_machina = _read_machina_continuity(item.get("location"))
+            if candidate_machina is not None:
+                machina_info = candidate_machina
+                machina_obs_id = item["observation_id"]
+
+    if machina_info is not None:
+        session_receipts_state = "external_provider"
+        machina_latest_at = machina_info.get("latest_receipt_at")
+        machina_latest_summary = machina_info.get("latest_receipt_summary")
+        machina_next_action = machina_info.get("next_action")
+        sidecar_epoch = _iso_epoch(last_session_at)
+        machina_epoch = _iso_epoch(machina_latest_at)
+        if machina_latest_at and (last_session_at is None or machina_epoch > sidecar_epoch):
+            last_session_at = machina_latest_at
+            if machina_latest_summary:
+                last_session_summary = machina_latest_summary
+            if machina_next_action:
+                next_step = machina_next_action
+        if last_session_summary is None and machina_latest_summary:
+            last_session_summary = machina_latest_summary
+        if next_step is None and machina_next_action:
+            next_step = machina_next_action
+        machina_continuity = {
+            "state": "available",
+            "observation_id": machina_obs_id,
+            "updated_at": machina_info.get("updated_at"),
+            "active_unit_id": machina_info.get("active_unit_id"),
+            "active_unit_title": machina_info.get("active_unit_title"),
+            "last_completed_unit_id": machina_info.get("last_completed_unit_id"),
+            "last_completed_at": machina_info.get("last_completed_at"),
+        }
+    else:
+        session_receipts_state = "unavailable"
+        machina_continuity = {
+            "state": "not_present",
+            "observation_id": None,
+            "updated_at": None,
+            "active_unit_id": None,
+            "active_unit_title": None,
+            "last_completed_unit_id": None,
+            "last_completed_at": None,
+        }
 
     return {
         "lifecycle_state": lifecycle_state,
         "lifecycle_basis": lifecycle_basis,
-        "session_receipts_state": "unavailable",
-        "session_receipts_reason_code": "WAVE4_NOT_IMPLEMENTED",
+        "session_receipts_state": session_receipts_state,
+        "session_receipts_reason_code": "OWNED_BY_MACHINA",
+        "machina_continuity": machina_continuity,
         "last_session_at": last_session_at,
         "last_session_summary": last_session_summary,
         "next_step": next_step,
@@ -997,6 +1130,7 @@ def build_project_capsule(
     input_observed_at: str,
     max_bytes: int = CAPSULE_MAX_BYTES,
     max_observation_summaries: int = CAPSULE_MAX_OBSERVATION_SUMMARIES,
+    git_drift_resolver: Callable[[dict, dict], dict] | None = None,
 ) -> dict:
     """Build one bounded, deterministic project capsule for ``project``."""
     state_dir = state_dir.resolve()
@@ -1007,6 +1141,7 @@ def build_project_capsule(
         project,
         observations_by_id,
         sources_by_id=sources_by_id,
+        git_drift_resolver=git_drift_resolver,
     )
 
     ctx_sub_limit = CAPSULE_MAX_CTX_SUBSYSTEMS
@@ -1199,6 +1334,7 @@ def materialize_capsules(
     run_id: str,
     compiled_at: str,
     input_observed_at: str,
+    git_drift_resolver: Callable[[dict, dict], dict] | None = None,
 ) -> dict:
     """Materialize ``state/projects/<canonical_project_id>.json`` for every project."""
     state_dir = state_dir.resolve()
@@ -1221,6 +1357,7 @@ def materialize_capsules(
             run_id=run_id,
             compiled_at=compiled_at,
             input_observed_at=input_observed_at,
+            git_drift_resolver=git_drift_resolver,
         )
         filename = f"{project['canonical_project_id']}.json"
         active_filenames.add(filename)

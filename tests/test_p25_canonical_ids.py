@@ -14,9 +14,12 @@ Asserts the two P2.5 deliverables that were previously missing or defective:
 
 from __future__ import annotations
 
+import tempfile
 import unittest
+from pathlib import Path
 
-from ledger.identity import compile_identity
+from ledger.explain import explain_payload
+from ledger.identity import compile_identity, materialize_identity, resolve_payload
 
 
 def observation(
@@ -223,6 +226,77 @@ class ResolvedFieldProvenanceTests(unittest.TestCase):
         self.assertEqual(name_prov[0]["kind"], "observed")
         self.assertEqual(name_prov[0]["observation_id"], "obs-a")
         self.assertEqual(name_prov[0]["reason_code"], "DISPLAY_NAME")
+
+
+class HistoricalCanonicalIdLineageTests(unittest.TestCase):
+    def test_local_to_remote_upgrade_and_remote_rename_retain_historical_canonical_ids(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            state_dir = Path(tmp) / "state"
+            # Run 1: local repo with no git remote yet -> observation-anchored prj_* ID.
+            local_obs = observation(
+                "obs-local",
+                project_key="sprout",
+                name="Sprout",
+                path="/central/repos/active/sprout",
+            )
+            c1, _ = materialize_identity(
+                observations=[local_obs],
+                decisions_path=None,
+                state_dir=state_dir,
+                run_id="run-1",
+                compiled_at="2026-10-31T10:00:00Z",
+            )
+            pid_local = c1["projects"][0]["canonical_project_id"]
+            self.assertEqual(c1["projects"][0]["identity_anchor"]["kind"], "observation")
+
+            # Run 2: git origin remote is added -> re-anchors to normalized_remote prj_* ID.
+            remote_v1 = observation(
+                "obs-local",
+                project_key="sprout",
+                name="Sprout",
+                path="/central/repos/active/sprout",
+                remote_url="https://github.com/mschwar/sprout.git",
+            )
+            c2, _ = materialize_identity(
+                observations=[remote_v1],
+                decisions_path=None,
+                state_dir=state_dir,
+                run_id="run-2",
+                compiled_at="2026-10-31T11:00:00Z",
+            )
+            pid_remote_v1 = c2["projects"][0]["canonical_project_id"]
+            self.assertNotEqual(pid_local, pid_remote_v1)
+
+            res_from_local = resolve_payload(state_dir, pid_local)
+            self.assertEqual(res_from_local["status"], "resolved")
+            self.assertEqual(res_from_local["canonical_project_id"], pid_remote_v1)
+            self.assertEqual(res_from_local["matched_by"][0]["kind"], "historical_canonical_id")
+
+            # Run 3: remote repository is renamed on GitHub -> re-anchors again; BOTH prior IDs resolve!
+            remote_v2 = observation(
+                "obs-local",
+                project_key="sprout-core",
+                name="Sprout Core",
+                path="/central/repos/active/sprout",
+                remote_url="https://github.com/mschwar/sprout-core.git",
+            )
+            c3, _ = materialize_identity(
+                observations=[remote_v2],
+                decisions_path=None,
+                state_dir=state_dir,
+                run_id="run-3",
+                compiled_at="2026-10-31T12:00:00Z",
+            )
+            pid_remote_v2 = c3["projects"][0]["canonical_project_id"]
+            self.assertNotEqual(pid_remote_v1, pid_remote_v2)
+
+            for old_pid in (pid_local, pid_remote_v1):
+                resolved = resolve_payload(state_dir, old_pid)
+                self.assertEqual(resolved["status"], "resolved")
+                self.assertEqual(resolved["canonical_project_id"], pid_remote_v2)
+                explained = explain_payload(state_dir, old_pid)
+                self.assertEqual(explained["status"], "resolved")
+                self.assertEqual(explained["canonical_project_id"], pid_remote_v2)
 
 
 if __name__ == "__main__":

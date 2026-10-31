@@ -463,6 +463,58 @@ class EvidenceStoreAndMaterializeTests(unittest.TestCase):
                 canonical_a["projects"][0]["canonical_project_id"],
             )
 
+    def test_inverted_bucket_cross_project_scoring_skips_unrelated_pairs(self) -> None:
+        from unittest import mock
+        import ledger.evidence as ev_mod
+
+        observations = [
+            observation(
+                f"obs-u-{idx:03d}",
+                project_key=f"unique-key-{idx:03d}",
+                name=f"Unique Project {idx:03d}",
+                path=f"/repos/unique-{idx:03d}",
+                remote_url=f"https://github.com/example/unique-{idx:03d}.git",
+            )
+            for idx in range(40)
+        ]
+        observations.extend(
+            [
+                observation(
+                    "obs-shared-left",
+                    project_key="shared-left",
+                    name="Collision Tool",
+                    path="/repos/left",
+                    remote_url="https://github.com/example/left.git",
+                ),
+                observation(
+                    "obs-shared-right",
+                    project_key="shared-right",
+                    name="Collision Tool",
+                    path="/repos/right",
+                    remote_url="https://github.com/example/right.git",
+                ),
+            ]
+        )
+        canonical, _ = compile_identity(observations, EMPTY_DECISIONS)
+        real_score_pair = ev_mod.score_pair
+        calls: list[tuple[str, str]] = []
+
+        def spy_score_pair(*args, **kwargs):
+            res = real_score_pair(*args, **kwargs)
+            calls.append((res["left_observation_id"], res["right_observation_id"]))
+            return res
+
+        with mock.patch.object(ev_mod, "score_pair", side_effect=spy_score_pair):
+            payload = build_identity_evidence(observations, canonical, EMPTY_DECISIONS)
+
+        self.assertEqual(len(payload["cross_project_weak_overlaps"]), 1)
+        self.assertEqual(
+            payload["cross_project_weak_overlaps"][0]["left_observation_id"],
+            "obs-shared-left",
+        )
+        # Out of C(42, 2) = 861 total pairs, only the 1 colliding bucket pair is scored!
+        self.assertEqual(calls, [("obs-shared-left", "obs-shared-right")])
+
 
 if __name__ == "__main__":
     unittest.main()
