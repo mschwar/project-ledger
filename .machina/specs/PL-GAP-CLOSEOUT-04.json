@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "PL-GAP-CLOSEOUT-04",
+  "title": "Align explicit source_id and exact_normalized_remote in state JSON schemas",
+  "objective": "Fix emergent live-estate schema validation discrepancies surfaced when validating all 172 live ai-server project capsules and compiled state/*.json artifacts: allow explicit non-whitespace source_id slugs alongside fallback src_<hex> IDs in system-manifest.schema.json and project-capsule.schema.json, align unifying_authority enum to exact_normalized_remote in canonical-projects.schema.json, pin both in tests/test_state_schemas.py, and keep .project-ledger.json fresh in HEAD.",
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-GAP-CLOSEOUT-04.json",
+      "edit schemas/system-manifest.schema.json, schemas/project-capsule.schema.json, schemas/canonical-projects.schema.json, tests/test_state_schemas.py, and .project-ledger.json",
+      "run uvx --offline ruff check ., python3 -m ledger validate, and python3 -m unittest discover -s tests"
+    ],
+    "forbidden": [
+      "mutate registered external source checkouts",
+      "add em dashes to .machina/specs/*.json"
+    ]
+  },
+  "completion": "All synthetic and live state/*.json artifacts and project capsules validate cleanly against schemas/*.schema.json with zero errors, ruff check . exits 0, and python3 -m unittest discover -s tests passes.",
+  "initial_next_action": "Update source_id pattern and unifying_authority enum in schemas/*.schema.json, expand tests/test_state_schemas.py to exercise explicit source_id and multi-manifestation exact_normalized_remote merges, update .project-ledger.json, and verify."
+}

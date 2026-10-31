@@ -928,7 +928,8 @@
         },
         "source_id": {
           "type": "string",
-          "pattern": "^src_[0-9a-f]{24}$"
+          "minLength": 1,
+          "pattern": "^\\S+$"
         },
         "source_label": {
           "type": [
