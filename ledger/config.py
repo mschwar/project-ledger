@@ -51,7 +51,13 @@ def validate_config(config: dict, config_dir: Path, *, check_artifacts: bool = T
     defaults = config.get("defaults", {})
     if defaults is not None and not isinstance(defaults, dict):
         raise LedgerConfigError("DEFAULTS_NOT_OBJECT", "defaults must be an object when present.")
-    for key in ("min_score", "tree_scan_max_entries", "tree_scan_max_depth", "git_repo_max_depth"):
+    for key in (
+        "min_score",
+        "tree_scan_max_entries",
+        "tree_scan_max_depth",
+        "git_repo_max_depth",
+        "checkpoint_stat_max_files",
+    ):
         if key in defaults and (not isinstance(defaults[key], int) or defaults[key] < 0):
             raise LedgerConfigError("DEFAULT_INVALID_INTEGER", f"defaults.{key} must be a non-negative integer.")
 
@@ -77,7 +83,13 @@ def validate_config(config: dict, config_dir: Path, *, check_artifacts: bool = T
         if effective_source_id in seen_source_ids:
             raise LedgerConfigError("SOURCE_ID_DUPLICATE", f"{where} resolves to duplicate source_id {effective_source_id!r}.")
         seen_source_ids.add(effective_source_id)
-        for key in ("max_depth", "min_score", "tree_scan_max_entries", "tree_scan_max_depth"):
+        for key in (
+            "max_depth",
+            "min_score",
+            "tree_scan_max_entries",
+            "tree_scan_max_depth",
+            "checkpoint_stat_max_files",
+        ):
             if key in root and (not isinstance(root[key], int) or root[key] < 0):
                 raise LedgerConfigError("ROOT_INVALID_INTEGER", f"{where}.{key} must be a non-negative integer.")
 

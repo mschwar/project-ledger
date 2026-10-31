@@ -15,6 +15,7 @@ from .identity import materialize_identity
 from .models import portable_artifact_path
 from .sidecar import inspect_entry_sidecar
 from .sources.git import resolve_observation_git_drift
+from .structural_ctx import extract_structural_ctx
 
 
 def now_utc() -> str:
@@ -238,6 +239,7 @@ def compile_state(
     )
     obs_cand_by_id: dict[str, dict] = {}
     pending_git_drift_by_obs: dict[str, dict] = {}
+    pending_ctx_by_obs: dict[str, dict | None] = {}
 
     observations: list[dict] = []
     unresolved_source_count = 0
@@ -408,7 +410,6 @@ def compile_state(
             and cand_fp
             and cand.get("compile_cache_fingerprint") == cand_fp
             and isinstance(cand.get("git_drift"), dict)
-            and not bool(compat_entry.get("tree_scan_truncated"))
             and not has_explicit_drift
         ):
             return dict(cand["git_drift"])
@@ -417,6 +418,24 @@ def compile_state(
             pending_git_drift_by_obs[oid] = drift
         return drift
 
+    def _resolve_ctx_with_cache(obs: dict, repo_dir: Path) -> dict | None:
+        oid = str(obs.get("observation_id") or "")
+        cand = obs_cand_by_id.get(oid)
+        cand_fp = cand.get("fingerprint") if isinstance(cand, dict) else None
+        if (
+            allow_compile_cache_read
+            and cand_fp
+            and cand.get("compile_cache_fingerprint") == cand_fp
+            and "ctx_raw_skeleton" in cand
+        ):
+            cached_ctx = cand.get("ctx_raw_skeleton")
+            return dict(cached_ctx) if isinstance(cached_ctx, dict) else None
+        scanned_ctx = extract_structural_ctx(repo_dir)
+        if isinstance(cand, dict) and cand_fp:
+            pending_ctx_by_obs[oid] = scanned_ctx
+        return scanned_ctx
+
+    in_mem_artifacts: dict = {}
     canonical_payload, review_payload = materialize_identity(
         observations=observations,
         decisions_path=identity_decisions_path,
@@ -427,39 +446,66 @@ def compile_state(
         sources=sources,
         input_observed_at=observed_at,
         git_drift_resolver=_resolve_git_drift_with_cache if allow_compile_cache_write else None,
+        ctx_resolver=_resolve_ctx_with_cache if allow_compile_cache_write else None,
+        out_artifacts=in_mem_artifacts,
     )
     if allow_compile_cache_write and isinstance(checkpoint_payload, dict):
+        compile_cache_dirty = False
         for obs in observations:
             oid = obs["observation_id"]
             cand = obs_cand_by_id.get(oid)
             if not isinstance(cand, dict) or not cand.get("fingerprint"):
                 continue
             cand_fp = cand["fingerprint"]
+            was_matched = cand.get("compile_cache_fingerprint") == cand_fp
+            if (
+                not was_matched
+                or not isinstance(cand.get("sidecar_envelope"), dict)
+                or oid in pending_git_drift_by_obs
+                or oid in pending_ctx_by_obs
+            ):
+                compile_cache_dirty = True
             prior_drift = (
                 cand.get("git_drift")
-                if cand.get("compile_cache_fingerprint") == cand_fp
-                and isinstance(cand.get("git_drift"), dict)
+                if was_matched and isinstance(cand.get("git_drift"), dict)
                 else None
             )
+            has_prior_ctx = was_matched and "ctx_raw_skeleton" in cand
+            prior_ctx = cand.get("ctx_raw_skeleton") if has_prior_ctx else None
             cand["compile_cache_fingerprint"] = cand_fp
             cand["sidecar_envelope"] = obs["sidecar"]
             drift_val = pending_git_drift_by_obs.get(oid) or prior_drift
             if isinstance(drift_val, dict):
                 cand["git_drift"] = drift_val
-        write_source_checkpoints(checkpoint_file, checkpoint_payload)
+            if oid in pending_ctx_by_obs:
+                cand["ctx_raw_skeleton"] = pending_ctx_by_obs[oid]
+            elif has_prior_ctx:
+                cand["ctx_raw_skeleton"] = prior_ctx
+        if compile_cache_dirty:
+            write_source_checkpoints(checkpoint_file, checkpoint_payload)
     canonical_path = state_dir / "canonical-projects.json"
     capsules_dir = state_dir / "projects"
     review_path = state_dir / "review-queue.json"
     evidence_path = state_dir / "identity-evidence.json"
     changes_path = state_dir / "changes.json"
-    evidence_payload = json.loads(evidence_path.read_text(encoding="utf-8"))
+    evidence_payload = in_mem_artifacts.get("identity_evidence") or json.loads(
+        evidence_path.read_text(encoding="utf-8")
+    )
 
-    capsules_by_id: dict[str, dict] = {}
-    for proj in canonical_payload.get("projects", []):
-        pid = proj["canonical_project_id"]
-        cap_file = capsules_dir / f"{pid}.json"
-        if cap_file.is_file():
-            capsules_by_id[pid] = json.loads(cap_file.read_text(encoding="utf-8"))
+    in_mem_capsules = in_mem_artifacts.get("capsules")
+    if isinstance(in_mem_capsules, list):
+        capsules_by_id = {
+            str(cap["canonical_project_id"]): cap
+            for cap in in_mem_capsules
+            if isinstance(cap, dict) and cap.get("canonical_project_id")
+        }
+    else:
+        capsules_by_id = {}
+        for proj in canonical_payload.get("projects", []):
+            pid = proj["canonical_project_id"]
+            cap_file = capsules_dir / f"{pid}.json"
+            if cap_file.is_file():
+                capsules_by_id[pid] = json.loads(cap_file.read_text(encoding="utf-8"))
 
     current_snapshot = build_run_snapshot(
         run_id=run_id,

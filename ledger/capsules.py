@@ -37,6 +37,7 @@ from .human_view import write_canonical_markdown
 from .identity import observation_facts, resolve_payload
 from .models import parse_iso_datetime, portable_artifact_path
 from .sources.git import resolve_observation_git_drift
+from .structural_ctx import extract_structural_ctx
 
 CAPSULE_MAX_BYTES = 16384
 CAPSULE_MAX_OBSERVATION_SUMMARIES = 25
@@ -414,8 +415,9 @@ def ingest_project_ctx_capsule(
     observations_by_id: dict[str, dict],
     *,
     max_subsystems: int = CAPSULE_MAX_CTX_SUBSYSTEMS,
+    ctx_resolver: Callable[[dict, Path], dict[str, Any] | None] | None = None,
 ) -> dict[str, Any]:
-    """Ingest ``.ctx/skeleton.json`` or ``ctx`` Tier-2 fleet capsules for a project (read-only)."""
+    """Ingest ``.ctx/`` capsules or synthesize a read-only structural scan (U2, Law 10)."""
     for item in ranked_observations:
         obs_id = str(item["observation_id"])
         obs = observations_by_id.get(obs_id) or {}
@@ -567,6 +569,29 @@ def ingest_project_ctx_capsule(
                     artifact_path=str(root_ctx_md),
                     max_subsystems=max_subsystems,
                 )
+
+    # U2 fallback: read-only stdlib structural skeleton scan when no on-disk `.ctx/` artifact exists.
+    structural_fn = ctx_resolver or (lambda _obs, target_dir: extract_structural_ctx(target_dir))
+    for item in ranked_observations:
+        if not item.get("score_components", {}).get("accessible_worktree"):
+            continue
+        loc = str(item.get("location") or "").strip()
+        if not loc or not loc.startswith("/"):
+            continue
+        repo_dir = Path(loc)
+        if not repo_dir.is_dir():
+            continue
+        obs_id = str(item["observation_id"])
+        obs = observations_by_id.get(obs_id) or {}
+        scanned = structural_fn(obs, repo_dir)
+        if isinstance(scanned, dict):
+            return _normalize_ctx_mapping(
+                scanned,
+                source_format="compiled_structural_scan",
+                observation_id=obs_id,
+                artifact_path=None,
+                max_subsystems=max_subsystems,
+            )
 
     return _absent_ctx_capsule()
 
@@ -1152,6 +1177,7 @@ def build_project_capsule(
     max_bytes: int = CAPSULE_MAX_BYTES,
     max_observation_summaries: int = CAPSULE_MAX_OBSERVATION_SUMMARIES,
     git_drift_resolver: Callable[[dict, dict], dict] | None = None,
+    ctx_resolver: Callable[[dict, Path], dict[str, Any] | None] | None = None,
 ) -> dict:
     """Build one bounded, deterministic project capsule for ``project``."""
     state_dir = state_dir.resolve()
@@ -1170,6 +1196,7 @@ def build_project_capsule(
         ranked_observations,
         observations_by_id,
         max_subsystems=ctx_sub_limit,
+        ctx_resolver=ctx_resolver,
     )
 
     # Resolve bounded purpose and canonical_url from ranked observations (with ctx boundary fallback).
@@ -1356,6 +1383,7 @@ def materialize_capsules(
     compiled_at: str,
     input_observed_at: str,
     git_drift_resolver: Callable[[dict, dict], dict] | None = None,
+    ctx_resolver: Callable[[dict, Path], dict[str, Any] | None] | None = None,
 ) -> dict:
     """Materialize ``state/projects/<canonical_project_id>.json`` for every project."""
     state_dir = state_dir.resolve()
@@ -1379,6 +1407,7 @@ def materialize_capsules(
             compiled_at=compiled_at,
             input_observed_at=input_observed_at,
             git_drift_resolver=git_drift_resolver,
+            ctx_resolver=ctx_resolver,
         )
         filename = f"{project['canonical_project_id']}.json"
         active_filenames.add(filename)

@@ -22,6 +22,8 @@ Design invariants:
 from __future__ import annotations
 
 import json
+import os
+import re
 from pathlib import Path
 
 from . import CHANGE_FEED_SCHEMA_VERSION, COMPILER_VERSION
@@ -304,6 +306,77 @@ def _runs_dir(state_dir: Path) -> Path:
     return state_dir.resolve() / "runs"
 
 
+_RUN_COMPILED_AT_RE = re.compile(r'^  "compiled_at":\s*"([^"]*)"', re.MULTILINE)
+_RUN_ID_RE = re.compile(r'^  "run_id":\s*"([^"]+)"', re.MULTILINE)
+_RUN_SEQ_RE = re.compile(r'^  "sequence":\s*(-?\d+)', re.MULTILINE)
+
+
+def _read_snapshot_header(path: Path) -> dict | None:
+    """Extract top-level ``(run_id, sequence, compiled_at)`` without decoding full JSON."""
+    try:
+        with path.open("rb") as fh:
+            size = os.fstat(fh.fileno()).st_size
+            if size <= 36864:
+                head_text = fh.read().decode("utf-8", errors="replace")
+                tail_text = head_text
+            else:
+                head_text = fh.read(2048).decode("utf-8", errors="replace")
+                fh.seek(max(0, size - 32768))
+                tail_text = fh.read().decode("utf-8", errors="replace")
+    except OSError:
+        return None
+
+    m_compiled = _RUN_COMPILED_AT_RE.search(head_text) or _RUN_COMPILED_AT_RE.search(tail_text)
+    m_id = _RUN_ID_RE.search(tail_text) or _RUN_ID_RE.search(head_text)
+    if m_id and m_compiled:
+        m_seq = _RUN_SEQ_RE.search(tail_text) or _RUN_SEQ_RE.search(head_text)
+        run_id_val = m_id.group(1).strip()
+        if run_id_val:
+            return {
+                "run_id": run_id_val,
+                "sequence": int(m_seq.group(1)) if m_seq else None,
+                "compiled_at": m_compiled.group(1),
+                "path": path,
+            }
+
+    doc = _load_json_dict(path)
+    if doc is None:
+        return None
+    run_id_val = str(doc.get("run_id") or "").strip()
+    if not run_id_val:
+        return None
+    seq_raw = doc.get("sequence")
+    return {
+        "run_id": run_id_val,
+        "sequence": int(seq_raw) if isinstance(seq_raw, int) and not isinstance(seq_raw, bool) else None,
+        "compiled_at": str(doc.get("compiled_at") or ""),
+        "path": path,
+    }
+
+
+def _sort_snapshot_records(records: list[dict]) -> None:
+    records.sort(
+        key=lambda item: (
+            int(item["sequence"]) if isinstance(item.get("sequence"), int) else -1,
+            str(item.get("compiled_at") or ""),
+            str(item.get("run_id") or ""),
+        )
+    )
+
+
+def _load_retained_snapshot_headers(state_dir: Path) -> list[dict]:
+    runs_dir = _runs_dir(state_dir)
+    if not runs_dir.is_dir():
+        return []
+    headers: list[dict] = []
+    for path in runs_dir.glob("*.json"):
+        hdr = _read_snapshot_header(path)
+        if hdr is not None:
+            headers.append(hdr)
+    _sort_snapshot_records(headers)
+    return headers
+
+
 def _load_retained_snapshots(state_dir: Path) -> list[dict]:
     runs_dir = _runs_dir(state_dir)
     if not runs_dir.is_dir():
@@ -313,13 +386,7 @@ def _load_retained_snapshots(state_dir: Path) -> list[dict]:
         doc = _load_json_dict(path)
         if doc is not None and str(doc.get("run_id") or "").strip():
             snapshots.append(doc)
-    snapshots.sort(
-        key=lambda item: (
-            int(item.get("sequence")) if isinstance(item.get("sequence"), int) else -1,
-            str(item.get("compiled_at") or ""),
-            str(item.get("run_id") or ""),
-        )
-    )
+    _sort_snapshot_records(snapshots)
     return snapshots
 
 
@@ -335,7 +402,7 @@ def _save_run_snapshot(
     run_id = str(snapshot["run_id"])
     target_path = runs_dir / f"{run_id}.json"
 
-    existing = _load_retained_snapshots(state_dir)
+    existing = _load_retained_snapshot_headers(state_dir)
     existing_by_id = {str(item["run_id"]): item for item in existing}
     if run_id in existing_by_id and isinstance(existing_by_id[run_id].get("sequence"), int):
         seq = int(existing_by_id[run_id]["sequence"])
@@ -350,13 +417,25 @@ def _save_run_snapshot(
     to_write["sequence"] = seq
     target_path.write_text(json.dumps(to_write, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    retained = _load_retained_snapshots(state_dir)
+    new_hdr = {
+        "run_id": run_id,
+        "sequence": seq,
+        "compiled_at": str(to_write.get("compiled_at") or ""),
+        "path": target_path,
+    }
+    retained = [item for item in existing if item["run_id"] != run_id]
+    retained.append(new_hdr)
+    _sort_snapshot_records(retained)
+
     if max_runs > 0 and len(retained) > max_runs:
         to_prune = retained[: len(retained) - max_runs]
         for old in to_prune:
-            old_path = runs_dir / f"{old['run_id']}.json"
+            old_path = old.get("path") if isinstance(old.get("path"), Path) else (runs_dir / f"{old['run_id']}.json")
             if old_path.is_file():
                 old_path.unlink()
+            canonical_old = runs_dir / f"{old['run_id']}.json"
+            if canonical_old != old_path and canonical_old.is_file():
+                canonical_old.unlink()
         retained = retained[len(retained) - max_runs :]
 
     return [str(item["run_id"]) for item in retained]
@@ -1549,9 +1628,9 @@ def changes_payload(
     latest = load_changes(state_dir)
     current_run_id = str(latest.get("run_id") or "")
 
-    retained = _load_retained_snapshots(state_dir)
-    retained_by_id = {str(item["run_id"]): item for item in retained}
-    available_ids = [str(item["run_id"]) for item in retained] or list(
+    retained_headers = _load_retained_snapshot_headers(state_dir)
+    headers_by_id = {str(item["run_id"]): item for item in retained_headers}
+    available_ids = [str(item["run_id"]) for item in retained_headers] or list(
         latest.get("available_run_ids") or ([current_run_id] if current_run_id else [])
     )
 
@@ -1565,7 +1644,12 @@ def changes_payload(
         requested = str(since_run_id).strip()
         if not requested:
             raise ValueError("--since run_id must be non-empty.")
-        current_snap = retained_by_id.get(current_run_id) or snapshot_from_state_dir(state_dir)
+        current_hdr = headers_by_id.get(current_run_id)
+        current_snap = (
+            _load_json_dict(current_hdr["path"])
+            if current_hdr is not None and isinstance(current_hdr.get("path"), Path)
+            else None
+        ) or snapshot_from_state_dir(state_dir)
         if current_snap is None:
             raise ValueError(f"Current compiled state is unavailable in {state_dir}")
         if requested == current_run_id:
@@ -1575,9 +1659,13 @@ def changes_payload(
                 state_dir=state_dir,
                 available_run_ids=available_ids,
             )
-        elif requested in retained_by_id:
+        elif requested in headers_by_id:
+            req_hdr = headers_by_id[requested]
+            req_snap = _load_json_dict(req_hdr["path"])
+            if req_snap is None:
+                raise ValueError(f"Retained run snapshot {requested!r} is unreadable.")
             base_payload = diff_run_snapshots(
-                retained_by_id[requested],
+                req_snap,
                 current_snap,
                 state_dir=state_dir,
                 available_run_ids=available_ids,

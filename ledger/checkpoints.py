@@ -36,10 +36,11 @@ from .ids import digest_json, source_id_for
 from .sources.base import ADAPTERS, get_adapter
 from .sources.filesystem import is_shadowed_symlink
 from .sources.common import (
+    CODE_EXTENSIONS,
     README_CANDIDATES,
     SIDECAR_CANDIDATES,
+    SPECIAL_FILES,
     find_first_existing,
-    iter_shallow_files,
     merge_exclude_names,
     resolve_path,
     safe_path_exists,
@@ -203,6 +204,11 @@ def _source_config_digest(root_cfg: dict, defaults: dict, output_dir: Path, sour
         "tree_scan_max_depth": int(
             root_cfg.get("tree_scan_max_depth", defaults.get("tree_scan_max_depth", 8))
         ),
+        "checkpoint_stat_max_files": int(
+            root_cfg.get(
+                "checkpoint_stat_max_files", defaults.get("checkpoint_stat_max_files", 64)
+            )
+        ),
         "policy_crawl_treatments": sorted(
             str(item).strip()
             for item in root_cfg.get("policy_crawl_treatments", ["project_discovery"])
@@ -216,6 +222,36 @@ def _source_config_digest(root_cfg: dict, defaults: dict, output_dir: Path, sour
     return digest_json(payload)
 
 
+def _ctx_artifacts_fingerprint(directory: Path) -> list[list[object]]:
+    records: list[list[object]] = []
+    ctx_dir = directory / ".ctx"
+    if safe_path_is_dir(ctx_dir):
+        for cname in (
+            "skeleton.json",
+            "fleet-capsule.json",
+            "capsule.json",
+            "metadata.json",
+            "CONTEXT-0.md",
+        ):
+            try:
+                st = (ctx_dir / cname).stat()
+                records.append([f".ctx/{cname}", st.st_mtime_ns, st.st_size])
+            except OSError:
+                continue
+    try:
+        st_root = (directory / "CONTEXT.md").stat()
+        records.append(["CONTEXT.md", st_root.st_mtime_ns, st_root.st_size])
+    except OSError:
+        pass
+    return records
+
+
+def _is_regular_file_entry(entry: os.DirEntry[str], is_sym: bool) -> bool:
+    if not is_sym:
+        return entry.is_file(follow_symlinks=False)
+    return not entry.is_dir(follow_symlinks=True) and entry.is_file(follow_symlinks=True)
+
+
 def filesystem_candidate_fingerprint(
     directory: Path,
     root_cfg: dict,
@@ -224,7 +260,7 @@ def filesystem_candidate_fingerprint(
     *,
     source_cfg_digest: str,
 ) -> str | None:
-    """Compute a deterministic fingerprint covering all inputs to ``build_entry``."""
+    """Compute a deterministic single-pass fingerprint covering all inputs to ``build_entry``."""
     if not safe_path_exists(directory) or not safe_path_is_dir(directory):
         return None
     exclude_names = merge_exclude_names(root_cfg, defaults)
@@ -233,6 +269,9 @@ def filesystem_candidate_fingerprint(
     )
     max_depth = int(
         root_cfg.get("tree_scan_max_depth", defaults.get("tree_scan_max_depth", 8))
+    )
+    stat_max_files = int(
+        root_cfg.get("checkpoint_stat_max_files", defaults.get("checkpoint_stat_max_files", 64))
     )
 
     h = hashlib.sha256()
@@ -248,8 +287,11 @@ def filesystem_candidate_fingerprint(
     except OSError:
         _feed(h, "dir_mtime_ns", None)
 
-    _feed(h, "git_fp", git_repo_fingerprint(directory))
-    _feed(h, "has_obsidian", safe_path_is_dir(directory / ".obsidian"))
+    git_fp = git_repo_fingerprint(directory)
+    has_git = git_fp is not None or safe_path_exists(directory / ".git")
+    has_obsidian = safe_path_is_dir(directory / ".obsidian")
+    _feed(h, "git_fp", git_fp)
+    _feed(h, "has_obsidian", has_obsidian)
 
     readme_path = find_first_existing(directory, README_CANDIDATES)
     _feed(
@@ -276,28 +318,157 @@ def filesystem_candidate_fingerprint(
         "machina_state",
         _file_bytes_sha256(machina_state_path if safe_path_exists(machina_state_path) else None),
     )
-
-    shallow_rels = sorted(
-        fp.relative_to(directory).as_posix()
-        for fp in iter_shallow_files(directory, exclude_names)
-    )
-    _feed(h, "shallow_files", shallow_rels)
+    _feed(h, "ctx_artifacts", _ctx_artifacts_fingerprint(directory))
 
     base_str = str(directory)
     base_prefix_len = len(base_str) + (0 if base_str.endswith(os.sep) else 1)
+
+    # Pass 1: single `os.scandir` sweep over depth 0 and depth 1 (avoiding duplicate iter_shallow_files).
+    shallow_md = 0
+    shallow_code = 0
+    has_special = False
+    has_nested_readme = bool(readme_path)
     scanned_entries = 0
     truncated = False
-    visited_files: list[str] = []
-    visited_dirs: list[str] = []
+    depth1_dirs: list[tuple[str, str]] = []
+    depth2_dirs: list[tuple[str, int]] = []
 
-    stack: list[tuple[str, int]] = [(base_str, 0)]
-    while stack:
+    try:
+        with os.scandir(base_str) as it0:
+            entries0 = sorted(it0, key=lambda e: e.name)
+    except OSError:
+        entries0 = []
+
+    for entry in entries0:
+        name = entry.name
+        try:
+            is_sym = entry.is_symlink()
+            if not is_sym and entry.is_dir(follow_symlinks=False):
+                if name in exclude_names:
+                    continue
+                if max_depth >= 1:
+                    depth1_dirs.append((entry.path, name))
+            elif is_sym and entry.is_dir(follow_symlinks=True):
+                continue
+            elif _is_regular_file_entry(entry, is_sym):
+                st = entry.stat(follow_symlinks=True)
+                if name not in exclude_names:
+                    dot = name.rfind(".")
+                    suffix = name[dot:].lower() if dot != -1 else ""
+                    if name in SPECIAL_FILES:
+                        has_special = True
+                    if name in README_CANDIDATES:
+                        has_nested_readme = True
+                    if suffix == ".md":
+                        shallow_md += 1
+                    if suffix in CODE_EXTENSIONS:
+                        shallow_code += 1
+                    h.update(f"sf:{name}\x00{st.st_mtime_ns}\x00{st.st_size}\x1e".encode("utf-8"))
+                else:
+                    h.update(f"xf:{name}\x00{st.st_mtime_ns}\x00{st.st_size}\x1e".encode("utf-8"))
+                if not truncated:
+                    scanned_entries += 1
+                    if scanned_entries >= max_entries:
+                        truncated = True
+        except OSError:
+            continue
+
+    for d1_path, d1_name in depth1_dirs:
+        try:
+            d1_mtime = os.stat(d1_path, follow_symlinks=False).st_mtime_ns
+        except OSError:
+            d1_mtime = -1
+        h.update(f"d1:{d1_name}\x00{d1_mtime}\x1e".encode("utf-8"))
+        try:
+            with os.scandir(d1_path) as it1:
+                entries1 = sorted(it1, key=lambda e: e.name)
+        except OSError:
+            continue
+        for entry in entries1:
+            name = entry.name
+            try:
+                is_sym = entry.is_symlink()
+                if not is_sym and entry.is_dir(follow_symlinks=False):
+                    if name in exclude_names or max_depth < 2:
+                        continue
+                    depth2_dirs.append((entry.path, 2))
+                elif is_sym and entry.is_dir(follow_symlinks=True):
+                    continue
+                elif _is_regular_file_entry(entry, is_sym):
+                    st = entry.stat(follow_symlinks=True)
+                    rel_file = f"{d1_name}/{name}"
+                    if name not in exclude_names:
+                        dot = name.rfind(".")
+                        suffix = name[dot:].lower() if dot != -1 else ""
+                        if name in SPECIAL_FILES:
+                            has_special = True
+                        if name in README_CANDIDATES:
+                            has_nested_readme = True
+                        if suffix == ".md":
+                            shallow_md += 1
+                        if suffix in CODE_EXTENSIONS:
+                            shallow_code += 1
+                        h.update(
+                            f"sf:{rel_file}\x00{st.st_mtime_ns}\x00{st.st_size}\x1e".encode(
+                                "utf-8"
+                            )
+                        )
+                    else:
+                        h.update(
+                            f"xf:{rel_file}\x00{st.st_mtime_ns}\x00{st.st_size}\x1e".encode(
+                                "utf-8"
+                            )
+                        )
+                    if not truncated:
+                        scanned_entries += 1
+                        if scanned_entries >= max_entries:
+                            truncated = True
+            except OSError:
+                continue
+
+    shallow_score = 0
+    if has_git:
+        shallow_score += 3
+    if has_obsidian:
+        shallow_score += 3
+    if has_nested_readme:
+        shallow_score += 2
+    if has_special:
+        shallow_score += 1
+    if shallow_md >= 4:
+        shallow_score += 1
+    if shallow_code >= 3:
+        shallow_score += 1
+    if shallow_md >= 1 and shallow_code >= 1:
+        shallow_score += 2
+    if sidecar_path:
+        shallow_score += 2
+
+    force_include_names = set(root_cfg.get("force_include_names", []))
+    min_score = int(root_cfg.get("min_score", defaults.get("min_score", 2)))
+    must_include = root_cfg.get("discovery") != "children"
+    should_include = (
+        must_include or directory.name in force_include_names or shallow_score >= min_score
+    )
+    _feed(h, "should_include", [should_include, shallow_score])
+    if not should_include:
+        return h.hexdigest()
+
+    # Pass 2: deterministic DFS over depth >= 2 when candidate passes inclusion threshold.
+    deep_non_md_statted = 0
+    stack: list[tuple[str, int]] = list(reversed(depth2_dirs))
+    while stack and not truncated:
         curr_dir, rel_depth = stack.pop()
-        if rel_depth > 0:
-            visited_dirs.append(curr_dir[base_prefix_len:].replace(os.sep, "/"))
+        rel_dir = curr_dir[base_prefix_len:].replace(os.sep, "/")
+        try:
+            d_mtime = os.stat(curr_dir, follow_symlinks=False).st_mtime_ns
+        except OSError:
+            d_mtime = -1
+        h.update(f"dd:{rel_dir}\x00{d_mtime}\x1e".encode("utf-8"))
+
         try:
             with os.scandir(curr_dir) as it:
-                dir_entries = list(it)
+                dir_entries = sorted(it, key=lambda e: e.name)
         except OSError:
             continue
 
@@ -306,33 +477,39 @@ def filesystem_candidate_fingerprint(
             name = entry.name
             try:
                 is_sym = entry.is_symlink()
-                if entry.is_dir(follow_symlinks=False):
+                if not is_sym and entry.is_dir(follow_symlinks=False):
                     if name in exclude_names or rel_depth + 1 > max_depth:
                         continue
                     sub_dirs.append((entry.path, rel_depth + 1))
                 elif is_sym and entry.is_dir(follow_symlinks=True):
                     continue
-                elif entry.is_file(follow_symlinks=True):
-                    st = entry.stat(follow_symlinks=True)
+                elif _is_regular_file_entry(entry, is_sym):
                     scanned_entries += 1
-                    rel_file = entry.path[base_prefix_len:].replace(os.sep, "/")
-                    visited_files.append(f"{rel_file}\x00{st.st_mtime_ns}\x00{st.st_size}")
+                    rel_file = f"{rel_dir}/{name}"
+                    is_md = name.lower().endswith(".md")
+                    if is_md or deep_non_md_statted < stat_max_files:
+                        st = entry.stat(follow_symlinks=True)
+                        if not is_md:
+                            deep_non_md_statted += 1
+                        h.update(
+                            f"df:{rel_file}\x00{st.st_mtime_ns}\x00{st.st_size}\x1e".encode(
+                                "utf-8"
+                            )
+                        )
+                    else:
+                        h.update(f"dn:{rel_file}\x1e".encode("utf-8"))
                     if scanned_entries >= max_entries:
                         truncated = True
                         break
             except OSError:
                 continue
+
         if truncated:
             break
         for sd in reversed(sub_dirs):
             stack.append(sd)
 
-    visited_dirs.sort()
-    visited_files.sort()
-    _feed(h, "visited_dirs", "\x1f".join(visited_dirs))
-    _feed(h, "tree_meta", [scanned_entries, truncated])
-    _feed(h, "visited_files", "\x1f".join(visited_files))
-
+    _feed(h, "tree_meta", [scanned_entries, truncated, deep_non_md_statted])
     return h.hexdigest()
 
 
@@ -421,7 +598,7 @@ def write_source_checkpoints(path: Path, payload: dict) -> None:
     path = path.resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.parent / f".{path.name}.tmp"
-    tmp_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    tmp_path.write_text(json.dumps(payload, separators=(",", ":")) + "\n", encoding="utf-8")
     tmp_path.replace(path)
 
 
@@ -539,13 +716,59 @@ def collect_entries_incremental(
 
         exclude_names = merge_exclude_names(root_cfg, defaults)
         adapter = get_adapter(discovery)
+        inv_stat_sig: list[object] | None = None
+        if discovery == "inventory_policy":
+            try:
+                inv_st = root_cfg["_inventory_jsonl_path"].stat()
+                pol_st = root_cfg["_policy_path"].stat()
+                root_exists = safe_path_exists(root_path)
+                root_mtime = root_path.stat().st_mtime_ns if root_exists else None
+                inv_stat_sig = [
+                    inv_st.st_mtime_ns,
+                    inv_st.st_size,
+                    pol_st.st_mtime_ns,
+                    pol_st.st_size,
+                    root_exists,
+                    root_mtime,
+                ]
+            except OSError:
+                inv_stat_sig = None
+
+        prior_src_check = prior_sources.get(source_id) if isinstance(prior_sources, dict) else None
+        if (
+            discovery == "inventory_policy"
+            and not bypass_cache
+            and inv_stat_sig is not None
+            and isinstance(prior_src_check, dict)
+            and prior_src_check.get("config_digest") == source_cfg_digest
+            and prior_src_check.get("inventory_artifacts_stat") == inv_stat_sig
+            and prior_src_check.get("all_candidates_unmounted") is True
+            and isinstance(prior_src_check.get("candidates"), dict)
+        ):
+            prepared_roots.append(
+                {
+                    "source_id": source_id,
+                    "discovery": discovery,
+                    "root_cfg": root_cfg,
+                    "source_available": True,
+                    "source_cfg_digest": source_cfg_digest,
+                    "fast_inventory_hit": True,
+                    "inv_stat_sig": inv_stat_sig,
+                    "prior_src": prior_src_check,
+                }
+            )
+            continue
+
         candidates = adapter.discover_candidates(root_cfg, defaults, exclude_names)
         force_include = {str(x) for x in root_cfg.get("force_include_names", []) if str(x)}
+        resolved_by_candidate: dict[Path, Path] = {}
         for candidate in candidates:
             if isinstance(candidate, Path):
                 try:
                     if not candidate.is_symlink() and safe_path_exists(candidate):
-                        all_real_dirs.append(candidate.resolve())
+                        res_cand = candidate.resolve()
+                        resolved_by_candidate[candidate] = res_cand
+                        all_real_dirs.append(res_cand)
                 except OSError:
                     continue
         prepared_roots.append(
@@ -555,9 +778,12 @@ def collect_entries_incremental(
                 "root_cfg": root_cfg,
                 "source_available": True,
                 "source_cfg_digest": source_cfg_digest,
+                "fast_inventory_hit": False,
+                "inv_stat_sig": inv_stat_sig,
                 "adapter": adapter,
                 "candidates": candidates,
                 "force_include": force_include,
+                "resolved_by_candidate": resolved_by_candidate,
             }
         )
 
@@ -596,9 +822,47 @@ def collect_entries_incremental(
             }
             continue
 
+        if prep.get("fast_inventory_hit"):
+            prior_src = prep["prior_src"]
+            prior_cand_map = prior_src.get("candidates", {})
+            fast_cands: dict[str, dict] = {}
+            source_reused = 0
+            source_entries = 0
+            for cand_key, cand_rec in prior_cand_map.items():
+                if cand_key in seen_paths or not isinstance(cand_rec, dict):
+                    continue
+                seen_paths.add(cand_key)
+                source_reused += 1
+                fast_cands[cand_key] = cand_rec
+                if cand_rec.get("included") and isinstance(cand_rec.get("entry"), dict):
+                    source_entries += 1
+                    entries.append(dict(cand_rec["entry"]))
+            total_candidate_count += source_reused
+            total_reused_candidates += source_reused
+            hit_source_count += 1
+            sources_checkpoint[source_id] = {
+                "source_id": source_id,
+                "discovery": discovery,
+                "status": "available",
+                "checkpoint_status": "hit",
+                "checkpoint_fingerprint": prior_src.get("checkpoint_fingerprint"),
+                "config_digest": source_cfg_digest,
+                "checked_at": checked_at,
+                "last_extracted_at": str(prior_src.get("last_extracted_at") or checked_at),
+                "candidate_count": source_reused,
+                "reused_candidate_count": source_reused,
+                "rebuilt_candidate_count": 0,
+                "entry_count": source_entries,
+                "inventory_artifacts_stat": prep.get("inv_stat_sig"),
+                "all_candidates_unmounted": True,
+                "candidates": fast_cands,
+            }
+            continue
+
         adapter = prep["adapter"]
         candidates = prep["candidates"]
         force_include = prep["force_include"]
+        resolved_by_candidate = prep.get("resolved_by_candidate") or {}
 
         prior_src = prior_sources.get(source_id) if isinstance(prior_sources, dict) else None
         prior_cands: dict[str, dict] = {}
@@ -634,7 +898,8 @@ def collect_entries_incremental(
             else:
                 if is_shadowed_symlink(candidate, all_real_dirs, force_include):
                     continue
-                cand_key = str(candidate.resolve()).lower()
+                resolved_cand = resolved_by_candidate.get(candidate) or candidate.resolve()
+                cand_key = str(resolved_cand).lower()
                 if cand_key in seen_paths:
                     continue
                 seen_paths.add(cand_key)
@@ -679,6 +944,8 @@ def collect_entries_incremental(
                     cand_record["sidecar_envelope"] = cached_cand["sidecar_envelope"]
                 if isinstance(cached_cand.get("git_drift"), dict):
                     cand_record["git_drift"] = cached_cand["git_drift"]
+                if "ctx_raw_skeleton" in cached_cand:
+                    cand_record["ctx_raw_skeleton"] = cached_cand["ctx_raw_skeleton"]
             current_cands[cand_key] = cand_record
             if entry is not None:
                 source_entries += 1
@@ -719,7 +986,7 @@ def collect_entries_incremental(
             miss_source_count += 1
             last_extracted_at = checked_at
 
-        sources_checkpoint[source_id] = {
+        src_cp_entry: dict[str, object] = {
             "source_id": source_id,
             "discovery": discovery,
             "status": "available",
@@ -734,6 +1001,15 @@ def collect_entries_incremental(
             "entry_count": source_entries,
             "candidates": current_cands,
         }
+        if discovery == "inventory_policy":
+            src_cp_entry["inventory_artifacts_stat"] = prep.get("inv_stat_sig")
+            src_cp_entry["all_candidates_unmounted"] = not any(
+                isinstance(c, dict)
+                and isinstance(c.get("filesystem_path"), Path)
+                and safe_path_exists(c["filesystem_path"])
+                for c in candidates
+            )
+        sources_checkpoint[source_id] = src_cp_entry
 
     entries.sort(key=lambda item: (item["last_touch_at"], item["name"].lower()), reverse=True)
 
