@@ -1,0 +1,21 @@
+{
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-GAP-CLOSEOUT-03.json and pyproject.toml",
+      "edit build_ledger.py, ledger/gbrain_pages.py, ledger/human_view.py, and .github/workflows/ci.yml",
+      "create schemas/system-manifest.schema.json, schemas/project-capsule.schema.json, schemas/canonical-projects.schema.json, schemas/review-queue.schema.json, schemas/changes.schema.json, and tests/test_state_schemas.py",
+      "edit CURRENT.md, SCHEMA.md, README.md, PRD.md, ROADMAP.md, SYSTEM.md, AGENTS.md, BACKLOG.md, docs/work/FUTURE-SPEC-ruff-reexport-surface-20260921.md, and .project-ledger.json",
+      "run python3 -m ledger validate, uvx --offline ruff check ., and python3 -m unittest discover -s tests"
+    ],
+    "forbidden": [
+      "mutate registered external source checkouts",
+      "add an execution_state field to ledger_config.json, CURRENT.md, SCHEMA.md, or state/system-manifest.json",
+      "enable hosted cloud-VM pull_request workflow triggers in .github/workflows/ci.yml"
+    ]
+  },
+  "completion": "uvx --offline ruff check . exits 0, all generated state/*.json artifacts validate against schemas/*.schema.json in tests/test_state_schemas.py, documentation and BACKLOG.md out-of-scope work queue match executable reality without forbidden vocabulary, .project-ledger.json is fresh, and python3 -m unittest discover -s tests passes.",
+  "id": "PL-GAP-CLOSEOUT-03",
+  "initial_next_action": "Create pyproject.toml and build_ledger.py __all__, clear Ruff lint findings, author executable JSON Schemas and tests/test_state_schemas.py, reconcile documentation and BACKLOG.md work queue, and update .project-ledger.json, then checkpoint before running full verification.",
+  "objective": "Add pyproject.toml packaging and Ruff configuration, declare build_ledger.py __all__ and clear Ruff lint findings, materialize executable JSON Schemas and stdlib contract validation tests for generated state/*.json artifacts, reconcile SCHEMA.md, CURRENT.md, README.md, PRD.md, ROADMAP.md, SYSTEM.md, AGENTS.md, and BACKLOG.md (including out-of-scope cross-repo work queue items), and refresh Project Ledger's own .project-ledger.json sidecar.",
+  "title": "Close packaging, lint, JSON schema, documentation, work-queue, and self-sidecar gaps G7 and G2"
+}

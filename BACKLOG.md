@@ -371,6 +371,33 @@ actions to the two paths that actually clear (`merge`, `canonical_key`). See
 
 ---
 
+# 2026-10-31 Full Repo Audit Gap Closeout (`PL-GAP-CLOSEOUT-01..03`)
+
+All in-scope gaps (`G1`–`G7`) and emergent defects surfaced during the 2026-10-31 full repository audit are closed and merged to `main`:
+
+- **G1 — GBrain Reality Block `Git State` bug (`PL-GAP-CLOSEOUT-01`, PR #30):** Fixed `ledger/gbrain_pages.py` to read `capsule["git_facts"]` (with `git_state` fallback) so `ledger sync-gbrain` renders `- **Git State:** \`<branch>\` @ \`<12-char-commit>\` (<drift>)` accurately and idempotently.
+- **G2 / Emergent `claims.py` defect — False `DECLARED_KEY_CONFLICT` on absent sidecars & `project-ledger` self-sidecar drift (`PL-GAP-CLOSEOUT-01` & `03`, PRs #30 & #32):** Fixed `ledger/claims.py` to emit `sidecar_declaration` claims only when `observation["sidecar"]["present"] == True` (eliminating the bogus `rev_8a99eed26a25f7d56b7ce774` review on `the-garden`), and refreshed Project Ledger's own `.project-ledger.json` in `HEAD`.
+- **G3 — Warm `compile_state` optimization, `--no-optional-locks`, & bucketed evidence scoring (`PL-GAP-CLOSEOUT-02`, PR #31):** Added `--no-optional-locks` to `git_output`, fingerprinted `.git/index` and `.machina/state.json` in `ledger/checkpoints.py`, cached `sidecar_envelope` and `git_drift` on `ledger refresh` warm checkpoints in `ledger/compiler.py`, and precomputed `facts_by_id` + inverted referent buckets in `build_identity_evidence()` (`ledger/evidence.py`).
+- **G4 — Read-only `.machina/state.json` continuity ingestion (`PL-GAP-CLOSEOUT-02`, PR #31):** Replaced legacy `"WAVE4_NOT_IMPLEMENTED"` with `"OWNED_BY_MACHINA"` in `ledger/capsules.py` and added bounded read-only `.machina/state.json` continuity ingestion (`current_state.machina_continuity`, `session_receipts_state = "external_provider"`), overriding stale sidecar session continuity without importing Machina lifecycle vocabulary.
+- **G5 — `historical_canonical_id` lineage across anchor upgrades (`PL-GAP-CLOSEOUT-02`, PR #31):** Preserved unambiguous former `prj_*` IDs across observation/merge/alias-remote anchor upgrades and retained `state/runs/run_*.json` snapshots as `historical_canonical_id` referents (`_RESOLVE_PRIORITY = 1`), with historical-ID lineage event specificity in `ledger/changes.py`.
+- **G6 — Shadowed `/central/projects` symlink suppression (`PL-GAP-CLOSEOUT-01`, PR #30):** Added `is_shadowed_symlink()` across `ledger/sources/filesystem.py`, `ledger/sources/base.py`, and `ledger/checkpoints.py` so backwards-compatibility redirect symlinks pointing inside real scanned directories are deterministically suppressed.
+- **G7 — Packaging (`pyproject.toml`), `ruff check .` gate, executable `schemas/*.schema.json`, & documentation reconciliation (`PL-GAP-CLOSEOUT-03`, PR #32):** Added `pyproject.toml` (`ledger` console script + Ruff config), `build_ledger.__all__`, Draft 2020-12 JSON Schemas for `system-manifest.json`, `canonical-projects.json`, `review-queue.json`, `changes.json`, and `state/projects/<id>.json` (`tests/test_state_schemas.py`), and reconciled `SCHEMA.md`, `CURRENT.md`, `PRD.md`, `ROADMAP.md`, `README.md`, `SYSTEM.md`, and `AGENTS.md`.
+
+---
+
+# Cross-Repo / Out-of-Scope Work Queue
+
+The following items surfaced during the 2026-10-31 audit cross Project Ledger's read-only sensing boundary (Architectural Law 10) or belong to sibling fleet repositories and are queued as bounded external work units:
+
+- **`WQ-1` — Refresh or migrate stale May 19, 2026 `.project-ledger.json` sidecars in 12 external `/central` repositories** *(Target repos: sibling checkouts in `/central/repos/*` and `/central/projects/*` currently emitting `stale_sidecar` warnings)*:
+  - Project Ledger senses target repositories strictly read-only (Architectural Law 10) and already flags all 12 lagging sidecars via `stale_sidecar` warnings. As each external repository is touched in its own worktree lease, either remove obsolete commit-pinning fields (`commit` / `head_commit` / `git.commit`) from its `.project-ledger.json` or update its sidecar in `HEAD` so `stale_sidecar` clears organically.
+- **`WQ-2` — Fleet-wide `ctx` (`context-project`) `.ctx/` structural capsule rollout across `/central/repos/*`** *(Owner: `context-project` / `homelab` maintenance automation)*:
+  - Project Ledger's `ingest_project_ctx_capsule()` (`ledger/capsules.py`) already ingests `.ctx/skeleton.json`, `.ctx/fleet-capsule.json`, Tier-2 `.ctx/CONTEXT-0.md`, and Tier-1 `CONTEXT.md`, but currently only `2 / 176` canonical projects (`machina` and `context-project`) have `.ctx/` materialized on disk. Running `ctx` generation across `/central/repos/{active,apps,agent-tooling,infra}` will immediately populate `capsule["ctx"]` architecture/entrypoint maps across the active fleet without any Project Ledger code change.
+- **`WQ-3` — Thin read-only MCP server wrapper over Project Ledger's read plane** *(Owner: `agent-tooling` / `homelab` MCP surface)*:
+  - Expose Project Ledger's deterministic JSON read commands (`orient`, `resolve`, `show`, `locate`, `explain`, `changes`, `review`) as read-only MCP tools/resources over `state/` so interactive agent harnesses (Claude Code, Codex, Cursor, Hermes, Antigravity) can query canonical project reality directly without shelling out.
+
+---
+
 # Explicitly deferred / anti-backlog
 
 Do **not** prioritize these:

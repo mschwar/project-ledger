@@ -5,23 +5,23 @@
   "frontier": null,
   "last_checkpoint": {
     "slice": 1,
-    "summary": "Implemented G4 (.machina/state.json capsule continuity ingestion), G5 (historical_canonical_id referent retention across anchor upgrades and run history), and G3 (--no-optional-locks, .git/index fingerprint, compile-stage checkpoint caching, and inverted-bucket identity evidence scoring) with unit tests.",
-    "timestamp": "2026-10-31T19:34:03.324709Z"
+    "summary": "Landed pyproject.toml, build_ledger.__all__, ruff check gate, executable Draft 2020-12 schemas/*.schema.json + test_state_schemas.py, full documentation reconciliation, WQ-1..3 work queue, and updated .project-ledger.json.",
+    "timestamp": "2026-10-31T19:56:45.931906Z"
   },
   "last_completed": {
     "slice": 2,
-    "summary": "Verified PL-GAP-CLOSEOUT-02: G4 (.machina/state.json read-only continuity ingestion + OWNED_BY_MACHINA), G5 (historical_canonical_id referent retention across anchor upgrades and run history), and G3 (--no-optional-locks, .git/index fingerprint, compile-stage checkpoint caching, and inverted-bucket identity evidence scoring), with 170/170 unittests passing.",
-    "timestamp": "2026-10-31T19:39:15.678336Z",
+    "summary": "Verified PL-GAP-CLOSEOUT-03: pyproject.toml, build_ledger.__all__, ruff check . (0 errors), 5 executable Draft 2020-12 JSON Schemas in schemas/*.schema.json + tests/test_state_schemas.py, full documentation and BACKLOG.md WQ-1..3 work queue reconciliation, fresh .project-ledger.json, and 172/172 unittests passing.",
+    "timestamp": "2026-10-31T19:57:29.292795Z",
     "unit": {
-      "id": "PL-GAP-CLOSEOUT-02",
-      "spec": ".machina/units/PL-GAP-CLOSEOUT-02.json",
-      "spec_digest": "a9cc62b49f7b320fbedcbc44a0a863573af76c2353f69c8b14d1c9c55841838a",
-      "title": "Close continuity, identity-lineage, and compile-performance gaps G3, G4, and G5"
+      "id": "PL-GAP-CLOSEOUT-03",
+      "spec": ".machina/units/PL-GAP-CLOSEOUT-03.json",
+      "spec_digest": "6c6e8385a93a3df0a01a8408949198db68a18d87496ee827a53292fbc4f50e81",
+      "title": "Close packaging, lint, JSON schema, documentation, work-queue, and self-sidecar gaps G7 and G2"
     }
   },
   "next_action": null,
   "schema_version": 1,
-  "sequence": 16,
+  "sequence": 21,
   "slice": 2,
-  "updated_at": "2026-10-31T19:39:15.678766Z"
+  "updated_at": "2026-10-31T19:57:29.293341Z"
 }

@@ -332,6 +332,7 @@ Current available capabilities:
 
 - `compat_observations`
 - `typed_observations`
+- `sidecar_declarations`
 - `source_health`
 - `source_checkpoints`
 - `canonical_projects`
@@ -339,8 +340,9 @@ Current available capabilities:
 - `project_capsules`
 - `review_queue`
 - `change_feed`
+- `gbrain_page_sync`
 
-All Wave 1–5 materialized view and incremental checkpoint capabilities in `system-manifest.json` are now `available`. Agents must prefer this executable capability map over inference from design prose.
+All Wave 1–5 materialized view and incremental checkpoint capabilities in `system-manifest.json` are now `available`, and compiled `state/*.json` outputs are validated against executable Draft 2020-12 JSON Schemas in `schemas/*.schema.json` (`system-manifest.schema.json`, `canonical-projects.schema.json`, `project-capsule.schema.json`, `review-queue.schema.json`, `changes.schema.json`, plus `project-ledger-sidecar.schema.json`). Agents must prefer this executable capability map over inference from design prose.
 
 ## 1.5 New semantic state vocabulary
 
@@ -442,11 +444,12 @@ normalized_remotes[]
 project_key_hints[]
 referents[]
 identity_evidence[]
+identity_evidence_summary
 merge_decision_ids[]
 canonical_key_decision_id
 ```
 
-Current canonical IDs are deterministic under unchanged identity evidence. A single normalized remote is the preferred anchor; explicit merge decisions anchor multi-remote/non-remote merged groups; otherwise a singleton observation anchors the project. A normalized remote is only used as the anchor when it is **unique to one project** across the whole compile — when a split/reject keeps two observations that share an exact remote in separate projects, each falls back to a membership-scoped anchor so the two projects never share a `canonical_project_id` (P2.5).
+Current canonical IDs are deterministic under unchanged identity evidence. A single normalized remote is the preferred anchor; explicit merge decisions anchor multi-remote/non-remote merged groups; otherwise a singleton observation anchors the project. A normalized remote is only used as the anchor when it is **unique to one project** across the whole compile — when a split/reject keeps two observations that share an exact remote in separate projects, each falls back to a membership-scoped anchor so the two projects never share a `canonical_project_id` (P2.5). When a project upgrades its anchor (for example from a singleton observation or merge decision to a normalized remote, or across retained run history in `state/runs/`), unambiguous former `prj_*` IDs are preserved as `historical_canonical_id` referents so external references continue resolving seamlessly.
 
 `resolved_fields` records claim provenance for each resolved canonical field (`project_key`, `display_name`, `gbrain_source_slug`): which observation/decision/evidence produced the value, so a cold agent can see *why* a canonical value exists without re-running archaeology. Provenance kinds are `decision` (canonical_key), `declaration` (project_key sidecar), `observed` (remote/name/corpus path), or `derived` (fallback).
 
@@ -499,12 +502,13 @@ Current review codes include:
 - `DECISION_REFERENCE_UNAVAILABLE` (warning);
 - `DECISION_CONFLICT` (error);
 - `DECISION_SUPERSEDE_UNKNOWN` (warning);
-- `DIVERGENT_SIDECAR_DECLARATIONS` (warning) — two observations that merged into one
-  canonical project carry conflicting sidecar `project_key` declarations. The merge
+- `DIVERGENT_SIDECAR_DECLARATIONS` / `DECLARED_KEY_CONFLICT` (warning) — two observations that merged into one
+  canonical project carry conflicting sidecar `project_key` declarations (emitted only when an actual sidecar file is present on disk). The merge
   stands; the compiler does not pick a value by last-write-wins (SCHEMA.md §6). It
   resolves when the operator assigns a `canonical_key` (authoritative key) via the
   P2.8-style ratchet. Computed from the minimal epistemic claim surface in
-  `ledger/claims.py` (programme P1.4).
+  `ledger/claims.py` (programme P1.4);
+- `SIDECAR_DECLARATION_INVALID` (warning) — a project-local sidecar failed `schemas/project-ledger-sidecar.schema.json` validation (malformed JSON, unsupported `schema_version`, forbidden `canonical_project_id`, unknown field, or invalid field type); invalid fields are excluded locally without poisoning compilation (programme P1.7).
 
 ### Exact resolve contract
 
@@ -514,7 +518,7 @@ Current review codes include:
 - `ambiguous` — more than one equally authoritative exact candidate;
 - `unresolved` — no candidate.
 
-Referent priority is explicit: canonical ID first; exact normalized remote/path/operator alias next; raw URL/project key next; compatibility key hints next; display name last.
+Referent priority is explicit: `canonical_project_id` first (priority `0`); `historical_canonical_id` / exact `normalized_remote` / `path` / operator `decision_alias` next (priority `1`); `raw_url` / `project_key` next (priority `2`); `project_key_hint` next (priority `3`); `display_name` last (priority `4`).
 
 CLI exit codes:
 
@@ -819,26 +823,27 @@ This powers delta-first agent operation without false churn on run/probe timesta
 
 ## Project capsule
 
-Generated:
+Generated (validated against `schemas/project-capsule.schema.json`):
 
 ```text
 state/projects/<canonical_project_id>.json
 ```
 
-Contents (bounded within `16 KiB` per capsule):
+Contents (bounded within `16 KiB` per capsule via `budget`):
 
-- `canonical_project_id`, `project_key`, `display_name`, `aliases[]`, `normalized_remotes[]`
-- `gbrain_source_slug` and `gbrain` (`source_slug`, `project_slug`, `page_key`, `matched_corpus_path`, `basis`, `confidence`)
-- `summary` (`description`, `lifecycle_status`, `tags`, `shared`, `storage_scope`)
-- `continuity` (`last_session_at`, `last_session_summary`, `next_step`, `source_observation_id`, `freshness`)
-- `preferred_location` (`observation_id`, `source_id`, `source_role`, `path`, `canonical_url`, `reason_codes[]`, `confidence`, `git_drift`, `warning_codes[]`, `warnings[]`)
+- `schema_version`, `compiler_version`, `run_id`, `compiled_at`, `as_of`
+- `canonical_project_id`, `project_key`, `display_name`, `aliases[]`, `purpose`, `canonical_url`, `normalized_remotes[]`, `identity_anchor`, `resolved_fields`
+- `gbrain_source_slug` and `gbrain` (`state`, `source_slug`, `fallback_source_slug`, `project_slug`, `page_key`, `match_basis`, `matched_observation_id`, optional `disambiguated_from`)
+- `ctx` (`state`: `available` | `absent` | `invalid`, `source_format`: `skeleton_json` | `fleet_capsule_json` | `tier2_ctx_dir` | `tier1_context_md`, `observation_id`, `artifact_path`, `structural_hash`, `boundary_doc_hash`, `total_files`, `languages`, `entrypoints[]`, `authority_boundaries[]`, `subsystems[]`, `subsystem_count`, `subsystems_truncated`)
+- `freshness` (`state`, `input_observed_at`, `content_as_of`, `content_as_of_basis`, `available_observation_count`, `unavailable_observation_count`)
+- `preferred_location` (`state`: `resolved` | `inventory_only` | `unavailable`, `observation_id`, `source_id`, `source_class`, `machine_name`, `location`, `confidence`, `reason_codes[]`, `git_drift`, `warning_codes[]`, `warnings[]`, `explanation`)
 - `warnings[]` (top-level git working-tree drift and `stale_sidecar` warnings for `machina` / `homelab` pre-spawn checks, e.g. `"warning: local main is 20 commits behind origin/main"` or `"warning: stale_sidecar: declared commit 'ef38aca' in .project-ledger.json lags live HEAD e6c8007ad7dd"`)
-- `ctx` (`state`: `available` | `absent` | `invalid`, `source_format`: `skeleton_json` | `fleet_capsule_json` | `tier2_ctx_dir` | `tier1_context_md`, `structural_hash`, `boundary_doc_hash`, `total_files`, `languages`, `entrypoints[]`, `authority_boundaries[]`, `subsystems[]`, `subsystem_count`, `subsystems_truncated`)
-- `ranked_observations[]` (compact summaries ranked by `live > mirror > backup > inventory` with reason codes, `git_drift`, and `warning_codes[]`)
-- `git_facts` (freshest git commit/branch/remote facts plus `drift` summary)
-- `freshness` (`state`, `content_as_of`, `content_as_of_basis`, `observed_at`)
-- `open_reviews[]` and `divergent_declarations[]`
-- `pointers` (`task_system.provider = "machina"`, `knowledge_system.provider = "gbrain"`, portable output-root-relative POSIX `evidence_refs`)
+- `git_facts` (`state`, `observation_id`, `head_branch`, `head_commit`, `head_commit_at`, `last_remote_ref_at`, `remote_url`, `upstream_ref`, `ahead_count`, `behind_count`, `main_behind_count`, `dirty`, `drift_state`, `warning_codes[]`, `warnings[]`)
+- `current_state` (`lifecycle_state`, `lifecycle_basis`, `session_receipts_state`: `external_provider` | `unavailable`, `session_receipts_reason_code = "OWNED_BY_MACHINA"`, read-only `.machina/state.json` `machina_continuity`, `last_session_at`, `last_session_summary`, `next_step`, `tags[]`)
+- `observation_count` and `observations[]` (compact ranked summaries ordered by `live > mirror > backup > inventory` with `rank`, `reason_codes[]`, `score_components`, `git_drift`, and `warning_codes[]`)
+- `review` (`open_review_count`, `items[]`)
+- `pointers` (`capsule_path`, `canonical_projects_path`, `observations_path`, `identity_evidence_path`, `review_queue_path`, `change_feed_path`, `observation_ids[]`, `merge_decision_ids[]`, `canonical_key_decision_id`, `task_system.provider = "machina"`, `knowledge_system.provider = "gbrain"`)
+- `budget` (`max_bytes = 16384`, `max_observation_summaries = 25`, `observations_truncated`, `within_budget`)
 
 The capsule omits deep raw compatibility payloads unless needed via `ledger explain`.
 
@@ -945,12 +950,12 @@ Examples:
 
 `.project-ledger.json` declarations are validated against `schemas/project-ledger-sidecar.schema.json` (`P1.7`, enforced by `ledger/sidecar.py` and `load_sidecar()`):
 
-- `schema_version` (`1` / `1.x` / `1.x.y`; legacy unversioned accepted as `1.0.0`)
-- `project_key`, `display_name` / `name`, `description`, `status`, `tags[]`, `canonical_url`, `repo_name`, `shared`, `storage_scope`
-- `last_session_at`, `last_session_summary`, `next_step`, `last_push_at`, `updated_at`, `created_at`
-- optional historical snapshot fields (`project_type`, `head_branch`, `head_commit` / `commit`, `remote_url`, and nested `git` sub-object)
+- `schema_version` (`1` / `1.x` / `1.x.y` or integer `1`; legacy unversioned accepted as `1.0.0`)
+- `project_key`, `display_name` / `name`, `description` / `purpose`, `status` / `lifecycle_state`, `aliases[]`, `tags[]`, `canonical_url`, `repo_name`, `shared`, `storage_scope`, `gbrain_source` / `gbrain_source_slug`, `machine_name`, `owner`, `primary_language`, `kind`, `notes`, `path`
+- `last_session_at`, `last_session_summary`, `next_step`, `last_push_at`, `updated_at`
+- optional historical snapshot fields (`project_type`, `head_commit` / `commit`, and nested `git` sub-object with `branch`, `commit`, `dirty`, `dirty_count`, `is_git`, `last_commit`, `remote`)
 
-`canonical_project_id` is forbidden in v1 sidecars (`SIDECAR_FORBIDDEN_CANONICAL_ID` -> `SIDECAR_DECLARATION_INVALID` review). When declared commit/branch/timestamp metadata lags live `git rev-parse HEAD` (and the sidecar itself was not modified in `HEAD`), `load_sidecar()` emits a `stale_sidecar` warning on `observation["sidecar"]["warnings"]` and the project capsule without invalidating valid-schema declarations.
+`canonical_project_id` is forbidden in v1 sidecars (`SIDECAR_FORBIDDEN_FIELD` -> `SIDECAR_DECLARATION_INVALID` review, alongside `SIDECAR_MALFORMED_JSON`, `SIDECAR_UNSUPPORTED_VERSION`, `SIDECAR_UNKNOWN_FIELD`, and `SIDECAR_INVALID_FIELD_TYPE`). When declared commit/branch/timestamp metadata lags live `git rev-parse HEAD` (and the sidecar itself was not modified in `HEAD`), `load_sidecar()` emits a `stale_sidecar` warning on `observation["sidecar"]["warnings"]` and the project capsule without invalidating valid-schema declarations.
 
 A sidecar is a declaration source attached to an observation. If multiple observations contain conflicting sidecars, emit claims/conflict/review; do not use last-write-wins.
 

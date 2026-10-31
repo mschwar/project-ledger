@@ -83,7 +83,7 @@ def render_canonical_markdown(
             anchor = cap.get("identity_anchor") or {}
             lines.extend(
                 [
-                    f"<details>",
+                    "<details>",
                     f"<summary><strong>{escape_md_cell(str(pkey))}</strong> (<code>{pid}</code>) — {count} observations (anchor: <code>{anchor.get('kind')}={escape_md_cell(str(anchor.get('value') or ''))}</code>)</summary>",
                     "",
                     "| Rank | Observation ID | Source | Class | Status | Location | Branch | Reasons |",

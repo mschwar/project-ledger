@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/changes.schema.json",
+  "title": "Project Ledger Semantic Change Feed (v1.0.0)",
+  "description": "Zero-churn semantic delta feed across sources, canonical project lineage, observations, reviews, and negative decisions (state/changes.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler_version",
+    "status",
+    "baseline_state",
+    "run_id",
+    "compiled_at",
+    "input_observed_at",
+    "previous_run_id",
+    "previous_compiled_at",
+    "previous_input_observed_at",
+    "change_count",
+    "review_count",
+    "untriaged_weak_overlap_count",
+    "summary",
+    "available_run_ids",
+    "pointers",
+    "changes"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "const": "ok"
+    },
+    "baseline_state": {
+      "type": "string",
+      "enum": [
+        "initial_baseline",
+        "same_run",
+        "compared"
+      ]
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-9a-f]{24}$"
+    },
+    "compiled_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_observed_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "previous_run_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_compiled_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "previous_input_observed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "change_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "review_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "untriaged_weak_overlap_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "by_entity_kind",
+        "by_change_type",
+        "by_severity",
+        "by_materiality",
+        "count_deltas"
+      ],
+      "properties": {
+        "by_entity_kind": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "by_change_type": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "by_severity": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "by_materiality": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "count_deltas": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "before",
+              "after",
+              "delta"
+            ],
+            "properties": {
+              "before": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "after": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "delta": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "available_run_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^run_[0-9a-f]{24}$"
+      }
+    },
+    "pointers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "changes_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runs_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "system_manifest_path": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/change_event"
+      }
+    }
+  },
+  "$defs": {
+    "change_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "change_id",
+        "previous_run_id",
+        "run_id",
+        "entity_kind",
+        "entity_id",
+        "canonical_project_id",
+        "project_key",
+        "change_type",
+        "materiality",
+        "severity",
+        "summary",
+        "before",
+        "after",
+        "provenance"
+      ],
+      "properties": {
+        "change_id": {
+          "type": "string",
+          "pattern": "^chg_[0-9a-f]{24}$"
+        },
+        "previous_run_id": {
+          "type": "string",
+          "pattern": "^run_[0-9a-f]{24}$"
+        },
+        "run_id": {
+          "type": "string",
+          "pattern": "^run_[0-9a-f]{24}$"
+        },
+        "entity_kind": {
+          "type": "string",
+          "enum": [
+            "source",
+            "canonical_project",
+            "observation",
+            "review_item",
+            "identity_decision"
+          ]
+        },
+        "entity_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "change_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "materiality": {
+          "type": "string",
+          "enum": [
+            "high",
+            "material",
+            "low"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "before": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "after": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "provenance": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

@@ -146,21 +146,24 @@ Agents should consume deltas rather than repeatedly reconstruct the whole estate
 
 ## Agent control surface
 
-The CLI/API should remain small and stable. Implemented today: `orient`, `sources`, `validate`, `refresh`, `compile`, and exact `resolve`. The broader target surface is:
+The CLI/API remains small and stable. Implemented on `main`:
 
 ```text
 ledger orient
 ledger resolve <referent>
 ledger show <project>
 ledger locate <project>
-ledger changes [--since RUN]
-ledger review
-ledger explain <field|relationship|review-id>
+ledger changes [--since RUN] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
+ledger review [--approve-candidates] [--decision-id ID]
+ledger explain <field|relationship|review-id|change-id>
+ledger sync-gbrain [--brain-dir PATH] [--project REFERENT] [--ingest] [--dry-run]
 ledger sources
+ledger refresh [--no-markdown-mirror] [--full-scan]
 ledger compile
 ledger validate
-ledger record-session <project> ...
 ```
+
+Session/attempt receipt recording (`record-session`) is intentionally owned by `machina` rather than duplicated inside Project Ledger; Project Ledger capsules read `.machina/state.json` continuity in read-only mode and link `pointers.task_system.provider = "machina"`.
 
 Stable JSON output is the agent contract; human rendering is another view.
 

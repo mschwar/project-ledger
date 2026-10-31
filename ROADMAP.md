@@ -4,7 +4,7 @@ The roadmap follows the abstraction tower in `SYSTEM.md`. Each wave should make 
 
 ## Wave 0 — Authority convergence
 
-Status: product convergence landed on `main`; real-source refresh/hygiene follow-up remains.
+Status: **complete (2026-10-31)**.
 
 Goal: one authoritative product line and trustworthy development loop.
 
@@ -13,22 +13,16 @@ Landed:
 - evolved multi-source implementation merged to `main`;
 - outstanding correctness review findings addressed;
 - docs converged to actual ingestion behavior;
-- CI added and passing on merged implementation;
-- long-lived shadow product branch eliminated as authority.
+- CI + `ruff check .` lint gate added and passing on merged implementation (`workflow_dispatch` + host verification);
+- live homelab source refresh proven on `ai-server` (`P0.1`) and all 9 legacy pre-Wave-2 `origin/*` branches archived into a verified git bundle and pruned so `main` is sole authority (`P0.2`).
 
-Remaining operational closeout:
-
-- refresh from real homelab sources on a node with full configured access;
-- inspect refreshed output for gaps/duplicate fixtures worth preserving;
-- retire obsolete rescue/feature branches when recovery value is exhausted.
-
-Gate A exit: `main` is authoritative, tests pass, and source refresh can run without a known blocking defect.
+Gate A exit (satisfied): `main` is authoritative, tests pass, and source refresh runs cleanly on `ai-server`.
 
 ---
 
 # Wave 1 — Agent substrate and contracts
 
-Status: **in progress**. The first executable vertical slice is implemented: stable source/snapshot/observation IDs, source health/fingerprints, config validation, typed observation wrappers, `state/system-manifest.json`, and the `validate` / `refresh` / `compile` / `orient` / `sources` CLI surface.
+Status: **complete (2026-10-31)**. Stable source/snapshot/observation IDs, source health/fingerprints, strict config validation, frozen v0 compatibility contract (`P1.1`), minimal epistemic claims (`P1.4`), honest upstream freshness/result states (`P1.5`), versioned sidecar validation (`P1.7`), executable `schemas/*.schema.json` validation for compiled `state/*.json` outputs, and the `validate` / `refresh` / `compile` / `orient` / `sources` CLI surface are all landed on `main`.
 
 Goal: make evidence/state machine-readable and unambiguous before canonicalization grows.
 
@@ -59,19 +53,19 @@ This tranche deliberately does **not** introduce canonical projects, semantic de
 
 - freeze/version current flat observation JSON as compatibility output beyond the current compatibility-version declaration — **done (P1.1)**;
 - define explicit major/minor compatibility and migration policy — **done (P1.1)**: `docs/COMPATIBILITY.md` §3 (semver major/minor); unsupported major/format rejected explicitly at the compile boundary (`COMPAT_MAJOR_UNSUPPORTED` / `COMPAT_FORMAT_UNSUPPORTED`) via `ledger/compat_contract.py`;
-- add executable schema validation for generated manifest/observation artifacts.
+- add executable schema validation for generated manifest/observation artifacts — **done (`PL-GAP-CLOSEOUT-03`)**: `schemas/*.schema.json` + `tests/test_state_schemas.py`.
 
 ### Source/freshness model
 
 - strengthen source `as_of` / freshness semantics where upstream sources provide authoritative timestamps — **done (P1.5)**: `content_as_of` / `content_as_of_basis` derived only from genuine upstream evidence (git remote-ref > HEAD commit > filesystem last-touch), never invented from compile time or path mtime;
 - distinguish unavailable vs stale vs successfully-observed-empty source outcomes in the materialized contracts — **done (P1.5)**: per-source `result_state` (`observed` / `observed_empty` / `unavailable`) + `observation_count` and manifest-health `observed_empty_source_count`; `freshness_state` is `known`/`unknown`/`unavailable` and honest about what can be known;
-- add previous-snapshot/checkpoint links needed for later incremental operation.
+- add previous-snapshot/checkpoint links needed for later incremental operation — **done (P5.1 + `PL-GAP-CLOSEOUT-02`)**: `state/source-checkpoints.json`.
 
 ### Epistemic model
 
 - formalize observed/declaration/inference/decision claim envelopes — **minimal slice done (P1.4)**:
   `ledger/claims.py` provides `declared`/`observed`/`inferred` claim kinds (only `declared`
-  emitted today) and divergence detection;
+  emitted today, gated on `sidecar.present == True`) and divergence detection;
 - evidence references — **done (P2.3 / P1.4)**;
 - confidence semantics (reserved);
 - field-resolution policy interface — **minimal rule done (P1.4)**: `canonical_key` resolves
@@ -79,9 +73,9 @@ This tranche deliberately does **not** introduce canonical projects, semantic de
 
 ### Validation
 
-- sidecar/declaration schema validation;
-- generated schema/version validation;
-- stable machine-readable error/review codes across boundaries.
+- sidecar/declaration schema validation — **done (P1.7)**: `schemas/project-ledger-sidecar.schema.json` + `ledger/sidecar.py`;
+- generated schema/version validation — **done (`PL-GAP-CLOSEOUT-03`)**: `schemas/*.schema.json` + `tests/test_state_schemas.py`;
+- stable machine-readable error/review codes across boundaries — **done**.
 
 Gate B exit:
 
@@ -94,10 +88,8 @@ Gate B exit:
 
 # Wave 2 — Canonical identity compiler
 
-Status: **first walking skeleton landed; broader Wave 2 remains open**. The R0 reality
-cases are now ratcheted as deterministic regression fixtures
-(`tests/fixtures/r0-reality-cases.json` reproduces exact canonical/review IDs from the
-2026-09-19 production proof).
+Status: **complete (2026-10-31)** (`P2.1`–`P2.8` + `historical_canonical_id` lineage). The R0 reality
+cases (`tests/fixtures/r0-reality-cases.json`) and full multi-source estate matrix (`tests/fixtures/multi-source-estate.json`) are ratcheted as deterministic regression fixtures.
 
 Goal: compile durable project identity while preserving all observations and uncertainty.
 

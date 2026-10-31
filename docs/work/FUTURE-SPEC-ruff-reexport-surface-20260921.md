@@ -1,6 +1,6 @@
 # Future Spec — Declare `build_ledger.py` compatibility re-export surface for ruff
 
-- Status: **proposed** (not yet landed)
+- Status: **landed** (2026-10-31, `PL-GAP-CLOSEOUT-03` — `build_ledger.__all__`, `pyproject.toml`, and `ruff check .` gate)
 - Date: 2026-09-21 (UTC)
 - Node: Matthews-MacBook-Air-3 (Hermes child node)
 - Repo: `github.com/mschwar/project-ledger`
@@ -82,12 +82,12 @@ Concretely:
 
 ## Acceptance criteria (when it lands)
 
-- [ ] `ruff check .` exits `0` (34 F401 errors cleared).
-- [ ] `ruff check ledger tests` still passes.
-- [ ] `python -m unittest discover -s tests` still passes (122 tests green).
-- [ ] `build_ledger.py` runtime behavior is byte-identical (no import or body
+- [x] `ruff check .` exits `0` (34 F401 errors cleared, plus 2 incidental lint issues fixed across `ledger/`).
+- [x] `ruff check ledger tests` still passes.
+- [x] `python -m unittest discover -s tests` still passes.
+- [x] `build_ledger.py` runtime behavior is byte-identical (no import or body
       change; only the `__all__` declaration added).
-- [ ] `ledger/compat.py` and the compatibility tests still import
+- [x] `ledger/compat.py` and the compatibility tests still import
       `build_ledger` unchanged and pass.
 
 ## Explicitly out of scope now

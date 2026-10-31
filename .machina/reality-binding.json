@@ -13,7 +13,7 @@
     "behind_count": 0,
     "dirty": false,
     "head_branch": "main",
-    "head_commit": "de05e1423173f222775986efdcaf8b48208feba1",
+    "head_commit": "cfde6df9df5348537e890cc23c0a490c6ccdd859",
     "main_behind_count": null,
     "state": "clean",
     "upstream_ref": "origin/main",
@@ -31,6 +31,6 @@
     "stale_sidecar"
   ],
   "warnings": [
-    "warning: stale_sidecar: declared timestamp 2026-10-31T05:13:00Z in .project-ledger.json lags live HEAD de05e1423173 (2026-10-31T13:20:34-06:00)"
+    "warning: stale_sidecar: declared timestamp 2026-10-31T05:13:00Z in .project-ledger.json lags live HEAD cfde6df9df53 (2026-10-31T13:40:34-06:00)"
   ]
 }
