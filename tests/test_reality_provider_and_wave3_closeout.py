@@ -18,14 +18,14 @@ import json
 import subprocess
 import tempfile
 import unittest
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import redirect_stdout
 from io import StringIO
 from pathlib import Path
 
 from ledger import cli
 from ledger.compiler import compile_state
 from ledger.explain import explain_payload
-from ledger.gbrain import normalize_gbrain_slug, resolve_gbrain_link
+from ledger.gbrain import normalize_gbrain_slug
 from ledger.identity import compile_identity, resolve_payload
 from ledger.sources.git import inspect_git_worktree_state
 from ledger.triage import approve_candidate_decisions, review_payload
