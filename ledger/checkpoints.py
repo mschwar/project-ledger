@@ -187,7 +187,6 @@ def _source_config_digest(root_cfg: dict, defaults: dict, output_dir: Path, sour
         "source_id": source_id,
         "discovery": discovery,
         "resolved_path": str(root_cfg["_resolved_path"]),
-        "output_dir": str(output_dir.resolve()),
         "label": str(root_cfg.get("label", "")),
         "storage_scope": str(root_cfg.get("storage_scope", "")),
         "machine_fallback": _effective_machine_fallback(root_cfg),

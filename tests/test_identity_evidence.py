@@ -393,7 +393,7 @@ class EvidenceStoreAndMaterializeTests(unittest.TestCase):
                 manifest["capabilities"]["identity_evidence"]["state"], "available"
             )
             self.assertEqual(
-                manifest["artifacts"]["identity_evidence"], str(evidence_path.resolve())
+                manifest["artifacts"]["identity_evidence"], "state/identity-evidence.json"
             )
             self.assertGreater(manifest["counts"]["identity_evidence"], 0)
 

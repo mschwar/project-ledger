@@ -419,7 +419,7 @@ class CapsuleBudgetAndMaterializationTests(unittest.TestCase):
             self.assertFalse(stale_file.exists())
             self.assertEqual(manifest["capabilities"]["project_capsules"]["state"], "available")
             self.assertEqual(manifest["counts"]["project_capsules"], 3)
-            self.assertEqual(manifest["artifacts"]["project_capsules"], str((state_dir / "projects").resolve()))
+            self.assertEqual(manifest["artifacts"]["project_capsules"], "state/projects")
 
             shown = show_payload(state_dir, "homelab")
             self.assertEqual(shown["status"], "resolved")
