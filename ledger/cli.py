@@ -286,9 +286,14 @@ def main(argv: list[str] | None = None) -> int:
                     full_scan=bool(args.full_scan),
                 )
             else:
+                build_script = repo_root / "build_ledger.py"
+                cmd_prefix = (
+                    [sys.executable, str(build_script)]
+                    if build_script.is_file()
+                    else [sys.executable, "-m", "build_ledger"]
+                )
                 cmd = [
-                    sys.executable,
-                    str(repo_root / "build_ledger.py"),
+                    *cmd_prefix,
                     "--config",
                     str(config_path),
                     "--output-dir",
