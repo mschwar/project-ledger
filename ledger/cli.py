@@ -13,6 +13,7 @@ from .compiler import compile_state, load_manifest, orient_payload
 from .compat_contract import LedgerCompatError
 from .config import LedgerConfigError, describe_sources, read_config, validate_config
 from .explain import explain_payload
+from .gbrain_pages import sync_gbrain_pages
 from .identity import resolve_payload
 from .triage import approve_candidate_decisions, review_payload
 
@@ -140,6 +141,40 @@ def _parser() -> argparse.ArgumentParser:
         help="Optional change_type code filter (e.g. PROJECT_MERGED, PROJECT_GIT_DRIFT_CHANGED).",
     )
     changes.add_argument("--json", action="store_true")
+
+    sync_gbrain = sub.add_parser(
+        "sync-gbrain",
+        help="Project canonical project Reality Provider blocks/stubs into a GBrain markdown repository.",
+    )
+    sync_gbrain.add_argument("--state-dir", default="state")
+    sync_gbrain.add_argument(
+        "--brain-dir",
+        default="/home/prime/brain",
+        help="Target GBrain markdown repository root (default: /home/prime/brain).",
+    )
+    sync_gbrain.add_argument(
+        "--project",
+        action="append",
+        dest="project_referents",
+        default=None,
+        help="Optional canonical project referent(s) to sync selectively (repeatable).",
+    )
+    sync_gbrain.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Compute created/updated/unchanged counts without writing files or running git/gbrain.",
+    )
+    sync_gbrain.add_argument(
+        "--ingest",
+        action="store_true",
+        help="Commit touched projects/<slug>.md files in --brain-dir and run gbrain sync --src-subpath projects --no-embed --no-extract.",
+    )
+    sync_gbrain.add_argument(
+        "--gbrain-bin",
+        default="gbrain",
+        help="gbrain CLI executable name or path (default: gbrain).",
+    )
+    sync_gbrain.add_argument("--json", action="store_true")
     return parser
 
 
@@ -440,6 +475,26 @@ def main(argv: list[str] | None = None) -> int:
                 "unresolved": 4,
                 "unresolved_baseline": 4,
             }.get(status, 2)
+
+        if args.command == "sync-gbrain":
+            payload = sync_gbrain_pages(
+                state_dir=Path(args.state_dir),
+                brain_dir=Path(args.brain_dir),
+                project_referents=args.project_referents,
+                dry_run=bool(args.dry_run),
+                ingest=bool(args.ingest),
+                gbrain_bin=str(args.gbrain_bin),
+            )
+            if args.json:
+                _print_json(payload)
+            else:
+                mode_tag = " (dry-run)" if payload["dry_run"] else ""
+                print(
+                    f"sync-gbrain{mode_tag}: targets={payload['target_project_count']} "
+                    f"created={payload['created_count']} updated={payload['updated_count']} "
+                    f"unchanged={payload['unchanged_count']} ingest={payload['ingest']['status']}"
+                )
+            return 0
 
         manifest = load_manifest(Path(args.state_dir))
         if args.command == "orient":

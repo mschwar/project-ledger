@@ -8,20 +8,11 @@ See `SYSTEM.md` for invariants and `ROADMAP.md` for gates.
 
 ### P0.1 Real-source refresh
 
-On a node with the intended source access:
-
-- pull current `main`;
-- run tests;
-- run the ledger against current configured roots;
-- inspect source gaps/coverage;
-- capture representative duplicate/identity anomalies as fixtures/input for Wave 1/2;
-- commit an intentional refreshed human-facing snapshot only if it is trustworthy.
+**Complete (2026-09-19 & 2026-10-30).** Executed live against all 17 post-`CONV-001` configured sources on `ai-server` (`210` observations → `176` canonical projects, `62` approved triage candidates / `78` durable identity decisions, `0` open identity reviews, `0` untriaged weak overlaps), with automated 15m incremental + daily `--full-scan` systemd timers deployed via `homelab`.
 
 ### P0.2 Branch/recovery hygiene
 
-- inspect remaining rescue/merged feature branches for unique recovery value;
-- archive/delete obsolete refs when safe;
-- ensure no operational process still treats them as authority.
+**Complete (2026-10-31).** Inspected all 9 legacy pre-Wave-2 `origin/*` branches (`audit/reality-canonicality-repair`, `design/agent-native-system-model`, `docs/future-spec-decision-scoped-review-referent`, `feat/google-drive-projects-ingestion`, `feat/identity-walking-skeleton`, `fix/nonmutating-provider-refresh`, `rescue/MATTY-PC-20260909`, `rescue/MATTY-PC-20260910`, `wave1-manifest-build`), archived all refs into a verified git bundle (`legacy-origin-branches-20261031.bundle`, `sha256: 26d752c5bc70df100b7c362f1efa3d5acaec1d7dd9d67140a2738bd2617719b1`) + `BRANCH_ARCHIVE_MANIFEST.json` under `/central/archive/project-ledger-p02-branch-hygiene-20261031/`, and deleted the obsolete remote branches so `origin/main` is sole authority (Architectural Law 12).
 
 ---
 
@@ -98,14 +89,7 @@ See `docs/work/P1.5-FRESHNESS-20260920.md` and `tests/test_p15_freshness.py`. Su
 
 ### P1.7 Sidecar as versioned declaration source
 
-Deliver:
-
-- sidecar `schema_version` plan/validation;
-- accepted field/type validation;
-- malformed/unsupported-version error or review behavior;
-- explicit conversion of sidecar values into declarations rather than unconditional canonical truth.
-
-Do not add `canonical_project_id` to sidecars until the registry can assign/validate it safely.
+**Complete (2026-10-31).** `ledger/sidecar.py` implements v1 sidecar validation (`schema_version` `"1"` / `"1.0"` / `"1.0.0"` + legacy unversioned accepted; unsupported major/version rejected locally), forbids `canonical_project_id` in sidecars (`SIDECAR_FORBIDDEN_FIELD`), validates field types across all 66 live `/central` sidecars without altering frozen `CSV_FIELDS`, attaches explicit `observation["sidecar"]["declarations"]` metadata during `compile_state`, and surfaces malformed or invalid sidecars as bounded `SIDECAR_DECLARATION_INVALID` review items (`tests/test_p17_sidecar_validation.py`).
 
 ### P1.9 Production reality proof
 

@@ -302,7 +302,7 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
     # Imported lazily to avoid a module-load cycle: evidence.py imports identity.py's
     # observation_facts, which must be fully defined before evidence is imported here.
     from .evidence import project_identity_evidence
-    from .gbrain import resolve_gbrain_link
+    from .gbrain import disambiguate_project_gbrain_links, resolve_gbrain_link
 
     by_id = {str(item.get("observation_id", "")): item for item in observations}
     if "" in by_id or len(by_id) != len(observations):
@@ -731,6 +731,7 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             obs_to_project[obs_id] = canonical_project_id
 
     projects.sort(key=lambda item: item["canonical_project_id"])
+    disambiguate_project_gbrain_links(projects)
 
     # A project_key is a useful exact referent, but not automatic merge authority.
     # Surface collisions so agents do not mistake a clean-looking key for identity.
@@ -830,6 +831,51 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                 resolution_actions=[
                     "Assign a canonical_key decision to choose the authoritative project_key.",
                     "If the observations are genuinely distinct projects, split/reject and review the identity.",
+                ],
+            )
+        )
+
+    # Versioned sidecar validation issues (P1.7): surface malformed JSON, unsupported
+    # schema_version, forbidden canonical_project_id, or invalid field types as a
+    # bounded review item on the affected observation without poisoning compilation.
+    for obs_id in sorted(by_id):
+        sidecar = by_id[obs_id].get("sidecar")
+        if not isinstance(sidecar, dict):
+            continue
+        issues = sidecar.get("issues")
+        if not isinstance(issues, list) or not issues:
+            continue
+        sidecar_path = str(sidecar.get("path") or obs_id)
+        summary_details = "; ".join(
+            str(issue.get("detail") or issue.get("code") or "invalid sidecar field")
+            for issue in issues
+        )
+        add_review(
+            _review(
+                "SIDECAR_DECLARATION_INVALID",
+                [obs_id],
+                f"Sidecar {sidecar_path!r} failed P1.7 schema validation: {summary_details}",
+                evidence=[
+                    {
+                        "kind": "sidecar_validation_issue",
+                        "observation_id": obs_id,
+                        "path": sidecar.get("path"),
+                        "declared_schema_version": sidecar.get("declared_schema_version"),
+                        "issue_code": issue.get("code"),
+                        "field": issue.get("field"),
+                        "detail": issue.get("detail"),
+                    }
+                    for issue in issues
+                ],
+                severity="warning",
+                reason_automation_stopped=(
+                    "A project-local sidecar declaration failed schema/type validation "
+                    "(or declared a forbidden field such as canonical_project_id). Invalid "
+                    "fields were excluded from compiled declarations rather than trusted."
+                ),
+                resolution_actions=[
+                    "Fix .project-ledger.json to conform to sidecar schema_version '1.0.0' (valid JSON object and field types).",
+                    "Remove forbidden canonical_project_id declarations from project-local sidecars.",
                 ],
             )
         )

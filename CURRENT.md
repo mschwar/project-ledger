@@ -23,17 +23,18 @@ registered sources
  -> first-class identity review queue (P2.6)
  -> resolved identity questions do not recur under identical inputs (P2.7 ratchet)
  -> PROJECT_KEY_AMBIGUOUS resolves via canonical_key + honest resolution_actions (P2.8)
+  -> versioned sidecar declaration validation (`ledger/sidecar.py`: v1 `schema_version`, forbidden `canonical_project_id`, typed `observation["sidecar"]["declarations"]`, bounded `SIDECAR_DECLARATION_INVALID` review, P1.7)
   -> divergent sidecar declarations surface as a bounded review (P1.4)
   -> explicit source result/freshness semantics: unavailable vs observed_empty vs observed; content_as_of only from authoritative upstream evidence (P1.5)
   -> canonical projects + identity review
   -> preferred-location resolver + ranked observations with reason codes/confidence + git working-tree drift sensing (P3.5 / Reality Provider)
-  -> gbrain source cross-linking (`gbrain_source_slug` + `gbrain` metadata on canonical projects and capsules)
+  -> gbrain source cross-linking (`gbrain_source_slug` + collision-free `gbrain.page_key` metadata on canonical projects and capsules) + idempotent GBrain `projects/<slug>.md` projector (`ledger sync-gbrain`)
   -> bounded project capsules at state/projects/<canonical_project_id>.json (P3.2)
   -> human canonical ledger view at state/canonical-projects.md (P3.7)
   -> frontier zero-shot weak-overlap triage candidates (`registry/weak-overlap-triage-candidates.json` + `ledger review --approve-candidates`, all 40 weak overlaps / 62 candidate decisions across Batch 1 + Batch 2 approved into `registry/identity-decisions.json`, 4 redundant secondary checkouts archived + superseded -> 78 total / 64 active decisions, 176 canonical projects across 210 observations, 0 untriaged weak overlaps)
   -> Wave 4 semantic change feed (`state/changes.json` + bounded `state/runs/<run_id>.json` + `ledger changes`, P4.5)
   -> system manifest
-  -> ledger orient / ledger resolve / ledger show / ledger locate / ledger explain / ledger review / ledger changes / ledger sources
+  -> ledger orient / ledger resolve / ledger show / ledger locate / ledger explain / ledger review / ledger changes / ledger sync-gbrain / ledger sources
 ```
 
 This crosses the **estate observation/orientation** boundary, the **conceptual project identity** boundary, the full **Wave 3 agent read-plane** boundary (`P3.1`–`P3.7`), the **Wave 4 semantic change-feed** boundary (`P4.5`), and the **Reality Provider seam** for `machina`, `homelab`, and `gbrain`.
@@ -106,9 +107,11 @@ The **Wave 3 agent read plane (`P3.1`–`P3.7`) and Reality Provider seam (`P4.1
 - `ledger review` and `registry/weak-overlap-triage-candidates.json` (`P5.1`–`P5.3`) replace Wave 5's legacy custom local-LLM deduplication pipeline with frontier zero-shot triage batches: both Batch 1 (21 weak-overlap pairs / 33 durable decisions) and Batch 2 (19 post-`CONV-001` weak-overlap pairs / 29 durable decisions) are approved in `registry/identity-decisions.json`, and the 4 redundant secondary checkouts uncovered by Batch 2 (`steam-db-mattified`, `gbrain-candidate`, `gbrain-master`, `/central/projects/song-clean`) are archived under `/central/archive/batch2-retired-checkouts-20261030/` with append-only supersession/re-anchoring decisions (`62` approved triage candidates, `78` total / `64` active decisions, `176` canonical projects across `210` observations, `0` open identity reviews, and `0` untriaged weak overlaps).
 - `state/changes.json`, bounded run snapshots at `state/runs/<run_id>.json` (`RUN_HISTORY_MAX_RUNS = 50`), and `ledger changes [--since <run_id>] [--project <referent>] [--entity-kind <kind>] [--change-type <code>]` (`P4.5`) provide zero-churn semantic estate deltas across runs (exposing top-level `change_count`, `review_count`, and `untriaged_weak_overlap_count` alongside lineage events `PROJECT_MERGED`, `PROJECT_SPLIT`, `PROJECT_REANCHORED`, and `PROJECT_UNAVAILABLE`), and `ledger explain <change_id>` explains individual change events.
 - `state/source-checkpoints.json` and `ledger/checkpoints.py` (`P5.1`) provide deterministic pure-Python source and per-candidate extraction checkpointing during `ledger refresh` (with `--full-scan` to force full reconciliation), skipping `git` subprocess bursts and redundant metadata extraction on unchanged candidates while preserving byte-identical compatibility outputs.
+- `ledger/sidecar.py` (`P1.7`) validates `.project-ledger.json` sidecar `schema_version` (`1` / `1.0` / `1.0.0` + legacy unversioned), forbids `canonical_project_id` in sidecars, validates field types across all v1 declaration fields without altering frozen `CSV_FIELDS`, attaches `observation["sidecar"]`, and surfaces malformed/invalid sidecars as bounded `SIDECAR_DECLARATION_INVALID` review items.
+- `ledger/gbrain_pages.py` and `ledger sync-gbrain --brain-dir /home/prime/brain [--project REFERENT] [--ingest] [--dry-run] [--json]` idempotently project timestamp-free Reality Provider fenced blocks (`<!-- BEGIN PROJECT-LEDGER REALITY --> ... <!-- END PROJECT-LEDGER REALITY -->`) across all 176 collision-free `projects/<slug>.md` pages in GBrain while preserving existing YAML frontmatter, prose, and `<!-- timeline -->` sections.
 - Competing session-receipt storage (originally Wave 4) is retired in favor of `machina` (which owns Work Unit / Attempt / Receipt kernel state) and `homelab` (which owns worktree leases).
 
-All planned Wave 1–5 Project Ledger capabilities are now implemented (`unavailable_capabilities == []` in `state/system-manifest.json`).
+All planned Wave 0–5 Project Ledger capabilities are now implemented (`unavailable_capabilities == []` in `state/system-manifest.json`), and all 9 legacy pre-Wave-2 `origin/*` branches have been archived into a verified git bundle (`/central/archive/project-ledger-p02-branch-hygiene-20261031/`) and pruned so `main` is sole authority (`P0.2`).
 
 ## Current commands
 
@@ -125,6 +128,7 @@ python -m ledger locate <project>
 python -m ledger explain <referent>
 python -m ledger review [--approve-candidates] [--decision-id ID]
 python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
+python -m ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
 python -m unittest discover -s tests
 ```
 
@@ -132,11 +136,11 @@ python -m unittest discover -s tests
 
 ## Reality / proof boundary
 
-- Latest code authority: `main`.
+- Latest code authority: `main` (sole branch on `origin`; legacy pre-Wave-2 branches archived under `/central/archive/project-ledger-p02-branch-hygiene-20261031/`).
 - Generated `state/` is rebuildable projection, not canon.
 - The committed Markdown ledger is historical evidence, not proof of current source freshness.
-- Homelab owns the deployed provider seam; Project Ledger owns source/project schema and identity semantics.
-- One live provider run on the intended homelab node is still required as production proof after the September Wave 1 changes.
+- Homelab owns the deployed provider seam (`project-ledger-watchdog.timer` 15m incremental + `project-ledger-watchdog-fullscan.timer` daily 03:30 UTC); Project Ledger owns source/project schema, identity semantics, and GBrain reality-block projection.
+- Live provider proofs on `ai-server` are complete (`docs/work/R0-LIVE-PROVIDER-PROOF-20260919.md` plus October 2026 post-`CONV-001` Wave 1–5 live timers, pre-spawn `machina`/`homelab` preflight gates, and 176-project GBrain page projection).
 
 ## Active bounded programme — reality to identity
 
