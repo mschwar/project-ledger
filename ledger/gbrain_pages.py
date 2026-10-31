@@ -70,7 +70,10 @@ def render_reality_block(project: dict[str, Any], capsule: dict[str, Any]) -> st
     pref_state = str(pref.get("state") or "unresolved").strip()
     pref_class = str(pref.get("source_class") or "unknown").strip()
 
-    git_state = capsule.get("git_state") if isinstance(capsule.get("git_state"), dict) else {}
+    git_facts = capsule.get("git_facts") if isinstance(capsule.get("git_facts"), dict) else {}
+    git_state = git_facts or (
+        capsule.get("git_state") if isinstance(capsule.get("git_state"), dict) else {}
+    )
     current_state = capsule.get("current_state") if isinstance(capsule.get("current_state"), dict) else {}
     canonical_url = str(capsule.get("canonical_url") or "").strip()
 
@@ -86,18 +89,19 @@ def render_reality_block(project: dict[str, Any], capsule: dict[str, Any]) -> st
     else:
         lines.append(f"- **Preferred Location:** *({pref_state})*")
 
-    if git_state.get("state") == "known":
+    if git_state.get("state") in {"known", "git_repo"}:
         branch = str(git_state.get("head_branch") or "detached")
         commit = str(git_state.get("head_commit") or "")[:12]
-        drift = str(git_state.get("drift_state") or "unknown")
+        drift_block = git_state.get("drift") if isinstance(git_state.get("drift"), dict) else {}
+        drift = str(git_state.get("drift_state") or drift_block.get("state") or "unknown")
         commit_part = f" @ `{commit}`" if commit else ""
         lines.append(f"- **Git State:** `{branch}`{commit_part} (`{drift}`)")
 
-    warning_codes = [
-        str(code)
-        for code in (pref.get("warning_codes") or git_state.get("warning_codes") or [])
-        if str(code).strip()
-    ]
+    warning_codes: list[str] = []
+    for raw_code in list(pref.get("warning_codes") or []) + list(git_state.get("warning_codes") or []):
+        code = str(raw_code).strip()
+        if code and code not in warning_codes:
+            warning_codes.append(code)
     if warning_codes:
         formatted_codes = ", ".join(f"`{code}`" for code in warning_codes)
         lines.append(f"- **Drift Warnings:** {formatted_codes}")

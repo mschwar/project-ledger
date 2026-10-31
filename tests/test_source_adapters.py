@@ -17,9 +17,10 @@ from ledger.models import (
     normalize_remote_url,
     repo_name_from_remote,
 )
+from ledger.checkpoints import collect_entries_incremental
 from ledger.sources import base as sources_base
-from ledger.sources.base import FilesystemAdapter, InventoryPolicyAdapter
-from ledger.sources.filesystem import build_entry
+from ledger.sources.base import FilesystemAdapter, InventoryPolicyAdapter, collect_entries
+from ledger.sources.filesystem import build_entry, discover_children
 from ledger.sources.git import gather_git_metadata, git_output
 
 
@@ -96,6 +97,53 @@ class AdapterRegistryTests(unittest.TestCase):
             assert via_adapter is not None
             self.assertEqual(direct, via_adapter)
             self.assertEqual(via_adapter["name"], "Sample")
+
+    def test_shadowed_intra_root_and_cross_root_symlinks_are_suppressed_while_external_symlinks_remain(self) -> None:
+        with ScratchDir() as root:
+            projects_root = root / "projects"
+            umbrella = projects_root / "relational-physics"
+            sub_proj = umbrella / "01-sprint" / "coherence"
+            sub_proj.mkdir(parents=True)
+            (umbrella / "README.md").write_text("# Relational Physics\nUmbrella.\n", encoding="utf-8")
+            (sub_proj / "README.md").write_text("# Coherence\nMoved subproject.\n", encoding="utf-8")
+            # Compatibility redirect symlink inside same children root -> must be suppressed.
+            (projects_root / "coherence").symlink_to(sub_proj)
+
+            # External directory outside configured real candidates -> unshadowed symlink must remain.
+            external_dir = root / "external-mount" / "ext-proj"
+            external_dir.mkdir(parents=True)
+            (external_dir / "README.md").write_text("# External Project\nMounted.\n", encoding="utf-8")
+            (projects_root / "ext-proj").symlink_to(external_dir)
+
+            discovered = [p.name for p in discover_children(projects_root, set())]
+            self.assertEqual(discovered, ["ext-proj", "relational-physics"])
+
+            # Cross-root compatibility symlink listed BEFORE the real root must yield to the real root.
+            tooling_root = root / "agent-tooling"
+            tooling_root.mkdir()
+            research_root = root / "research-ml"
+            real_nanochat = research_root / "nanochat-master"
+            real_nanochat.mkdir(parents=True)
+            (real_nanochat / "README.md").write_text("# Nanochat\nReal checkout.\n", encoding="utf-8")
+            (tooling_root / "nanochat-master").symlink_to(real_nanochat)
+
+            cfg = {
+                "roots": [
+                    {"source_id": "src-tooling", "label": "src-tooling", "path": str(tooling_root), "discovery": "children"},
+                    {"source_id": "src-research", "label": "src-research", "path": str(research_root), "discovery": "children"},
+                    {"source_id": "src-projects", "label": "src-projects", "path": str(projects_root), "discovery": "children"},
+                ]
+            }
+            out_dir = root / "output"
+            out_dir.mkdir()
+            full_entries = collect_entries(cfg, root, out_dir)
+            inc_entries, _ = collect_entries_incremental(
+                cfg, root, out_dir, checkpoint_path=root / "state" / "source-checkpoints.json"
+            )
+            self.assertEqual(full_entries, inc_entries)
+            by_name = {e["name"]: e for e in full_entries}
+            self.assertEqual(set(by_name), {"Nanochat", "Relational Physics", "External Project"})
+            self.assertEqual(by_name["Nanochat"]["source_label"], "src-research")
 
 
 class InventoryAdapterTests(unittest.TestCase):

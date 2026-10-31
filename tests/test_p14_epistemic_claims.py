@@ -97,6 +97,66 @@ class ClaimContractTests(unittest.TestCase):
         obs = observation("obs-blank", name="B", path="/a/b", remote_url="https://github.com/x/b.git")
         self.assertIsNone(sidecar_declaration_claim(obs))
 
+    def test_absent_p17_sidecar_envelope_does_not_fabricate_declared_claim(self) -> None:
+        obs = observation(
+            "obs-no-sidecar",
+            project_key="github.com/mschwar/the-garden",
+            name="The Garden",
+            path="/central/repos/agent-tooling/the-garden",
+            remote_url="https://github.com/mschwar/the-garden.git",
+        )
+        obs["sidecar"] = {"state": "absent", "present": False, "declarations": {}}
+        self.assertIsNone(sidecar_declaration_claim(obs))
+
+    def test_agreeing_sidecars_with_sidecarless_sibling_do_not_open_divergent_review(self) -> None:
+        o_git = observation(
+            "obs-garden-git",
+            project_key="the-garden",
+            name="The Garden",
+            path="/central/git/the_garden",
+            remote_url="https://github.com/mschwar/the-garden.git",
+        )
+        o_git["sidecar"] = {
+            "state": "valid",
+            "present": True,
+            "declarations": {"project_key": "the-garden"},
+        }
+        o_active = observation(
+            "obs-garden-active",
+            project_key="the-garden",
+            name="The Garden",
+            path="/central/repos/active/the_garden",
+            remote_url="",
+        )
+        o_active["sidecar"] = {
+            "state": "valid",
+            "present": True,
+            "declarations": {"project_key": "the-garden"},
+        }
+        o_tooling = observation(
+            "obs-garden-tooling",
+            project_key="github.com/mschwar/the-garden",
+            name="the-garden",
+            path="/central/repos/agent-tooling/the-garden",
+            remote_url="https://github.com/mschwar/the-garden.git",
+        )
+        o_tooling["sidecar"] = {"state": "absent", "present": False, "declarations": {}}
+        decisions = {
+            "schema_version": SCHEMA,
+            "decisions": [
+                decision(
+                    "dec-garden-merge",
+                    type="merge",
+                    observation_ids=["obs-garden-git", "obs-garden-active"],
+                    authority="operator",
+                )
+            ],
+        }
+        canonical, reviews = compile_identity([o_git, o_active, o_tooling], decisions)
+        self.assertEqual(canonical["canonical_project_count"], 1)
+        self.assertNotIn("DIVERGENT_SIDECAR_DECLARATIONS", review_codes(reviews))
+        self.assertEqual(reviews["review_count"], 0)
+
     def test_divergent_declarations_detected(self) -> None:
         obs = [
             observation("o1", project_key="a", name="X", path="/p/1", remote_url="https://g/x.git"),

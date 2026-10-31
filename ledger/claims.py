@@ -49,11 +49,16 @@ def sidecar_declaration_claim(observation: dict) -> dict | None:
     sidecar = observation.get("sidecar") if isinstance(observation.get("sidecar"), dict) else None
     facts = observation_facts(observation)
     values: dict[str, str] = {}
-    if sidecar is not None and sidecar.get("present"):
-        decls = sidecar.get("declarations") if isinstance(sidecar.get("declarations"), dict) else {}
-        declared_key = str(decls.get("project_key") or "").strip()
-        if declared_key:
-            values["project_key"] = declared_key
+    if sidecar is not None:
+        if sidecar.get("present"):
+            decls = (
+                sidecar.get("declarations")
+                if isinstance(sidecar.get("declarations"), dict)
+                else {}
+            )
+            declared_key = str(decls.get("project_key") or "").strip()
+            if declared_key:
+                values["project_key"] = declared_key
     elif facts["project_key"]:
         values["project_key"] = facts["project_key"]
     if not values:

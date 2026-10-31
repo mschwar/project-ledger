@@ -1,9 +1,11 @@
 {
-  "advisory_warning_codes": [],
+  "advisory_warning_codes": [
+    "stale_sidecar"
+  ],
   "blocking_warning_codes": [],
   "canonical_project_id": "prj_f07b53d92d07b50328ad46c8",
   "display_name": "Project Ledger",
-  "gate_reason": null,
+  "gate_reason": "GIT_DRIFT_WARNING",
   "gbrain_page_key": "projects/project-ledger",
   "gbrain_source_slug": "active-repos",
   "git_drift": {
@@ -11,7 +13,7 @@
     "behind_count": 0,
     "dirty": false,
     "head_branch": "main",
-    "head_commit": "d5b090b392c949beb8ede586b32f9f7306303c9f",
+    "head_commit": "83c0a1e35a0669fcbc6c90382d18a26b54a26351",
     "main_behind_count": null,
     "state": "clean",
     "upstream_ref": "origin/main",
@@ -23,8 +25,12 @@
   "project_key": "github.com/mschwar/project-ledger",
   "referent": "prj_f07b53d92d07b50328ad46c8",
   "resolution_status": "resolved",
-  "result": "PREFLIGHT_OK",
+  "result": "PREFLIGHT_WARN",
   "schema_version": 1,
-  "warning_codes": [],
-  "warnings": []
+  "warning_codes": [
+    "stale_sidecar"
+  ],
+  "warnings": [
+    "warning: stale_sidecar: declared timestamp 2026-10-31T05:13:00Z in .project-ledger.json lags live HEAD 83c0a1e35a06 (2026-10-30T23:56:36-06:00)"
+  ]
 }

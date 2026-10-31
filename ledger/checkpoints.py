@@ -34,6 +34,7 @@ from pathlib import Path
 from . import COMPILER_VERSION, SOURCE_CHECKPOINT_SCHEMA_VERSION
 from .ids import digest_json, source_id_for
 from .sources.base import ADAPTERS, get_adapter
+from .sources.filesystem import is_shadowed_symlink
 from .sources.common import (
     README_CANDIDATES,
     SIDECAR_CANDIDATES,
@@ -451,6 +452,9 @@ def collect_entries_incremental(
     total_reused_candidates = 0
     total_rebuilt_candidates = 0
 
+    prepared_roots: list[dict] = []
+    all_real_dirs: list[Path] = []
+
     for root_index, root_cfg_raw in enumerate(roots):
         if not isinstance(root_cfg_raw, dict):
             raise ValueError(f"roots[{root_index}] must be a JSON object.")
@@ -508,8 +512,49 @@ def collect_entries_incremental(
             source_available = safe_path_exists(root_path)
 
         source_cfg_digest = _source_config_digest(root_cfg, defaults, output_dir, source_id)
-
         if not source_available:
+            prepared_roots.append(
+                {
+                    "source_id": source_id,
+                    "discovery": discovery,
+                    "root_cfg": root_cfg,
+                    "source_available": False,
+                    "source_cfg_digest": source_cfg_digest,
+                }
+            )
+            continue
+
+        exclude_names = merge_exclude_names(root_cfg, defaults)
+        adapter = get_adapter(discovery)
+        candidates = adapter.discover_candidates(root_cfg, defaults, exclude_names)
+        force_include = {str(x) for x in root_cfg.get("force_include_names", []) if str(x)}
+        for candidate in candidates:
+            if isinstance(candidate, Path):
+                try:
+                    if not candidate.is_symlink() and safe_path_exists(candidate):
+                        all_real_dirs.append(candidate.resolve())
+                except OSError:
+                    continue
+        prepared_roots.append(
+            {
+                "source_id": source_id,
+                "discovery": discovery,
+                "root_cfg": root_cfg,
+                "source_available": True,
+                "source_cfg_digest": source_cfg_digest,
+                "adapter": adapter,
+                "candidates": candidates,
+                "force_include": force_include,
+            }
+        )
+
+    for prep in prepared_roots:
+        source_id = prep["source_id"]
+        discovery = prep["discovery"]
+        root_cfg = prep["root_cfg"]
+        source_cfg_digest = prep["source_cfg_digest"]
+
+        if not prep["source_available"]:
             unavailable_source_count += 1
             unavail_fp = digest_json(
                 {
@@ -538,9 +583,9 @@ def collect_entries_incremental(
             }
             continue
 
-        exclude_names = merge_exclude_names(root_cfg, defaults)
-        adapter = get_adapter(discovery)
-        candidates = adapter.discover_candidates(root_cfg, defaults, exclude_names)
+        adapter = prep["adapter"]
+        candidates = prep["candidates"]
+        force_include = prep["force_include"]
 
         prior_src = prior_sources.get(source_id) if isinstance(prior_sources, dict) else None
         prior_cands: dict[str, dict] = {}
@@ -574,6 +619,8 @@ def collect_entries_incremental(
                     source_cfg_digest=source_cfg_digest,
                 )
             else:
+                if is_shadowed_symlink(candidate, all_real_dirs, force_include):
+                    continue
                 cand_key = str(candidate.resolve()).lower()
                 if cand_key in seen_paths:
                     continue

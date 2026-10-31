@@ -37,19 +37,57 @@ from .common import (
 from .git import gather_git_metadata
 
 
-def discover_children(root_path: Path, exclude_names: set[str]) -> list[Path]:
-    results: list[Path] = []
+def is_shadowed_symlink(
+    candidate: Path,
+    real_roots: list[Path],
+    force_include_names: set[str] | None = None,
+) -> bool:
+    """Return True when ``candidate`` is a symlink resolving equal to or inside a real candidate directory."""
+    try:
+        if not candidate.is_symlink():
+            return False
+    except OSError:
+        return False
+    if force_include_names and candidate.name in force_include_names:
+        return False
+    try:
+        resolved = candidate.resolve()
+    except OSError:
+        return True
+    for real_dir in real_roots:
+        if resolved == real_dir or resolved.is_relative_to(real_dir):
+            return True
+    return False
+
+
+def discover_children(
+    root_path: Path,
+    exclude_names: set[str],
+    force_include_names: set[str] | None = None,
+) -> list[Path]:
+    valid_children: list[Path] = []
     try:
         children = sorted(root_path.iterdir(), key=lambda item: item.name.lower())
     except OSError:
-        return results
+        return valid_children
     for child in children:
         if child.name in exclude_names:
             continue
         if not safe_path_is_dir(child):
             continue
-        results.append(child)
-    return results
+        valid_children.append(child)
+    real_siblings: list[Path] = []
+    for child in valid_children:
+        try:
+            if not child.is_symlink():
+                real_siblings.append(child.resolve())
+        except OSError:
+            continue
+    return [
+        child
+        for child in valid_children
+        if not is_shadowed_symlink(child, real_siblings, force_include_names)
+    ]
 
 
 def discover_git_repos(root_path: Path, exclude_names: set[str], max_depth: int) -> list[Path]:
