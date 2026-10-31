@@ -232,6 +232,26 @@ def explain_payload(
 
     summary = project.get("identity_evidence_summary", {})
     pref = capsule["preferred_location"]
+    current_state = capsule.get("current_state") if isinstance(capsule.get("current_state"), dict) else {}
+    machina_cont = (
+        current_state.get("machina_continuity")
+        if isinstance(current_state.get("machina_continuity"), dict)
+        else {}
+    )
+    historical_ids = [
+        str(ref.get("value"))
+        for ref in project.get("referents", [])
+        if isinstance(ref, dict) and ref.get("kind") == "historical_canonical_id" and ref.get("value")
+    ]
+    continuity_note = ""
+    if machina_cont.get("state") == "available":
+        if machina_cont.get("active_unit_id"):
+            continuity_note = f" Machina continuity active unit={machina_cont['active_unit_id']}."
+        elif machina_cont.get("last_completed_unit_id"):
+            continuity_note = f" Machina continuity last completed unit={machina_cont['last_completed_unit_id']}."
+        else:
+            continuity_note = " Machina continuity initialized."
+
     return {
         "status": "resolved",
         "subject_kind": "canonical_project",
@@ -249,6 +269,7 @@ def explain_payload(
         "identity": {
             "identity_anchor": project.get("identity_anchor"),
             "observation_ids": project.get("observation_ids"),
+            "historical_canonical_ids": historical_ids,
             "unifying_authority": summary.get("unifying_authority"),
             "strong_reason_code": summary.get("strong_reason_code"),
             "automatic": summary.get("automatic"),
@@ -260,6 +281,8 @@ def explain_payload(
         },
         "resolved_fields": project.get("resolved_fields", {}),
         "preferred_location": pref,
+        "git_facts": capsule.get("git_facts"),
+        "current_state": current_state,
         "warnings": list(capsule.get("warnings") or []),
         "locations": capsule.get("observations", []),
         "decisions": applied_decisions,
@@ -271,5 +294,6 @@ def explain_payload(
             f"{pref.get('location')} [{pref.get('state')}/{pref.get('confidence')}] "
             f"({', '.join(pref.get('reason_codes', []))}); "
             f"gbrain source is {project.get('gbrain_source_slug')} ({project.get('gbrain', {}).get('page_key')})."
+            f"{continuity_note}"
         ),
     }

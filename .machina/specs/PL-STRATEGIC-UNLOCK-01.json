@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "PL-STRATEGIC-UNLOCK-01",
+  "title": "Immutable canonical_project_id lineage registry and end-to-end Machina continuity projection",
+  "objective": "Deliver Strategic Unlocks U3 and U1: (1) implement registry/project-lineage.json (v1.0.0), schemas/project-lineage.schema.json, ledger/lineage.py, and `ledger lineage [--sync|--check]` so pinned canonical_project_id values stay truly immutable across remote additions, GitHub repository renames, additional merge decisions, and state/ wipes while preserving 100% of existing live prj_* IDs and demoting superseded anchor IDs to historical_canonical_id referents; and (2) project read-only .machina/state.json continuity end-to-end across project capsules, GBrain Reality Provider blocks, ledger explain, and state/canonical-projects.md without importing Machina lifecycle state vocabulary.",
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-STRATEGIC-UNLOCK-01.json, ledger/lineage.py, schemas/project-lineage.schema.json, registry/project-lineage.json, and tests/test_u1_u3_lineage_and_continuity.py",
+      "edit ledger/__init__.py, ledger/identity.py, ledger/compiler.py, ledger/cli.py, ledger/capsules.py, ledger/gbrain_pages.py, ledger/explain.py, ledger/human_view.py, schemas/project-capsule.schema.json, tests/test_state_schemas.py, and .project-ledger.json",
+      "run uvx --offline ruff check ., python3 -m ledger validate, and python3 -m unittest discover -s tests"
+    ],
+    "forbidden": [
+      "mutate registered external source checkouts or /central/repos/active/machina",
+      "introduce execution_state into Project Ledger domain surfaces or schemas",
+      "add em dashes to .machina/specs/*.json, scripts/machina_adapter.sh, or tests/test_machina_thin_waist.py"
+    ]
+  },
+  "completion": "Immutable canonical_project_id lineage registry and CLI sync/check pass across remote additions, GitHub renames, merges, splits, and state/ wipes; all 172 live canonical projects are seeded in registry/project-lineage.json with zero prj_* churn; end-to-end Machina continuity renders idempotently in capsules, GBrain blocks, explain, and canonical-projects.md; ruff check . and unittest suite pass.",
+  "initial_next_action": "Implement ledger/lineage.py and schemas/project-lineage.schema.json, wire lineage into compile_identity/compile_state/cli, project Machina continuity across capsules/gbrain_pages/explain/human_view, seed registry/project-lineage.json, and verify."
+}

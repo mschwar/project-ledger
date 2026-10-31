@@ -24,6 +24,12 @@ def render_canonical_markdown(
     input_observed_at: str,
 ) -> str:
     multi_obs = [c for c in capsules if c.get("observation_count", 0) > 1]
+    machina_caps = [
+        c
+        for c in capsules
+        if isinstance((c.get("current_state") or {}).get("machina_continuity"), dict)
+        and c["current_state"]["machina_continuity"].get("state") == "available"
+    ]
     lines: list[str] = [
         "# Canonical Project Ledger",
         "",
@@ -32,6 +38,7 @@ def render_canonical_markdown(
         f"- **Input Observed As-Of**: `{input_observed_at}`",
         f"- **Canonical Projects**: **{len(capsules)}** (distinct from **{observation_count}** observed manifestations across **{source_count}** sources)",
         f"- **Multi-Manifestation Projects**: {len(multi_obs)}",
+        f"- **Machina-Tracked Projects**: {len(machina_caps)}",
         f"- **Open Identity Reviews**: {review_count}",
         "",
         "## Canonical Projects",
@@ -67,6 +74,48 @@ def render_canonical_markdown(
             )
             + " |"
         )
+
+    if machina_caps:
+        lines.extend(
+            [
+                "",
+                "## Machina Continuity",
+                "",
+                "| Canonical ID | Project Key | Active Unit | Last Completed Unit | Next Step |",
+                "| --- | --- | --- | --- | --- |",
+            ]
+        )
+        for cap in sorted(machina_caps, key=lambda item: str(item.get("project_key") or "").casefold()):
+            cs = cap.get("current_state") or {}
+            mc = cs.get("machina_continuity") or {}
+            act_id = str(mc.get("active_unit_id") or "").strip()
+            act_title = str(mc.get("active_unit_title") or "").strip()
+            act_cell = (
+                f"`{escape_md_cell(act_id)}`" + (f" ({escape_md_cell(act_title)})" if act_title else "")
+                if act_id
+                else "_idle_"
+            )
+            lc_id = str(mc.get("last_completed_unit_id") or "").strip()
+            lc_title = str(mc.get("last_completed_unit_title") or "").strip()
+            lc_cell = (
+                f"`{escape_md_cell(lc_id)}`" + (f" ({escape_md_cell(lc_title)})" if lc_title else "")
+                if lc_id
+                else ""
+            )
+            next_cell = escape_md_cell(str(cs.get("next_step") or "").strip())
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        f"`{cap['canonical_project_id']}`",
+                        f"`{escape_md_cell(str(cap.get('project_key') or ''))}`",
+                        act_cell,
+                        lc_cell,
+                        next_cell,
+                    ]
+                )
+                + " |"
+            )
 
     if multi_obs:
         lines.extend(

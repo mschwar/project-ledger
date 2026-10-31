@@ -971,6 +971,8 @@ def _read_machina_continuity(location: str | None) -> dict[str, Any] | None:
         return None
 
     updated_at = str(raw.get("updated_at") or "").strip() or None
+    raw_seq = raw.get("sequence")
+    sequence = int(raw_seq) if isinstance(raw_seq, int) and not isinstance(raw_seq, bool) else None
     active_unit = raw.get("active_unit") if isinstance(raw.get("active_unit"), dict) else None
     active_unit_id = str(active_unit.get("id") or "").strip() or None if active_unit else None
     active_unit_title = (
@@ -986,6 +988,11 @@ def _read_machina_continuity(location: str | None) -> dict[str, Any] | None:
         else None
     )
     last_completed_unit_id = str(lc_unit.get("id") or "").strip() or None if lc_unit else None
+    last_completed_unit_title = (
+        str(lc_unit.get("title") or "").strip()[:CAPSULE_PURPOSE_MAX_CHARS] or None
+        if lc_unit
+        else None
+    )
     last_completed_at = str(last_completed.get("timestamp") or "").strip() or None if last_completed else None
     last_completed_summary = (
         str(last_completed.get("summary") or "").strip()[:CAPSULE_PURPOSE_MAX_CHARS] or None
@@ -1003,6 +1010,8 @@ def _read_machina_continuity(location: str | None) -> dict[str, Any] | None:
         else None
     )
     next_action = str(raw.get("next_action") or "").strip()[:CAPSULE_PURPOSE_MAX_CHARS] or None
+    has_checkpoint = last_checkpoint is not None
+    has_frontier = raw.get("frontier") is not None
 
     receipt_candidates: list[tuple[float, str | None, str | None]] = []
     if last_completed_at or last_completed_summary:
@@ -1023,10 +1032,14 @@ def _read_machina_continuity(location: str | None) -> dict[str, Any] | None:
 
     return {
         "updated_at": updated_at,
+        "sequence": sequence,
         "active_unit_id": active_unit_id,
         "active_unit_title": active_unit_title,
         "last_completed_unit_id": last_completed_unit_id,
+        "last_completed_unit_title": last_completed_unit_title,
         "last_completed_at": last_completed_at,
+        "has_checkpoint": has_checkpoint,
+        "has_frontier": has_frontier,
         "latest_receipt_at": latest_at,
         "latest_receipt_summary": latest_summary,
         "next_action": next_action,
@@ -1088,10 +1101,14 @@ def _project_current_state(ranked_observations: list[dict], observations_by_id: 
             "state": "available",
             "observation_id": machina_obs_id,
             "updated_at": machina_info.get("updated_at"),
+            "sequence": machina_info.get("sequence"),
             "active_unit_id": machina_info.get("active_unit_id"),
             "active_unit_title": machina_info.get("active_unit_title"),
             "last_completed_unit_id": machina_info.get("last_completed_unit_id"),
+            "last_completed_unit_title": machina_info.get("last_completed_unit_title"),
             "last_completed_at": machina_info.get("last_completed_at"),
+            "has_checkpoint": bool(machina_info.get("has_checkpoint")),
+            "has_frontier": bool(machina_info.get("has_frontier")),
         }
     else:
         session_receipts_state = "unavailable"
@@ -1099,10 +1116,14 @@ def _project_current_state(ranked_observations: list[dict], observations_by_id: 
             "state": "not_present",
             "observation_id": None,
             "updated_at": None,
+            "sequence": None,
             "active_unit_id": None,
             "active_unit_title": None,
             "last_completed_unit_id": None,
+            "last_completed_unit_title": None,
             "last_completed_at": None,
+            "has_checkpoint": False,
+            "has_frontier": False,
         }
 
     return {

@@ -163,9 +163,12 @@ def compile_state(
     compat_output_path: Path,
     state_dir: Path,
     identity_decisions_path: Path | None = None,
+    lineage_path: Path | None = None,
     generated_at: str | None = None,
     use_checkpoint_compile_cache: bool = False,
 ) -> dict:
+    from .lineage import resolve_lineage_path
+
     config_path = config_path.resolve()
     compat_output_path = compat_output_path.resolve()
     state_dir = state_dir.resolve()
@@ -184,14 +187,20 @@ def compile_state(
         if identity_decisions_path is not None and identity_decisions_path.is_file()
         else "none"
     )
-    run_id = stable_id(
-        "run",
+    effective_lineage_path, _ = resolve_lineage_path(
+        decisions_path=identity_decisions_path,
+        lineage_path=lineage_path,
+    )
+    run_id_parts: list[object] = [
         compiled_at,
         config_digest,
         str(compat_output_path),
         compat_digest,
         decisions_digest,
-    )
+    ]
+    if effective_lineage_path is not None and effective_lineage_path.is_file():
+        run_id_parts.append(path_digest(effective_lineage_path))
+    run_id = stable_id("run", *run_id_parts)
     previous_snapshot = capture_pre_compile_baseline(state_dir, current_run_id=run_id)
 
     sources = describe_sources(config, config_path.parent)
@@ -411,6 +420,7 @@ def compile_state(
     canonical_payload, review_payload = materialize_identity(
         observations=observations,
         decisions_path=identity_decisions_path,
+        lineage_path=lineage_path,
         state_dir=state_dir,
         run_id=run_id,
         compiled_at=compiled_at,

@@ -401,6 +401,18 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
             bad_capsule["preferred_location"]["state"] = "bogus_state"
             self.assertTrue(validate_json_schema(bad_capsule, capsule_schema))
 
+    def test_project_lineage_registry_conforms_to_published_json_schema(self) -> None:
+        lineage_schema = self._load_schema("project-lineage.schema.json")
+        lineage_path = REPO_ROOT / "registry" / "project-lineage.json"
+        self.assertTrue(lineage_path.is_file(), f"Missing lineage registry: {lineage_path}")
+        lineage_doc = json.loads(lineage_path.read_text(encoding="utf-8"))
+        self.assertEqual(validate_json_schema(lineage_doc, lineage_schema), [])
+        self.assertGreaterEqual(len(lineage_doc["projects"]), 170)
+
+        bad_lineage = copy.deepcopy(lineage_doc)
+        bad_lineage["projects"][0]["canonical_project_id"] = "invalid_id"
+        self.assertTrue(validate_json_schema(bad_lineage, lineage_schema))
+
 
 if __name__ == "__main__":
     unittest.main()
