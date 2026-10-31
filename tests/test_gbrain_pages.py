@@ -66,6 +66,23 @@ class GBrainPageProjectorTests(unittest.TestCase):
                 d.mkdir(parents=True)
                 (d / "README.md").write_text(f"# {d.name}\n\nPurpose of {d.name}.\n", encoding="utf-8")
 
+            # Make p_prose an actual git repo so capsule["git_facts"] projects `- **Git State:**` (G1 regression).
+            subprocess.run(["git", "-C", str(p_prose), "init", "-b", "main"], check=True, capture_output=True)
+            subprocess.run(["git", "-C", str(p_prose), "config", "user.email", "test@example.com"], check=True)
+            subprocess.run(["git", "-C", str(p_prose), "config", "user.name", "Test"], check=True)
+            subprocess.run(
+                ["git", "-C", str(p_prose), "remote", "add", "origin", "https://github.com/example/prose-beta.git"],
+                check=True,
+            )
+            subprocess.run(["git", "-C", str(p_prose), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(p_prose), "commit", "-m", "init prose-beta"], check=True, capture_output=True)
+            prose_head_short = subprocess.run(
+                ["git", "-C", str(p_prose), "rev-parse", "HEAD"],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()[:12]
+
             # Include tricky YAML characters + UTF-16LE null bytes in stub display_name
             (p_stub / ".project-ledger.json").write_text(
                 json.dumps(
@@ -219,6 +236,7 @@ class GBrainPageProjectorTests(unittest.TestCase):
             self.assertIn("ingested_via: 'mcp:put_page'", prose_after)
             self.assertIn("Hand-authored architectural notes that MUST survive untouched.", prose_after)
             self.assertIn("<!-- BEGIN PROJECT-LEDGER REALITY -->", prose_after)
+            self.assertIn(f"- **Git State:** `main` @ `{prose_head_short}` (`no_upstream`)", prose_after)
 
             timeline_after = (brain_dir / "projects" / "timeline-gamma.md").read_text(encoding="utf-8")
             self.assertLess(

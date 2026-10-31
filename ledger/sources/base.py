@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from .common import merge_exclude_names, resolve_path, safe_path_exists
-from .filesystem import build_entry, discover_children, discover_git_repos
+from .filesystem import build_entry, discover_children, discover_git_repos, is_shadowed_symlink
 from .inventory_policy import (
     build_inventory_entry,
     discover_inventory_policy_candidates,
@@ -53,8 +53,9 @@ class FilesystemAdapter(SourceAdapter):
         self, root_cfg: dict, defaults: dict, exclude_names: set[str]
     ) -> list[Path]:
         root_path = root_cfg["_resolved_path"]
+        force_include = {str(x) for x in root_cfg.get("force_include_names", []) if str(x)}
         if self.discovery == "children":
-            return discover_children(root_path, exclude_names)
+            return discover_children(root_path, exclude_names, force_include_names=force_include)
         if self.discovery == "git_repos":
             max_depth = int(root_cfg.get("max_depth", defaults.get("git_repo_max_depth", 6)))
             return discover_git_repos(root_path, exclude_names, max_depth=max_depth)
@@ -114,6 +115,8 @@ def collect_entries(config: dict, config_dir: Path, output_dir: Path) -> list[di
 
     entries: list[dict] = []
     seen_paths: set[str] = set()
+    prepared_roots: list[tuple[dict, SourceAdapter, list[Path | dict], set[str]]] = []
+    all_real_dirs: list[Path] = []
 
     for root_index, root_cfg_raw in enumerate(roots):
         if not isinstance(root_cfg_raw, dict):
@@ -169,7 +172,17 @@ def collect_entries(config: dict, config_dir: Path, output_dir: Path) -> list[di
         exclude_names = merge_exclude_names(root_cfg, defaults)
         adapter = get_adapter(discovery)
         candidates = adapter.discover_candidates(root_cfg, defaults, exclude_names)
+        force_include = {str(x) for x in root_cfg.get("force_include_names", []) if str(x)}
+        for candidate in candidates:
+            if isinstance(candidate, Path):
+                try:
+                    if not candidate.is_symlink() and safe_path_exists(candidate):
+                        all_real_dirs.append(candidate.resolve())
+                except OSError:
+                    continue
+        prepared_roots.append((root_cfg, adapter, candidates, force_include))
 
+    for root_cfg, adapter, candidates, force_include in prepared_roots:
         for candidate in candidates:
             if isinstance(candidate, dict):
                 resolved = str(candidate.get("path_key", candidate.get("inventory_path", ""))).lower()
@@ -178,6 +191,8 @@ def collect_entries(config: dict, config_dir: Path, output_dir: Path) -> list[di
                 seen_paths.add(resolved)
                 entry = adapter.build(candidate, root_cfg, defaults, output_dir)
             else:
+                if is_shadowed_symlink(candidate, all_real_dirs, force_include):
+                    continue
                 resolved = str(candidate.resolve()).lower()
                 if resolved in seen_paths:
                     continue

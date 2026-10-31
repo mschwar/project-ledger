@@ -1,0 +1,22 @@
+{
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-GAP-CLOSEOUT-01.json",
+      "edit ledger/gbrain_pages.py and tests/test_gbrain_pages.py",
+      "edit ledger/claims.py and tests/test_p14_epistemic_claims.py",
+      "edit ledger/sources/filesystem.py, ledger/sources/base.py, ledger/checkpoints.py, and tests/test_source_adapters.py",
+      "edit tests/test_machina_thin_waist.py",
+      "run python3 -m ledger validate and python3 -m unittest discover -s tests"
+    ],
+    "forbidden": [
+      "mutate registered external source checkouts",
+      "add an execution_state field to ledger_config.json, CURRENT.md, SCHEMA.md, or state/system-manifest.json",
+      "create a competing task or session receipt store inside Project Ledger"
+    ]
+  },
+  "completion": "Git-backed capsules project Git State in GBrain Reality blocks, observations with absent P1.7 sidecars emit no declared sidecar claims, shadowed compatibility symlinks are skipped deterministically in both full and incremental scans, and python3 -m unittest discover -s tests passes.",
+  "id": "PL-GAP-CLOSEOUT-01",
+  "initial_next_action": "Implement fixes for G1 (gbrain_pages.py git_facts), G2/claims.py (absent sidecar claim guard), G6 (shadowed symlink suppression in discover_children and cross-root candidate collection), and test_machina_thin_waist.py sequence invariants, then checkpoint before running full unittest verification.",
+  "objective": "Repair GBrain Reality block Git State projection (git_facts), prevent absent P1.7 sidecar envelopes from fabricating declared project_key claims, suppress shadowed compatibility symlinks in children discovery and cross-root collection, and make test_machina_thin_waist sequence assertions resilient across work units.",
+  "title": "Close correctness gaps G1, G2, and G6 (GBrain git_facts, sidecar declaration claims, symlink discovery, and Machina orient test)"
+}
