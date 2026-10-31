@@ -20,7 +20,7 @@ The optimization target is simple: **a cold agent should be able to understand w
 
 ## Current executable boundary
 
-Wave 1 now has a real first vertical slice while preserving the existing scanner contract.
+Waves 0–5 and the Reality Provider seam (`machina`, `homelab`, `gbrain`) are implemented on `main` while preserving the frozen v0 compatibility scanner contract.
 
 ### Preferred refresh
 
@@ -71,6 +71,7 @@ python -m ledger locate <project>
 python -m ledger explain <referent>
 python -m ledger review [--approve-candidates] [--decision-id ID]
 python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
+python -m ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
 ```
 
 Use `--json` on the agent-facing commands when machine-readable output is preferred.
@@ -188,20 +189,18 @@ Project Ledger owns **project topology and compiled project reality**.
 
 Do not duplicate Project Ledger's schema/identity engine into AGENT05 or homelab. Integrate through explicit stable outputs once the relevant contract is implemented.
 
-## Tests
+## Tests & verification
 
 ```bash
+ruff check .
+python -m ledger validate
 python -m unittest discover -s tests
 ```
 
-CI compiles both the legacy scanner and the `ledger` package and runs the complete unittest suite on pull requests.
+Verification runs locally on the host per fleet proportional-verification policy (`ops/merge-policy.json` requires `GitGuardian Security Checks` on PR heads; `.github/workflows/ci.yml` is `workflow_dispatch:` only and runs `ruff check .`, `py_compile`, and `unittest`).
 
-## Next build gate
+## Current frontier
 
-The identity walking skeleton is implemented. The next software wave is deliberately **not auto-authorized**.
+Waves 0–5, live `ai-server` provider verification, frontier weak-overlap triage, GBrain reality-block projection, and executable Draft 2020-12 JSON Schemas (`schemas/*.schema.json`) are all landed on `main`.
 
-Before expanding location/current-state features, run the live homelab provider proof in `CURRENT.md` / `docs/work/REALITY-TO-IDENTITY.md` and inspect how the conservative identity rules behave against the real estate. Choose the next constraint from that evidence.
-
-Remaining contract hardening—compatibility policy, stronger source freshness, and typed declaration provenance—should advance when it blocks demonstrated identity/location use, not as detached infrastructure work.
-
-See `CURRENT.md` first, then `ROADMAP.md` / `BACKLOG.md`.
+See `CURRENT.md` first, then `ROADMAP.md` / `BACKLOG.md` (including the Cross-Repo / Out-of-Scope Work Queue).

@@ -14,29 +14,21 @@ The success criterion is not “we indexed everything.” It is **routine projec
 
 ## Current status
 
-The September 2026 implementation has crossed two boundaries:
+As of October 31, 2026, the implementation on `main` has crossed all planned Wave 0–5 boundaries plus the fleet Reality Provider seam:
 
-1. estate observation/orientation;
-2. a conservative first canonical-identity/exact-resolution slice.
+1. estate observation/orientation with incremental extraction and compile-stage checkpointing (`P5.1`);
+2. conservative canonical-identity reconciliation, durable decisions, frontier zero-shot weak-overlap triage, and `historical_canonical_id` lineage (`P2.1`–`P2.8`, `P5.2`–`P5.3`);
+3. the full Wave 3 agent read plane (`P3.1`–`P3.7`): bounded `<= 16 KiB` project capsules (`state/projects/<canonical_project_id>.json`) with read-only `.ctx/` and `.machina/state.json` continuity ingestion, explainable preferred-location resolution, and `state/canonical-projects.md`;
+4. Wave 4's zero-churn semantic change feed (`P4.5`: `state/changes.json`, bounded `state/runs/<run_id>.json`, and `ledger changes`);
+5. versioned sidecar declaration validation (`P1.7`: `schemas/project-ledger-sidecar.schema.json`) and executable Draft 2020-12 JSON Schemas for compiled `state/*.json` outputs (`schemas/*.schema.json`);
+6. collision-free GBrain source/page cross-linking and idempotent `projects/<slug>.md` reality-block projection (`ledger sync-gbrain`).
 
-Implemented now:
+Implemented CLI commands: `validate`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, `locate`, `explain`, `review`, `changes`, and `sync-gbrain`.
 
-- multi-source compatibility scanner with filesystem/git/inventory-policy ingestion and sidecar overlays;
-- stable source, compatibility-snapshot, and manifestation-oriented observation identities;
-- typed observation materialization;
-- source probes/health with degraded-source containment;
-- canonical projects compiled from exact normalized repository remotes plus explicit durable identity decisions;
-- identity review queue for blocked/conflicting/ambiguous exact referents;
-- versioned `state/system-manifest.json`, `observations.json`, `canonical-projects.json`, and `review-queue.json`;
-- `ledger validate`, `refresh`, `compile`, `orient`, `sources`, and exact `resolve`;
-- a homelab deployment seam that can run non-mutating provider refreshes.
-
-Not implemented yet:
-
-- preferred-location resolver and project capsules;
-- `show/locate/explain`;
-- structured session receipts/current-state resolver;
-- Project Ledger semantic change feed and incremental compilation.
+Owned externally by sibling fleet planes (not duplicated in Project Ledger):
+- Work Unit / Attempt / Receipt execution kernel (`machina`);
+- Worktree leases and scheduled systemd discovery watchdog timers (`homelab`);
+- Semantic/entity search and cross-session memory (`gbrain`).
 
 Automatic identity is intentionally narrow: names and compatibility project keys never auto-merge projects. They remain resolution/ambiguity surfaces until stronger typed declaration provenance exists.
 

@@ -18,6 +18,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install lint toolchain
+        run: python -m pip install ruff
+
+      - name: Lint Python sources with ruff
+        run: ruff check .
+
       - name: Compile Python entrypoints
         run: python -m py_compile build_ledger.py ledger/*.py ledger/sources/*.py
 

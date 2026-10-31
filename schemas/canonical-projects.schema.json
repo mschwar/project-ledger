@@ -1,0 +1,401 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/canonical-projects.schema.json",
+  "title": "Project Ledger Canonical Projects (v1.0.0)",
+  "description": "Compiled canonical project identity graph, referents, resolved fields, identity evidence summaries, and GBrain mappings (state/canonical-projects.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler_version",
+    "run_id",
+    "compiled_at",
+    "canonical_project_count",
+    "projects"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-9a-f]{24}$"
+    },
+    "compiled_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "canonical_project_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/canonical_project"
+      }
+    }
+  },
+  "$defs": {
+    "identity_anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "normalized_remote",
+            "merge_decision",
+            "observation"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "resolved_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "provenance"
+      ],
+      "properties": {
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "provenance_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provenance_truncated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "referent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "value"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "canonical_project_id",
+            "historical_canonical_id",
+            "project_key",
+            "normalized_remote",
+            "project_key_hint",
+            "display_name",
+            "path",
+            "raw_url",
+            "decision_alias"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "basis": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "evidence_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity_evidence_id",
+        "kind",
+        "strength",
+        "authority",
+        "reason_code",
+        "observation_ids"
+      ],
+      "properties": {
+        "identity_evidence_id": {
+          "type": "string",
+          "pattern": "^ev_[0-9a-f]{24}$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "strength": {
+          "type": "string",
+          "enum": [
+            "strong",
+            "weak",
+            "negative"
+          ]
+        },
+        "authority": {
+          "type": "string",
+          "enum": [
+            "observed",
+            "declared",
+            "derived",
+            "decision"
+          ]
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^obs_[0-9a-f]{24}$"
+          }
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "evidence_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_project_id",
+        "member_count",
+        "unifying_authority",
+        "strong_reason_code",
+        "automatic",
+        "weak_overlap_pair_count",
+        "evidence_count"
+      ],
+      "properties": {
+        "canonical_project_id": {
+          "type": "string",
+          "pattern": "^prj_[0-9a-f]{24}$"
+        },
+        "member_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "unifying_authority": {
+          "type": "string",
+          "enum": [
+            "exact_remote",
+            "explicit_decision",
+            "singleton",
+            "referential"
+          ]
+        },
+        "strong_reason_code": {
+          "type": "string"
+        },
+        "automatic": {
+          "type": "boolean"
+        },
+        "weak_overlap_pair_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "gbrain_link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "source_slug",
+        "fallback_source_slug",
+        "project_slug",
+        "page_key",
+        "match_basis",
+        "matched_observation_id"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "const": "mapped"
+        },
+        "source_slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fallback_source_slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "project_slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "page_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "match_basis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "matched_observation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "disambiguated_from": {
+          "type": "string"
+        }
+      }
+    },
+    "canonical_project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "canonical_project_id",
+        "project_key",
+        "display_name",
+        "resolved_fields",
+        "observation_ids",
+        "identity_anchor",
+        "normalized_remotes",
+        "project_key_hints",
+        "referents",
+        "identity_evidence",
+        "identity_evidence_summary",
+        "merge_decision_ids",
+        "canonical_key_decision_id",
+        "gbrain_source_slug",
+        "gbrain"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "canonical_project_id": {
+          "type": "string",
+          "pattern": "^prj_[0-9a-f]{24}$"
+        },
+        "project_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolved_fields": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/resolved_field"
+          }
+        },
+        "observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^obs_[0-9a-f]{24}$"
+          }
+        },
+        "identity_anchor": {
+          "$ref": "#/$defs/identity_anchor"
+        },
+        "normalized_remotes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "project_key_hints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "referents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/referent"
+          }
+        },
+        "identity_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_item"
+          }
+        },
+        "identity_evidence_summary": {
+          "$ref": "#/$defs/evidence_summary"
+        },
+        "merge_decision_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "canonical_key_decision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "gbrain_source_slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gbrain": {
+          "$ref": "#/$defs/gbrain_link"
+        }
+      }
+    }
+  }
+}

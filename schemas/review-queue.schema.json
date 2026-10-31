@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/review-queue.schema.json",
+  "title": "Project Ledger Identity & Declaration Review Queue (v1.0.0)",
+  "description": "First-class identity ambiguity, decision conflict, and sidecar validation review queue (state/review-queue.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "compiled_at",
+    "review_count",
+    "items"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-9a-f]{24}$"
+    },
+    "compiled_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "review_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/review_item"
+      }
+    }
+  },
+  "$defs": {
+    "review_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_id",
+        "code",
+        "state",
+        "severity",
+        "affected_observation_ids",
+        "affected_decision_ids",
+        "detail",
+        "reason_automation_stopped",
+        "resolution_actions",
+        "evidence"
+      ],
+      "properties": {
+        "review_id": {
+          "type": "string",
+          "pattern": "^rev_[0-9a-f]{24}$"
+        },
+        "code": {
+          "type": "string",
+          "enum": [
+            "PROJECT_KEY_AMBIGUOUS",
+            "EXACT_REMOTE_REJECTED",
+            "DECISION_TARGET_MISSING",
+            "DECISION_CONFLICT_REJECTED_MERGE",
+            "DECISION_CONFLICT_CANONICAL_KEY",
+            "DECISION_SUPERSEDE_UNKNOWN",
+            "DECLARED_KEY_CONFLICT",
+            "SIDECAR_DECLARATION_INVALID"
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "open"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "warning",
+            "error"
+          ]
+        },
+        "affected_observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^obs_[0-9a-f]{24}$"
+          }
+        },
+        "affected_decision_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason_automation_stopped": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "resolution_actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

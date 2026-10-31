@@ -1,0 +1,622 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/system-manifest.schema.json",
+  "title": "Project Ledger System Manifest (v1.2.0)",
+  "description": "Compiled estate-wide orientation, health, source probe, checkpoint, capability, and artifact pointer manifest (state/system-manifest.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler_version",
+    "run_id",
+    "compiled_at",
+    "input_observed_at",
+    "config",
+    "health",
+    "counts",
+    "changes",
+    "checkpoints",
+    "sources",
+    "capabilities",
+    "artifacts",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.2.0"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-9a-f]{24}$"
+    },
+    "compiled_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_observed_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "digest"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "source_unavailable_count",
+        "observed_empty_source_count",
+        "unresolved_observation_source_count",
+        "identity_review_count"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "degraded"
+          ]
+        },
+        "source_unavailable_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed_empty_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unresolved_observation_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "identity_review_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sources",
+        "observations",
+        "canonical_projects",
+        "project_capsules",
+        "identity_evidence",
+        "review_items",
+        "change_events"
+      ],
+      "properties": {
+        "sources": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "canonical_projects": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "project_capsules": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "identity_evidence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "review_items": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "change_events": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "changes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline_state",
+        "previous_run_id",
+        "change_count",
+        "by_change_type",
+        "by_severity"
+      ],
+      "properties": {
+        "baseline_state": {
+          "type": "string",
+          "enum": [
+            "initial_baseline",
+            "same_run",
+            "compared"
+          ]
+        },
+        "previous_run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "change_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "by_change_type": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "by_severity": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "checkpoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "updated_at",
+        "source_count",
+        "hit_source_count",
+        "partial_source_count",
+        "miss_source_count",
+        "unavailable_source_count",
+        "bypassed_source_count",
+        "candidate_count",
+        "reused_candidate_count",
+        "rebuilt_candidate_count"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "bypassed",
+            "not_applicable"
+          ]
+        },
+        "updated_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hit_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "partial_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "miss_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unavailable_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bypassed_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reused_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rebuilt_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/source_descriptor"
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "compat_observations",
+        "typed_observations",
+        "sidecar_declarations",
+        "source_health",
+        "source_checkpoints",
+        "canonical_projects",
+        "identity_evidence",
+        "project_capsules",
+        "review_queue",
+        "change_feed",
+        "gbrain_page_sync"
+      ],
+      "properties": {
+        "compat_observations": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "typed_observations": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "sidecar_declarations": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "source_health": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "source_checkpoints": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "canonical_projects": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "identity_evidence": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "project_capsules": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "review_queue": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "change_feed": {
+          "$ref": "#/$defs/capability_entry"
+        },
+        "gbrain_page_sync": {
+          "$ref": "#/$defs/capability_entry"
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "compat_observations",
+        "typed_observations",
+        "source_checkpoints",
+        "canonical_projects",
+        "canonical_markdown",
+        "project_capsules",
+        "identity_evidence",
+        "review_queue",
+        "change_feed",
+        "system_manifest"
+      ],
+      "properties": {
+        "compat_observations": {
+          "type": "string",
+          "minLength": 1
+        },
+        "typed_observations": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_checkpoints": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_projects": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_markdown": {
+          "type": "string",
+          "minLength": 1
+        },
+        "project_capsules": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identity_evidence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review_queue": {
+          "type": "string",
+          "minLength": 1
+        },
+        "change_feed": {
+          "type": "string",
+          "minLength": 1
+        },
+        "system_manifest": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "capability_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "available",
+            "unavailable",
+            "degraded"
+          ]
+        },
+        "reason_code": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    },
+    "source_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "path",
+        "state",
+        "as_of",
+        "sha256"
+      ],
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "known",
+            "unavailable"
+          ]
+        },
+        "as_of": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "source_descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "label",
+        "source_class",
+        "discovery",
+        "machine_name",
+        "storage_scope",
+        "path",
+        "path_state",
+        "status",
+        "status_reason",
+        "result_state",
+        "observation_count",
+        "content_as_of",
+        "content_as_of_basis",
+        "freshness_state",
+        "probe_as_of",
+        "probe_fingerprint",
+        "compat_snapshot_id",
+        "compat_snapshot_as_of",
+        "compat_snapshot_basis",
+        "artifacts",
+        "checkpoint_status",
+        "checkpoint_fingerprint",
+        "last_extracted_at",
+        "reused_candidate_count",
+        "rebuilt_candidate_count"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "pattern": "^src_[0-9a-f]{24}$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_class": {
+          "type": "string",
+          "enum": [
+            "live",
+            "mirror",
+            "backup",
+            "inventory",
+            "unknown"
+          ]
+        },
+        "discovery": {
+          "type": "string",
+          "enum": [
+            "children",
+            "git_repos",
+            "self",
+            "inventory_policy"
+          ]
+        },
+        "machine_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "storage_scope": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path_state": {
+          "type": "string",
+          "enum": [
+            "known",
+            "unavailable"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "unavailable",
+            "degraded"
+          ]
+        },
+        "status_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "result_state": {
+          "type": "string",
+          "enum": [
+            "observed",
+            "observed_empty",
+            "unavailable"
+          ]
+        },
+        "observation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "content_as_of": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "content_as_of_basis": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "freshness_state": {
+          "type": "string",
+          "enum": [
+            "known",
+            "unknown",
+            "unavailable",
+            "stale"
+          ]
+        },
+        "probe_as_of": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "probe_fingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "compat_snapshot_id": {
+          "type": "string",
+          "pattern": "^snap_[0-9a-f]{24}$"
+        },
+        "compat_snapshot_as_of": {
+          "type": "string",
+          "minLength": 1
+        },
+        "compat_snapshot_basis": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source_artifact"
+          }
+        },
+        "checkpoint_status": {
+          "type": "string"
+        },
+        "checkpoint_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_extracted_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reused_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rebuilt_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}
