@@ -19,7 +19,7 @@ registered sources
  -> typed manifestation observations
  -> exact-remote identity evidence + explicit decisions
  -> identity evidence model (records + scoring, P2.3)
- -> canonical project IDs + resolved-field provenance (P2.5)
+ -> canonical project IDs + durable immutable lineage registry (`registry/project-lineage.json`, `ledger lineage`, P2.5 + U3) + resolved-field provenance
  -> first-class identity review queue (P2.6)
  -> resolved identity questions do not recur under identical inputs (P2.7 ratchet)
  -> PROJECT_KEY_AMBIGUOUS resolves via canonical_key + honest resolution_actions (P2.8)
@@ -28,16 +28,18 @@ registered sources
   -> explicit source result/freshness semantics: unavailable vs observed_empty vs observed; content_as_of only from authoritative upstream evidence (P1.5)
   -> canonical projects + identity review
   -> preferred-location resolver + ranked observations with reason codes/confidence + git working-tree drift & `stale_sidecar` sensing (P3.5 / Reality Provider)
-  -> gbrain source cross-linking (`gbrain_source_slug` + collision-free `gbrain.page_key` metadata on canonical projects and capsules) + idempotent GBrain `projects/<slug>.md` projector (`ledger sync-gbrain`)
-  -> bounded project capsules at state/projects/<canonical_project_id>.json with read-only `capsule["ctx"]` fleet/skeleton/Tier-2/Tier-1 ingestion (P3.2)
-  -> human canonical ledger view at state/canonical-projects.md (P3.7)
-  -> frontier zero-shot weak-overlap triage candidates (`registry/weak-overlap-triage-candidates.json` + `ledger review --approve-candidates`, all 40 weak overlaps / 62 candidate decisions across Batch 1 + Batch 2 approved into `registry/identity-decisions.json`, 7 redundant secondary/top-level checkouts reconciled, archived, and superseded -> 14 active sources, 80 total / 65 active decisions, 176 canonical projects across 207 observations, 0 open identity reviews, 0 untriaged weak overlaps)
-  -> Wave 4 semantic change feed (`state/changes.json` + bounded `state/runs/<run_id>.json` + `ledger changes`, P4.5)
+  -> gbrain source cross-linking (`gbrain_source_slug` + collision-free `gbrain.page_key` metadata on canonical projects and capsules) + idempotent GBrain `projects/<slug>.md` projector (`ledger sync-gbrain`, including live `Git State` and `Machina Continuity`, U1)
+  -> bounded project capsules at state/projects/<canonical_project_id>.json with read-only `capsule["ctx"]` explicit `.ctx/` ingestion + pure-Python `compiled_structural_scan` synthesis (`166/172` capsules available, P3.2 + U2) and read-only `.machina/state.json` continuity (U1)
+  -> human canonical ledger view at state/canonical-projects.md (P3.7 + U1)
+  -> frontier zero-shot weak-overlap triage candidates (`registry/weak-overlap-triage-candidates.json` + `ledger review --approve-candidates`, all 40 weak overlaps / 62 candidate decisions across Batch 1 + Batch 2 approved into `registry/identity-decisions.json`, 7 redundant secondary/top-level checkouts reconciled, archived, and superseded -> 14 active sources, 80 total / 65 active decisions, 172 canonical projects across 203 observations, 0 open identity reviews, 0 untriaged weak overlaps)
+  -> Wave 4 semantic change feed (`state/changes.json` + bounded `state/runs/<run_id>.json` header-indexed snapshots + `ledger changes`, P4.5 + U4)
+  -> single-pass `os.scandir` incremental checkpoints + fast inventory stat short-circuit + zero-subprocess warm compile cache (`state/source-checkpoints.json`, P5.1 + U4)
   -> system manifest
-  -> ledger orient / ledger resolve / ledger show / ledger locate / ledger explain / ledger review / ledger changes / ledger sync-gbrain / ledger sources
+  -> installable `ledger` CLI + stdlib read-only MCP stdio server (`ledger-mcp` / `python -m ledger mcp`, U5)
+  -> ledger orient / ledger resolve / ledger show / ledger locate / ledger explain / ledger review / ledger changes / ledger lineage / ledger sync-gbrain / ledger sources / ledger mcp
 ```
 
-This crosses the **estate observation/orientation** boundary, the **conceptual project identity** boundary, the full **Wave 3 agent read-plane** boundary (`P3.1`–`P3.7`), the **Wave 4 semantic change-feed** boundary (`P4.5`), and the **Reality Provider seam** for `machina`, `homelab`, and `gbrain`.
+This crosses the **estate observation/orientation** boundary, the **immutable conceptual project identity** boundary, the full **Wave 3 agent read-plane** boundary (`P3.1`–`P3.7`), the **Wave 4 semantic change-feed** boundary (`P4.5`), the **Reality Provider seam** for `machina`, `homelab`, and `gbrain`, and the **native stdlib MCP read surface** (`U1`–`U5`).
 
 Identity is deliberately conservative:
 
@@ -100,41 +102,47 @@ reachable as `project_key_hint` referents. This previously surfaced as a
 documentation/semantics inconsistency recorded as a future spec (t_92cca8a6), not a
 data-loss or correctness bug.
 
-The **Wave 3 agent read plane (`P3.1`–`P3.7`), Reality Provider seam (`P4.1`–`P4.4`, `P5.1`–`P5.3`), and 2026-10-31 gap-closeout hardening (`PL-GAP-CLOSEOUT-01..03`)** are now implemented:
+The **Wave 3 agent read plane (`P3.1`–`P3.7`), Reality Provider seam (`P4.1`–`P4.4`, `P5.1`–`P5.3`), 2026-10-31 gap-closeout hardening (`PL-GAP-CLOSEOUT-01..03`), and Strategic Unlocks (`U1`–`U5`, `PL-STRATEGIC-UNLOCK-01..03`)** are now implemented:
 - `ledger resolve <referent>`, `ledger locate <project>`, and `ledger show <project>` return the authoritative checkout path (`preferred_location.location`), `gbrain_source_slug` / `gbrain` cross-links (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry`, `default`, with `/central/registry/mirrors/` excluded), `historical_canonical_id` lineage resolution across anchor upgrades and retained `state/runs/` snapshots, and explicit git working-tree drift + `stale_sidecar` warnings (`GIT_BEHIND_UPSTREAM`, `GIT_MAIN_BEHIND_ORIGIN`, `GIT_AHEAD_OF_UPSTREAM`, `GIT_DETACHED_HEAD`, `GIT_DIRTY_WORKTREE`, `stale_sidecar`).
-- `ledger explain <referent>` (`P3.6`) returns full provenance across canonical projects, observations, review items, identity decisions, and `chg_*` change events.
-- `state/canonical-projects.md` (`P3.7`) provides a human-auditable canonical ledger view with preferred locations, GBrain sources, git drift warnings, and expandable multi-manifestation provenance.
+- `registry/project-lineage.json` (`schemas/project-lineage.schema.json`, `ledger/lineage.py`, `ledger lineage [--sync|--check]`, `U3`) pins all `172` live `canonical_project_id` values durably across remote additions, GitHub repository renames, merge absorptions, and `state/` wipes while demoting superseded anchor IDs into unambiguous `historical_canonical_id` referents.
+- `ledger explain <referent>` (`P3.6` + `U1`) returns full provenance across canonical projects (including Machina continuity summary when present), observations, review items, identity decisions, and `chg_*` change events.
+- `state/canonical-projects.md` (`P3.7` + `U1`) provides a human-auditable canonical ledger view with preferred locations, GBrain sources, git drift warnings, Machina continuity notes, and expandable multi-manifestation provenance.
 - `ledger review` and `registry/weak-overlap-triage-candidates.json` (`P5.1`–`P5.3`) replace Wave 5's legacy custom local-LLM deduplication pipeline with frontier zero-shot triage batches: both Batch 1 (21 weak-overlap pairs / 33 durable decisions) and Batch 2 (19 post-`CONV-001` weak-overlap pairs / 29 durable decisions) are approved in `registry/identity-decisions.json`, shadowed backwards-compatibility symlinks in `/central/projects` are deterministically suppressed (`is_shadowed_symlink`), and all 7 redundant secondary/top-level checkouts (`steam-db-mattified`, `gbrain-candidate`, `gbrain-master`, `/central/projects/song-clean` under `/central/archive/batch2-retired-checkouts-20261030/`, plus `/central/3813-patio`, `/central/proxy-lead`, and `/central/white-rabbit` under `/central/archive/retired-top-level-checkouts-20261031/`) are reconciled, archived, and superseded cleanly (`0` open identity reviews and `0` untriaged weak overlaps).
-- `state/changes.json`, bounded run snapshots at `state/runs/<run_id>.json` (`RUN_HISTORY_MAX_RUNS = 50`), and `ledger changes [--since <run_id>] [--project <referent>] [--entity-kind <kind>] [--change-type <code>]` (`P4.5`) provide zero-churn semantic estate deltas across runs (exposing top-level `change_count`, `review_count`, and `untriaged_weak_overlap_count` alongside lineage events `PROJECT_MERGED`, `PROJECT_SPLIT`, `PROJECT_REANCHORED`, and `PROJECT_UNAVAILABLE`), and `ledger explain <change_id>` explains individual change events.
-- `state/source-checkpoints.json`, `ledger/checkpoints.py`, and compile-stage checkpoint caching (`P5.1` + `PL-GAP-CLOSEOUT-02`) provide deterministic pure-Python source/candidate extraction and compile-stage (`sidecar_envelope` + `git_drift`) checkpointing during `ledger refresh` (with `--full-scan` to force full reconciliation and `--no-optional-locks` on read-only git calls), including `.git/index` and `.machina/state.json` fingerprinting plus bucketed `build_identity_evidence()` candidate-pair scoring.
+- `state/changes.json`, bounded header-indexed run snapshots at `state/runs/<run_id>.json` (`RUN_HISTORY_MAX_RUNS = 50`), and `ledger changes [--since <run_id>] [--project <referent>] [--entity-kind <kind>] [--change-type <code>]` (`P4.5` + `U4`) provide zero-churn semantic estate deltas across runs without decoding all retained snapshot payloads on read.
+- `state/source-checkpoints.json`, `ledger/checkpoints.py`, and compile-stage checkpoint caching (`P5.1` + `PL-GAP-CLOSEOUT-02` + `U4`) provide single-pass `os.scandir` source/candidate fingerprinting, fast `inventory_policy` artifact stat short-circuiting, in-memory `compile_state` handoff, and compile-stage (`sidecar_envelope` + `git_drift` + `ctx_raw_skeleton`) checkpointing during `ledger refresh` (`0` subprocesses and `~1.98s` CPU time on warm 14-source / 224-candidate estate refreshes; `--full-scan` forces full reconciliation).
 - `schemas/project-ledger-sidecar.schema.json`, `ledger/sidecar.py`, and `load_sidecar()` (`P1.7`) validate `.project-ledger.json` sidecar `schema_version` (`1` / `1.0` / `1.0.0` + legacy unversioned), forbid `canonical_project_id` in sidecars, validate field types across all v1 declaration fields and nested `git` sub-objects without altering frozen `CSV_FIELDS`, emit `stale_sidecar` warnings when declared commit/branch/timestamp lags live `git rev-parse HEAD`, attach `observation["sidecar"]` (emitting `sidecar_declaration` claims only when `sidecar.present == True`), and surface malformed/invalid sidecars as bounded `SIDECAR_DECLARATION_INVALID` review items.
-- `schemas/*.schema.json` (`system-manifest.schema.json`, `canonical-projects.schema.json`, `project-capsule.schema.json`, `review-queue.schema.json`, `changes.schema.json`, and `project-ledger-sidecar.schema.json`) + `tests/test_state_schemas.py` and `pyproject.toml` (`ledger` console script + `ruff check .` lint gate with `build_ledger.__all__`) enforce executable schema and packaging contracts across the repository (`PL-GAP-CLOSEOUT-03`).
-- `ledger/capsules.py` (`P3.2` + `PL-GAP-CLOSEOUT-02`) ingests read-only `ctx` structural capsules (`.ctx/skeleton.json`, `.ctx/fleet-capsule.json` / `.ctx/capsule.json`, Tier-2 `.ctx/CONTEXT-0.md` + `metadata.json`, and Tier-1 `ctx` `CONTEXT.md`) into `capsule["ctx"]` inside the `16 KiB` capsule budget, and ingests read-only `.machina/state.json` unit/checkpoint/completion continuity into `current_state.machina_continuity` (`session_receipts_reason_code = "OWNED_BY_MACHINA"`, overriding stale sidecar session continuity when fresher).
-- `ledger/gbrain_pages.py` and `ledger sync-gbrain --brain-dir /home/prime/brain [--project REFERENT] [--ingest] [--dry-run] [--json]` idempotently project timestamp-free Reality Provider fenced blocks (`<!-- BEGIN PROJECT-LEDGER REALITY --> ... <!-- END PROJECT-LEDGER REALITY -->`, including live `Git State` from `capsule["git_facts"]`) across all collision-free `projects/<slug>.md` pages in GBrain while preserving existing YAML frontmatter, prose, and `<!-- timeline -->` sections.
+- `schemas/*.schema.json` (`system-manifest.schema.json`, `canonical-projects.schema.json`, `project-capsule.schema.json`, `review-queue.schema.json`, `changes.schema.json`, `project-lineage.schema.json`, and `project-ledger-sidecar.schema.json`) + `tests/test_state_schemas.py` and `pyproject.toml` (`ledger` and `ledger-mcp` console scripts + `ruff check .` lint gate with `build_ledger.__all__`) enforce executable schema and packaging contracts across the repository (`PL-GAP-CLOSEOUT-03` + `U3` + `U5`).
+- `ledger/structural_ctx.py` and `ledger/capsules.py` (`P3.2` + `PL-GAP-CLOSEOUT-02` + `U1` + `U2`) ingest explicit read-only `ctx` structural capsules (`.ctx/skeleton.json`, `.ctx/fleet-capsule.json` / `.ctx/capsule.json`, Tier-2 `.ctx/CONTEXT-0.md`, and Tier-1 `ctx` `CONTEXT.md`) and automatically synthesize pure-Python read-only structural skeletons (`source_format = "compiled_structural_scan"`, activating `166 / 172` project capsules — 100% of locally accessible repos — with zero target writes under Law 10) inside the `16 KiB` capsule budget, while projecting read-only `.machina/state.json` unit/checkpoint/completion continuity into `current_state.machina_continuity` (`session_receipts_reason_code = "OWNED_BY_MACHINA"`).
+- `ledger/gbrain_pages.py` and `ledger sync-gbrain --brain-dir /home/prime/brain [--project REFERENT] [--ingest] [--dry-run] [--json]` (`U1`) idempotently project timestamp-free Reality Provider fenced blocks (`<!-- BEGIN PROJECT-LEDGER REALITY --> ... <!-- END PROJECT-LEDGER REALITY -->`, including live `Git State` and `- **Machina Continuity:**`) across all collision-free `projects/<slug>.md` pages in GBrain while preserving existing YAML frontmatter, prose, and `<!-- timeline -->` sections.
+- `ledger/mcp_server.py` (`ledger-mcp` and `python -m ledger mcp`, `U5`) exposes Project Ledger's read-only Reality Provider surface (`ledger_orient`, `ledger_sources`, `ledger_resolve`, `ledger_show`, `ledger_locate`, `ledger_explain`, `ledger_changes`, `ledger_review`, `ledger_lineage`) and `ledger://` resources/templates over stdlib JSON-RPC 2.0 stdio (auto-detecting both newline-delimited MCP framing and `Content-Length` framing), with smart `PROJECT_LEDGER_HOME` / package-root path resolution so `ledger` and `ledger-mcp` work zero-config from any directory on the host.
 - Competing session-receipt storage (originally Wave 4) is retired in favor of `machina` (which owns Work Unit / Attempt / Receipt kernel state) and `homelab` (which owns worktree leases).
 
-All planned Wave 0–5 Project Ledger capabilities are now implemented (`unavailable_capabilities == []` in `state/system-manifest.json`), and all 9 legacy pre-Wave-2 `origin/*` branches have been archived into a verified git bundle (`/central/archive/project-ledger-p02-branch-hygiene-20261031/`) and pruned so `main` is sole authority (`P0.2`).
+All planned Wave 0–5 Project Ledger capabilities and Strategic Unlocks (`U1`–`U5`) are now implemented (`unavailable_capabilities == []` in `state/system-manifest.json`), and all 9 legacy pre-Wave-2 `origin/*` branches have been archived into a verified git bundle (`/central/archive/project-ledger-p02-branch-hygiene-20261031/`) and pruned so `main` is sole authority (`P0.2`).
 
 ## Current commands
 
 ```bash
-python -m ledger validate
-python -m ledger refresh [--full-scan]
-python -m ledger refresh --no-markdown-mirror [--full-scan]
-python -m ledger compile
-python -m ledger orient
-python -m ledger sources
-python -m ledger resolve <referent>
-python -m ledger show <project>
-python -m ledger locate <project>
-python -m ledger explain <referent>
-python -m ledger review [--approve-candidates] [--decision-id ID]
-python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
-python -m ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
+ruff check .
+ledger validate
+ledger refresh [--full-scan]
+ledger refresh --no-markdown-mirror [--full-scan]
+ledger compile
+ledger orient
+ledger sources
+ledger resolve <referent>
+ledger show <project>
+ledger locate <project>
+ledger explain <referent>
+ledger review [--approve-candidates] [--decision-id ID]
+ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
+ledger lineage [--check | --sync] [--json]
+ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
+ledger mcp
+ledger-mcp
 python -m unittest discover -s tests
 ```
 
-`python build_ledger.py` remains the compatibility entrypoint.
+`python -m ledger <subcommand>` and `python build_ledger.py` remain supported entrypoints.
 
 ## Reality / proof boundary
 

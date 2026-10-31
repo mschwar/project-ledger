@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "PL-STRATEGIC-UNLOCK-03",
+  "title": "Stdlib read-only MCP server, global CLI ergonomics, documentation, and work-queue closeout",
+  "objective": "Deliver Strategic Unlock U5 and close out the U1-U5 programme: (1) implement ledger/mcp_server.py as a pure-Python stdlib JSON-RPC 2.0 stdio MCP server supporting both newline-delimited MCP stdio framing and Content-Length framing, exposing Project Ledger's read-only Reality Provider tools (ledger_orient, ledger_sources, ledger_resolve, ledger_show, ledger_locate, ledger_explain, ledger_changes, ledger_review, ledger_lineage) and resources/templates (ledger://manifest, ledger://canonical-projects, ledger://canonical-projects-markdown, ledger://changes, ledger://review-queue, ledger://lineage, ledger://projects/{referent}); (2) wire `python -m ledger mcp`, add `ledger-mcp = \"ledger.mcp_server:main\"` to pyproject.toml, and resolve default workspace paths seamlessly from any working directory via PROJECT_LEDGER_HOME or package root fallback while preserving CWD-relative workspace/test execution; and (3) reconcile CURRENT.md, SCHEMA.md, ARCHITECTURE.md, README.md, AGENTS.md, BACKLOG.md work queue, and .project-ledger.json.",
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-STRATEGIC-UNLOCK-03.json, ledger/mcp_server.py, and tests/test_mcp_server.py",
+      "edit pyproject.toml, ledger/__init__.py, ledger/cli.py, tests/test_state_schemas.py, CURRENT.md, SCHEMA.md, ARCHITECTURE.md, README.md, AGENTS.md, BACKLOG.md, and .project-ledger.json",
+      "run uvx --offline ruff check ., python3 -m ledger validate, and python3 -m unittest discover -s tests"
+    ],
+    "forbidden": [
+      "mutate registered external source checkouts or /central/repos/active/machina",
+      "expose mutating flags (--approve-candidates, --sync, refresh, compile, sync-gbrain --ingest) on the read-only MCP surface",
+      "introduce execution_state into Project Ledger domain surfaces or schemas",
+      "add em dashes to .machina/specs/*.json, scripts/machina_adapter.sh, or tests/test_machina_thin_waist.py"
+    ]
+  },
+  "completion": "ledger/mcp_server.py (`ledger-mcp` and `python -m ledger mcp`) passes stdio JSON-RPC 2.0 tests across newline-delimited and Content-Length transports, all 9 read-only tools, resources/templates, error handling, strict read-only non-mutation, and external CWD invocation; documentation, BACKLOG.md work queue, and .project-ledger.json reflect U1-U5 accurately; ruff check . and full unittest suite pass.",
+  "initial_next_action": "Implement workspace-root fallback in ledger/cli.py, build ledger/mcp_server.py, wire pyproject.toml and CLI subcommand, add tests/test_mcp_server.py, update docs and .project-ledger.json, and verify."
+}

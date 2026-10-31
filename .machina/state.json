@@ -6,18 +6,18 @@
   "last_checkpoint": null,
   "last_completed": {
     "slice": 1,
-    "summary": "Implemented U2 pure-Python read-only structural ctx synthesis (166/172 capsules available under 16 KiB budget, Law 10 zero target writes) and U4 ultra-fast warm refresh (0 subprocesses, 1.98s CPU / 4.41s wall across 14 sources and 224 candidates via single-pass scandir fingerprinting, fast inventory stat short-circuit, snapshot header scan, and compile-cache reuse).",
-    "timestamp": "2026-10-31T21:19:47.807336Z",
+    "summary": "Implemented U5 pure-Python stdlib read-only MCP stdio server (ledger/mcp_server.py, ledger-mcp console script, and ledger mcp subcommand supporting newline-delimited and Content-Length framing across all 9 Reality Provider tools and ledger:// resources), zero-config workspace-root fallback from any CWD, and reconciled CURRENT.md, SCHEMA.md, ARCHITECTURE.md, README.md, AGENTS.md, BACKLOG.md work queue (closing WQ-3, updating WQ-2, adding WQ-4), and .project-ledger.json across U1-U5.",
+    "timestamp": "2026-10-31T21:36:09.900553Z",
     "unit": {
-      "id": "PL-STRATEGIC-UNLOCK-02",
-      "spec": ".machina/units/PL-STRATEGIC-UNLOCK-02.json",
-      "spec_digest": "47437bd9e6d6553c19d829437285f6f27d8d7f351ce0885d728d9f9564b48fca",
-      "title": "Read-only fleet-wide structural ctx capsule compiler and sub-second warm ledger refresh"
+      "id": "PL-STRATEGIC-UNLOCK-03",
+      "spec": ".machina/units/PL-STRATEGIC-UNLOCK-03.json",
+      "spec_digest": "f8ea0da99347d415f8a669ed1d22631ecc5deddf6bd5bf2413e7b49ab65bbae4",
+      "title": "Stdlib read-only MCP server, global CLI ergonomics, documentation, and work-queue closeout"
     }
   },
   "next_action": null,
   "schema_version": 1,
-  "sequence": 30,
+  "sequence": 33,
   "slice": 1,
-  "updated_at": "2026-10-31T21:19:47.811241Z"
+  "updated_at": "2026-10-31T21:36:09.901316Z"
 }

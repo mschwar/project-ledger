@@ -11,11 +11,18 @@ from .changes import SUPPORTED_CHANGE_ENTITY_KINDS, changes_payload
 from .checkpoints import CHECKPOINT_FILENAME
 from .compiler import compile_state, load_manifest, orient_payload
 from .compat_contract import LedgerCompatError
-from .config import LedgerConfigError, describe_sources, read_config, validate_config
+from .config import (
+    LedgerConfigError,
+    default_workspace_path,
+    describe_sources,
+    read_config,
+    validate_config,
+)
 from .explain import explain_payload
 from .gbrain_pages import sync_gbrain_pages
 from .identity import resolve_payload
 from .lineage import lineage_status_payload
+from .mcp_server import add_mcp_args, run_mcp_from_args
 from .triage import approve_candidate_decisions, review_payload
 
 
@@ -24,9 +31,12 @@ def _print_json(value: object) -> None:
 
 
 def _add_compile_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--config", default="ledger_config.json")
-    parser.add_argument("--state-dir", default="state")
-    parser.add_argument("--identity-decisions", default="registry/identity-decisions.json")
+    parser.add_argument("--config", default=default_workspace_path("ledger_config.json"))
+    parser.add_argument("--state-dir", default=default_workspace_path("state"))
+    parser.add_argument(
+        "--identity-decisions",
+        default=default_workspace_path("registry/identity-decisions.json"),
+    )
     parser.add_argument(
         "--project-lineage",
         default=None,
@@ -35,16 +45,21 @@ def _add_compile_args(parser: argparse.ArgumentParser) -> None:
 
 
 def _parser() -> argparse.ArgumentParser:
+    default_state = default_workspace_path("state")
+    default_decisions = default_workspace_path("registry/identity-decisions.json")
+    default_candidates = default_workspace_path("registry/weak-overlap-triage-candidates.json")
+    default_lineage = default_workspace_path("registry/project-lineage.json")
+
     parser = argparse.ArgumentParser(prog="ledger", description="Project Ledger agent-facing substrate CLI.")
     sub = parser.add_subparsers(dest="command", required=True)
 
     validate = sub.add_parser("validate", help="Validate config and required source artifacts.")
-    validate.add_argument("--config", default="ledger_config.json")
+    validate.add_argument("--config", default=default_workspace_path("ledger_config.json"))
     validate.add_argument("--json", action="store_true")
 
     refresh = sub.add_parser("refresh", help="Run the compatibility scanner, then compile agent-facing state.")
     _add_compile_args(refresh)
-    refresh.add_argument("--output-dir", default="output")
+    refresh.add_argument("--output-dir", default=default_workspace_path("output"))
     refresh.add_argument(
         "--no-markdown-mirror",
         action="store_true",
@@ -59,25 +74,25 @@ def _parser() -> argparse.ArgumentParser:
 
     compile_cmd = sub.add_parser("compile", help="Compile typed observations and the system manifest.")
     _add_compile_args(compile_cmd)
-    compile_cmd.add_argument("--input-json", default="output/projects.json")
+    compile_cmd.add_argument("--input-json", default=default_workspace_path("output/projects.json"))
     compile_cmd.add_argument("--json", action="store_true")
 
     orient = sub.add_parser("orient", help="Read the compact system orientation surface.")
-    orient.add_argument("--state-dir", default="state")
+    orient.add_argument("--state-dir", default=default_state)
     orient.add_argument("--json", action="store_true")
 
     sources = sub.add_parser("sources", help="Show source health from the latest manifest.")
-    sources.add_argument("--state-dir", default="state")
+    sources.add_argument("--state-dir", default=default_state)
     sources.add_argument("--json", action="store_true")
 
     resolve = sub.add_parser("resolve", help="Resolve an exact project referent to canonical identity.")
     resolve.add_argument("referent")
-    resolve.add_argument("--state-dir", default="state")
+    resolve.add_argument("--state-dir", default=default_state)
     resolve.add_argument("--json", action="store_true")
 
     show = sub.add_parser("show", help="Load the bounded project capsule for a project referent.")
     show.add_argument("referent")
-    show.add_argument("--state-dir", default="state")
+    show.add_argument("--state-dir", default=default_state)
     show.add_argument("--json", action="store_true")
 
     locate = sub.add_parser(
@@ -85,7 +100,7 @@ def _parser() -> argparse.ArgumentParser:
         help="Resolve the preferred working location and ranked observations for a project.",
     )
     locate.add_argument("referent")
-    locate.add_argument("--state-dir", default="state")
+    locate.add_argument("--state-dir", default=default_state)
     locate.add_argument("--json", action="store_true")
 
     explain = sub.add_parser(
@@ -93,17 +108,17 @@ def _parser() -> argparse.ArgumentParser:
         help="Explain canonical project identity, resolved fields, preferred location, reviews, or decisions.",
     )
     explain.add_argument("referent")
-    explain.add_argument("--state-dir", default="state")
-    explain.add_argument("--identity-decisions", default="registry/identity-decisions.json")
+    explain.add_argument("--state-dir", default=default_state)
+    explain.add_argument("--identity-decisions", default=default_decisions)
     explain.add_argument("--json", action="store_true")
 
     review = sub.add_parser(
         "review",
         help="Inspect open identity review items and frontier zero-shot weak-overlap triage candidates.",
     )
-    review.add_argument("--state-dir", default="state")
-    review.add_argument("--candidates", default="registry/weak-overlap-triage-candidates.json")
-    review.add_argument("--identity-decisions", default="registry/identity-decisions.json")
+    review.add_argument("--state-dir", default=default_state)
+    review.add_argument("--candidates", default=default_candidates)
+    review.add_argument("--identity-decisions", default=default_decisions)
     review.add_argument(
         "--approve-candidates",
         action="store_true",
@@ -122,7 +137,7 @@ def _parser() -> argparse.ArgumentParser:
         "changes",
         help="Inspect semantic estate changes since the previous or a specified compiled run.",
     )
-    changes.add_argument("--state-dir", default="state")
+    changes.add_argument("--state-dir", default=default_state)
     changes.add_argument(
         "--since",
         default=None,
@@ -152,7 +167,7 @@ def _parser() -> argparse.ArgumentParser:
         "sync-gbrain",
         help="Project canonical project Reality Provider blocks/stubs into a GBrain markdown repository.",
     )
-    sync_gbrain.add_argument("--state-dir", default="state")
+    sync_gbrain.add_argument("--state-dir", default=default_state)
     sync_gbrain.add_argument(
         "--brain-dir",
         default="/home/prime/brain",
@@ -186,10 +201,10 @@ def _parser() -> argparse.ArgumentParser:
         "lineage",
         help="Inspect, check, or sync the durable canonical_project_id lineage registry (registry/project-lineage.json).",
     )
-    lineage.add_argument("--state-dir", default="state")
+    lineage.add_argument("--state-dir", default=default_state)
     lineage.add_argument(
         "--project-lineage",
-        default="registry/project-lineage.json",
+        default=default_lineage,
         help="Path to durable project lineage registry (default: registry/project-lineage.json).",
     )
     lineage_mode = lineage.add_mutually_exclusive_group()
@@ -204,6 +219,12 @@ def _parser() -> argparse.ArgumentParser:
         help="Exit non-zero (code 5) if registry/project-lineage.json is out of sync with compiled state.",
     )
     lineage.add_argument("--json", action="store_true")
+
+    mcp = sub.add_parser(
+        "mcp",
+        help="Run the read-only Model Context Protocol (MCP) JSON-RPC 2.0 server over stdio.",
+    )
+    add_mcp_args(mcp)
     return parser
 
 
@@ -555,6 +576,9 @@ def main(argv: list[str] | None = None) -> int:
             if args.check and not payload["in_sync"]:
                 return 5
             return 0
+
+        if args.command == "mcp":
+            return run_mcp_from_args(args)
 
         manifest = load_manifest(Path(args.state_dir))
         if args.command == "orient":
