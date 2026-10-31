@@ -56,25 +56,36 @@ state/projects/<canonical_project_id>.json
 
 `state/` is intentionally gitignored: it is rebuildable compiled state, not canon.
 
-### Agent-facing commands now implemented
+### Agent-facing CLI and MCP surfaces now implemented
+
+Install onto `$PATH` (`~/.local/bin`) with `uv`:
 
 ```bash
-python -m ledger validate
-python -m ledger refresh [--full-scan]
-python -m ledger refresh --no-markdown-mirror [--full-scan]
-python -m ledger compile
-python -m ledger orient
-python -m ledger sources
-python -m ledger resolve <referent>
-python -m ledger show <project>
-python -m ledger locate <project>
-python -m ledger explain <referent>
-python -m ledger review [--approve-candidates] [--decision-id ID]
-python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
-python -m ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
+uv tool install --editable /central/repos/active/project-ledger
 ```
 
-Use `--json` on the agent-facing commands when machine-readable output is preferred.
+Both `ledger` and `ledger-mcp` resolve Project Ledger's workspace root automatically from any working directory (via `PROJECT_LEDGER_HOME`, active CWD when inside a Project Ledger workspace, or the package checkout root):
+
+```bash
+ledger validate
+ledger refresh [--full-scan]
+ledger refresh --no-markdown-mirror [--full-scan]
+ledger compile
+ledger orient
+ledger sources
+ledger resolve <referent>
+ledger show <project>
+ledger locate <project>
+ledger explain <referent>
+ledger review [--approve-candidates] [--decision-id ID]
+ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
+ledger lineage [--check | --sync] [--json]
+ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
+ledger mcp
+ledger-mcp
+```
+
+Use `--json` on the CLI commands when machine-readable output is preferred, or connect an MCP client over stdio to `ledger-mcp` (`python -m ledger mcp`) for zero-subprocess read-only Reality Provider tools (`ledger_orient`, `ledger_sources`, `ledger_resolve`, `ledger_show`, `ledger_locate`, `ledger_explain`, `ledger_changes`, `ledger_review`, `ledger_lineage`) and `ledger://` resources/templates.
 
 `orient` is the cheapest current entrypoint after a compile. It reports run/as-of information, source and observation counts, estate health, and the capability boundary so agents do not mistake planned features for implemented ones.
 
@@ -103,14 +114,14 @@ Implemented now:
 
 ```text
 registered sources
- -> current source probes + incremental source/candidate extraction checkpoints (P5.1) + compatibility source/run snapshots
+ -> current source probes + single-pass scandir source/candidate/compile checkpoints (P5.1 + U4) + compatibility source/run snapshots
  -> compatibility observations
  -> typed observations
- -> exact-remote identity evidence + explicit identity decisions + frontier zero-shot triage
- -> canonical projects + identity review + GBrain cross-links
- -> bounded project capsules + preferred-location resolution + human canonical view
- -> semantic run history + semantic change feed (state/changes.json)
- -> system manifest / orient / sources / resolve / show / locate / explain / review / changes
+ -> exact-remote identity evidence + explicit identity decisions + durable immutable project-lineage registry (registry/project-lineage.json, U3) + frontier zero-shot triage
+ -> canonical projects + identity review + GBrain cross-links + idempotent GBrain reality-block projector (ledger sync-gbrain, U1)
+ -> bounded project capsules (with read-only structural ctx synthesis across 166/172 capsules, U2, and Machina continuity, U1) + preferred-location resolution + human canonical view
+ -> header-indexed semantic run history + semantic change feed (state/changes.json, U4)
+ -> system manifest / orient / sources / resolve / show / locate / explain / review / changes / lineage / sync-gbrain / stdlib MCP server (ledger-mcp, U5)
 ```
 
 Automatic identity is intentionally conservative:

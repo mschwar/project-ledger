@@ -342,7 +342,7 @@ Current available capabilities:
 - `change_feed`
 - `gbrain_page_sync`
 
-All Wave 1–5 materialized view and incremental checkpoint capabilities in `system-manifest.json` are now `available`, and compiled `state/*.json` outputs are validated against executable Draft 2020-12 JSON Schemas in `schemas/*.schema.json` (`system-manifest.schema.json`, `canonical-projects.schema.json`, `project-capsule.schema.json`, `review-queue.schema.json`, `changes.schema.json`, plus `project-ledger-sidecar.schema.json`). Agents must prefer this executable capability map over inference from design prose.
+All Wave 1–5 materialized view and incremental checkpoint capabilities in `system-manifest.json` are now `available`, and compiled `state/*.json` outputs plus committed lineage/sidecar declarations are validated against executable Draft 2020-12 JSON Schemas in `schemas/*.schema.json` (`system-manifest.schema.json`, `canonical-projects.schema.json`, `project-capsule.schema.json`, `review-queue.schema.json`, `changes.schema.json`, `project-lineage.schema.json`, and `project-ledger-sidecar.schema.json`). Agents must prefer this executable capability map over inference from design prose.
 
 ## 1.5 New semantic state vocabulary
 
@@ -834,7 +834,7 @@ Contents (bounded within `16 KiB` per capsule via `budget`):
 - `schema_version`, `compiler_version`, `run_id`, `compiled_at`, `as_of`
 - `canonical_project_id`, `project_key`, `display_name`, `aliases[]`, `purpose`, `canonical_url`, `normalized_remotes[]`, `identity_anchor`, `resolved_fields`
 - `gbrain_source_slug` and `gbrain` (`state`, `source_slug`, `fallback_source_slug`, `project_slug`, `page_key`, `match_basis`, `matched_observation_id`, optional `disambiguated_from`)
-- `ctx` (`state`: `available` | `absent` | `invalid`, `source_format`: `skeleton_json` | `fleet_capsule_json` | `tier2_ctx_dir` | `tier1_context_md`, `observation_id`, `artifact_path`, `structural_hash`, `boundary_doc_hash`, `total_files`, `languages`, `entrypoints[]`, `authority_boundaries[]`, `subsystems[]`, `subsystem_count`, `subsystems_truncated`)
+- `ctx` (`state`: `available` | `absent` | `invalid`, `source_format`: `skeleton_json` | `fleet_capsule_json` | `tier2_ctx_dir` | `tier1_context_md` | `compiled_structural_scan`, `observation_id`, `artifact_path`, `structural_hash`, `boundary_doc_hash`, `total_files`, `languages`, `entrypoints[]`, `authority_boundaries[]`, `subsystems[]`, `subsystem_count`, `subsystems_truncated`)
 - `freshness` (`state`, `input_observed_at`, `content_as_of`, `content_as_of_basis`, `available_observation_count`, `unavailable_observation_count`)
 - `preferred_location` (`state`: `resolved` | `inventory_only` | `unavailable`, `observation_id`, `source_id`, `source_class`, `machine_name`, `location`, `confidence`, `reason_codes[]`, `git_drift`, `warning_codes[]`, `warnings[]`, `explanation`)
 - `warnings[]` (top-level git working-tree drift and `stale_sidecar` warnings for `machina` / `homelab` pre-spawn checks, e.g. `"warning: local main is 20 commits behind origin/main"` or `"warning: stale_sidecar: declared commit 'ef38aca' in .project-ledger.json lags live HEAD e6c8007ad7dd"`)
@@ -906,7 +906,7 @@ summary                 source_count, hit_source_count, partial_source_count, mi
 sources                 map of source_id -> per-source checkpoint & candidate cache
 ```
 
-Unlike Wave 1's shallow `probe_fingerprint`, `checkpoint_fingerprint` hashes effective source/default configuration, pure-Python `.git` ref/HEAD/config state (including gitfile worktrees), `.obsidian` presence, `README` and sidecar bytes, and bounded descendant tree `(rel_path, st_mtime_ns, st_size)` state so unchanged candidates skip `git` subprocess bursts while preserving byte-identical compatibility entries. `ledger refresh --full-scan` bypasses and refreshes the checkpoint file.
+Unlike Wave 1's shallow `probe_fingerprint`, `checkpoint_fingerprint` uses a single-pass `os.scandir` traversal (`U4`) hashing effective source/default configuration, pure-Python `.git` ref/HEAD/index/config state (including gitfile worktrees), `.machina/state.json`, `.ctx/`, `.obsidian`, `README` and sidecar bytes, and bounded descendant tree `(rel_path, st_mtime_ns, st_size)` state alongside source-level `inventory_policy` artifact stat signatures and compile-stage caches (`sidecar_envelope`, `git_drift`, `ctx_raw_skeleton`) so warm refreshes spawn zero subprocesses while preserving byte-identical compatibility entries. `ledger refresh --full-scan` bypasses and refreshes the checkpoint file.
 
 ---
 
@@ -935,7 +935,7 @@ Examples:
 
 # 5. Identity invariants
 
-1. `canonical_project_id` will be immutable and not derived from path/name/display formatting.
+1. `canonical_project_id` is pinned durably in `registry/project-lineage.json` (`schemas/project-lineage.schema.json`, `ledger/lineage.py`, `ledger lineage [--sync|--check]`, `U3`) so it remains immutable across remote additions, GitHub repository renames, merge absorptions, and `state/` wipes, with superseded anchor IDs preserved as `historical_canonical_id` referents.
 2. `project_key` is a human-readable alias, not canonical identity.
 3. observation IDs and canonical IDs are different namespaces.
 4. remotes/URLs/paths/names are identity evidence and aliases, not sufficient universal identity.

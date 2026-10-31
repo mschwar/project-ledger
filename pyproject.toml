@@ -12,6 +12,7 @@ dependencies = []
 
 [project.scripts]
 ledger = "ledger.cli:main"
+ledger-mcp = "ledger.mcp_server:main"
 
 [tool.setuptools.packages.find]
 include = ["ledger*"]

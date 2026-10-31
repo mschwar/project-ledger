@@ -26,16 +26,16 @@ config
 The `ledger/` package now adds:
 
 ```text
-compatibility observations + incremental source/candidate checkpoints (state/source-checkpoints.json)
+compatibility observations + single-pass scandir source/candidate/compile checkpoints (state/source-checkpoints.json)
  -> stable source/snapshot/observation identity
  -> source probes/health + git working-tree drift
  -> typed observations
- -> exact normalized remote identity + durable identity decisions + frontier zero-shot triage
- -> canonical projects + review queue + GBrain cross-links
- -> bounded project capsules + preferred-location resolution + human canonical view
- -> semantic run snapshots (state/runs/) + semantic change feed (state/changes.json)
+ -> exact normalized remote identity + durable identity decisions + immutable project lineage registry (registry/project-lineage.json) + frontier zero-shot triage
+ -> canonical projects + review queue + GBrain cross-links + idempotent GBrain reality-block projector (ledger sync-gbrain)
+ -> bounded project capsules (with read-only structural ctx synthesis + Machina continuity) + preferred-location resolution + human canonical view
+ -> header-indexed semantic run snapshots (state/runs/) + semantic change feed (state/changes.json)
  -> system manifest
- -> ledger orient / sources / resolve / show / locate / explain / review / changes
+ -> ledger CLI + stdlib read-only MCP stdio server (ledger-mcp / ledger mcp): orient / sources / resolve / show / locate / explain / review / changes / lineage / sync-gbrain / mcp
 ```
 
 The identity layer is intentionally conservative. Exact normalized repository remote is the only automatic merge rule. Names/project-key hints are referents, not identity authority. Explicit committed decisions can merge/split/reject/alias, assign a canonical human key, and supersede a prior decision.

@@ -1,11 +1,52 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
 from .contracts import SUPPORTED_DISCOVERY_MODES
 from .ids import digest_json, normalize_locator, path_digest, source_id_for
+
+PACKAGE_REPO_ROOT = Path(__file__).resolve().parents[1]
+_LEDGER_STATE_MARKERS = (
+    "system-manifest.json",
+    "canonical-projects.json",
+    "observations.json",
+    "changes.json",
+    "review-queue.json",
+)
+
+
+def default_workspace_root(cwd: Path | None = None) -> Path:
+    """Resolve the active Project Ledger workspace root for zero-config CLI/MCP calls.
+
+    Precedence:
+      1. ``PROJECT_LEDGER_HOME`` environment variable when non-empty.
+      2. ``cwd`` when ``cwd/ledger_config.json`` or any compiled ``cwd/state/<marker>`` exists.
+      3. ``PACKAGE_REPO_ROOT`` when ``PACKAGE_REPO_ROOT/ledger_config.json`` exists.
+      4. ``cwd`` fallback.
+    """
+    env_home = os.environ.get("PROJECT_LEDGER_HOME", "").strip()
+    if env_home:
+        return Path(env_home).expanduser().resolve()
+    active_cwd = (cwd or Path.cwd()).resolve()
+    if (active_cwd / "ledger_config.json").is_file() or any(
+        (active_cwd / "state" / marker).is_file() for marker in _LEDGER_STATE_MARKERS
+    ):
+        return active_cwd
+    if (PACKAGE_REPO_ROOT / "ledger_config.json").is_file():
+        return PACKAGE_REPO_ROOT
+    return active_cwd
+
+
+def default_workspace_path(rel_path: str, cwd: Path | None = None) -> str:
+    """Return ``rel_path`` relative to CWD when CWD is a ledger workspace, else anchored to workspace root."""
+    active_cwd = (cwd or Path.cwd()).resolve()
+    root = default_workspace_root(active_cwd)
+    if root == active_cwd:
+        return rel_path
+    return str(root / rel_path)
 
 
 class LedgerConfigError(ValueError):

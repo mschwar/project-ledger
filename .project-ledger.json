@@ -13,8 +13,8 @@
   "repo_name": "project-ledger",
   "shared": true,
   "storage_scope": "shared",
-  "last_session_at": "2026-10-31T20:03:00Z",
-  "last_session_summary": "Closed all 2026-10-31 repo audit gaps across PL-GAP-CLOSEOUT-01..03 (PRs #30-#32): fixed gbrain_pages.py git_facts rendering (G1) and claims.py absent-sidecar claim fabrication (G2), suppressed shadowed /central/projects symlinks (G6), added read-only .machina/state.json continuity ingestion (G4), historical_canonical_id lineage across anchor upgrades (G5), compile-stage checkpoint caching + --no-optional-locks + bucketed identity evidence scoring (G3), and pyproject.toml + ruff check gate + executable Draft 2020-12 schemas/*.schema.json + full doc reconciliation & WQ-1..3 cross-repo work queue (G7).",
-  "next_step": "Keep 15m incremental and daily full-scan homelab discovery watchdog timers active and execute cross-repo work queue items WQ-1..WQ-3 (external stale sidecar cleanup, fleet-wide ctx rollout, and thin read-only MCP wrapper) in their owning repositories.",
+  "last_session_at": "2026-10-31T21:35:00Z",
+  "last_session_summary": "Delivered all 5 Strategic Unlocks (U1-U5) across PL-STRATEGIC-UNLOCK-01..03 (PRs #34-#36) after closing all audit gaps (G1-G7): durable immutable canonical_project_id lineage registry (registry/project-lineage.json + ledger lineage, U3), end-to-end read-only .machina/state.json continuity projection across capsules/GBrain/explain/human_view (U1), pure-Python read-only compiled_structural_scan ctx synthesis activating 166/172 capsules with zero target writes (U2), single-pass scandir zero-subprocess warm refresh (~1.98s CPU across 14 sources and 224 candidates, U4), and installable global CLI + stdlib read-only MCP stdio server (ledger-mcp / ledger mcp, U5).",
+  "next_step": "Keep 15m incremental and daily full-scan homelab discovery watchdog timers active and execute external cross-repo queue items WQ-1 (12 external May 19 sidecars under Law 10), WQ-2 (optional upstream context-project Tier-2 narrative enrichment), and WQ-4 (homelab agent-substrate MCP harness registration for ledger-mcp).",
   "last_push_at": ""
 }

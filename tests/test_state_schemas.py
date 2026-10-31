@@ -166,6 +166,7 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
         parsed = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
         self.assertEqual(parsed["project"]["name"], "project-ledger")
         self.assertEqual(parsed["project"]["scripts"]["ledger"], "ledger.cli:main")
+        self.assertEqual(parsed["project"]["scripts"]["ledger-mcp"], "ledger.mcp_server:main")
         self.assertIn("F", parsed["tool"]["ruff"]["lint"]["select"])
 
         exported = getattr(build_ledger, "__all__", None)
