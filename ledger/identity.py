@@ -299,11 +299,17 @@ def _decision_observation_ids(decision: dict) -> list[str]:
     raise ValueError(f"Unsupported identity decision type: {decision_type}")
 
 
-def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple[dict, dict]:
+def compile_identity(
+    observations: list[dict],
+    decisions_payload: dict,
+    *,
+    lineage_payload: dict | None = None,
+) -> tuple[dict, dict]:
     # Imported lazily to avoid a module-load cycle: evidence.py imports identity.py's
     # observation_facts, which must be fully defined before evidence is imported here.
     from .evidence import project_identity_evidence
     from .gbrain import disambiguate_project_gbrain_links, resolve_gbrain_link
+    from .lineage import resolve_lineage_for_components
 
     by_id = {str(item.get("observation_id", "")): item for item in observations}
     if "" in by_id or len(by_id) != len(observations):
@@ -521,6 +527,7 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             for remote in facts[obs_id]["remotes"]:
                 remote_to_memberships.setdefault(remote, set()).add("|".join(member_ids))
 
+    component_descriptors: list[dict] = []
     for members in uf.components():
         member_ids = sorted(members)
         remotes = sorted({remote for obs_id in member_ids for remote in facts[obs_id]["remotes"]})
@@ -550,7 +557,34 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
             anchor_kind = "observation"
             anchor_value = member_ids[0]
 
-        canonical_project_id = stable_id("prj", anchor_kind, anchor_value)
+        computed_anchor_id = stable_id("prj", anchor_kind, anchor_value)
+        component_descriptors.append(
+            {
+                "members": members,
+                "member_ids": member_ids,
+                "remotes": remotes,
+                "unique_remotes": unique_remotes,
+                "key_hints": key_hints,
+                "names": names,
+                "merge_decision_ids": merge_decision_ids,
+                "anchor_kind": anchor_kind,
+                "anchor_value": anchor_value,
+                "computed_anchor_id": computed_anchor_id,
+            }
+        )
+
+    lineage_resolutions = resolve_lineage_for_components(component_descriptors, lineage_payload)
+
+    for comp, (canonical_project_id, lineage_hist_refs) in zip(
+        component_descriptors, lineage_resolutions, strict=True
+    ):
+        member_ids = comp["member_ids"]
+        remotes = comp["remotes"]
+        key_hints = comp["key_hints"]
+        names = comp["names"]
+        merge_decision_ids = comp["merge_decision_ids"]
+        anchor_kind = comp["anchor_kind"]
+        anchor_value = comp["anchor_value"]
         # An operator-approved canonical_key overrides the auto-derived project_key.
         canonical_key_decision = next(
             (
@@ -730,6 +764,7 @@ def compile_identity(observations: list[dict], decisions_payload: dict) -> tuple
                                 "basis": "alias_normalized_remote_anchor",
                             }
                         )
+        referents.extend(lineage_hist_refs)
 
         # Stable de-duplication without throwing away why a referent exists.
         seen_refs: set[tuple[str, str]] = set()
@@ -1045,14 +1080,21 @@ def materialize_identity(
     sources: list[dict] | None = None,
     input_observed_at: str | None = None,
     git_drift_resolver: Callable[[dict, dict], dict] | None = None,
+    lineage_path: Path | None = None,
 ) -> tuple[dict, dict]:
     from .capsules import materialize_capsules
     from .evidence import build_identity_evidence
+    from .lineage import load_project_lineage, resolve_lineage_path
 
     state_dir = state_dir.resolve()
     state_dir.mkdir(parents=True, exist_ok=True)
     decisions = load_identity_decisions(decisions_path)
-    canonical, reviews = compile_identity(observations, decisions)
+    effective_lineage_path, lineage_required = resolve_lineage_path(
+        decisions_path=decisions_path,
+        lineage_path=lineage_path,
+    )
+    lineage_payload = load_project_lineage(effective_lineage_path, required=lineage_required)
+    canonical, reviews = compile_identity(observations, decisions, lineage_payload=lineage_payload)
     _enrich_historical_project_ids_from_state(canonical, state_dir)
     canonical.update({"run_id": run_id, "compiled_at": compiled_at})
     reviews.update({"run_id": run_id, "compiled_at": compiled_at})

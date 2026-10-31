@@ -15,6 +15,7 @@ from .config import LedgerConfigError, describe_sources, read_config, validate_c
 from .explain import explain_payload
 from .gbrain_pages import sync_gbrain_pages
 from .identity import resolve_payload
+from .lineage import lineage_status_payload
 from .triage import approve_candidate_decisions, review_payload
 
 
@@ -26,6 +27,11 @@ def _add_compile_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--config", default="ledger_config.json")
     parser.add_argument("--state-dir", default="state")
     parser.add_argument("--identity-decisions", default="registry/identity-decisions.json")
+    parser.add_argument(
+        "--project-lineage",
+        default=None,
+        help="Optional durable project lineage registry (defaults to sibling project-lineage.json next to --identity-decisions when present).",
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -175,6 +181,29 @@ def _parser() -> argparse.ArgumentParser:
         help="gbrain CLI executable name or path (default: gbrain).",
     )
     sync_gbrain.add_argument("--json", action="store_true")
+
+    lineage = sub.add_parser(
+        "lineage",
+        help="Inspect, check, or sync the durable canonical_project_id lineage registry (registry/project-lineage.json).",
+    )
+    lineage.add_argument("--state-dir", default="state")
+    lineage.add_argument(
+        "--project-lineage",
+        default="registry/project-lineage.json",
+        help="Path to durable project lineage registry (default: registry/project-lineage.json).",
+    )
+    lineage_mode = lineage.add_mutually_exclusive_group()
+    lineage_mode.add_argument(
+        "--sync",
+        action="store_true",
+        help="Ratchet and persist registry/project-lineage.json from compiled state/canonical-projects.json.",
+    )
+    lineage_mode.add_argument(
+        "--check",
+        action="store_true",
+        help="Exit non-zero (code 5) if registry/project-lineage.json is out of sync with compiled state.",
+    )
+    lineage.add_argument("--json", action="store_true")
     return parser
 
 
@@ -189,6 +218,7 @@ def _compile_from_paths(
         compat_output_path=input_json,
         state_dir=Path(args.state_dir),
         identity_decisions_path=Path(args.identity_decisions),
+        lineage_path=Path(args.project_lineage) if getattr(args, "project_lineage", None) else None,
         use_checkpoint_compile_cache=use_checkpoint_compile_cache,
     )
 
@@ -504,6 +534,26 @@ def main(argv: list[str] | None = None) -> int:
                     f"created={payload['created_count']} updated={payload['updated_count']} "
                     f"unchanged={payload['unchanged_count']} ingest={payload['ingest']['status']}"
                 )
+            return 0
+
+        if args.command == "lineage":
+            payload = lineage_status_payload(
+                state_dir=Path(args.state_dir),
+                lineage_path=Path(args.project_lineage),
+                sync=bool(args.sync),
+            )
+            if args.json:
+                _print_json(payload)
+            else:
+                print(
+                    f"lineage ({payload['mode']}): in_sync={payload['in_sync']} "
+                    f"compiled={payload['compiled_project_count']} "
+                    f"pinned={payload['lineage_project_count']} "
+                    f"added={payload['added_count']} updated={payload['updated_count']} "
+                    f"absorbed={payload['absorbed_count']}"
+                )
+            if args.check and not payload["in_sync"]:
+                return 5
             return 0
 
         manifest = load_manifest(Path(args.state_dir))

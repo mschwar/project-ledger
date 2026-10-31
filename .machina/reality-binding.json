@@ -11,7 +11,7 @@
     "behind_count": 0,
     "dirty": false,
     "head_branch": "main",
-    "head_commit": "48a91a913adb716d0d696836946a1ca4f55e4d61",
+    "head_commit": "8a833652870b188dadcd31fbe4811322113b13ab",
     "main_behind_count": null,
     "state": "clean",
     "upstream_ref": "origin/main",

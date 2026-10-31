@@ -1,0 +1,2272 @@
+{
+  "projects": [
+    {
+      "canonical_project_id": "prj_02566df07aa8fe9096960e71",
+      "historical_canonical_ids": [
+        "prj_b67a0fa807328dbf5da7408d"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/brain-dump"
+      ],
+      "observation_ids": [
+        "obs_ca9ce6ad2110d6be80373c76"
+      ],
+      "project_key_hint": "github.com/mschwar/brain-dump"
+    },
+    {
+      "canonical_project_id": "prj_053ec738563ca7cf36b8f413",
+      "historical_canonical_ids": [
+        "prj_16f204c08bbe54aea973b8c3"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/janus"
+      ],
+      "observation_ids": [
+        "obs_eb5f4e93ccc2c4309fc3032b"
+      ],
+      "project_key_hint": "github.com/mschwar/janus"
+    },
+    {
+      "canonical_project_id": "prj_07d568909de286451b4c30f8",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_431e86d7492ab9aca7abb53c"
+      ],
+      "project_key_hint": "lists"
+    },
+    {
+      "canonical_project_id": "prj_07fafe7e94e17381f3f34b2b",
+      "historical_canonical_ids": [
+        "prj_b0743da813b8a31b32352739"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/3813-patio"
+      ],
+      "observation_ids": [
+        "obs_4337affe4a80ea5fe52130eb"
+      ],
+      "project_key_hint": "github.com/mschwar/3813-patio"
+    },
+    {
+      "canonical_project_id": "prj_087e35c78057018a92c6a0ac",
+      "historical_canonical_ids": [
+        "prj_3fd5f22c8c058b83c3783b48",
+        "prj_a075cd8f96c9f18d16d10ed1",
+        "prj_f17c25bf1d50cc6f17d935bd"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_slopvault_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/slopvault"
+      ],
+      "observation_ids": [
+        "obs_6b6abeb67481b130de3285d9",
+        "obs_a4f6324981613ac5091b065b"
+      ],
+      "project_key_hint": "github.com/mschwar/slopvault"
+    },
+    {
+      "canonical_project_id": "prj_0b7be842df3dba19eb7c8dc6",
+      "historical_canonical_ids": [
+        "prj_cad44a11c242337013cfd6ae"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/monroe-empire"
+      ],
+      "observation_ids": [
+        "obs_8a5b7dacc6e5b0c120ee47cf"
+      ],
+      "project_key_hint": "github.com/mschwar/monroe-empire"
+    },
+    {
+      "canonical_project_id": "prj_0b7db371a034bccf12b7bc84",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_ca2d61218548359129f3681c"
+      ],
+      "project_key_hint": "scratch"
+    },
+    {
+      "canonical_project_id": "prj_0dfe748f12f1d8d4dc330bc2",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_c18e7b714e0403ee26f65122"
+      ],
+      "project_key_hint": "nanochat"
+    },
+    {
+      "canonical_project_id": "prj_0f924c4b1f0ce2e93c06cd04",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_8b7814d2f902347f8651c075"
+      ],
+      "project_key_hint": "csf"
+    },
+    {
+      "canonical_project_id": "prj_10baba8dc5016b72d020611c",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_ec4ed02a5dd63f2e24fd70d2"
+      ],
+      "project_key_hint": "finances"
+    },
+    {
+      "canonical_project_id": "prj_11f65b8529863e861250665b",
+      "historical_canonical_ids": [
+        "prj_29709fa93e59a333bcdfe3d8"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/central-catalog"
+      ],
+      "observation_ids": [
+        "obs_5ef7f7a30346e9d0687e0363"
+      ],
+      "project_key_hint": "github.com/mschwar/central-catalog"
+    },
+    {
+      "canonical_project_id": "prj_128f44ab22da036f0342ce72",
+      "historical_canonical_ids": [
+        "prj_4b7b9e224d5b1c1b261876b5",
+        "prj_9869858ff04c51da7b7baf50",
+        "prj_ba0e9b91928745a848614183"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_elemental_inc_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/elemental-inc"
+      ],
+      "observation_ids": [
+        "obs_30f8966f1aeb6531dbb32698",
+        "obs_a9fe172e4ff3050229fe4105"
+      ],
+      "project_key_hint": "github.com/mschwar/elemental-inc"
+    },
+    {
+      "canonical_project_id": "prj_13ab338e5352ba942ca5a257",
+      "historical_canonical_ids": [
+        "prj_162330668e0c20a034334f37"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/prompts"
+      ],
+      "observation_ids": [
+        "obs_2f29d73d48b88259acf8ac05"
+      ],
+      "project_key_hint": "github.com/mschwar/prompts"
+    },
+    {
+      "canonical_project_id": "prj_1436fd14aac2e6b847ff9b23",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_5660a15204f9565de08d88ff"
+      ],
+      "project_key_hint": "protocols"
+    },
+    {
+      "canonical_project_id": "prj_1553282b36e1c283e69cb9d1",
+      "historical_canonical_ids": [
+        "prj_2a10ce33d2b738deb8427e56",
+        "prj_9f5a1aa6187bccecc7731c67",
+        "prj_edae4bbc2cd4dd09c8c02174"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_bahai_9yr_plan_kb_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/bahai-9yr-plan-kb"
+      ],
+      "observation_ids": [
+        "obs_1302816be8f2e7b3bb819428",
+        "obs_442e7c05eec7a23a13be858a"
+      ],
+      "project_key_hint": "github.com/mschwar/bahai-9yr-plan-kb"
+    },
+    {
+      "canonical_project_id": "prj_182b38232cfb3a804eabef03",
+      "historical_canonical_ids": [
+        "prj_ffdbc265a27cb3b41185b527"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/mattdump"
+      ],
+      "observation_ids": [
+        "obs_873526f212e71f851f95a353"
+      ],
+      "project_key_hint": "github.com/mschwar/mattdump"
+    },
+    {
+      "canonical_project_id": "prj_1cb4f66a62ccfa21720282ad",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_f5bb91df6daa1c086ac71e63"
+      ],
+      "project_key_hint": "tools"
+    },
+    {
+      "canonical_project_id": "prj_214d08cd6c711f38f177d182",
+      "historical_canonical_ids": [
+        "prj_02501b048b055009e71e6a15"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/major-finder"
+      ],
+      "observation_ids": [
+        "obs_8b81c114dee547abab670d59"
+      ],
+      "project_key_hint": "github.com/mschwar/major-finder"
+    },
+    {
+      "canonical_project_id": "prj_2252e2c5948b6c262fbb43fb",
+      "historical_canonical_ids": [
+        "prj_7eb4df7ba00ae3ad9deb8a68"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/learning-substrate-programme"
+      ],
+      "observation_ids": [
+        "obs_4465c103e0a6cf2035c2712a"
+      ],
+      "project_key_hint": "github.com/mschwar/learning-substrate-programme"
+    },
+    {
+      "canonical_project_id": "prj_23f2c73f38355d03120c024d",
+      "historical_canonical_ids": [
+        "prj_d7b1f3287f262f2232a85225"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/lighthouse"
+      ],
+      "observation_ids": [
+        "obs_805e756e001c6a7b7b8c1527"
+      ],
+      "project_key_hint": "github.com/mschwar/lighthouse"
+    },
+    {
+      "canonical_project_id": "prj_2851200eee73abf499fe81f3",
+      "historical_canonical_ids": [
+        "prj_5f4d733de74705fc8418e56a"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/joy"
+      ],
+      "observation_ids": [
+        "obs_d0d0da5c5ecbd27d2b20be1c"
+      ],
+      "project_key_hint": "github.com/mschwar/joy"
+    },
+    {
+      "canonical_project_id": "prj_2ac6c52056150f03781bfe7e",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_7224b2c4900aadfe6b74fd38"
+      ],
+      "project_key_hint": "open-higgsfield-ai-open-source-alternative-to-higgsfield-ai"
+    },
+    {
+      "canonical_project_id": "prj_30e6d58cf0a5fa05d37fa05c",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_bda6514c27ca68cc6986fed4"
+      ],
+      "project_key_hint": "repos"
+    },
+    {
+      "canonical_project_id": "prj_36613bd3157503a136a05d0a",
+      "historical_canonical_ids": [
+        "prj_9960e2cf067708fdacad2079"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/edifice"
+      ],
+      "observation_ids": [
+        "obs_cabe78d4c78dbd6759d86f6a"
+      ],
+      "project_key_hint": "github.com/mschwar/edifice"
+    },
+    {
+      "canonical_project_id": "prj_376c0ba59573e44b58370d74",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_f600fe76d48e273577420ea0"
+      ],
+      "project_key_hint": "prompts"
+    },
+    {
+      "canonical_project_id": "prj_37e891daa343cfc5011ed7c1",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_cdda04ed7664373cba3855ac"
+      ],
+      "project_key_hint": "sigil"
+    },
+    {
+      "canonical_project_id": "prj_38c79958d4938febf0f92938",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_cae9c94d67c55188aae132e2"
+      ],
+      "project_key_hint": "elemental"
+    },
+    {
+      "canonical_project_id": "prj_3988fba6a0c8cf990a577bb8",
+      "historical_canonical_ids": [
+        "prj_346a7f41b0310d4c7dd4a06d",
+        "prj_5103be49c79bbe4e9e32f130",
+        "prj_af1e46c3544242f8636fae94",
+        "prj_d7e751ce6c6e5addab48aca5"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_homelab_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/homelab"
+      ],
+      "observation_ids": [
+        "obs_b4d97e0f5318ed3ba8d08f11",
+        "obs_cc508b56483db8d8e146107a",
+        "obs_f0c43e37fa8e90f8dafd9d52"
+      ],
+      "project_key_hint": "homelab"
+    },
+    {
+      "canonical_project_id": "prj_3a7a83ad61f84c458b6f6031",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_dc904b81b0be537dbf48fa43"
+      ],
+      "project_key_hint": "transcript-processing"
+    },
+    {
+      "canonical_project_id": "prj_3c2b6a3a48403103e8b34093",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_8cb2d3292fa2d7b2a904b432"
+      ],
+      "project_key_hint": "lit"
+    },
+    {
+      "canonical_project_id": "prj_3c8ff97f5ace96cb9cfd8240",
+      "historical_canonical_ids": [
+        "prj_41364a4f3f57f5799c2bd585"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/crawler"
+      ],
+      "observation_ids": [
+        "obs_92f1051c3fb6865c43c52c1c"
+      ],
+      "project_key_hint": "github.com/mschwar/crawler"
+    },
+    {
+      "canonical_project_id": "prj_404460afdad6c32784b31d9a",
+      "historical_canonical_ids": [
+        "prj_aa4b73744c87cc53f58a6bfe"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/gemforge"
+      ],
+      "observation_ids": [
+        "obs_a8b0b9b67cd9465769239b4a"
+      ],
+      "project_key_hint": "github.com/mschwar/gemforge"
+    },
+    {
+      "canonical_project_id": "prj_41dee96fa29a0a0aaa0ed735",
+      "historical_canonical_ids": [
+        "prj_010f11692406727dbcc355e9",
+        "prj_0819e9bd2a8cb3ab7fe3b613",
+        "prj_91ec930e0ecd21d69e48897c"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_cpr_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/cpr"
+      ],
+      "observation_ids": [
+        "obs_2d5bcf2d6b2e33e60752bedd",
+        "obs_e7327884d5a94c970dd1ff50"
+      ],
+      "project_key_hint": "github.com/mschwar/cpr"
+    },
+    {
+      "canonical_project_id": "prj_439cfaaf47b412df19c603b5",
+      "historical_canonical_ids": [
+        "prj_e0660b022943dd29d469c353"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/praxis-kit"
+      ],
+      "observation_ids": [
+        "obs_45cf59da00fe80e1253359fa"
+      ],
+      "project_key_hint": "github.com/mschwar/praxis-kit"
+    },
+    {
+      "canonical_project_id": "prj_43dff85110e8a0dac44047ed",
+      "historical_canonical_ids": [
+        "prj_4b1764cc83bb2b28854328ba",
+        "prj_5d41bb9d7e112fda96018dfa"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/gamma-steamdb"
+      ],
+      "observation_ids": [
+        "obs_f80eddc0612dc7f9f2d938d2"
+      ],
+      "project_key_hint": "github.com/mschwar/gamma-steamdb"
+    },
+    {
+      "canonical_project_id": "prj_4a2531d95ac63af942b0b23f",
+      "historical_canonical_ids": [
+        "prj_8049ed1ad2ec29daaa562c46"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/idea-forge"
+      ],
+      "observation_ids": [
+        "obs_49a11ddae0a2b8bb077228f4"
+      ],
+      "project_key_hint": "github.com/mschwar/idea-forge"
+    },
+    {
+      "canonical_project_id": "prj_4a37645c8c32b3116e380734",
+      "historical_canonical_ids": [
+        "prj_1e4a41f82b3a1d00c425c51d",
+        "prj_c73a8ef455a823de7e7f72f3",
+        "prj_cb0c81d13d622b69090a8cc1"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_substrate_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/substrate"
+      ],
+      "observation_ids": [
+        "obs_86f186797eb3a2c0080e84ad",
+        "obs_f2c910768f3d82e82d55dd34"
+      ],
+      "project_key_hint": "substrate"
+    },
+    {
+      "canonical_project_id": "prj_4b5cc516afde1cdd3a601cd8",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_7b8612ab06d408f30c865354"
+      ],
+      "project_key_hint": "div-align-center"
+    },
+    {
+      "canonical_project_id": "prj_4bda36895c4e722e54743856",
+      "historical_canonical_ids": [
+        "prj_9f0482209295f3c40920f84e"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/brain"
+      ],
+      "observation_ids": [
+        "obs_4e640f698b6d8a53cc579fc2"
+      ],
+      "project_key_hint": "github.com/mschwar/brain"
+    },
+    {
+      "canonical_project_id": "prj_4be5f6cdda690b7124cba6d9",
+      "historical_canonical_ids": [
+        "prj_41a3c73cd371fd67209a55a2"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/learningcircuit/local-deep-research"
+      ],
+      "observation_ids": [
+        "obs_da1b740169276cf503924486"
+      ],
+      "project_key_hint": "github.com/LearningCircuit/local-deep-research"
+    },
+    {
+      "canonical_project_id": "prj_5026a5d89e372f8c56ab9202",
+      "historical_canonical_ids": [
+        "prj_ab8a15dcafc88c2260c0735a"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/money-schema"
+      ],
+      "observation_ids": [
+        "obs_d8e87fe92a3cf27135d226d5"
+      ],
+      "project_key_hint": "github.com/mschwar/money-schema"
+    },
+    {
+      "canonical_project_id": "prj_507e70f6b8cff06bd3b7d1a5",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_e186ac1ac5356b1f2b490936"
+      ],
+      "project_key_hint": "google-drive:open-higgsfield-ai"
+    },
+    {
+      "canonical_project_id": "prj_5261cea54906031264c553a6",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_8cf9977fb05e8e84accee7cf"
+      ],
+      "project_key_hint": "isabel"
+    },
+    {
+      "canonical_project_id": "prj_52e8bb506fbb31e2391a7aeb",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_612b1fb5fcdd93671c517b3b"
+      ],
+      "project_key_hint": "p-align-center"
+    },
+    {
+      "canonical_project_id": "prj_550d6f7e1c4b149cd7cc10cd",
+      "historical_canonical_ids": [
+        "prj_8cd71d93ea59c0e419cc7249"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/federation"
+      ],
+      "observation_ids": [
+        "obs_79cac421e753e5f38c9c895d"
+      ],
+      "project_key_hint": "github.com/mschwar/federation"
+    },
+    {
+      "canonical_project_id": "prj_569e7ae9edb5cc643a801997",
+      "historical_canonical_ids": [
+        "prj_570560369369668f2edc5df5"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/dedupe-engine-repo"
+      ],
+      "observation_ids": [
+        "obs_3b8613379e4d931841f230e4"
+      ],
+      "project_key_hint": "github.com/mschwar/dedupe-engine-repo"
+    },
+    {
+      "canonical_project_id": "prj_585923c92066730f7a7c6f24",
+      "historical_canonical_ids": [
+        "prj_55ed075f0476d3785beb0f82"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/sdlc"
+      ],
+      "observation_ids": [
+        "obs_099026ac73b2981eaf07faea"
+      ],
+      "project_key_hint": "github.com/mschwar/SDLC"
+    },
+    {
+      "canonical_project_id": "prj_5a62ef1e9f26f477aad6812e",
+      "historical_canonical_ids": [
+        "prj_f71af76e3b8cf3b6500eecc2"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/plots"
+      ],
+      "observation_ids": [
+        "obs_f6ce0ac9ed48696eb25f75a0"
+      ],
+      "project_key_hint": "plots"
+    },
+    {
+      "canonical_project_id": "prj_5f20551f04ceecc0cb3288a9",
+      "historical_canonical_ids": [
+        "prj_2084c8aa8d76a2b22fa54152"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/ai-onboard"
+      ],
+      "observation_ids": [
+        "obs_05f1f549a3f605133c5b7f07"
+      ],
+      "project_key_hint": "github.com/mschwar/ai-onboard"
+    },
+    {
+      "canonical_project_id": "prj_5fbade4e289d229893c07658",
+      "historical_canonical_ids": [
+        "prj_74b4088cad71b4da4a5e7181"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/repo-census"
+      ],
+      "observation_ids": [
+        "obs_e4c36cc24efc4a7f476e9a5b"
+      ],
+      "project_key_hint": "github.com/mschwar/repo-census"
+    },
+    {
+      "canonical_project_id": "prj_60e0dcf06fbb09be7594475f",
+      "historical_canonical_ids": [
+        "prj_9b5532a866ac7e05a0a84011"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/machina"
+      ],
+      "observation_ids": [
+        "obs_de5b7bbf1b3652a6c20ba9d9"
+      ],
+      "project_key_hint": "github.com/mschwar/machina"
+    },
+    {
+      "canonical_project_id": "prj_61469b2729823a17bfb0b3e8",
+      "historical_canonical_ids": [
+        "prj_349eb3d5383dd7fa24a290de"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/intone"
+      ],
+      "observation_ids": [
+        "obs_b4018c465cb299a32dd09dc6"
+      ],
+      "project_key_hint": "github.com/mschwar/intone"
+    },
+    {
+      "canonical_project_id": "prj_628f79ae56c02781f3290fb2",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_2f64864b600fa315b0c64eb3"
+      ],
+      "project_key_hint": "vibecoding"
+    },
+    {
+      "canonical_project_id": "prj_62d769317e4d713b9b7065c7",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_697a38a7e356bdb82731bb09"
+      ],
+      "project_key_hint": "northstar"
+    },
+    {
+      "canonical_project_id": "prj_63bee4da6e3735d5f745bb50",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_07c52c5e46ccc4b795ba96e9"
+      ],
+      "project_key_hint": "hermes-maximization"
+    },
+    {
+      "canonical_project_id": "prj_671db4a12c3a1050f4b2be75",
+      "historical_canonical_ids": [
+        "prj_f017be418a087f8a233ba6e1"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/ai-onboarding-for-friends"
+      ],
+      "observation_ids": [
+        "obs_520d34c0dfe57c79794cd67a"
+      ],
+      "project_key_hint": "github.com/mschwar/ai-onboarding-for-friends"
+    },
+    {
+      "canonical_project_id": "prj_69e8e83c9627049ecd884833",
+      "historical_canonical_ids": [
+        "prj_daa38b437901b53b56ed29f7"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/aunt-natalia-daily-study-tool"
+      ],
+      "observation_ids": [
+        "obs_c3eeb65b9d33118090a5794c"
+      ],
+      "project_key_hint": "github.com/mschwar/aunt-natalia-daily-study-tool"
+    },
+    {
+      "canonical_project_id": "prj_6a4841e747babdbd52fd73bc",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_f9576ad6b8f89199fc58f36b"
+      ],
+      "project_key_hint": "paper-repo"
+    },
+    {
+      "canonical_project_id": "prj_6b6a8f138fcebb2ed5f5ca52",
+      "historical_canonical_ids": [
+        "prj_5791a9c17681d337097a5ba8",
+        "prj_790539aee2c76c6fcbc291ed",
+        "prj_8588be832eb8d7da6d019a26"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_bahai_consultation_guide_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/bahai-consultation-guide"
+      ],
+      "observation_ids": [
+        "obs_8709a2bcb7e7dcc898cfe501",
+        "obs_fa9843b912ce166c5e3fc679"
+      ],
+      "project_key_hint": "bahai-consultation-guide"
+    },
+    {
+      "canonical_project_id": "prj_6c80afa65ab099ce41098442",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_f3d70bfc7afedf2c6d5877af"
+      ],
+      "project_key_hint": "legal"
+    },
+    {
+      "canonical_project_id": "prj_6cdee63838c0b04905120c27",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_8fad621af1c531c38f3ced30"
+      ],
+      "project_key_hint": "google-drive:obsidian vault"
+    },
+    {
+      "canonical_project_id": "prj_6cedf7fa4e6470f64cb181cd",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_a66d8b6190a55b46b386e9ed"
+      ],
+      "project_key_hint": "convertwordto-pdf-1"
+    },
+    {
+      "canonical_project_id": "prj_6d61ba855ae905d6f8395a6b",
+      "historical_canonical_ids": [
+        "prj_3700f1209179b727e6193bdb",
+        "prj_3f2c6bb27ed064afbfd47de3",
+        "prj_86ebdbac43c14fc2fea99a0d"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_context_project_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/context-project"
+      ],
+      "observation_ids": [
+        "obs_671fcc1f0eb50480aacaacef",
+        "obs_f69938867fd6567892533140"
+      ],
+      "project_key_hint": "context-project"
+    },
+    {
+      "canonical_project_id": "prj_6d77b7646b2d9cbb12218a52",
+      "historical_canonical_ids": [
+        "prj_81214ff1e8ade6fbfcd50ad3",
+        "prj_da6e74a52cd3ef5838d0545c"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_gstack_merge_20261029"
+      ],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_2f867ffdd26615c4da53124e",
+        "obs_57da745a9614140c31a7c7de"
+      ],
+      "project_key_hint": "gstack"
+    },
+    {
+      "canonical_project_id": "prj_6ec6545d964ada39414abbb4",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_ff05228ec3c11e9572812dda"
+      ],
+      "project_key_hint": "foundation"
+    },
+    {
+      "canonical_project_id": "prj_6f1dd7f8e7813a3f7d5b1aa1",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_09d0bfb03842ba26c655d461"
+      ],
+      "project_key_hint": "context-graph-engine"
+    },
+    {
+      "canonical_project_id": "prj_70115ebe5d742ed7caa1666d",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_ca8175cb0649def2ab6e8e7e"
+      ],
+      "project_key_hint": "hermes-agent-self-evolution"
+    },
+    {
+      "canonical_project_id": "prj_70499bc9aac93548af1216c5",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_bffdd38ec8dbba3a7a62d6a7"
+      ],
+      "project_key_hint": "jcode"
+    },
+    {
+      "canonical_project_id": "prj_735628dc451d54e41cee4df8",
+      "historical_canonical_ids": [
+        "prj_3c0ff00a816636a08a233949",
+        "prj_ba3459b3c035805cef6e0138",
+        "prj_ed1200167710a459c8128d1f"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_lee_grapple_hook_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/lee-grapple-hook"
+      ],
+      "observation_ids": [
+        "obs_0aff3d60cd8664a1e4eba2cc",
+        "obs_602a0ce6dfff4e120af68597"
+      ],
+      "project_key_hint": "github.com/mschwar/lee-grapple-hook"
+    },
+    {
+      "canonical_project_id": "prj_767c04eec5f858d1cf36c35c",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_cb2281396faac66a8bbc910a"
+      ],
+      "project_key_hint": "agent-runtime"
+    },
+    {
+      "canonical_project_id": "prj_76e4673c426bcf0cd5c21eb5",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_12f31e75fcb8a1c226d0d430"
+      ],
+      "project_key_hint": "templates"
+    },
+    {
+      "canonical_project_id": "prj_78dcd800bcd29d3ff1af77ca",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_d82391f30baf67cf792c7c72"
+      ],
+      "project_key_hint": "bridgeai"
+    },
+    {
+      "canonical_project_id": "prj_7975f21b7527b6efc07cdab6",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_54441eb699393eb2a10b508b"
+      ],
+      "project_key_hint": "active"
+    },
+    {
+      "canonical_project_id": "prj_7de1866e9b53ee8bf854540a",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_303aee12f766a2c5475c0a03"
+      ],
+      "project_key_hint": "marketing-seo-skills-for-ai-agents"
+    },
+    {
+      "canonical_project_id": "prj_7e350b6f91e982d4155f8378",
+      "historical_canonical_ids": [
+        "prj_abd892975e67c2b959a9aa18"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/hermes-fleet-profile"
+      ],
+      "observation_ids": [
+        "obs_33b0b163510efa97fc3ad6c4"
+      ],
+      "project_key_hint": "github.com/mschwar/hermes-fleet-profile"
+    },
+    {
+      "canonical_project_id": "prj_82d7832d857fc310134fca35",
+      "historical_canonical_ids": [
+        "prj_af2e5b10653f857ada67788c"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/claude-overhaul"
+      ],
+      "observation_ids": [
+        "obs_640ac5ada3681786dec383e9"
+      ],
+      "project_key_hint": "google-drive:repos-other/claude-overhaul"
+    },
+    {
+      "canonical_project_id": "prj_831e14026242eed2dff3d61a",
+      "historical_canonical_ids": [
+        "prj_a35de6b83f74e80b5b7164c2"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/gym-bros"
+      ],
+      "observation_ids": [
+        "obs_a1afb40b12f1f37cad74bd6e"
+      ],
+      "project_key_hint": "github.com/mschwar/gym-bros"
+    },
+    {
+      "canonical_project_id": "prj_8322d1cc9be020099bd0d337",
+      "historical_canonical_ids": [
+        "prj_c9b1b3a7c03d4a8e30219ca9"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/sentinel"
+      ],
+      "observation_ids": [
+        "obs_c84baca1eff77270e562bba9"
+      ],
+      "project_key_hint": "github.com/mschwar/sentinel"
+    },
+    {
+      "canonical_project_id": "prj_833bbd995f9c327a93536f36",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_98442924feb7d449b536f425"
+      ],
+      "project_key_hint": "google-drive:misc-docs"
+    },
+    {
+      "canonical_project_id": "prj_83662fe949f68414543ccf38",
+      "historical_canonical_ids": [
+        "prj_969189979ef3e91399850420"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/lpes-cs"
+      ],
+      "observation_ids": [
+        "obs_299d91c8abac979dae5ede60"
+      ],
+      "project_key_hint": "github.com/mschwar/LPES-CS"
+    },
+    {
+      "canonical_project_id": "prj_8431ac5883e2878f9bd2f856",
+      "historical_canonical_ids": [
+        "prj_e8604ad14b51510f1885a4bf"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/pitch-perfect"
+      ],
+      "observation_ids": [
+        "obs_774c2052079fe3475f823bdc"
+      ],
+      "project_key_hint": "github.com/mschwar/pitch-perfect"
+    },
+    {
+      "canonical_project_id": "prj_86224e652991b312fac7d6fb",
+      "historical_canonical_ids": [
+        "prj_2edfd66960eb8964be39dd90"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/miscellania"
+      ],
+      "observation_ids": [
+        "obs_247ac89e7eff9bae0f0f13e2"
+      ],
+      "project_key_hint": "github.com/mschwar/miscellania"
+    },
+    {
+      "canonical_project_id": "prj_875174de71324ce29704b3d9",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_ca0b17083b70b392af7a4391"
+      ],
+      "project_key_hint": "llm-council"
+    },
+    {
+      "canonical_project_id": "prj_876f6a1815caf736ec354aef",
+      "historical_canonical_ids": [
+        "prj_574f5b07a5236e266ae8a9b4"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/reality-ledger2"
+      ],
+      "observation_ids": [
+        "obs_166b097cbf67c05309aeec8c"
+      ],
+      "project_key_hint": "github.com/mschwar/reality-ledger2"
+    },
+    {
+      "canonical_project_id": "prj_8832cf8c0c22794d302e1e37",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_a02bc94531165a1c45517705"
+      ],
+      "project_key_hint": "google-drive:url-collection"
+    },
+    {
+      "canonical_project_id": "prj_889a79ccc6fee4136d80f368",
+      "historical_canonical_ids": [
+        "prj_2bf33672527bfca93a9ba796",
+        "prj_9bd170fe18a8217af134e56e",
+        "prj_d4df28ff49b10427110a4863"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_ai_field_briefing_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/ai-field-briefing"
+      ],
+      "observation_ids": [
+        "obs_336a1d72291c2cd6101030e6",
+        "obs_ace0d02862ecdf1f216276a3"
+      ],
+      "project_key_hint": "github.com/mschwar/ai-field-briefing"
+    },
+    {
+      "canonical_project_id": "prj_896bb95160f94205dc1feb04",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_630cc55dc573365a9304b9b4"
+      ],
+      "project_key_hint": "calc"
+    },
+    {
+      "canonical_project_id": "prj_8b87b5c92dbff23afc36f8d9",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_1dd387571f25008a19c2edd7"
+      ],
+      "project_key_hint": "nanogpt"
+    },
+    {
+      "canonical_project_id": "prj_8d14c04e0a62ad084fccf416",
+      "historical_canonical_ids": [
+        "prj_1b82117ec23467421421c4e7",
+        "prj_b07cc1c331679feb7d91ca3a",
+        "prj_ea66d20365caf4f715bca0a6"
+      ],
+      "merge_decision_ids": [
+        "dec_retire_white_rabbit_merge_20261031"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/white-rabbit"
+      ],
+      "observation_ids": [
+        "obs_3f044b92e89cb88b23ad455f",
+        "obs_9ddd0040fce7668f9c3aa442"
+      ],
+      "project_key_hint": "white-rabbit"
+    },
+    {
+      "canonical_project_id": "prj_8eefea2ae63ceaedff33e14f",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_5927ec2b8a96776e6bd076b1"
+      ],
+      "project_key_hint": "google-drive:slopvault-sessions"
+    },
+    {
+      "canonical_project_id": "prj_90343f4cdd302fb752adf350",
+      "historical_canonical_ids": [
+        "prj_7e0e7a82f33d2a9b25c70d6c"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/evoauto"
+      ],
+      "observation_ids": [
+        "obs_6a5d570f839fda99c66c1462"
+      ],
+      "project_key_hint": "evoauto"
+    },
+    {
+      "canonical_project_id": "prj_9103784e2fb587e71dd5e403",
+      "historical_canonical_ids": [
+        "prj_7eef0a61a2beb6152609d8ed"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/ai-class"
+      ],
+      "observation_ids": [
+        "obs_fb992cd6027b76df305e5b49"
+      ],
+      "project_key_hint": "github.com/mschwar/ai-class"
+    },
+    {
+      "canonical_project_id": "prj_91a2b0b89e74b0a24c578ad8",
+      "historical_canonical_ids": [
+        "prj_5c55fc92c98f274ea3c3950f"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/agent05"
+      ],
+      "observation_ids": [
+        "obs_fb46d8855d0d2e8887f71b4f"
+      ],
+      "project_key_hint": "github.com/mschwar/AGENT05"
+    },
+    {
+      "canonical_project_id": "prj_921414eb93b859e13a5e4de1",
+      "historical_canonical_ids": [
+        "prj_58d1f8243cc7f701ec6fd275",
+        "prj_b03c0d0ef766e75ce7d8fc3f",
+        "prj_c716e762cf0b8e317c84eabc"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_project_eidos_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/project-eidos"
+      ],
+      "observation_ids": [
+        "obs_482dbfeae7a1a8515ce22be8",
+        "obs_b701fb9af2aadd709fab04b0"
+      ],
+      "project_key_hint": "github.com/mschwar/project-eidos"
+    },
+    {
+      "canonical_project_id": "prj_931cc4892b1682cc29c1d0dc",
+      "historical_canonical_ids": [
+        "prj_c31f9da1ad319434330dd8d1"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/xport"
+      ],
+      "observation_ids": [
+        "obs_e4c049e03ad02efccaa8bab0"
+      ],
+      "project_key_hint": "github.com/mschwar/xport"
+    },
+    {
+      "canonical_project_id": "prj_944f2e20398dd96821a51e81",
+      "historical_canonical_ids": [
+        "prj_3527fdcc092a09d1b7031af8"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/bible-homepage"
+      ],
+      "observation_ids": [
+        "obs_7d84f1375ece9dfe599eb852"
+      ],
+      "project_key_hint": "bible-homepage"
+    },
+    {
+      "canonical_project_id": "prj_94edc8dd889a0cdee824069e",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_906df7ab12aa9b049fab5602"
+      ],
+      "project_key_hint": "a-id-readme-top-a"
+    },
+    {
+      "canonical_project_id": "prj_981bd44f515a9c435684919c",
+      "historical_canonical_ids": [
+        "prj_06cf5185c976a405f7f3c899",
+        "prj_5bdaa24eb864fbd633f37b56",
+        "prj_5c4851c6fdc8aa7407409623",
+        "prj_807d1d908a41efb84d1a8d88"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_reality_ledger_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/reality-ledger"
+      ],
+      "observation_ids": [
+        "obs_d04229543f0f27e9cda304c7",
+        "obs_e78c1dfefc3786c34da9bf7a",
+        "obs_ff6d12c1314cbd63cebd7d61"
+      ],
+      "project_key_hint": "reality-ledger"
+    },
+    {
+      "canonical_project_id": "prj_9a03356ec9b2d4a17ec0723a",
+      "historical_canonical_ids": [
+        "prj_5e2d0de84cc0960b2c00fb9c"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/modelcontextprotocol/servers"
+      ],
+      "observation_ids": [
+        "obs_7a59dd9f5dfead014b644992"
+      ],
+      "project_key_hint": "github.com/modelcontextprotocol/servers"
+    },
+    {
+      "canonical_project_id": "prj_9c82490ecbe7c6323c199a95",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_881388c58447641fd052099f"
+      ],
+      "project_key_hint": "agents"
+    },
+    {
+      "canonical_project_id": "prj_9dc0900b6d17b1ea6af01583",
+      "historical_canonical_ids": [
+        "prj_a2bf1d8cc02e12247bcc9842"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/seed-bank"
+      ],
+      "observation_ids": [
+        "obs_6e2a0224dfe3386f08ce4841"
+      ],
+      "project_key_hint": "github.com/mschwar/seed-bank"
+    },
+    {
+      "canonical_project_id": "prj_9ddf139ace1b8d00797b2baf",
+      "historical_canonical_ids": [
+        "prj_1e749380e25d685169463ac8"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/initiate"
+      ],
+      "observation_ids": [
+        "obs_8ca80b05c7dc6c6014f8e9a2"
+      ],
+      "project_key_hint": "github.com/mschwar/initiate"
+    },
+    {
+      "canonical_project_id": "prj_9e900165aff4dc3a687476eb",
+      "historical_canonical_ids": [
+        "prj_6f9e6dc546857d3299b9679b",
+        "prj_af5e947f9162bda0b6ebc0fd",
+        "prj_f5cff6886cd6fc74128e6bca"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_ledger_2_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/ledger-2"
+      ],
+      "observation_ids": [
+        "obs_d975853f706afbd57e4cfc12",
+        "obs_e9c36d463cf68f1c19282287"
+      ],
+      "project_key_hint": "github.com/mschwar/ledger-2"
+    },
+    {
+      "canonical_project_id": "prj_9f01e4965f5e56c8df041914",
+      "historical_canonical_ids": [
+        "prj_4603da20c183632222b5ad35",
+        "prj_aa86bc02325f70d64b81b9e8",
+        "prj_b8d8ea9f0832587b88530129"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_prompt_refinery_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/prompt-refinery"
+      ],
+      "observation_ids": [
+        "obs_5c7642d413f1b326e5be0d11",
+        "obs_9b2b77ed032e0f7f722dcb7a"
+      ],
+      "project_key_hint": "github.com/mschwar/prompt-refinery"
+    },
+    {
+      "canonical_project_id": "prj_9fa0d8aa6a651850b261d7b3",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_cf6b6c3d2bb06a32d09dacc7"
+      ],
+      "project_key_hint": "autoresearch"
+    },
+    {
+      "canonical_project_id": "prj_9fa50eb0e98f81f555f36ac8",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_5e1a80d87c61975f867d25f1"
+      ],
+      "project_key_hint": "interpret"
+    },
+    {
+      "canonical_project_id": "prj_9fe6f129363dd15a1f2cd854",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_62a172f9fcd4ae57117a303f"
+      ],
+      "project_key_hint": "braindump"
+    },
+    {
+      "canonical_project_id": "prj_a12c14dcf290f4bff7df4743",
+      "historical_canonical_ids": [
+        "prj_e683a60bd4b4515c7c45c8e4"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/homelab-traces"
+      ],
+      "observation_ids": [
+        "obs_f201802be26839f9c9bd2f62"
+      ],
+      "project_key_hint": "github.com/mschwar/homelab-traces"
+    },
+    {
+      "canonical_project_id": "prj_a27b07c9245ae4f47600c0c4",
+      "historical_canonical_ids": [
+        "prj_8ac99ffdb4a7fee65f4b42bd"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/baha"
+      ],
+      "observation_ids": [
+        "obs_471964e7b92a3f34e7275f71"
+      ],
+      "project_key_hint": "github.com/mschwar/baha"
+    },
+    {
+      "canonical_project_id": "prj_a831a640f6fbf6a29454034a",
+      "historical_canonical_ids": [
+        "prj_73156c4c4889b0aa40089fed"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/proxy-lead"
+      ],
+      "observation_ids": [
+        "obs_948ba73d46eeab62d598233f"
+      ],
+      "project_key_hint": "github.com/mschwar/proxy-lead"
+    },
+    {
+      "canonical_project_id": "prj_a87e50380aeefd2271d1d46f",
+      "historical_canonical_ids": [
+        "prj_abc3eb93f6f46a4b333de0bb"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/homelab-reboot"
+      ],
+      "observation_ids": [
+        "obs_eaf69b0c1dd8bfbf9b1d6e76"
+      ],
+      "project_key_hint": "github.com/mschwar/homelab-reboot"
+    },
+    {
+      "canonical_project_id": "prj_aab0473bc570ce50d3b46f2d",
+      "historical_canonical_ids": [
+        "prj_d1a4dc72dccb3a3bfd3725a9"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/hermes-skills"
+      ],
+      "observation_ids": [
+        "obs_c07d4a16879ceea21e355493"
+      ],
+      "project_key_hint": "github.com/mschwar/hermes-skills"
+    },
+    {
+      "canonical_project_id": "prj_abdc77d007f6c3f2a2c3fb6e",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_8e542017ba9b3268466d9487"
+      ],
+      "project_key_hint": "vibe_brain"
+    },
+    {
+      "canonical_project_id": "prj_adbcc8f2d1749b3ca7082aa4",
+      "historical_canonical_ids": [
+        "prj_33f2cbac74f65fdc162a1ad8",
+        "prj_93a409cb68141d4ad42d2bda",
+        "prj_9a131544bfd58d5055f843f8"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_flow_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/flow"
+      ],
+      "observation_ids": [
+        "obs_0c05fef5140af5e6084b6505",
+        "obs_5c876f6fc20d9f7d7c80fc3e"
+      ],
+      "project_key_hint": "github.com/mschwar/flow"
+    },
+    {
+      "canonical_project_id": "prj_adbedb2929a89f0d0326bf48",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_bfaf15172401ac2d7befc92b"
+      ],
+      "project_key_hint": "lifestream"
+    },
+    {
+      "canonical_project_id": "prj_addb267c6583b22fb06a21d1",
+      "historical_canonical_ids": [
+        "prj_c6ee4f56c8e2c1f644642066"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/putdirectory-here"
+      ],
+      "observation_ids": [
+        "obs_526f3efd592fd2b799f87d70"
+      ],
+      "project_key_hint": "github.com/mschwar/putdirectory-here"
+    },
+    {
+      "canonical_project_id": "prj_aed481b934613a3e4f78a93b",
+      "historical_canonical_ids": [
+        "prj_12334cf3397c6a9c9283b912"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/bahai-quote-ledger"
+      ],
+      "observation_ids": [
+        "obs_d4fa8295f844b3b6ee4df8ed"
+      ],
+      "project_key_hint": "github.com/mschwar/bahai-quote-ledger"
+    },
+    {
+      "canonical_project_id": "prj_af40ef72e402445ee6601ee4",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_6dfed2d6c9c436c4b79947b9"
+      ],
+      "project_key_hint": "rewriting-project-claw-code"
+    },
+    {
+      "canonical_project_id": "prj_b0c5f7a93f3dd910422c694d",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_42646b19a4d143548cd31c53"
+      ],
+      "project_key_hint": "entropy-project"
+    },
+    {
+      "canonical_project_id": "prj_b141f109ee25d04634befd88",
+      "historical_canonical_ids": [
+        "prj_251a2bde8b22fd3244cff9fc",
+        "prj_451d491bff34aec0eab85150",
+        "prj_d50bbd1c8b2f526fe03aafb2"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_tsle_team_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/2026.tsle.team_internal-ms"
+      ],
+      "observation_ids": [
+        "obs_2611569afe37ebe344f849ce",
+        "obs_330dc8b78ee698583e0b69f0"
+      ],
+      "project_key_hint": "2026-tsle-team_internal-ms"
+    },
+    {
+      "canonical_project_id": "prj_b161109bfff2b431d0fb50e3",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_577f224af5c3f8a7d6713f4a"
+      ],
+      "project_key_hint": "directory-scope"
+    },
+    {
+      "canonical_project_id": "prj_b3a2f91ded906c914930a6dc",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_72fd2508b74a052b3b28b9eb"
+      ],
+      "project_key_hint": "projects"
+    },
+    {
+      "canonical_project_id": "prj_b6106a0e3c34a67e9b714908",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_d054eea67aaa667cd02c16f9"
+      ],
+      "project_key_hint": "bahaiwritings"
+    },
+    {
+      "canonical_project_id": "prj_b689428d9272899907f2e313",
+      "historical_canonical_ids": [
+        "prj_088277b1891b5652fa6c236e"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/scratchpad"
+      ],
+      "observation_ids": [
+        "obs_f1cc4a0ea9614633968fb373"
+      ],
+      "project_key_hint": "github.com/mschwar/scratchpad"
+    },
+    {
+      "canonical_project_id": "prj_b8be12e8f847f56d45762344",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_5548172f4b0f7618a8f2e576"
+      ],
+      "project_key_hint": "higgsfield-agent-project"
+    },
+    {
+      "canonical_project_id": "prj_bad14215b2f36c446fa0bfc9",
+      "historical_canonical_ids": [
+        "prj_d2dab9d39048db2cd86f60bc"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/watershed-land-os"
+      ],
+      "observation_ids": [
+        "obs_2d6e12dfaa35cbaf396a8e5e"
+      ],
+      "project_key_hint": "github.com/mschwar/watershed-land-os"
+    },
+    {
+      "canonical_project_id": "prj_bb2d3f2a504f80f9461f0214",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_469fbf4163f94965830431d0"
+      ],
+      "project_key_hint": "notes"
+    },
+    {
+      "canonical_project_id": "prj_bd13aaefa726453fcd54fde4",
+      "historical_canonical_ids": [
+        "prj_1682bce62a38859a7edc8e77",
+        "prj_1b686a7c4470e15cddf458dc",
+        "prj_76fe9c14b3b4601d8eeb7cd4"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_common_project_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/common-project"
+      ],
+      "observation_ids": [
+        "obs_9e2344fc75b7dbcf541df2d8",
+        "obs_d108e2975d6225f4f50ddeea"
+      ],
+      "project_key_hint": "common-project"
+    },
+    {
+      "canonical_project_id": "prj_bdc7857ae5b023de41620956",
+      "historical_canonical_ids": [
+        "prj_7ac7f2f6503d4f059b802663"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/a-standalone-zero-dependency-python-cli-tool-that-audits-dir"
+      ],
+      "observation_ids": [
+        "obs_37606e5d6120c53b0e4976c5"
+      ],
+      "project_key_hint": "github.com/mschwar/a-standalone-zero-dependency-python-cli-tool-that-audits-dir"
+    },
+    {
+      "canonical_project_id": "prj_be82384b29fd727d08f00987",
+      "historical_canonical_ids": [
+        "prj_e83f1d6c38a3e3b122f9aa80"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/gbrain-ops"
+      ],
+      "observation_ids": [
+        "obs_4b0bc1426b6e9102f29f1c7b"
+      ],
+      "project_key_hint": "github.com/mschwar/gbrain-ops"
+    },
+    {
+      "canonical_project_id": "prj_c291dd5c8f0a4bc38763714b",
+      "historical_canonical_ids": [
+        "prj_00ae556e6da176b7cb523358",
+        "prj_96523fb70d7ec351494f7b67",
+        "prj_ccba8e50d16c5e10ba26648b"
+      ],
+      "merge_decision_ids": [
+        "dec_retire_song_clean_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/song-clean"
+      ],
+      "observation_ids": [
+        "obs_84e116b893245d4e427f442d",
+        "obs_a71c0864d1426f490084f947"
+      ],
+      "project_key_hint": "song-clean"
+    },
+    {
+      "canonical_project_id": "prj_c5be7b75f4e78ae55a6e5fe0",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_e481da9f2b8066807e403a82"
+      ],
+      "project_key_hint": "relational-physics-everything-in-one-place"
+    },
+    {
+      "canonical_project_id": "prj_c5ce3cea6b8ad6fef38d131e",
+      "historical_canonical_ids": [
+        "prj_43b371820c6e84e3a882165e",
+        "prj_601dbb51d2e6ddd3ece77b78",
+        "prj_73e7945fc122f74f963f20ee"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_toned_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/toned"
+      ],
+      "observation_ids": [
+        "obs_2556e18a83891301d610b0d9",
+        "obs_ee0d284a178fec57cad06062"
+      ],
+      "project_key_hint": "github.com/mschwar/toned"
+    },
+    {
+      "canonical_project_id": "prj_c610c76dbc8c7d371b9622cb",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_e74fc19817c0c5f78dd39e36"
+      ],
+      "project_key_hint": "completed"
+    },
+    {
+      "canonical_project_id": "prj_ca4581e7a362112452b973a0",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_bc8294c078388e712d450c37"
+      ],
+      "project_key_hint": "agent-master-dump"
+    },
+    {
+      "canonical_project_id": "prj_cc3776115cbd7897cd2ab77d",
+      "historical_canonical_ids": [
+        "prj_5b624dc8f8a1922c646e1aef"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/airstream"
+      ],
+      "observation_ids": [
+        "obs_d1320d90c52b6c17f34551fd"
+      ],
+      "project_key_hint": "github.com/mschwar/airstream"
+    },
+    {
+      "canonical_project_id": "prj_cdd992d61bd4687366fd2c7a",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_002377a17b576d73f083b32c"
+      ],
+      "project_key_hint": "contexts"
+    },
+    {
+      "canonical_project_id": "prj_ce8fcfa48534ab4fbd5ab7bc",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_38b32dc4cb075a5c88a71801"
+      ],
+      "project_key_hint": "email-processing"
+    },
+    {
+      "canonical_project_id": "prj_d008ee93a15abe0d6e55fa53",
+      "historical_canonical_ids": [
+        "prj_ba435e66a43e5b0dc0cad74b"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/paperclipai/paperclip"
+      ],
+      "observation_ids": [
+        "obs_ff176558e49705dc134a002b"
+      ],
+      "project_key_hint": "github.com/paperclipai/paperclip"
+    },
+    {
+      "canonical_project_id": "prj_d22acb9dbe6c60f65de0c0dd",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_64eeb7fd050252d1199dcab4"
+      ],
+      "project_key_hint": "greymatter"
+    },
+    {
+      "canonical_project_id": "prj_d40be3cce67adf7453bd8bc8",
+      "historical_canonical_ids": [
+        "prj_387f2316bb89f679fb76848a"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/lodestone-productions"
+      ],
+      "observation_ids": [
+        "obs_70d05ae6cbf042a5fbe68eb8"
+      ],
+      "project_key_hint": "github.com/mschwar/lodestone-productions"
+    },
+    {
+      "canonical_project_id": "prj_d422741020a08efc8e61fe48",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_169e93ec6c8027d4a2209743"
+      ],
+      "project_key_hint": "blueprints"
+    },
+    {
+      "canonical_project_id": "prj_d4b8c68598423a6a28225de6",
+      "historical_canonical_ids": [
+        "prj_b5b70a9cad84be60d31039a5"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/kapital-redux"
+      ],
+      "observation_ids": [
+        "obs_60fe9fc0384bb55cede259bb"
+      ],
+      "project_key_hint": "github.com/mschwar/kapital-redux"
+    },
+    {
+      "canonical_project_id": "prj_d4cd13be013b172d3d0969e5",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_0193b02569f3e7f997b823e7"
+      ],
+      "project_key_hint": "incubating"
+    },
+    {
+      "canonical_project_id": "prj_daedda27a7afc093c73ee165",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_92cca8db4ddef78551702773"
+      ],
+      "project_key_hint": "mnemosyne"
+    },
+    {
+      "canonical_project_id": "prj_dc32bf677733ff85092a68b1",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_12a5db23c9621b8b4a85cd8a"
+      ],
+      "project_key_hint": "test-repo"
+    },
+    {
+      "canonical_project_id": "prj_dd857f0f3c3103d05906d2d4",
+      "historical_canonical_ids": [
+        "prj_5128e1710d7ab981d744f7e5"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/bahai-homepage"
+      ],
+      "observation_ids": [
+        "obs_2afd2a957c15756a33a44f86"
+      ],
+      "project_key_hint": "bahai-homepage"
+    },
+    {
+      "canonical_project_id": "prj_df71fe0a1dbda091ea1a237b",
+      "historical_canonical_ids": [
+        "prj_08f496a147154f078baaeb53",
+        "prj_6810cb32aa92c30165052a18",
+        "prj_caddc1739c010ecf4aed9431",
+        "prj_eef5836d2fd216f60c794986"
+      ],
+      "merge_decision_ids": [
+        "dec_the_garden_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/the-garden"
+      ],
+      "observation_ids": [
+        "obs_771297911fd3d68356d02fe5",
+        "obs_ae0625819f15a3d3b080671f",
+        "obs_f6554456613bfca1cfa76246"
+      ],
+      "project_key_hint": "github.com/mschwar/the-garden"
+    },
+    {
+      "canonical_project_id": "prj_df9570a5106241a37d5a1437",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_76eb900175ea364507017978"
+      ],
+      "project_key_hint": "ai-agents-platform"
+    },
+    {
+      "canonical_project_id": "prj_e2eb3c0599de122c2603f101",
+      "historical_canonical_ids": [
+        "prj_159dc1015da992a75b33eec9",
+        "prj_5feb99990fc72b8608356a6a",
+        "prj_773077cb232e026a19fcf011"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_civstrate_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/civstrate"
+      ],
+      "observation_ids": [
+        "obs_96eebea5b6d6c2af9528485e",
+        "obs_c0a543afb1afaed2fa3f5ba9"
+      ],
+      "project_key_hint": "github.com/mschwar/civstrate"
+    },
+    {
+      "canonical_project_id": "prj_e6d9a71ac17f98273ebdd71a",
+      "historical_canonical_ids": [
+        "prj_1b3d49ce04f3eb7627703614",
+        "prj_43f71c6505df01f57eec520a",
+        "prj_44a075c439c442885d69db13"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_scrollytelling_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/scrollytelling"
+      ],
+      "observation_ids": [
+        "obs_4f33d1499e11ac827181eec3",
+        "obs_7093a00a06d67874eacdb995"
+      ],
+      "project_key_hint": "scrollytelling"
+    },
+    {
+      "canonical_project_id": "prj_e91e3cf5cd89c06e0b2aaa6d",
+      "historical_canonical_ids": [
+        "prj_a44b311f9937d4b18f38fde5",
+        "prj_aaf5c59046c6c8b1fb8c2783"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/gbrain"
+      ],
+      "observation_ids": [
+        "obs_f3592d156806752ed9defd52"
+      ],
+      "project_key_hint": "gbrain"
+    },
+    {
+      "canonical_project_id": "prj_ea1277c5e5b12a192337a257",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_f9083b47a34db5b03865ae24"
+      ],
+      "project_key_hint": "structure"
+    },
+    {
+      "canonical_project_id": "prj_eb4b38e8ca9797b02b4df19b",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_4737e0f7cdae129fcaea737a"
+      ],
+      "project_key_hint": "workflows"
+    },
+    {
+      "canonical_project_id": "prj_ed786cb27058a18fed2b5cdc",
+      "historical_canonical_ids": [
+        "prj_2b3b902e9251de285f589167",
+        "prj_9e10dd4df221d51780837c7c",
+        "prj_fce5eaa5f53003ae04e78562"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_orgatlas_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/orgatlas"
+      ],
+      "observation_ids": [
+        "obs_998dc5640c04088c65968b7d",
+        "obs_9df94fbbac1356c1bcbf43e1"
+      ],
+      "project_key_hint": "github.com/mschwar/orgatlas"
+    },
+    {
+      "canonical_project_id": "prj_f07b53d92d07b50328ad46c8",
+      "historical_canonical_ids": [
+        "prj_076123156a19a50807c7cb9a",
+        "prj_1ff5e543c4f6f1aec4d6e3ca",
+        "prj_468fc2bb39b03988cb242ad0"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_project_ledger_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/project-ledger"
+      ],
+      "observation_ids": [
+        "obs_284c730562a98efa43602cb6",
+        "obs_f0b59c4cb6f5e691384c753a"
+      ],
+      "project_key_hint": "github.com/mschwar/project-ledger"
+    },
+    {
+      "canonical_project_id": "prj_f1f194e61f4ac4e2fa5ca700",
+      "historical_canonical_ids": [
+        "prj_bc274225c86c62f9ac81d22d"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/monroehaus"
+      ],
+      "observation_ids": [
+        "obs_b2413ab83e3f873460174383"
+      ],
+      "project_key_hint": "github.com/mschwar/monroehaus"
+    },
+    {
+      "canonical_project_id": "prj_f24fc6d3f997e4c8f43f88ba",
+      "historical_canonical_ids": [
+        "prj_b0a3ae8211f0d86fb7806913"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/lodestone-writings-repository"
+      ],
+      "observation_ids": [
+        "obs_383de8b5331b6f553f3a556a"
+      ],
+      "project_key_hint": "github.com/mschwar/lodestone-writings-repository"
+    },
+    {
+      "canonical_project_id": "prj_f29daac767707d7d303cd268",
+      "historical_canonical_ids": [
+        "prj_1515362224d93c1152da2e6b",
+        "prj_60f818039ae361c6318ebf96"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/nousresearch/hermes-paperclip-adapter"
+      ],
+      "observation_ids": [
+        "obs_172ab10a9b2e48010acdd1b8",
+        "obs_66994ea65be3a2084608363d"
+      ],
+      "project_key_hint": "github.com/NousResearch/hermes-paperclip-adapter"
+    },
+    {
+      "canonical_project_id": "prj_f4e821a096940c12a5824755",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_2f1664d2764186999f15335d"
+      ],
+      "project_key_hint": "google-drive:bitnet"
+    },
+    {
+      "canonical_project_id": "prj_f52b15ab00a89de5e4fc8473",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_546ed622069f21d31d2e17e7"
+      ],
+      "project_key_hint": "counterweight-tim"
+    },
+    {
+      "canonical_project_id": "prj_f52b53507c462fb54c4ca56e",
+      "historical_canonical_ids": [
+        "prj_09600ae8ad59257413febbf9"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/garden-of-wisdom"
+      ],
+      "observation_ids": [
+        "obs_185c14efec0b90689e9a19ea"
+      ],
+      "project_key_hint": "garden-of-wisdom"
+    },
+    {
+      "canonical_project_id": "prj_f54a9b27f794c37cb498fdf1",
+      "historical_canonical_ids": [
+        "prj_03b71164bb638bc02266ba11"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/song-book"
+      ],
+      "observation_ids": [
+        "obs_214cbe064d142e8236d54cdc"
+      ],
+      "project_key_hint": "github.com/mschwar/song-book"
+    },
+    {
+      "canonical_project_id": "prj_f5900118a7dbb4d40a9abc0a",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_be529548ee6dbcaf0770380a"
+      ],
+      "project_key_hint": "hermes-ops-workflows"
+    },
+    {
+      "canonical_project_id": "prj_f9befa3b68203167afe077a3",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_4b322dbd7a10dc449baf551f"
+      ],
+      "project_key_hint": "constructive-understanding"
+    },
+    {
+      "canonical_project_id": "prj_fb706cc19b11ab82a76c1ddb",
+      "historical_canonical_ids": [
+        "prj_3fbbf924e6d5d743744ff6f5",
+        "prj_63fdc786a91e9f0e7fdcdec3",
+        "prj_cfa747ee509639484792aa43"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_agent_os_merge_20261029"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/agent-os"
+      ],
+      "observation_ids": [
+        "obs_0ef8500cd40225c893746859",
+        "obs_8e34b0cd367a91947de57108"
+      ],
+      "project_key_hint": "github.com/mschwar/agent-os"
+    },
+    {
+      "canonical_project_id": "prj_fbf0613f0983511dfc3d2283",
+      "historical_canonical_ids": [
+        "prj_ed3111b5557613184a26f7f7"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/data-visualization"
+      ],
+      "observation_ids": [
+        "obs_64df2ba8e27338778ad2575b"
+      ],
+      "project_key_hint": "data-visualization"
+    },
+    {
+      "canonical_project_id": "prj_fc138625c0e3a3cb4219cc6e",
+      "historical_canonical_ids": [
+        "prj_fd6dc3ba97cefaea53e868f0"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/ultraworkers/claw-code"
+      ],
+      "observation_ids": [
+        "obs_b544cab4aad058f811c7a948"
+      ],
+      "project_key_hint": "claw-code"
+    },
+    {
+      "canonical_project_id": "prj_fdd8ba8fba60590c694407b1",
+      "historical_canonical_ids": [
+        "prj_1d4ceb2d6624ac4a75d581a2",
+        "prj_6762ce372d20e499d493bd28",
+        "prj_89389e78503aa201be12db76"
+      ],
+      "merge_decision_ids": [
+        "dec_triage_lee_ai_learning_merge_20261030"
+      ],
+      "normalized_remotes": [
+        "github.com/mschwar/lee-ai-learning"
+      ],
+      "observation_ids": [
+        "obs_ad585eeb24937433b1df04a5",
+        "obs_ef88b09e106bd02c32b099c1"
+      ],
+      "project_key_hint": "github.com/mschwar/lee-ai-learning"
+    },
+    {
+      "canonical_project_id": "prj_fde1224c0558e821b4bece78",
+      "historical_canonical_ids": [
+        "prj_2ce5e3c376150a2e62bde35f"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/letters"
+      ],
+      "observation_ids": [
+        "obs_4a385da2046911ca06345fad"
+      ],
+      "project_key_hint": "letters"
+    },
+    {
+      "canonical_project_id": "prj_feafc66421c51148dc734c0c",
+      "historical_canonical_ids": [
+        "prj_7e2ebd2b4a076587c1b26aef"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/wr-v3"
+      ],
+      "observation_ids": [
+        "obs_242575ba808709fbaf4253ba"
+      ],
+      "project_key_hint": "github.com/mschwar/WR-v3"
+    },
+    {
+      "canonical_project_id": "prj_febab6c523ec254eeb35958a",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_2e189ef52f4c263eb0f3f5a5"
+      ],
+      "project_key_hint": "common-projects"
+    }
+  ],
+  "schema_version": "1.0.0"
+}

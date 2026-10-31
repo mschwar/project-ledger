@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/project-lineage.schema.json",
+  "title": "Project Ledger Durable Project Lineage Registry (v1.0.0)",
+  "description": "Durable canonical_project_id lineage registry (registry/project-lineage.json) preserving immutable canonical_project_id values across anchor upgrades, GitHub repository renames, merge decisions, and state/ wipes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "projects"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lineage_project"
+      }
+    }
+  },
+  "$defs": {
+    "lineage_project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_project_id",
+        "project_key_hint",
+        "normalized_remotes",
+        "observation_ids",
+        "merge_decision_ids",
+        "historical_canonical_ids"
+      ],
+      "properties": {
+        "canonical_project_id": {
+          "type": "string",
+          "pattern": "^prj_[0-9a-f]{24}$"
+        },
+        "project_key_hint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "normalized_remotes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^obs_[0-9a-f]{24}$"
+          }
+        },
+        "merge_decision_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "historical_canonical_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^prj_[0-9a-f]{24}$"
+          }
+        }
+      }
+    }
+  }
+}

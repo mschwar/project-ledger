@@ -109,6 +109,26 @@ def render_reality_block(project: dict[str, Any], capsule: dict[str, Any]) -> st
     if lifecycle and lifecycle != "unknown":
         lines.append(f"- **Lifecycle:** `{lifecycle}`")
 
+    machina_cont = (
+        current_state.get("machina_continuity")
+        if isinstance(current_state.get("machina_continuity"), dict)
+        else {}
+    )
+    if machina_cont.get("state") == "available":
+        active_id = _sanitize_text(machina_cont.get("active_unit_id") or "").replace("\r", " ").replace("\n", " ").strip()
+        active_title = _sanitize_text(machina_cont.get("active_unit_title") or "").replace("\r", " ").replace("\n", " ").strip()
+        completed_id = _sanitize_text(machina_cont.get("last_completed_unit_id") or "").replace("\r", " ").replace("\n", " ").strip()
+        completed_title = _sanitize_text(machina_cont.get("last_completed_unit_title") or "").replace("\r", " ").replace("\n", " ").strip()
+        frontier_tag = " (`frontier`)" if machina_cont.get("has_frontier") else ""
+        if active_id:
+            title_part = f" ({active_title})" if active_title else ""
+            lines.append(f"- **Machina Continuity:** active `{active_id}`{title_part}{frontier_tag}")
+        elif completed_id:
+            title_part = f" ({completed_title})" if completed_title else ""
+            lines.append(f"- **Machina Continuity:** last completed `{completed_id}`{title_part}{frontier_tag}")
+        else:
+            lines.append(f"- **Machina Continuity:** initialized{frontier_tag}")
+
     if canonical_url:
         lines.append(f"- **Canonical URL:** <{canonical_url}>")
 

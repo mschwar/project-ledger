@@ -372,10 +372,14 @@
             "state",
             "observation_id",
             "updated_at",
+            "sequence",
             "active_unit_id",
             "active_unit_title",
             "last_completed_unit_id",
-            "last_completed_at"
+            "last_completed_unit_title",
+            "last_completed_at",
+            "has_checkpoint",
+            "has_frontier"
           ],
           "properties": {
             "state": {
@@ -397,6 +401,12 @@
                 "null"
               ]
             },
+            "sequence": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "active_unit_id": {
               "type": [
                 "string",
@@ -415,11 +425,23 @@
                 "null"
               ]
             },
+            "last_completed_unit_title": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "last_completed_at": {
               "type": [
                 "string",
                 "null"
               ]
+            },
+            "has_checkpoint": {
+              "type": "boolean"
+            },
+            "has_frontier": {
+              "type": "boolean"
             }
           }
         },
