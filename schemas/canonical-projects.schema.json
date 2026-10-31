@@ -225,7 +225,7 @@
         "unifying_authority": {
           "type": "string",
           "enum": [
-            "exact_remote",
+            "exact_normalized_remote",
             "explicit_decision",
             "singleton",
             "referential"

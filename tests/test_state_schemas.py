@@ -264,6 +264,18 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
                 capture_output=True,
             )
 
+            # Mirror root with explicit slug source_id and second checkout of alpha (exact_normalized_remote).
+            mirror_root = root / "mirrors" / "alpha-mirror"
+            _init_git_repo(mirror_root, "https://github.com/example/alpha.git")
+            (mirror_root / "README.md").write_text("# Alpha Mirror\n", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=mirror_root, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "commit", "-m", "init alpha mirror"],
+                cwd=mirror_root,
+                check=True,
+                capture_output=True,
+            )
+
             # Project 2: Non-git directory with invalid sidecar to populate review-queue.json too.
             beta = live_root / "beta"
             beta.mkdir()
@@ -288,7 +300,14 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
                                 "path": str(live_root),
                                 "discovery": "children",
                                 "storage_scope": "shared",
-                            }
+                            },
+                            {
+                                "source_id": "central-mirror-alpha",
+                                "label": "alpha-mirror",
+                                "path": str(mirror_root),
+                                "discovery": "self",
+                                "storage_scope": "mirror",
+                            },
                         ]
                     },
                     indent=2,

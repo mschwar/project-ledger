@@ -3,25 +3,21 @@
   "attempt_id": null,
   "execution_state": "idle",
   "frontier": null,
-  "last_checkpoint": {
-    "slice": 1,
-    "summary": "Landed pyproject.toml, build_ledger.__all__, ruff check gate, executable Draft 2020-12 schemas/*.schema.json + test_state_schemas.py, full documentation reconciliation, WQ-1..3 work queue, and updated .project-ledger.json.",
-    "timestamp": "2026-10-31T19:56:45.931906Z"
-  },
+  "last_checkpoint": null,
   "last_completed": {
-    "slice": 2,
-    "summary": "Verified PL-GAP-CLOSEOUT-03: pyproject.toml, build_ledger.__all__, ruff check . (0 errors), 5 executable Draft 2020-12 JSON Schemas in schemas/*.schema.json + tests/test_state_schemas.py, full documentation and BACKLOG.md WQ-1..3 work queue reconciliation, fresh .project-ledger.json, and 172/172 unittests passing.",
-    "timestamp": "2026-10-31T19:57:29.292795Z",
+    "slice": 1,
+    "summary": "Aligned explicit slug source_id pattern and exact_normalized_remote unifying_authority enum in schemas/*.schema.json; verified synthetic tests plus all 172 live ai-server project capsules and compiled state/*.json artifacts with zero schema errors.",
+    "timestamp": "2026-10-31T20:02:32.987991Z",
     "unit": {
-      "id": "PL-GAP-CLOSEOUT-03",
-      "spec": ".machina/units/PL-GAP-CLOSEOUT-03.json",
-      "spec_digest": "6c6e8385a93a3df0a01a8408949198db68a18d87496ee827a53292fbc4f50e81",
-      "title": "Close packaging, lint, JSON schema, documentation, work-queue, and self-sidecar gaps G7 and G2"
+      "id": "PL-GAP-CLOSEOUT-04",
+      "spec": ".machina/units/PL-GAP-CLOSEOUT-04.json",
+      "spec_digest": "d3109b907a9b73c8b77c656cb9f54d6a0796988066e0be80fdae7c57cf315605",
+      "title": "Align explicit source_id and exact_normalized_remote in state JSON schemas"
     }
   },
   "next_action": null,
   "schema_version": 1,
-  "sequence": 21,
-  "slice": 2,
-  "updated_at": "2026-10-31T19:57:29.293341Z"
+  "sequence": 24,
+  "slice": 1,
+  "updated_at": "2026-10-31T20:02:32.989851Z"
 }
