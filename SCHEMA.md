@@ -239,7 +239,7 @@ source_resolution      resolved | unresolved
 observed_at
 project_key            nullable compatibility hint/claim
 location               nullable
-sidecar                versioned sidecar declaration envelope (P1.7: present, path, status, declared_schema_version, normalized_schema_version, declarations, issues)
+sidecar                versioned sidecar declaration envelope (P1.7: present, path, status, declared_schema_version, normalized_schema_version, declarations, issues, stale, warnings)
 compat_entry           complete legacy record
 ```
 
@@ -832,12 +832,13 @@ Contents (bounded within `16 KiB` per capsule):
 - `summary` (`description`, `lifecycle_status`, `tags`, `shared`, `storage_scope`)
 - `continuity` (`last_session_at`, `last_session_summary`, `next_step`, `source_observation_id`, `freshness`)
 - `preferred_location` (`observation_id`, `source_id`, `source_role`, `path`, `canonical_url`, `reason_codes[]`, `confidence`, `git_drift`, `warning_codes[]`, `warnings[]`)
-- `warnings[]` (top-level git working-tree drift warnings for `machina` / `homelab` pre-spawn checks, e.g. `"warning: local main is 20 commits behind origin/main"`)
-- `ranked_observations[]` (compact summaries ranked by `live > mirror > backup > inventory` with reason codes and `git_drift`)
+- `warnings[]` (top-level git working-tree drift and `stale_sidecar` warnings for `machina` / `homelab` pre-spawn checks, e.g. `"warning: local main is 20 commits behind origin/main"` or `"warning: stale_sidecar: declared commit 'ef38aca' in .project-ledger.json lags live HEAD e6c8007ad7dd"`)
+- `ctx` (`state`: `available` | `absent` | `invalid`, `source_format`: `skeleton_json` | `fleet_capsule_json` | `tier2_ctx_dir` | `tier1_context_md`, `structural_hash`, `boundary_doc_hash`, `total_files`, `languages`, `entrypoints[]`, `authority_boundaries[]`, `subsystems[]`, `subsystem_count`, `subsystems_truncated`)
+- `ranked_observations[]` (compact summaries ranked by `live > mirror > backup > inventory` with reason codes, `git_drift`, and `warning_codes[]`)
 - `git_facts` (freshest git commit/branch/remote facts plus `drift` summary)
 - `freshness` (`state`, `content_as_of`, `content_as_of_basis`, `observed_at`)
 - `open_reviews[]` and `divergent_declarations[]`
-- `pointers` (`task_system.provider = "machina"`, `knowledge_system.provider = "gbrain"`, `evidence_refs`)
+- `pointers` (`task_system.provider = "machina"`, `knowledge_system.provider = "gbrain"`, portable output-root-relative POSIX `evidence_refs`)
 
 The capsule omits deep raw compatibility payloads unless needed via `ledger explain`.
 
@@ -942,23 +943,14 @@ Examples:
 
 # 6. Sidecar evolution
 
-Current sidecar fields remain compatibility inputs:
+`.project-ledger.json` declarations are validated against `schemas/project-ledger-sidecar.schema.json` (`P1.7`, enforced by `ledger/sidecar.py` and `load_sidecar()`):
 
-- `project_key`
-- `display_name`
-- `description`
-- `status`
-- `tags`
-- `canonical_url`
-- `repo_name`
-- `shared`
-- `storage_scope`
-- `last_session_at`
-- `last_session_summary`
-- `next_step`
-- `last_push_at`
+- `schema_version` (`1` / `1.x` / `1.x.y`; legacy unversioned accepted as `1.0.0`)
+- `project_key`, `display_name` / `name`, `description`, `status`, `tags[]`, `canonical_url`, `repo_name`, `shared`, `storage_scope`
+- `last_session_at`, `last_session_summary`, `next_step`, `last_push_at`, `updated_at`, `created_at`
+- optional historical snapshot fields (`project_type`, `head_branch`, `head_commit` / `commit`, `remote_url`, and nested `git` sub-object)
 
-Target changes should add explicit `schema_version` and eventually allow `canonical_project_id` only after the canonical registry can assign/validate it safely.
+`canonical_project_id` is forbidden in v1 sidecars (`SIDECAR_FORBIDDEN_CANONICAL_ID` -> `SIDECAR_DECLARATION_INVALID` review). When declared commit/branch/timestamp metadata lags live `git rev-parse HEAD` (and the sidecar itself was not modified in `HEAD`), `load_sidecar()` emits a `stale_sidecar` warning on `observation["sidecar"]["warnings"]` and the project capsule without invalidating valid-schema declarations.
 
 A sidecar is a declaration source attached to an observation. If multiple observations contain conflicting sidecars, emit claims/conflict/review; do not use last-write-wins.
 

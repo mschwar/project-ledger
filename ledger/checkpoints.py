@@ -664,12 +664,21 @@ def collect_entries_incremental(
 
     entries.sort(key=lambda item: (item["last_touch_at"], item["name"].lower()), reverse=True)
 
+    if checkpoint_path is not None:
+        from .models import portable_artifact_path
+
+        portable_output_dir = portable_artifact_path(
+            output_dir, state_dir=checkpoint_path.resolve().parent
+        )
+    else:
+        portable_output_dir = output_dir.resolve().name or "output"
+
     checkpoint_payload = {
         "schema_version": SOURCE_CHECKPOINT_SCHEMA_VERSION,
         "compiler_version": COMPILER_VERSION,
         "updated_at": checked_at,
         "config_digest": digest_json(config),
-        "output_dir": str(output_dir.resolve()),
+        "output_dir": portable_output_dir,
         "mode": "bypassed" if bypass_cache else "incremental",
         "summary": {
             "source_count": len(sources_checkpoint),

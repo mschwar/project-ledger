@@ -14,25 +14,39 @@ Design invariants:
   accessible ones.
 - Each capsule is bounded by an explicit byte/context budget
   (``CAPSULE_MAX_BYTES = 16384``) and links to deeper provenance artifacts via
-  pointers rather than duplicating full observation or evidence payloads.
+  portable output-root-relative POSIX pointers rather than duplicating full
+  observation or evidence payloads or leaking ephemeral ``/tmp/tmp.*`` staging paths.
+- Read-only ingestion of ``.ctx/skeleton.json`` and ``ctx`` Tier-2 fleet capsules
+  (``FleetCapsuleResult`` / ``RepoSkeleton`` / Tier-2 ``.ctx/``) enriches project
+  capsules with deterministic structural hashes, authority boundaries, entrypoints,
+  and bounded subsystem maps when present on disk.
 """
 
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from . import COMPILER_VERSION, PROJECT_CAPSULE_SCHEMA_VERSION
 from .gbrain import resolve_gbrain_link
 from .human_view import write_canonical_markdown
 from .identity import observation_facts, resolve_payload
+from .models import parse_iso_datetime, portable_artifact_path
 from .sources.git import resolve_observation_git_drift
 
 CAPSULE_MAX_BYTES = 16384
 CAPSULE_MAX_OBSERVATION_SUMMARIES = 25
 CAPSULE_MAX_PROVENANCE_REFS = 5
 CAPSULE_PURPOSE_MAX_CHARS = 240
+CAPSULE_MAX_CTX_LANGUAGES = 10
+CAPSULE_MAX_CTX_ENTRYPOINTS = 10
+CAPSULE_MAX_CTX_BOUNDARY_DOCS = 8
+CAPSULE_MAX_CTX_SUBSYSTEMS = 12
+CAPSULE_MAX_CTX_SYMBOLS = 6
+CAPSULE_MAX_CTX_DEPS = 8
 
 SOURCE_CLASS_TIER = {
     "live": 4,
@@ -50,11 +64,14 @@ SOURCE_CLASS_REASON = {
     "unknown": "SOURCE_CLASS_UNKNOWN",
 }
 
+_FRONTMATTER_KV_RE = re.compile(r'^([a-zA-Z0-9_]+):\s*(.+?)\s*$')
+
 
 def _parse_iso_instant(value: str | None) -> datetime | None:
     text = str(value or "").strip()
     if not text:
         return None
+    text = re.sub(r"\.(\d{6})\d+(?=[+-]\d{2}:\d{2}$|Z$|$)", r".\1", text)
     try:
         parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
     except ValueError:
@@ -65,8 +82,16 @@ def _parse_iso_instant(value: str | None) -> datetime | None:
 
 
 def _iso_epoch(value: str | None) -> float:
-    parsed = _parse_iso_instant(value)
-    return parsed.timestamp() if parsed is not None else -1.0
+    epoch = parse_iso_datetime(str(value or ""))
+    return epoch if epoch is not None else -1.0
+
+
+def _commits_prefix_match(commit_a: str, commit_b: str) -> bool:
+    a = commit_a.strip().lower()
+    b = commit_b.strip().lower()
+    if not a or not b or a in {"none", "null", "unknown"} or b in {"none", "null", "unknown"}:
+        return False
+    return a.startswith(b) or b.startswith(a)
 
 
 def _infer_source_class(observation: dict, compat: dict) -> str:
@@ -97,6 +122,454 @@ def _observation_content_as_of(compat: dict) -> tuple[str | None, str | None, st
     return None, None, None, -1.0
 
 
+def _absent_ctx_capsule() -> dict[str, Any]:
+    return {
+        "state": "absent",
+        "source_format": None,
+        "observation_id": None,
+        "artifact_path": None,
+        "structural_hash": None,
+        "boundary_doc_hash": None,
+        "total_files": None,
+        "languages": {},
+        "entrypoints": [],
+        "authority_boundaries": [],
+        "subsystems": [],
+        "subsystem_count": 0,
+        "subsystems_truncated": False,
+    }
+
+
+def _parse_tier2_frontmatter(md_path: Path) -> dict[str, str]:
+    try:
+        lines = md_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return {}
+    if not lines or lines[0].strip() != "---":
+        return {}
+    result: dict[str, str] = {}
+    for line in lines[1:25]:
+        stripped = line.strip()
+        if stripped == "---":
+            break
+        match = _FRONTMATTER_KV_RE.match(stripped)
+        if match:
+            result[match.group(1)] = match.group(2).strip("\"'")
+    return result
+
+
+_CTX_LANG_PAIR_RE = re.compile(r"([A-Za-z0-9_+#.-]+)\s*\((\d+)\)")
+_CTX_BOUNDARY_LINE_RE = re.compile(
+    r"^-\s+\*\*([^*]+)\*\*\s+\[`([^`]+)`\](?:\s+\(([^)]*)\))?(?:\s+—\s+Sections:\s*(.+))?$"
+)
+
+
+def _parse_tier2_context_0_body(md_path: Path) -> dict[str, Any]:
+    """Extract languages, boundary docs, entrypoints, and subsystem table from CONTEXT-0.md."""
+    try:
+        lines = md_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return {}
+    languages: dict[str, int] = {}
+    authority_boundaries: list[dict[str, Any]] = []
+    entrypoints: list[str] = []
+    subsystems: list[dict[str, Any]] = []
+    section = ""
+    in_frontmatter = False
+    for idx, raw_line in enumerate(lines):
+        stripped = raw_line.strip()
+        if idx == 0 and stripped == "---":
+            in_frontmatter = True
+            continue
+        if in_frontmatter:
+            if stripped == "---":
+                in_frontmatter = False
+            continue
+        if "**Languages:**" in stripped:
+            lang_part = stripped.split("**Languages:**", 1)[1]
+            for name, count_str in _CTX_LANG_PAIR_RE.findall(lang_part):
+                languages[name] = int(count_str)
+            continue
+        if stripped.startswith("## "):
+            section = stripped[3:].strip().lower()
+            continue
+        if section.startswith("authority boundaries") and stripped.startswith("- **"):
+            bmatch = _CTX_BOUNDARY_LINE_RE.match(stripped)
+            if bmatch:
+                headings = (
+                    [h.strip() for h in bmatch.group(4).split(",") if h.strip()]
+                    if bmatch.group(4)
+                    else []
+                )
+                authority_boundaries.append(
+                    {
+                        "path": bmatch.group(1).strip(),
+                        "kind": bmatch.group(2).strip(),
+                        "summary": (bmatch.group(3) or "").strip(),
+                        "headings": headings,
+                    }
+                )
+        elif section.startswith("entrypoints") and stripped.startswith("- `") and stripped.endswith("`"):
+            ep = stripped[3:-1].strip()
+            if ep:
+                entrypoints.append(ep)
+        elif section.startswith("subsystem overview") and stripped.startswith("| `"):
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            if len(cells) >= 4:
+                sub_path = cells[0].strip("`").strip()
+                fcount = int(cells[1]) if cells[1].isdigit() else 0
+                sub_langs = [x.strip() for x in cells[2].split(",") if x.strip() and x.strip() != "-"]
+                syms = [x.strip().strip("`") for x in cells[3].split(",") if x.strip() and x.strip() != "-"]
+                if sub_path:
+                    subsystems.append(
+                        {
+                            "path": sub_path,
+                            "file_count": fcount,
+                            "languages": sub_langs,
+                            "key_symbols": syms,
+                            "internal_deps": [],
+                            "external_deps": [],
+                        }
+                    )
+    return {
+        "languages": languages,
+        "authority_boundaries": authority_boundaries,
+        "entrypoints": entrypoints,
+        "subsystems": subsystems,
+    }
+
+
+def _extract_tier1_overview_summary(md_path: Path) -> str:
+    try:
+        lines = md_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return ""
+    in_frontmatter = False
+    for idx, raw_line in enumerate(lines):
+        stripped = raw_line.strip()
+        if idx == 0 and stripped == "---":
+            in_frontmatter = True
+            continue
+        if in_frontmatter:
+            if stripped == "---":
+                in_frontmatter = False
+            continue
+        if not stripped or stripped.startswith("#") or stripped.startswith("<!--"):
+            continue
+        if stripped.startswith("- "):
+            break
+        return stripped[:160]
+    return ""
+
+
+def _normalize_ctx_mapping(
+    raw: dict[str, Any],
+    *,
+    source_format: str,
+    observation_id: str,
+    artifact_path: str | None,
+    max_subsystems: int = CAPSULE_MAX_CTX_SUBSYSTEMS,
+) -> dict[str, Any]:
+    structural_hash = str(raw.get("structural_hash") or "").strip() or None
+    boundary_doc_hash = str(raw.get("boundary_doc_hash") or "").strip() or None
+    raw_total = raw.get("total_files", raw.get("files"))
+    total_files = int(raw_total) if isinstance(raw_total, int) and not isinstance(raw_total, bool) else None
+
+    raw_langs = raw.get("languages")
+    languages: dict[str, int] = {}
+    if isinstance(raw_langs, dict):
+        lang_pairs = [
+            (str(k).strip(), int(v))
+            for k, v in raw_langs.items()
+            if str(k).strip() and isinstance(v, int) and not isinstance(v, bool)
+        ]
+        lang_pairs.sort(key=lambda pair: (-pair[1], pair[0]))
+        for k, v in lang_pairs[:CAPSULE_MAX_CTX_LANGUAGES]:
+            languages[k] = v
+
+    raw_eps = raw.get("entrypoints")
+    entrypoints: list[str] = []
+    if isinstance(raw_eps, list):
+        for ep in raw_eps:
+            ep_str = str(ep or "").strip()
+            if ep_str:
+                entrypoints.append(ep_str[:160])
+            if len(entrypoints) >= CAPSULE_MAX_CTX_ENTRYPOINTS:
+                break
+
+    # Accept both FleetCapsuleResult (`authority_boundaries`) and RepoSkeleton (`boundary_docs`).
+    raw_boundaries = raw.get("authority_boundaries")
+    if not isinstance(raw_boundaries, list):
+        raw_boundaries = raw.get("boundary_docs")
+    authority_boundaries: list[dict[str, Any]] = []
+    if isinstance(raw_boundaries, list):
+        for item in raw_boundaries:
+            if not isinstance(item, dict):
+                continue
+            doc_path = str(item.get("path") or item.get("relative_path") or "").strip()
+            if not doc_path:
+                continue
+            doc_kind = str(item.get("kind") or "overview").strip()
+            raw_headings = item.get("headings")
+            headings = (
+                [str(h).strip()[:80] for h in raw_headings if str(h or "").strip()][:6]
+                if isinstance(raw_headings, list)
+                else []
+            )
+            summary = str(item.get("summary") or item.get("summary_line") or "").strip()[:160]
+            content_hash = str(item.get("content_hash") or "").strip() or None
+            authority_boundaries.append(
+                {
+                    "path": doc_path,
+                    "kind": doc_kind,
+                    "headings": headings,
+                    "summary": summary,
+                    "content_hash": content_hash,
+                }
+            )
+            if len(authority_boundaries) >= CAPSULE_MAX_CTX_BOUNDARY_DOCS:
+                break
+
+    raw_subs = raw.get("subsystems")
+    all_subsystems: list[dict[str, Any]] = []
+    if isinstance(raw_subs, list):
+        for sub in raw_subs:
+            if not isinstance(sub, dict):
+                continue
+            sub_path = str(sub.get("path") or "").strip()
+            if not sub_path:
+                continue
+            fcount_raw = sub.get("file_count", 0)
+            file_count = int(fcount_raw) if isinstance(fcount_raw, int) and not isinstance(fcount_raw, bool) else 0
+            sub_langs = (
+                [str(x).strip() for x in sub.get("languages", []) if str(x or "").strip()][:3]
+                if isinstance(sub.get("languages"), list)
+                else []
+            )
+            key_syms = (
+                [str(x).strip()[:80] for x in sub.get("key_symbols", []) if str(x or "").strip()][
+                    :CAPSULE_MAX_CTX_SYMBOLS
+                ]
+                if isinstance(sub.get("key_symbols"), list)
+                else []
+            )
+            int_deps = (
+                [str(x).strip()[:80] for x in sub.get("internal_deps", []) if str(x or "").strip()][
+                    :CAPSULE_MAX_CTX_DEPS
+                ]
+                if isinstance(sub.get("internal_deps"), list)
+                else []
+            )
+            ext_deps = (
+                [str(x).strip()[:80] for x in sub.get("external_deps", []) if str(x or "").strip()][
+                    :CAPSULE_MAX_CTX_DEPS
+                ]
+                if isinstance(sub.get("external_deps"), list)
+                else []
+            )
+            all_subsystems.append(
+                {
+                    "path": sub_path,
+                    "file_count": file_count,
+                    "languages": sub_langs,
+                    "key_symbols": key_syms,
+                    "internal_deps": int_deps,
+                    "external_deps": ext_deps,
+                }
+            )
+
+    declared_sub_count = raw.get("subsystem_count")
+    if isinstance(declared_sub_count, int) and not isinstance(declared_sub_count, bool):
+        total_sub_count = max(declared_sub_count, len(all_subsystems))
+    else:
+        total_sub_count = len(all_subsystems)
+
+    shown_subs = all_subsystems[: max(0, max_subsystems)]
+    truncated = len(shown_subs) < len(all_subsystems)
+
+    result: dict[str, Any] = {
+        "state": "available",
+        "source_format": source_format,
+        "observation_id": observation_id,
+        "artifact_path": artifact_path,
+        "structural_hash": structural_hash,
+        "boundary_doc_hash": boundary_doc_hash,
+        "total_files": total_files,
+        "languages": languages,
+        "entrypoints": entrypoints,
+        "authority_boundaries": authority_boundaries,
+        "subsystems": shown_subs,
+        "subsystem_count": total_sub_count,
+        "subsystems_truncated": truncated,
+    }
+    repo_id = str(raw.get("repo_id") or "").strip()
+    if repo_id:
+        result["repo_id"] = repo_id
+    return result
+
+
+def ingest_project_ctx_capsule(
+    ranked_observations: list[dict],
+    observations_by_id: dict[str, dict],
+    *,
+    max_subsystems: int = CAPSULE_MAX_CTX_SUBSYSTEMS,
+) -> dict[str, Any]:
+    """Ingest ``.ctx/skeleton.json`` or ``ctx`` Tier-2 fleet capsules for a project (read-only)."""
+    for item in ranked_observations:
+        obs_id = str(item["observation_id"])
+        obs = observations_by_id.get(obs_id) or {}
+
+        # Support deterministic in-memory unit tests supplying `obs["ctx_capsule"]`.
+        inline_ctx = obs.get("ctx_capsule")
+        if isinstance(inline_ctx, dict):
+            fmt = (
+                "fleet_capsule_json"
+                if "authority_boundaries" in inline_ctx or "capsule_markdown" in inline_ctx
+                else "skeleton_json"
+            )
+            return _normalize_ctx_mapping(
+                inline_ctx,
+                source_format=fmt,
+                observation_id=obs_id,
+                artifact_path=str(inline_ctx.get("artifact_path") or "") or None,
+                max_subsystems=max_subsystems,
+            )
+
+        if not item.get("score_components", {}).get("accessible_worktree"):
+            continue
+        loc = str(item.get("location") or "").strip()
+        if not loc or not loc.startswith("/"):
+            continue
+        repo_dir = Path(loc)
+        ctx_dir = repo_dir / ".ctx"
+        if ctx_dir.is_dir():
+            for candidate_name, default_fmt in (
+                ("skeleton.json", "skeleton_json"),
+                ("fleet-capsule.json", "fleet_capsule_json"),
+                ("capsule.json", "fleet_capsule_json"),
+            ):
+                candidate_path = ctx_dir / candidate_name
+                if not candidate_path.is_file():
+                    continue
+                try:
+                    parsed = json.loads(candidate_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError) as exc:
+                    return {
+                        **_absent_ctx_capsule(),
+                        "state": "invalid",
+                        "source_format": default_fmt,
+                        "observation_id": obs_id,
+                        "artifact_path": str(candidate_path),
+                        "error": f"Invalid ctx JSON in {candidate_path}: {exc}",
+                    }
+                if not isinstance(parsed, dict):
+                    return {
+                        **_absent_ctx_capsule(),
+                        "state": "invalid",
+                        "source_format": default_fmt,
+                        "observation_id": obs_id,
+                        "artifact_path": str(candidate_path),
+                        "error": f"Expected JSON object in {candidate_path}.",
+                    }
+                detected_fmt = (
+                    "fleet_capsule_json"
+                    if ("authority_boundaries" in parsed or "capsule_markdown" in parsed)
+                    and candidate_name != "skeleton.json"
+                    else (
+                        "fleet_capsule_json"
+                        if "capsule_markdown" in parsed and "boundary_docs" not in parsed
+                        else default_fmt
+                    )
+                )
+                return _normalize_ctx_mapping(
+                    parsed,
+                    source_format=detected_fmt,
+                    observation_id=obs_id,
+                    artifact_path=str(candidate_path),
+                    max_subsystems=max_subsystems,
+                )
+
+            # Fallback: Tier-2 `.ctx/metadata.json` + `.ctx/CONTEXT-0.md` when initialized via `ctx init --tier2`.
+            meta_path = ctx_dir / "metadata.json"
+            c0_path = ctx_dir / "CONTEXT-0.md"
+            meta: dict[str, Any] = {}
+            if meta_path.is_file():
+                try:
+                    loaded_meta = json.loads(meta_path.read_text(encoding="utf-8"))
+                    if isinstance(loaded_meta, dict):
+                        meta = loaded_meta
+                except (OSError, json.JSONDecodeError):
+                    meta = {}
+            fm = _parse_tier2_frontmatter(c0_path) if c0_path.is_file() else {}
+            if meta.get("mode") == "tier2" or fm.get("mode") == "tier2":
+                body_parsed = _parse_tier2_context_0_body(c0_path) if c0_path.is_file() else {}
+                total_files: int | None = None
+                sub_count = 0
+                if fm.get("files", "").isdigit():
+                    total_files = int(fm["files"])
+                if fm.get("subsystems", "").isdigit():
+                    sub_count = int(fm["subsystems"])
+                synthesized = {
+                    "repo_id": meta.get("repo_id"),
+                    "structural_hash": meta.get("structural_hash") or fm.get("structural_hash"),
+                    "boundary_doc_hash": meta.get("boundary_doc_hash") or fm.get("boundary_doc_hash"),
+                    "total_files": total_files,
+                    "subsystem_count": sub_count,
+                    "languages": body_parsed.get("languages") or {},
+                    "entrypoints": body_parsed.get("entrypoints") or [],
+                    "authority_boundaries": body_parsed.get("authority_boundaries") or [],
+                    "subsystems": body_parsed.get("subsystems") or [],
+                }
+                artifact_ref = str(c0_path if c0_path.is_file() else meta_path)
+                return _normalize_ctx_mapping(
+                    synthesized,
+                    source_format="tier2_ctx_dir",
+                    observation_id=obs_id,
+                    artifact_path=artifact_ref,
+                    max_subsystems=max_subsystems,
+                )
+
+        # Tier-1 root `CONTEXT.md` fallback when generated by `ctx` (`generator: ctx/...`).
+        root_ctx_md = repo_dir / "CONTEXT.md"
+        if root_ctx_md.is_file():
+            t1_fm = _parse_tier2_frontmatter(root_ctx_md)
+            if str(t1_fm.get("generator") or "").startswith("ctx/"):
+                t1_files = int(t1_fm["files"]) if t1_fm.get("files", "").isdigit() else None
+                t1_dirs = int(t1_fm["dirs"]) if t1_fm.get("dirs", "").isdigit() else 0
+                t1_hash = str(t1_fm.get("content_hash") or "").strip() or None
+                t1_summary = _extract_tier1_overview_summary(root_ctx_md)
+                t1_boundaries = (
+                    [
+                        {
+                            "path": "CONTEXT.md",
+                            "kind": "overview",
+                            "headings": [],
+                            "summary": t1_summary,
+                            "content_hash": t1_hash,
+                        }
+                    ]
+                    if (t1_summary or t1_hash)
+                    else []
+                )
+                return _normalize_ctx_mapping(
+                    {
+                        "boundary_doc_hash": t1_hash,
+                        "total_files": t1_files,
+                        "subsystem_count": t1_dirs,
+                        "languages": {},
+                        "entrypoints": [],
+                        "authority_boundaries": t1_boundaries,
+                        "subsystems": [],
+                    },
+                    source_format="tier1_context_md",
+                    observation_id=obs_id,
+                    artifact_path=str(root_ctx_md),
+                    max_subsystems=max_subsystems,
+                )
+
+    return _absent_ctx_capsule()
+
+
 def rank_project_observations(
     project: dict,
     observations_by_id: dict[str, dict],
@@ -109,6 +582,29 @@ def rank_project_observations(
     sources_map = sources_by_id or {}
     project_remotes = {str(r).casefold() for r in project.get("normalized_remotes", []) if str(r).strip()}
     member_ids = sorted(set(project.get("observation_ids", [])))
+
+    # Identify freshest live git HEAD across the canonical project's available observations
+    # so secondary checkouts with lagging May 19 sidecars also emit `stale_sidecar`.
+    freshest_head_commit: str | None = None
+    freshest_head_epoch = -1.0
+    for oid in member_ids:
+        cand_obs = observations_by_id.get(oid)
+        if not cand_obs:
+            continue
+        cand_compat = cand_obs.get("compat_entry") if isinstance(cand_obs.get("compat_entry"), dict) else {}
+        cand_src = sources_map.get(str(cand_obs.get("source_id") or "").strip()) or {}
+        cand_status = (
+            str(cand_src["status"])
+            if "status" in cand_src
+            else ("available" if cand_obs.get("source_resolution") == "resolved" else "unavailable")
+        )
+        if cand_status != "available" or not cand_compat.get("git"):
+            continue
+        c_sha = str(cand_compat.get("head_commit") or "").strip()
+        c_epoch = _iso_epoch(str(cand_compat.get("head_commit_at") or "").strip())
+        if c_sha and c_epoch > freshest_head_epoch:
+            freshest_head_epoch = c_epoch
+            freshest_head_commit = c_sha
 
     scored_items: list[tuple[tuple, dict]] = []
     for obs_id in member_ids:
@@ -164,6 +660,42 @@ def rank_project_observations(
 
         content_as_of, content_basis, freshness_reason, content_epoch = _observation_content_as_of(compat)
         git_drift = resolve_observation_git_drift(obs, compat)
+
+        obs_warning_codes = list(git_drift.get("warning_codes", []))
+        obs_warnings = list(git_drift.get("warnings", []))
+
+        sidecar_env = obs.get("sidecar") if isinstance(obs.get("sidecar"), dict) else {}
+        sidecar_warnings = sidecar_env.get("warnings") if isinstance(sidecar_env.get("warnings"), list) else []
+        if sidecar_warnings:
+            for sw in sidecar_warnings:
+                if not isinstance(sw, dict):
+                    continue
+                sw_code = str(sw.get("code") or "stale_sidecar")
+                sw_detail = str(sw.get("detail") or sw_code)
+                if sw_code not in obs_warning_codes:
+                    obs_warning_codes.append(sw_code)
+                formatted_warn = sw_detail if sw_detail.startswith("warning:") else f"warning: {sw_detail}"
+                if formatted_warn not in obs_warnings:
+                    obs_warnings.append(formatted_warn)
+        elif sidecar_env.get("present") and freshest_head_commit:
+            decls = sidecar_env.get("declarations") if isinstance(sidecar_env.get("declarations"), dict) else {}
+            git_decl = decls.get("git") if isinstance(decls.get("git"), dict) else {}
+            decl_commit = str(
+                git_decl.get("commit") or decls.get("head_commit") or decls.get("commit") or ""
+            ).strip()
+            decl_epoch = _iso_epoch(str(decls.get("updated_at") or decls.get("last_session_at") or ""))
+            obs_head_epoch = _iso_epoch(str(compat.get("head_commit_at") or ""))
+            effective_obs_epoch = max(decl_epoch, obs_head_epoch)
+            if (
+                decl_commit
+                and not _commits_prefix_match(decl_commit, freshest_head_commit)
+                and (effective_obs_epoch < 0 or effective_obs_epoch < freshest_head_epoch)
+            ):
+                if "stale_sidecar" not in obs_warning_codes:
+                    obs_warning_codes.append("stale_sidecar")
+                obs_warnings.append(
+                    f"warning: stale_sidecar: declared commit {decl_commit!r} lags canonical project HEAD {freshest_head_commit[:12]}"
+                )
 
         reasons: list[str] = []
         if source_status != "available":
@@ -222,8 +754,8 @@ def rank_project_observations(
             "head_branch": head_branch,
             "head_commit": head_commit,
             "git_drift": git_drift,
-            "warning_codes": list(git_drift.get("warning_codes", [])),
-            "warnings": list(git_drift.get("warnings", [])),
+            "warning_codes": obs_warning_codes,
+            "warnings": obs_warnings,
             "content_as_of": content_as_of,
             "content_as_of_basis": content_basis,
             "canonical_remote_match": canonical_remote_match,
@@ -477,7 +1009,14 @@ def build_project_capsule(
         sources_by_id=sources_by_id,
     )
 
-    # Resolve bounded purpose and canonical_url from ranked observations.
+    ctx_sub_limit = CAPSULE_MAX_CTX_SUBSYSTEMS
+    ctx_block = ingest_project_ctx_capsule(
+        ranked_observations,
+        observations_by_id,
+        max_subsystems=ctx_sub_limit,
+    )
+
+    # Resolve bounded purpose and canonical_url from ranked observations (with ctx boundary fallback).
     purpose: str | None = None
     canonical_url: str | None = None
     if project.get("normalized_remotes"):
@@ -491,6 +1030,13 @@ def build_project_capsule(
         raw_url = str(compat.get("canonical_url") or compat.get("remote_url") or "").strip()
         if canonical_url is None and raw_url:
             canonical_url = raw_url
+
+    if purpose is None and ctx_block.get("state") == "available":
+        for bdoc in ctx_block.get("authority_boundaries", []):
+            bsummary = str(bdoc.get("summary") or "").strip()
+            if bsummary:
+                purpose = bsummary[:CAPSULE_PURPOSE_MAX_CHARS]
+                break
 
     aliases: set[str] = set()
     for hint in project.get("project_key_hints", []):
@@ -548,7 +1094,10 @@ def build_project_capsule(
             entry["provenance_truncated"] = True
         bounded_resolved_fields[field_name] = entry
 
-    def _assemble(limit: int, truncated: bool) -> dict:
+    def _rel(target: Path) -> str:
+        return portable_artifact_path(target, state_dir=state_dir)
+
+    def _assemble(limit: int, truncated: bool, current_ctx: dict[str, Any]) -> dict:
         return {
             "schema_version": PROJECT_CAPSULE_SCHEMA_VERSION,
             "compiler_version": COMPILER_VERSION,
@@ -566,6 +1115,7 @@ def build_project_capsule(
             "resolved_fields": bounded_resolved_fields,
             "gbrain_source_slug": gbrain_source_slug,
             "gbrain": gbrain_link,
+            "ctx": current_ctx,
             "freshness": freshness,
             "preferred_location": preferred_location,
             "warnings": capsule_warnings,
@@ -578,12 +1128,12 @@ def build_project_capsule(
                 "items": project_reviews,
             },
             "pointers": {
-                "capsule_path": str(capsule_path),
-                "canonical_projects_path": str(state_dir / "canonical-projects.json"),
-                "observations_path": str(state_dir / "observations.json"),
-                "identity_evidence_path": str(state_dir / "identity-evidence.json"),
-                "review_queue_path": str(state_dir / "review-queue.json"),
-                "change_feed_path": str(state_dir / "changes.json"),
+                "capsule_path": _rel(capsule_path),
+                "canonical_projects_path": _rel(state_dir / "canonical-projects.json"),
+                "observations_path": _rel(state_dir / "observations.json"),
+                "identity_evidence_path": _rel(state_dir / "identity-evidence.json"),
+                "review_queue_path": _rel(state_dir / "review-queue.json"),
+                "change_feed_path": _rel(state_dir / "changes.json"),
                 "observation_ids": list(project.get("observation_ids", [])),
                 "merge_decision_ids": list(project.get("merge_decision_ids", [])),
                 "canonical_key_decision_id": project.get("canonical_key_decision_id"),
@@ -611,13 +1161,30 @@ def build_project_capsule(
             },
         }
 
-    capsule = _assemble(shown_count, observations_truncated)
-    while shown_count > 1 and len((json.dumps(capsule, indent=2, sort_keys=True) + "\n").encode("utf-8")) > max_bytes:
-        shown_count -= 1
-        observations_truncated = True
-        capsule = _assemble(shown_count, observations_truncated)
+    def _encoded_len(payload: dict) -> int:
+        return len((json.dumps(payload, indent=2, sort_keys=True) + "\n").encode("utf-8"))
 
-    encoded_size = len((json.dumps(capsule, indent=2, sort_keys=True) + "\n").encode("utf-8"))
+    capsule = _assemble(shown_count, observations_truncated, ctx_block)
+    while _encoded_len(capsule) > max_bytes:
+        if len(ctx_block.get("subsystems") or []) > 2:
+            ctx_sub_limit = len(ctx_block["subsystems"]) - 1
+            ctx_block = dict(ctx_block)
+            ctx_block["subsystems"] = list(ctx_block["subsystems"][:ctx_sub_limit])
+            ctx_block["subsystems_truncated"] = True
+            capsule = _assemble(shown_count, observations_truncated, ctx_block)
+        elif shown_count > 1:
+            shown_count -= 1
+            observations_truncated = True
+            capsule = _assemble(shown_count, observations_truncated, ctx_block)
+        elif len(ctx_block.get("subsystems") or []) > 0:
+            ctx_block = dict(ctx_block)
+            ctx_block["subsystems"] = []
+            ctx_block["subsystems_truncated"] = True
+            capsule = _assemble(shown_count, observations_truncated, ctx_block)
+        else:
+            break
+
+    encoded_size = _encoded_len(capsule)
     capsule["budget"]["within_budget"] = encoded_size <= max_bytes
     return capsule
 
@@ -682,8 +1249,8 @@ def materialize_capsules(
     return {
         "schema_version": PROJECT_CAPSULE_SCHEMA_VERSION,
         "capsule_count": len(capsules),
-        "capsules_dir": str(capsules_dir),
-        "canonical_markdown_path": str(canonical_md_path),
+        "capsules_dir": portable_artifact_path(capsules_dir, state_dir=state_dir),
+        "canonical_markdown_path": portable_artifact_path(canonical_md_path, state_dir=state_dir),
         "capsules": capsules,
     }
 

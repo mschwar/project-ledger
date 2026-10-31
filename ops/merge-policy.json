@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "required_checks": ["GitGuardian Security Checks"],
-  "retired_checks": ["test", "CI"],
+  "retired_checks": ["test", "CI", "ci/full-suite"],
   "base_branch": "main",
   "notes": "Hosted cloud-VM PR workflows retired to workflow_dispatch; run python3 -m unittest discover -s tests locally on the host and require GitGuardian Security Checks on the PR head."
 }

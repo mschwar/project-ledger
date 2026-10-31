@@ -167,6 +167,12 @@ def load_sidecar(sidecar_path: Path | None) -> dict:
             str(issue.get("detail") or issue.get("code") or "invalid sidecar")
             for issue in envelope["issues"]
         )
+    if envelope.get("warnings"):
+        result["_stale_sidecar"] = bool(envelope.get("stale"))
+        result["_sidecar_warnings"] = [
+            str(w.get("detail") or w.get("code") or "stale_sidecar")
+            for w in envelope["warnings"]
+        ]
     return result
 
 

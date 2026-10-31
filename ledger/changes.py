@@ -27,6 +27,7 @@ from pathlib import Path
 from . import CHANGE_FEED_SCHEMA_VERSION, COMPILER_VERSION
 from .identity import resolve_payload
 from .ids import stable_id
+from .models import portable_artifact_path
 
 RUN_HISTORY_MAX_RUNS = 50
 
@@ -713,9 +714,11 @@ def diff_run_snapshots(
     if state_dir is not None:
         resolved_dir = state_dir.resolve()
         pointers = {
-            "changes_path": str(resolved_dir / "changes.json"),
-            "runs_dir": str(_runs_dir(resolved_dir)),
-            "system_manifest_path": str(resolved_dir / "system-manifest.json"),
+            "changes_path": portable_artifact_path(resolved_dir / "changes.json", state_dir=resolved_dir),
+            "runs_dir": portable_artifact_path(_runs_dir(resolved_dir), state_dir=resolved_dir),
+            "system_manifest_path": portable_artifact_path(
+                resolved_dir / "system-manifest.json", state_dir=resolved_dir
+            ),
         }
 
     if previous is None:

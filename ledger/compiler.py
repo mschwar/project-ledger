@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -13,6 +12,7 @@ from .config import describe_sources, read_config, validate_config
 from .contracts import SOURCE_RESULT_STATES, capability
 from .ids import digest_json, observation_id_for, path_digest, stable_id
 from .identity import materialize_identity
+from .models import portable_artifact_path
 from .sidecar import inspect_entry_sidecar
 
 
@@ -365,14 +365,8 @@ def compile_state(
         state_dir=state_dir,
     )
 
-    output_root = state_dir.resolve().parent
-
     def _rel_artifact(path: Path) -> str:
-        resolved = path.resolve()
-        try:
-            return resolved.relative_to(output_root).as_posix()
-        except ValueError:
-            return Path(os.path.relpath(resolved, start=state_dir.resolve())).as_posix()
+        return portable_artifact_path(path, state_dir=state_dir)
 
     manifest = {
         "schema_version": MANIFEST_SCHEMA_VERSION,

@@ -300,6 +300,8 @@ def build_entry(
     include_reasons = list(quick["reasons"])
     if sidecar.get("_sidecar_error"):
         include_reasons.append("sidecar-error")
+    if sidecar.get("_stale_sidecar"):
+        include_reasons.append("stale_sidecar")
     include_reason = ", ".join(sorted(set(include_reasons)))
 
     return {

@@ -475,10 +475,240 @@ class CapsuleBudgetAndMaterializationTests(unittest.TestCase):
             self.assertEqual(pid, can_b["projects"][0]["canonical_project_id"])
             cap_a = json.loads((Path(tmp_a) / "projects" / f"{pid}.json").read_text(encoding="utf-8"))
             cap_b = json.loads((Path(tmp_b) / "projects" / f"{pid}.json").read_text(encoding="utf-8"))
-            # Exclude state_dir-dependent pointer paths when comparing across temp dirs.
-            cap_a.pop("pointers")
-            cap_b.pop("pointers")
             self.assertEqual(cap_a, cap_b)
+
+
+class CtxTier2CapsuleIngestionTests(unittest.TestCase):
+    def test_ingests_ctx_skeleton_json_fleet_capsule_and_tier2_dir_within_budget(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            base = Path(td)
+            state_dir = base / "state"
+
+            # 1. Repo with .ctx/skeleton.json (RepoSkeleton schema)
+            repo_skel = base / "repo-skel"
+            (repo_skel / ".ctx").mkdir(parents=True)
+            (repo_skel / ".ctx" / "skeleton.json").write_text(
+                json.dumps(
+                    {
+                        "root": str(repo_skel),
+                        "repo_name": "repo-skel",
+                        "structural_hash": "sha256:1111",
+                        "boundary_doc_hash": "sha256:2222",
+                        "total_files": 24,
+                        "languages": {"Python": 20, "Markdown": 4},
+                        "entrypoints": ["cli:ledger -> ledger.cli:main"],
+                        "boundary_docs": [
+                            {
+                                "relative_path": "AGENTS.md",
+                                "kind": "authority",
+                                "headings": ["Mission", "Architectural laws"],
+                                "summary_line": "Durable project-reality compiler contract.",
+                                "content_hash": "sha256:aaaa",
+                            }
+                        ],
+                        "subsystems": [
+                            {
+                                "path": f"ledger/mod_{idx}",
+                                "file_count": 3,
+                                "languages": ["Python"],
+                                "key_symbols": ["fn compile_state", "class Capsule"],
+                                "internal_deps": ["ledger.models"],
+                                "external_deps": ["json"],
+                            }
+                            for idx in range(20)
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            # 2. Repo with .ctx/capsule.json (FleetCapsuleResult schema)
+            repo_fleet = base / "repo-fleet"
+            (repo_fleet / ".ctx").mkdir(parents=True)
+            (repo_fleet / ".ctx" / "capsule.json").write_text(
+                json.dumps(
+                    {
+                        "repo_id": "sha256:9999",
+                        "repo_name": "repo-fleet",
+                        "root": str(repo_fleet),
+                        "structural_hash": "sha256:3333",
+                        "boundary_doc_hash": "sha256:4444",
+                        "total_files": 8,
+                        "languages": {"TypeScript": 8},
+                        "entrypoints": ["npm:bin:ctx -> dist/cli.js"],
+                        "authority_boundaries": [
+                            {
+                                "path": "README.md",
+                                "kind": "overview",
+                                "headings": ["Overview"],
+                                "summary": "Fleet capsule overview fallback purpose.",
+                                "content_hash": "sha256:bbbb",
+                            }
+                        ],
+                        "subsystems": [
+                            {
+                                "path": "src/core",
+                                "file_count": 8,
+                                "languages": ["TypeScript"],
+                                "key_symbols": ["fn buildFleetCapsule"],
+                                "internal_deps": [],
+                                "external_deps": [],
+                            }
+                        ],
+                        "capsule_markdown": "# repo-fleet\n",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            # 3. Repo with Tier-2 .ctx/metadata.json + CONTEXT-0.md
+            repo_t2 = base / "repo-t2"
+            (repo_t2 / ".ctx").mkdir(parents=True)
+            (repo_t2 / ".ctx" / "metadata.json").write_text(
+                json.dumps(
+                    {
+                        "mode": "tier2",
+                        "repo_id": "sha256:7777",
+                        "structural_hash": "sha256:5555",
+                        "boundary_doc_hash": "sha256:6666",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (repo_t2 / ".ctx" / "CONTEXT-0.md").write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "mode: tier2",
+                        "files: 15",
+                        "subsystems: 4",
+                        'structural_hash: "sha256:5555"',
+                        "---",
+                        "",
+                        "# repo-t2 — Architecture & Authority Map (CONTEXT-0)",
+                        "",
+                        "**Files:** 15 | **Subsystems:** 4 | **Languages:** python (12), markdown (3)",
+                        "",
+                        "## Authority Boundaries & Governance",
+                        "- **AGENTS.md** [`authority`] (Tier-2 repo protocol) — Sections: Mission, Rules",
+                        "",
+                        "## Entrypoints & Operational Surfaces",
+                        "- `pyproject.toml:[project.scripts] -> t2=t2.cli:main`",
+                        "",
+                        "## Subsystem Overview",
+                        "| Subsystem | Files | Languages | Key Exports |",
+                        "|-----------|------:|-----------|-------------|",
+                        "| `src/t2` | 12 | python | `cli.py:main` |",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            # 4. Repo with Tier-1 root CONTEXT.md generated by ctx
+            repo_t1 = base / "repo-t1"
+            repo_t1.mkdir(parents=True)
+            (repo_t1 / "CONTEXT.md").write_text(
+                "\n".join(
+                    [
+                        "---",
+                        "generated: '2026-10-30T15:05:37Z'",
+                        "generator: ctx/1.1.0",
+                        "content_hash: sha256:1c0bacbb",
+                        "files: 20",
+                        "dirs: 8",
+                        "---",
+                        "# /central/repos/active/repo-t1",
+                        "",
+                        "Tier-1 ctx manifest overview summary.",
+                        "",
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            obs_list = [
+                _obs(
+                    "obs_skel",
+                    source_id="central-active",
+                    source_label="central-active",
+                    project_key="repo-skel",
+                    name="Repo Skel",
+                    path=str(repo_skel),
+                    remote_url="https://github.com/example/repo-skel.git",
+                    description="",
+                ),
+                _obs(
+                    "obs_fleet",
+                    source_id="central-active",
+                    source_label="central-active",
+                    project_key="repo-fleet",
+                    name="Repo Fleet",
+                    path=str(repo_fleet),
+                    remote_url="https://github.com/example/repo-fleet.git",
+                    description="",
+                ),
+                _obs(
+                    "obs_t2",
+                    source_id="central-active",
+                    source_label="central-active",
+                    project_key="repo-t2",
+                    name="Repo T2",
+                    path=str(repo_t2),
+                    remote_url="https://github.com/example/repo-t2.git",
+                    description="Tier 2 repo.",
+                ),
+                _obs(
+                    "obs_t1",
+                    source_id="central-active",
+                    source_label="central-active",
+                    project_key="repo-t1",
+                    name="Repo T1",
+                    path=str(repo_t1),
+                    remote_url="https://github.com/example/repo-t1.git",
+                    description="",
+                ),
+            ]
+            materialize_identity(
+                observations=obs_list,
+                decisions_path=None,
+                state_dir=state_dir,
+                run_id="run-ctx",
+                compiled_at="2026-10-31T04:30:00Z",
+            )
+
+            cap_skel = show_payload(state_dir, "repo-skel")
+            self.assertEqual(cap_skel["ctx"]["state"], "available")
+            self.assertEqual(cap_skel["ctx"]["source_format"], "skeleton_json")
+            self.assertEqual(cap_skel["ctx"]["structural_hash"], "sha256:1111")
+            self.assertEqual(cap_skel["ctx"]["subsystem_count"], 20)
+            self.assertTrue(cap_skel["ctx"]["subsystems_truncated"])
+            self.assertLessEqual(len(cap_skel["ctx"]["subsystems"]), 12)
+            self.assertEqual(cap_skel["purpose"], "Durable project-reality compiler contract.")
+            self.assertTrue(cap_skel["budget"]["within_budget"])
+
+            cap_fleet = show_payload(state_dir, "repo-fleet")
+            self.assertEqual(cap_fleet["ctx"]["state"], "available")
+            self.assertEqual(cap_fleet["ctx"]["source_format"], "fleet_capsule_json")
+            self.assertEqual(cap_fleet["ctx"]["repo_id"], "sha256:9999")
+            self.assertEqual(cap_fleet["purpose"], "Fleet capsule overview fallback purpose.")
+            self.assertTrue(cap_fleet["budget"]["within_budget"])
+
+            cap_t2 = show_payload(state_dir, "repo-t2")
+            self.assertEqual(cap_t2["ctx"]["state"], "available")
+            self.assertEqual(cap_t2["ctx"]["source_format"], "tier2_ctx_dir")
+            self.assertEqual(cap_t2["ctx"]["total_files"], 15)
+            self.assertEqual(cap_t2["ctx"]["subsystem_count"], 4)
+            self.assertEqual(cap_t2["ctx"]["languages"], {"python": 12, "markdown": 3})
+            self.assertEqual(cap_t2["ctx"]["entrypoints"], ["pyproject.toml:[project.scripts] -> t2=t2.cli:main"])
+            self.assertEqual(cap_t2["ctx"]["subsystems"][0]["path"], "src/t2")
+
+            cap_t1 = show_payload(state_dir, "repo-t1")
+            self.assertEqual(cap_t1["ctx"]["state"], "available")
+            self.assertEqual(cap_t1["ctx"]["source_format"], "tier1_context_md")
+            self.assertEqual(cap_t1["ctx"]["total_files"], 20)
+            self.assertEqual(cap_t1["ctx"]["subsystem_count"], 8)
+            self.assertEqual(cap_t1["purpose"], "Tier-1 ctx manifest overview summary.")
 
 
 if __name__ == "__main__":
