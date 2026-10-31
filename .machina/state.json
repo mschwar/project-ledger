@@ -6,18 +6,18 @@
   "last_checkpoint": null,
   "last_completed": {
     "slice": 1,
-    "summary": "Exported build_ledger via [tool.setuptools] py-modules in pyproject.toml and added package-root/module fallback in ledger/compat.py and ledger/cli.py so installed ledger refresh console scripts work in both editable and non-editable tool environments.",
-    "timestamp": "2026-10-31T21:40:38.170719Z",
+    "summary": "Added *.egg-info/, build/, and dist/ to .gitignore for clean editable tool installs and excluded Project Ledger generated output/state/egg-info directories identically in build_entry and filesystem_candidate_fingerprint so in-place warm refreshes hit 14/14 sources and 224/224 candidates.",
+    "timestamp": "2026-10-31T21:48:18.995672Z",
     "unit": {
-      "id": "PL-STRATEGIC-UNLOCK-03B",
-      "spec": ".machina/units/PL-STRATEGIC-UNLOCK-03B.json",
-      "spec_digest": "1d00c29c602b865fb94c6f519b83bbc77c7294faa5e0b7789ea66e3445cd5561",
-      "title": "Include build_ledger py-module in wheel packaging for installed ledger refresh CLI"
+      "id": "PL-STRATEGIC-UNLOCK-03C",
+      "spec": ".machina/units/PL-STRATEGIC-UNLOCK-03C.json",
+      "spec_digest": "a234210e0ae26bbfaa428620be7a4368eb05adc6d57eb0d22bd8dccf41c7d0eb",
+      "title": "Ignore editable egg-info in .gitignore and exclude Project Ledger generated output/state from self-scan"
     }
   },
   "next_action": null,
   "schema_version": 1,
-  "sequence": 36,
+  "sequence": 39,
   "slice": 1,
-  "updated_at": "2026-10-31T21:40:38.173832Z"
+  "updated_at": "2026-10-31T21:48:19.000827Z"
 }

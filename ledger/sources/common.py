@@ -138,10 +138,26 @@ def find_first_existing(directory: Path, candidates: Iterable[str]) -> Path | No
     return None
 
 
+_PROJECT_LEDGER_SELF_EXCLUDES = {
+    "build",
+    "dist",
+    "output",
+    "project_ledger.egg-info",
+    "state",
+}
+
+
 def merge_exclude_names(root_cfg: dict, defaults: dict) -> set[str]:
     exclude_names = set(DEFAULT_EXCLUDES)
     exclude_names.update(defaults.get("exclude_names", []))
     exclude_names.update(root_cfg.get("exclude_names", []))
+    return exclude_names
+
+
+def effective_candidate_excludes(directory: Path, root_cfg: dict, defaults: dict) -> set[str]:
+    exclude_names = merge_exclude_names(root_cfg, defaults)
+    if (directory / "build_ledger.py").is_file() and (directory / "ledger" / "__init__.py").is_file():
+        exclude_names.update(_PROJECT_LEDGER_SELF_EXCLUDES)
     return exclude_names
 
 

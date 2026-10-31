@@ -3,6 +3,9 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .venv/
+*.egg-info/
+build/
+dist/
 tests/__pycache__/
 output/
 state/

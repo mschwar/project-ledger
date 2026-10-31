@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "PL-STRATEGIC-UNLOCK-03C",
+  "title": "Ignore editable egg-info in .gitignore and exclude Project Ledger generated output/state from self-scan",
+  "objective": "Close two emergent hygiene items surfaced during live uv tool install and in-place refresh verification: (1) add *.egg-info/, build/, and dist/ to .gitignore so `uv tool install --editable` leaves the Project Ledger checkout clean (clearing GIT_DIRTY_WORKTREE); and (2) exclude Project Ledger's own generated `output/`, `state/`, `project_ledger.egg-info`, `build/`, and `dist/` directories identically in both `build_entry` and `filesystem_candidate_fingerprint` so in-place `ledger refresh` hits 14/14 sources and 224/224 candidates without self-invalidating.",
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-STRATEGIC-UNLOCK-03C.json",
+      "edit .gitignore, ledger/sources/common.py, ledger/sources/filesystem.py, ledger/checkpoints.py, tests/test_u2_u4_structural_ctx_and_perf.py, and .project-ledger.json",
+      "run uvx --offline ruff check ., python3 -m ledger validate, and python3 -m unittest tests.test_u2_u4_structural_ctx_and_perf tests.test_p51_checkpoints tests.test_machina_thin_waist"
+    ],
+    "forbidden": [
+      "mutate registered external source checkouts or /central/repos/active/machina",
+      "introduce execution_state into Project Ledger domain surfaces or schemas",
+      "add em dashes to .machina/specs/*.json, scripts/machina_adapter.sh, or tests/test_machina_thin_waist.py"
+    ]
+  },
+  "completion": ".gitignore ignores *.egg-info/, build/, and dist/; in-place warm `ledger refresh` hits 100% of sources and candidates without self-invalidation while keeping full-scan and incremental compatibility entries byte-identical; .project-ledger.json is touched in HEAD; ruff and unit tests pass.",
+  "initial_next_action": "Update .gitignore, add effective_candidate_excludes in ledger/sources/common.py, wire into filesystem.py and checkpoints.py, add regression test, and verify."
+}
