@@ -66,13 +66,13 @@ class GBrainPageProjectorTests(unittest.TestCase):
                 d.mkdir(parents=True)
                 (d / "README.md").write_text(f"# {d.name}\n\nPurpose of {d.name}.\n", encoding="utf-8")
 
-            # Include tricky YAML characters in stub display_name (`#`, `:`, `'`, `<p>`)
+            # Include tricky YAML characters + UTF-16LE null bytes in stub display_name
             (p_stub / ".project-ledger.json").write_text(
                 json.dumps(
                     {
                         "schema_version": "1.0.0",
                         "project_key": "stub-alpha",
-                        "display_name": "<p>Alpha: #1 'Core'</p>",
+                        "display_name": "<p>A\x00l\x00p\x00h\x00a: #1 'Core'</p>",
                         "status": "active",
                         "tags": ["infra", "core"],
                     }

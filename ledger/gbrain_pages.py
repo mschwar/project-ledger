@@ -38,9 +38,17 @@ _REALITY_BLOCK_RE = re.compile(
 )
 
 
+_CONTROL_CHARS_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\ufeff]")
+
+
+def _sanitize_text(value: Any) -> str:
+    """Strip null bytes, UTF-16 BOM artefacts, and disallowed YAML/Markdown control chars."""
+    return _CONTROL_CHARS_RE.sub("", str(value or ""))
+
+
 def _yaml_quote(value: str) -> str:
-    """Single-quote a YAML scalar safely (handles '#', ':', '<', quotes, etc.)."""
-    cleaned = str(value or "").replace("\r", " ").replace("\n", " ").strip()
+    """Single-quote a YAML scalar safely (handles '#', ':', '<', quotes, null bytes, etc.)."""
+    cleaned = _sanitize_text(value).replace("\r", " ").replace("\n", " ").strip()
     return "'" + cleaned.replace("'", "''") + "'"
 
 
@@ -124,7 +132,7 @@ def render_reality_block(project: dict[str, Any], capsule: dict[str, Any]) -> st
 
 def merge_reality_block_into_page(existing_text: str, reality_block: str) -> str:
     """Update or insert ``reality_block`` without modifying frontmatter, prose, or timeline."""
-    normalized = existing_text.replace("\r\n", "\n")
+    normalized = _sanitize_text(existing_text).replace("\r\n", "\n")
 
     if REALITY_BEGIN_MARKER in normalized and REALITY_END_MARKER in normalized:
         updated = _REALITY_BLOCK_RE.sub(lambda _m: reality_block, normalized, count=1)
@@ -153,7 +161,7 @@ def render_new_project_stub(
     """Render a brand-new ``projects/<slug>.md`` stub page."""
     canonical_id = str(project.get("canonical_project_id") or capsule.get("canonical_project_id") or "")
     project_key = str(project.get("project_key") or capsule.get("project_key") or canonical_id)
-    display_name = str(
+    display_name = _sanitize_text(
         capsule.get("display_name") or project.get("display_name") or project_key
     ).strip() or project_key
 
@@ -168,7 +176,7 @@ def render_new_project_stub(
         if cleaned_tag and cleaned_tag not in tag_set:
             tag_set.append(cleaned_tag)
 
-    purpose = str(capsule.get("purpose") or "").replace("\r", " ").strip()
+    purpose = _sanitize_text(capsule.get("purpose") or "").replace("\r", " ").strip()
     summary_paragraph = (
         purpose
         if purpose
