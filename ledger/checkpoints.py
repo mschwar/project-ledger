@@ -40,6 +40,7 @@ from .sources.common import (
     README_CANDIDATES,
     SIDECAR_CANDIDATES,
     SPECIAL_FILES,
+    effective_candidate_excludes,
     find_first_existing,
     merge_exclude_names,
     resolve_path,
@@ -263,7 +264,7 @@ def filesystem_candidate_fingerprint(
     """Compute a deterministic single-pass fingerprint covering all inputs to ``build_entry``."""
     if not safe_path_exists(directory) or not safe_path_is_dir(directory):
         return None
-    exclude_names = merge_exclude_names(root_cfg, defaults)
+    exclude_names = effective_candidate_excludes(directory, root_cfg, defaults)
     max_entries = int(
         root_cfg.get("tree_scan_max_entries", defaults.get("tree_scan_max_entries", 5000))
     )

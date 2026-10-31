@@ -25,11 +25,11 @@ from .common import (
     README_CANDIDATES,
     SIDECAR_CANDIDATES,
     SPECIAL_FILES,
+    effective_candidate_excludes,
     find_first_existing,
     infer_storage_scope,
     iter_shallow_files,
     load_sidecar,
-    merge_exclude_names,
     parse_readme_summary,
     safe_path_exists,
     safe_path_is_dir,
@@ -266,7 +266,7 @@ def build_entry(
     defaults: dict,
     output_dir: Path,
 ) -> dict | None:
-    exclude_names = merge_exclude_names(root_cfg, defaults)
+    exclude_names = effective_candidate_excludes(directory, root_cfg, defaults)
 
     quick = inspect_candidate(directory, exclude_names)
     sidecar = load_sidecar(quick["sidecar_path"])

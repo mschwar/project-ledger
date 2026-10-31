@@ -1,6 +1,6 @@
 {
   "advisory_warning_codes": [
-    "stale_sidecar"
+    "GIT_DIRTY_WORKTREE"
   ],
   "blocking_warning_codes": [],
   "canonical_project_id": "prj_f07b53d92d07b50328ad46c8",
@@ -11,14 +11,18 @@
   "git_drift": {
     "ahead_count": 0,
     "behind_count": 0,
-    "dirty": false,
+    "dirty": true,
     "head_branch": "main",
-    "head_commit": "a7339aab8378d102932a77de263297149af34687",
+    "head_commit": "05567bd665b7f856f516d9fee91766e8d2a30735",
     "main_behind_count": null,
-    "state": "clean",
+    "state": "dirty",
     "upstream_ref": "origin/main",
-    "warning_codes": [],
-    "warnings": []
+    "warning_codes": [
+      "GIT_DIRTY_WORKTREE"
+    ],
+    "warnings": [
+      "warning: local working tree at /central/repos/active/project-ledger has uncommitted changes"
+    ]
   },
   "preferred_location": "/central/repos/active/project-ledger",
   "preferred_location_state": "resolved",
@@ -28,9 +32,9 @@
   "result": "PREFLIGHT_WARN",
   "schema_version": 1,
   "warning_codes": [
-    "stale_sidecar"
+    "GIT_DIRTY_WORKTREE"
   ],
   "warnings": [
-    "warning: stale_sidecar: declared timestamp 2026-10-31T20:03:00Z in .project-ledger.json lags live HEAD a7339aab8378 (2026-10-31T15:21:34-06:00)"
+    "warning: local working tree at /central/repos/active/project-ledger has uncommitted changes"
   ]
 }

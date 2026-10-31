@@ -586,6 +586,29 @@ class U4PerformancePrimitivesTests(unittest.TestCase):
             )
             self.assertEqual(_refresh(), 0)
 
+    def test_project_ledger_self_excludes_generated_output_and_state_dirs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pl = root / "project-ledger"
+            (pl / "ledger").mkdir(parents=True)
+            (pl / "output").mkdir()
+            (pl / "state").mkdir()
+            (pl / "README.md").write_text("# Project Ledger\n", encoding="utf-8")
+            (pl / "build_ledger.py").write_text("# shim\n", encoding="utf-8")
+            (pl / "ledger" / "__init__.py").write_text("COMPILER_VERSION = '0.2.0'\n", encoding="utf-8")
+
+            root_cfg = {"discovery": "children", "_resolved_path": root.resolve()}
+            fp1 = filesystem_candidate_fingerprint(
+                pl, root_cfg, {}, root / "out", source_cfg_digest="cfg1"
+            )
+            # Writing generated output/ and state/ files inside Project Ledger must NOT self-invalidate!
+            (pl / "output" / "projects.json").write_text("{}", encoding="utf-8")
+            (pl / "state" / "system-manifest.json").write_text("{}", encoding="utf-8")
+            fp2 = filesystem_candidate_fingerprint(
+                pl, root_cfg, {}, root / "out", source_cfg_digest="cfg1"
+            )
+            self.assertEqual(fp1, fp2)
+
 
 if __name__ == "__main__":
     unittest.main()
