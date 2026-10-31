@@ -1,0 +1,20 @@
+{
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-STRATEGIC-UNLOCK-03B.json",
+      "edit pyproject.toml, ledger/compat.py, ledger/cli.py, tests/test_state_schemas.py, and .project-ledger.json",
+      "run uvx --offline ruff check ., python3 -m ledger validate, and python3 -m unittest tests.test_state_schemas tests.test_mcp_server tests.test_machina_thin_waist"
+    ],
+    "forbidden": [
+      "mutate registered external source checkouts or /central/repos/active/machina",
+      "introduce execution_state into Project Ledger domain surfaces or schemas",
+      "add em dashes to .machina/specs/*.json, scripts/machina_adapter.sh, or tests/test_machina_thin_waist.py"
+    ]
+  },
+  "completion": "pyproject.toml includes py-modules = [\"build_ledger\"], installed `ledger refresh` imports build_ledger cleanly without CWD sys.path[0] dependency, .project-ledger.json is touched in HEAD, and ruff + unit tests pass.",
+  "id": "PL-STRATEGIC-UNLOCK-03B",
+  "initial_next_action": "Add py-modules = [\"build_ledger\"] to pyproject.toml, update ledger/compat.py and ledger/cli.py, add test assertion in tests/test_state_schemas.py, and verify.",
+  "objective": "Close emergent U5 packaging defect surfaced during live uv tool install verification: export build_ledger via [tool.setuptools] py-modules = [\"build_ledger\"] in pyproject.toml, add package-root sys.path fallback in ledger/compat.py and module fallback in ledger/cli.py so installed `ledger refresh` console scripts resolve build_ledger in both editable and non-editable tool environments, and pin a regression assertion in tests/test_state_schemas.py.",
+  "schema_version": 1,
+  "title": "Include build_ledger py-module in wheel packaging for installed ledger refresh CLI"
+}

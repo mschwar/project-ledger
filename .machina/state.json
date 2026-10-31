@@ -6,18 +6,18 @@
   "last_checkpoint": null,
   "last_completed": {
     "slice": 1,
-    "summary": "Implemented U5 pure-Python stdlib read-only MCP stdio server (ledger/mcp_server.py, ledger-mcp console script, and ledger mcp subcommand supporting newline-delimited and Content-Length framing across all 9 Reality Provider tools and ledger:// resources), zero-config workspace-root fallback from any CWD, and reconciled CURRENT.md, SCHEMA.md, ARCHITECTURE.md, README.md, AGENTS.md, BACKLOG.md work queue (closing WQ-3, updating WQ-2, adding WQ-4), and .project-ledger.json across U1-U5.",
-    "timestamp": "2026-10-31T21:36:09.900553Z",
+    "summary": "Exported build_ledger via [tool.setuptools] py-modules in pyproject.toml and added package-root/module fallback in ledger/compat.py and ledger/cli.py so installed ledger refresh console scripts work in both editable and non-editable tool environments.",
+    "timestamp": "2026-10-31T21:40:38.170719Z",
     "unit": {
-      "id": "PL-STRATEGIC-UNLOCK-03",
-      "spec": ".machina/units/PL-STRATEGIC-UNLOCK-03.json",
-      "spec_digest": "f8ea0da99347d415f8a669ed1d22631ecc5deddf6bd5bf2413e7b49ab65bbae4",
-      "title": "Stdlib read-only MCP server, global CLI ergonomics, documentation, and work-queue closeout"
+      "id": "PL-STRATEGIC-UNLOCK-03B",
+      "spec": ".machina/units/PL-STRATEGIC-UNLOCK-03B.json",
+      "spec_digest": "1d00c29c602b865fb94c6f519b83bbc77c7294faa5e0b7789ea66e3445cd5561",
+      "title": "Include build_ledger py-module in wheel packaging for installed ledger refresh CLI"
     }
   },
   "next_action": null,
   "schema_version": 1,
-  "sequence": 33,
+  "sequence": 36,
   "slice": 1,
-  "updated_at": "2026-10-31T21:36:09.901316Z"
+  "updated_at": "2026-10-31T21:40:38.173832Z"
 }

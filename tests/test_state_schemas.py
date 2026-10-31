@@ -167,6 +167,7 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
         self.assertEqual(parsed["project"]["name"], "project-ledger")
         self.assertEqual(parsed["project"]["scripts"]["ledger"], "ledger.cli:main")
         self.assertEqual(parsed["project"]["scripts"]["ledger-mcp"], "ledger.mcp_server:main")
+        self.assertEqual(parsed["tool"]["setuptools"]["py-modules"], ["build_ledger"])
         self.assertIn("F", parsed["tool"]["ruff"]["lint"]["select"])
 
         exported = getattr(build_ledger, "__all__", None)

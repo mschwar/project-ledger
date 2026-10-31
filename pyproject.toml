@@ -14,6 +14,9 @@ dependencies = []
 ledger = "ledger.cli:main"
 ledger-mcp = "ledger.mcp_server:main"
 
+[tool.setuptools]
+py-modules = ["build_ledger"]
+
 [tool.setuptools.packages.find]
 include = ["ledger*"]
 
