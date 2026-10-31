@@ -172,7 +172,37 @@ def parse_iso_datetime(value: str) -> float | None:
         return None
     if text.endswith("Z"):
         text = text[:-1] + "+00:00"
+    # Normalize >6 fractional second digits (e.g. .NET 7-tick timestamps) for fromisoformat.
+    text = re.sub(r"\.(\d{6})\d+(?=[+-]\d{2}:\d{2}$|$)", r".\1", text)
     try:
-        return datetime.fromisoformat(text).timestamp()
+        parsed = datetime.fromisoformat(text)
     except ValueError:
         return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.timestamp()
+
+
+def portable_artifact_path(path: Path, *, state_dir: Path) -> str:
+    """Format an artifact path as a portable POSIX path free of ephemeral ``/tmp/tmp*`` roots."""
+    resolved_target = path.resolve()
+    resolved_state = state_dir.resolve()
+    try:
+        rel_in_state = resolved_target.relative_to(resolved_state).as_posix()
+        state_prefix = (
+            "state"
+            if resolved_state.name.startswith("tmp") or not resolved_state.name
+            else resolved_state.name
+        )
+        return state_prefix if rel_in_state == "." else f"{state_prefix}/{rel_in_state}"
+    except ValueError:
+        pass
+    output_root = resolved_state.parent
+    try:
+        rel_in_root = resolved_target.relative_to(output_root).as_posix()
+        first_part = rel_in_root.split("/", 1)[0]
+        if not first_part.startswith("tmp"):
+            return rel_in_root
+    except ValueError:
+        pass
+    return Path(os.path.relpath(resolved_target, start=resolved_state)).as_posix()

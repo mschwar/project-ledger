@@ -774,6 +774,25 @@
       "observation_id": "obs_f80eddc0612dc7f9f2d938d2",
       "rationale": "Preserve legacy pre-rename repository key github.com/mschwar/steam-db-mattified as an approved alias for /central/repos/active/gamma-steamdb.",
       "type": "alias"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-31T04:35:00Z",
+      "decision_id": "dec_retire_supersede_white_rabbit_merge_20261031",
+      "rationale": "Supersede 3-way dec_triage_white_rabbit_merge_20261029 after archiving duplicate top-level checkout /central/white-rabbit (obs_128ca37a8e8f71df0611b79b) to /central/archive/retired-top-level-checkouts-20261031/white-rabbit; replaced by 2-way dec_retire_white_rabbit_merge_20261031.",
+      "supersedes_decision_id": "dec_triage_white_rabbit_merge_20261029",
+      "type": "supersede"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-10-31T04:35:00Z",
+      "decision_id": "dec_retire_white_rabbit_merge_20261031",
+      "observation_ids": [
+        "obs_3f044b92e89cb88b23ad455f",
+        "obs_9ddd0040fce7668f9c3aa442"
+      ],
+      "rationale": "Unify surviving canonical checkout /central/repos/active/white-rabbit and matty-pc:white-rabbit after archiving duplicate top-level root /central/white-rabbit.",
+      "type": "merge"
     }
   ],
   "schema_version": "1.0.0"

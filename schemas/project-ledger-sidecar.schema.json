@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/project-ledger-sidecar.schema.json",
+  "title": "Project Ledger Sidecar Declaration (v1)",
+  "description": "Project-local declaration contract for .project-ledger.json / project-ledger.json (programme P1.7). Sidecars provide human-editable declarations attached to an observation; canonical_project_id is assigned exclusively by Project Ledger compilation and is forbidden here.",
+  "type": "object",
+  "additionalProperties": false,
+  "not": {
+    "required": [
+      "canonical_project_id"
+    ]
+  },
+  "x-forbidden-fields": [
+    "canonical_project_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "Supported v1 schema version ('1', '1.0', '1.0.0', or integer 1). Legacy unversioned sidecars omit this field.",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^1(?:\\.\\d+){0,2}$"
+        },
+        {
+          "type": "integer",
+          "const": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "aliases": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "canonical_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "commit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "display_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gbrain_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "gbrain_source_slug": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "git": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dirty": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "dirty_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "is_git": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "last_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "remote": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "head_commit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "kind": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_push_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_session_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_session_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lifecycle_state": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "machine_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "next_step": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "primary_language": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "purpose": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "repo_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shared": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "storage_scope": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
