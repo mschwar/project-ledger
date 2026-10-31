@@ -1,0 +1,27 @@
+{
+  "active_unit": null,
+  "attempt_id": null,
+  "execution_state": "idle",
+  "frontier": null,
+  "last_checkpoint": {
+    "slice": 1,
+    "summary": "Implemented Project Ledger Consumer Adapter v1 (scripts/machina_adapter.sh orient and fail-closed map) without adding execution_state to Ledger domain surfaces.",
+    "timestamp": "2026-10-31T05:43:03.807113Z"
+  },
+  "last_completed": {
+    "slice": 2,
+    "summary": "Verified Project Ledger Consumer Adapter v1 (orient, fail-closed map, ledger validate, and full unittest suite).",
+    "timestamp": "2026-10-31T05:43:14.102136Z",
+    "unit": {
+      "id": "PL-MACHINA-THIN-WAIST-01",
+      "spec": ".machina/units/PL-MACHINA-THIN-WAIST-01.json",
+      "spec_digest": "94d9045ba41012e58656a78121736ac61d0a0cb36b40b367f018c0967f966a78",
+      "title": "Onboard Project Ledger onto Machina thin waist (Consumer Adapter v1)"
+    }
+  },
+  "next_action": null,
+  "schema_version": 1,
+  "sequence": 6,
+  "slice": 2,
+  "updated_at": "2026-10-31T05:43:14.102366Z"
+}
