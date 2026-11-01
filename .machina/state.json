@@ -1,12 +1,7 @@
 {
-  "active_unit": {
-    "id": "PL-ESTATE-REFRESH-20261101",
-    "spec": ".machina/units/PL-ESTATE-REFRESH-20261101.json",
-    "spec_digest": "424d30f57b739a6012fcbe8a0ac3584186e70206f6a9910aa6f49d56269e0231",
-    "title": "Refresh Project Ledger estate inventory and lineage registry across Machina and GBrain Ops"
-  },
-  "attempt_id": "8277848d2cc14c4c9b50fa782b6d4a60",
-  "execution_state": "work_ready",
+  "active_unit": null,
+  "attempt_id": null,
+  "execution_state": "idle",
   "frontier": null,
   "last_checkpoint": {
     "slice": 1,
@@ -14,19 +9,19 @@
     "timestamp": "2026-11-01T02:58:22.353687Z"
   },
   "last_completed": {
-    "slice": 1,
-    "summary": "Implemented split-same-remote project_key auto-disambiguation (closing all 6 FUTURE-SPEC docs), published the remaining 6 Draft 2020-12 JSON Schemas (13/13 contract coverage), added Law 11 degraded-source containment to machina_adapter.sh, added safe orphaned pure-stub pruning to ledger sync-gbrain, added canonical_key decisions for the-garden and relational-physics, removed the redundant nanochat-master config exclude, made .project-ledger.json permanently drift-free, and drained WQ-1..WQ-4.",
-    "timestamp": "2026-11-01T02:45:00.625949Z",
+    "slice": 2,
+    "summary": "Slice 2 (recovered in secondary git worktree): ruff check, ledger validate, and full unittest suite green; machina and gbrain-ops resolve cleanly.",
+    "timestamp": "2026-11-01T02:59:35.459332Z",
     "unit": {
-      "id": "PL-AUDIT-DRAIN-01",
-      "spec": ".machina/units/PL-AUDIT-DRAIN-01.json",
-      "spec_digest": "9bde85fcad9594dbfc523b10554d8dedd4ef38d60580826ee6b865b37b8ecc37",
-      "title": "Drain remaining repository audit nuances, schemas, future specs, degraded-source adapter, and GBrain stub pruning"
+      "id": "PL-ESTATE-REFRESH-20261101",
+      "spec": ".machina/units/PL-ESTATE-REFRESH-20261101.json",
+      "spec_digest": "424d30f57b739a6012fcbe8a0ac3584186e70206f6a9910aa6f49d56269e0231",
+      "title": "Refresh Project Ledger estate inventory and lineage registry across Machina and GBrain Ops"
     }
   },
-  "next_action": "Recover in secondary git worktree checkout, run ruff check + ledger validate + unittest in Slice 2, and complete unit.",
+  "next_action": null,
   "schema_version": 1,
-  "sequence": 45,
-  "slice": 1,
-  "updated_at": "2026-11-01T02:58:22.354745Z"
+  "sequence": 47,
+  "slice": 2,
+  "updated_at": "2026-11-01T02:59:35.461676Z"
 }
