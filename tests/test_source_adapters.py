@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
@@ -312,6 +313,84 @@ class GitAdapterTests(unittest.TestCase):
             self.assertEqual(len(entries), 1)
             self.assertEqual(entries[0]["source_label"], "research")
             self.assertEqual(Path(entries[0]["path"]).resolve(), real_proj.resolve())
+
+    @unittest.skipIf(hasattr(os, "geteuid") and os.geteuid() == 0, "chmod 000 does not block root")
+    def test_unreadable_chmod_000_directories_are_contained_without_permission_error(self) -> None:
+        from ledger.compat import scan_without_markdown_mirror
+        from ledger.compiler import compile_state
+        from ledger.config import describe_sources
+
+        with ScratchDir() as root:
+            services = root / "services"
+            locked_root = root / "locked-root"
+            services.mkdir()
+            locked_root.mkdir()
+
+            healthy = services / "healthy-service"
+            healthy.mkdir()
+            (healthy / "README.md").write_text("# Healthy Service\nRuns fine.\n", encoding="utf-8")
+            (healthy / "app.py").write_text("def main():\n    return 0\n", encoding="utf-8")
+
+            locked_ctx = healthy / ".ctx"
+            locked_machina = healthy / ".machina"
+            locked_ctx.mkdir()
+            locked_machina.mkdir()
+
+            pgdump = services / "gbrain-pgdump"
+            pgdump.mkdir()
+            (pgdump / "secret.dump").write_text("restricted", encoding="utf-8")
+
+            cfg_path = root / "ledger_config.json"
+            cfg = {
+                "defaults": {"min_score": 2},
+                "roots": [
+                    {"source_id": "services", "label": "services", "path": str(services), "discovery": "children"},
+                    {"source_id": "locked", "label": "locked", "path": str(locked_root), "discovery": "children"},
+                ],
+            }
+            cfg_path.write_text(json.dumps(cfg), encoding="utf-8")
+
+            try:
+                pgdump.chmod(0o000)
+                locked_ctx.chmod(0o000)
+                locked_machina.chmod(0o000)
+                locked_root.chmod(0o000)
+
+                probed = {item["source_id"]: item for item in describe_sources(cfg, root)}
+                self.assertEqual(probed["services"]["status"], "available")
+                self.assertEqual(probed["locked"]["status"], "unavailable")
+
+                full_entries = sources_base.collect_entries(cfg, root, root / "output")
+                self.assertEqual([item["name"] for item in full_entries], ["Healthy Service"])
+
+                inc_entries, cp_payload = collect_entries_incremental(
+                    cfg,
+                    root,
+                    root / "output",
+                    checkpoint_path=root / "state" / "source-checkpoints.json",
+                )
+                self.assertEqual([item["name"] for item in inc_entries], ["Healthy Service"])
+                self.assertEqual(cp_payload["summary"]["unavailable_source_count"], 1)
+
+                outputs = scan_without_markdown_mirror(
+                    config_path=cfg_path,
+                    output_dir=root / "output",
+                    checkpoint_path=root / "state" / "source-checkpoints.json",
+                )
+                manifest = compile_state(
+                    config_path=cfg_path,
+                    compat_output_path=outputs["json"],
+                    state_dir=root / "state",
+                    use_checkpoint_compile_cache=True,
+                )
+                self.assertEqual(manifest["counts"]["canonical_projects"], 1)
+                self.assertEqual(manifest["health"]["state"], "degraded")
+            finally:
+                for p in (pgdump, locked_ctx, locked_machina, locked_root):
+                    try:
+                        p.chmod(0o755)
+                    except OSError:
+                        pass
 
 
 if __name__ == "__main__":

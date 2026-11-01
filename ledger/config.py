@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .contracts import SUPPORTED_DISCOVERY_MODES
 from .ids import digest_json, normalize_locator, path_digest, source_id_for
+from .sources.common import safe_path_exists, safe_path_is_file
 
 PACKAGE_REPO_ROOT = Path(__file__).resolve().parents[1]
 _LEDGER_STATE_MARKERS = (
@@ -31,11 +32,11 @@ def default_workspace_root(cwd: Path | None = None) -> Path:
     if env_home:
         return Path(env_home).expanduser().resolve()
     active_cwd = (cwd or Path.cwd()).resolve()
-    if (active_cwd / "ledger_config.json").is_file() or any(
-        (active_cwd / "state" / marker).is_file() for marker in _LEDGER_STATE_MARKERS
+    if safe_path_is_file(active_cwd / "ledger_config.json") or any(
+        safe_path_is_file(active_cwd / "state" / marker) for marker in _LEDGER_STATE_MARKERS
     ):
         return active_cwd
-    if (PACKAGE_REPO_ROOT / "ledger_config.json").is_file():
+    if safe_path_is_file(PACKAGE_REPO_ROOT / "ledger_config.json"):
         return PACKAGE_REPO_ROOT
     return active_cwd
 
@@ -158,7 +159,7 @@ def validate_config(config: dict, config_dir: Path, *, check_artifacts: bool = T
                     ("policy_path", policy_raw, "POLICY_ARTIFACT_MISSING"),
                 ):
                     path = resolve_config_path(raw, config_dir)
-                    if not path.is_file():
+                    if not safe_path_is_file(path):
                         raise LedgerConfigError(code, f"{where}.{key} does not exist or is not a file: {path}")
 
 
@@ -192,10 +193,11 @@ def describe_sources(config: dict, config_dir: Path) -> list[dict]:
         sid = source_id_for(root, index=index)
         artifacts: list[dict] = []
         artifact_ok = True
+        path_exists = safe_path_exists(path)
         if discovery == "inventory_policy":
             for role, key in (("inventory", "inventory_jsonl"), ("policy", "policy_path")):
                 artifact_path = resolve_config_path(str(root[key]), config_dir)
-                exists = artifact_path.is_file()
+                exists = safe_path_is_file(artifact_path) and os.access(artifact_path, os.R_OK)
                 artifact_ok = artifact_ok and exists
                 artifacts.append(
                     {
@@ -209,16 +211,16 @@ def describe_sources(config: dict, config_dir: Path) -> list[dict]:
             status = "available" if artifact_ok else "unavailable"
             status_reason = "inventory_artifacts_available" if artifact_ok else "required_inventory_artifact_missing"
         else:
-            exists = path.exists()
-            status = "available" if exists else "unavailable"
-            status_reason = "root_accessible" if exists else "root_missing_or_unavailable"
+            accessible = path_exists and os.access(path, os.R_OK)
+            status = "available" if accessible else "unavailable"
+            status_reason = "root_accessible" if accessible else "root_missing_or_unavailable"
 
         fingerprint_payload = {
             "source_id": sid,
             "discovery": discovery,
             "path": normalize_locator(str(path)),
-            "path_exists": path.exists(),
-            "path_mtime": _mtime_iso(path) if path.exists() else None,
+            "path_exists": path_exists,
+            "path_mtime": _mtime_iso(path) if path_exists else None,
             "artifacts": [{k: item[k] for k in ("role", "state", "sha256")} for item in artifacts],
         }
         input_fingerprint = digest_json(fingerprint_payload)
@@ -231,11 +233,11 @@ def describe_sources(config: dict, config_dir: Path) -> list[dict]:
                 "machine_name": str(root.get("machine_name", "")).strip() or None,
                 "storage_scope": str(root.get("storage_scope", "")).strip() or None,
                 "path": str(path),
-                "path_state": "known" if path.exists() else "unavailable",
+                "path_state": "known" if path_exists else "unavailable",
                 "status": status,
                 "status_reason": status_reason,
                 "freshness_state": "unknown",
-                "probe_as_of": _mtime_iso(path) if path.exists() else None,
+                "probe_as_of": _mtime_iso(path) if path_exists else None,
                 "probe_fingerprint": input_fingerprint,
                 "artifacts": artifacts,
             }

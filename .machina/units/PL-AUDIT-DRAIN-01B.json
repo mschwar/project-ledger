@@ -1,0 +1,21 @@
+{
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-AUDIT-DRAIN-01B.json",
+      "edit ledger/sources/{common,filesystem,base,git}.py, ledger/{checkpoints,sidecar,structural_ctx,capsules,config}.py",
+      "edit tests/{test_source_adapters,test_capsules}.py",
+      "run uvx --offline ruff check ., python3 -m ledger validate, python3 -m unittest discover -s tests -q, and staging ledger refresh"
+    ],
+    "forbidden": [
+      "mutate /central/repos/active/machina",
+      "introduce execution_state into Project Ledger domain surfaces or schemas",
+      "add em dashes to .machina/specs/*.json, scripts/machina_adapter.sh, or tests/test_machina_thin_waist.py"
+    ]
+  },
+  "completion": "All target-directory pathlib probes use OSError-safe helpers, chmod 000 unreadable sibling and sub-directory regression tests pass, ruff and the full unit test suite pass, and live staging refresh succeeds cleanly over /central/services/gbrain-pgdump.",
+  "id": "PL-AUDIT-DRAIN-01B",
+  "initial_next_action": "Add safe_path_is_file and safe_path_is_symlink to ledger/sources/common.py, harden all target-repo pathlib probes across sources, checkpoints, sidecar, structural_ctx, capsules, and config, and add chmod 000 regression tests.",
+  "objective": "Contain OSError and PermissionError raised by Python 3.12+ pathlib stat probes (such as root-owned 0700 service directories inside children roots like /central/services/gbrain-pgdump) across ledger/sources/, ledger/checkpoints.py, ledger/sidecar.py, ledger/structural_ctx.py, ledger/capsules.py, and ledger/config.py under Architectural Law 11 so unreadable sibling or child directories never abort ledger refresh or compile.",
+  "schema_version": 1,
+  "title": "Contain Python 3.12+ PermissionError across unreadable directories during source probing, scanning, checkpointing, and capsule synthesis"
+}

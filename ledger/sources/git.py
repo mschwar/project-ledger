@@ -13,6 +13,7 @@ import subprocess
 from pathlib import Path
 
 from ..models import normalize_remote_url, repo_name_from_remote
+from .common import safe_path_exists
 
 
 def git_output(directory: Path, *args: str) -> str:
@@ -102,7 +103,7 @@ def _build_drift_warnings(
 
 def inspect_git_worktree_state(directory: Path) -> dict:
     """Inspect ahead/behind upstream drift and working-tree dirtiness in read-only mode."""
-    if not (directory / ".git").exists():
+    if not safe_path_exists(directory / ".git"):
         return {
             "state": "not_applicable",
             "head_branch": None,
@@ -249,7 +250,7 @@ def resolve_observation_git_drift(observation: dict, compat: dict) -> dict:
 
     if location and location.startswith("/"):
         candidate = Path(location)
-        if (candidate / ".git").exists():
+        if safe_path_exists(candidate / ".git"):
             return inspect_git_worktree_state(candidate)
 
     return {
@@ -267,7 +268,7 @@ def resolve_observation_git_drift(observation: dict, compat: dict) -> dict:
 
 
 def gather_git_metadata(directory: Path) -> dict:
-    if not (directory / ".git").exists():
+    if not safe_path_exists(directory / ".git"):
         return {
             "git": False,
             "repo_root": "",
