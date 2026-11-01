@@ -21,6 +21,12 @@ from .config import (
 from .explain import explain_payload
 from .gbrain_pages import sync_gbrain_pages
 from .identity import resolve_payload
+from .jev import (
+    decide as jev_decide,
+    evaluate_heads as jev_evaluate_heads,
+    list_heads as jev_list_heads,
+    project_advisory_for_referent,
+)
 from .lineage import lineage_status_payload
 from .mcp_server import add_mcp_args, run_mcp_from_args
 from .triage import approve_candidate_decisions, review_payload
@@ -131,6 +137,16 @@ def _parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional candidate decision_id(s) to approve selectively with --approve-candidates.",
     )
+    review.add_argument(
+        "--jev",
+        action="store_true",
+        help="Attach read-only Type 1 Jev System-One advisory relation classifications to untriaged weak overlaps.",
+    )
+    review.add_argument(
+        "--live",
+        action="store_true",
+        help="Allow live TypeSafe `/v1/systemone` calls when combined with --jev (otherwise obeys LEDGER_JEV).",
+    )
     review.add_argument("--json", action="store_true")
 
     changes = sub.add_parser(
@@ -219,6 +235,65 @@ def _parser() -> argparse.ArgumentParser:
         help="Exit non-zero (code 5) if registry/project-lineage.json is out of sync with compiled state.",
     )
     lineage.add_argument("--json", action="store_true")
+
+    jev_cmd = sub.add_parser(
+        "jev",
+        help="Inspect, execute, or evaluate governed Type 1 Jev (`jev-1.13.0`) System-One advisory heads.",
+    )
+    jev_sub = jev_cmd.add_subparsers(dest="jev_action", required=True)
+
+    jev_heads = jev_sub.add_parser("heads", help="List validated Project Ledger Jev head contracts.")
+    jev_heads.add_argument("--json", action="store_true")
+
+    jev_decide_cmd = jev_sub.add_parser(
+        "decide",
+        help="Execute one or more governed Jev heads against an explicit state JSON payload or @file.",
+    )
+    jev_decide_cmd.add_argument(
+        "--head",
+        action="append",
+        dest="head_ids",
+        required=True,
+        help="Jev head ID(s) to evaluate (repeatable).",
+    )
+    jev_decide_cmd.add_argument(
+        "--state",
+        required=True,
+        help="Inline JSON object or @path/to/state.json.",
+    )
+    jev_decide_cmd.add_argument("--state-dir", default=default_state)
+    jev_decide_cmd.add_argument("--provider", choices=["code", "jev"], default=None)
+    jev_decide_cmd.add_argument(
+        "--live",
+        action="store_true",
+        help="Force live TypeSafe `/v1/systemone` execution even when LEDGER_JEV=off.",
+    )
+    jev_decide_cmd.add_argument(
+        "--trace",
+        action="store_true",
+        help="Append decision trace record(s) to <state-dir>/jev-decisions.jsonl.",
+    )
+    jev_decide_cmd.add_argument("--json", action="store_true")
+
+    jev_proj = jev_sub.add_parser(
+        "project",
+        help="Run batched lifecycle & urgency advisory heads on a resolved canonical project capsule.",
+    )
+    jev_proj.add_argument("referent")
+    jev_proj.add_argument("--state-dir", default=default_state)
+    jev_proj.add_argument("--provider", choices=["code", "jev"], default=None)
+    jev_proj.add_argument("--live", action="store_true")
+    jev_proj.add_argument("--json", action="store_true")
+
+    jev_eval = jev_sub.add_parser(
+        "eval",
+        help="Evaluate Project Ledger Jev heads against the 15-case gold corpus.",
+    )
+    jev_eval.add_argument("--provider", choices=["code", "jev"], default="code")
+    jev_eval.add_argument("--head", default=None, dest="head_filter")
+    jev_eval.add_argument("--live", action="store_true")
+    jev_eval.add_argument("--skip-pre-rule", action="store_true")
+    jev_eval.add_argument("--json", action="store_true")
 
     mcp = sub.add_parser(
         "mcp",
@@ -473,6 +548,9 @@ def main(argv: list[str] | None = None) -> int:
                 Path(args.state_dir),
                 candidates_path=Path(args.candidates),
                 decisions_path=Path(args.identity_decisions),
+                include_jev=bool(args.jev),
+                jev_force_live=bool(args.live),
+                jev_allow_vault=bool(args.live),
             )
             if args.json:
                 _print_json(payload)
@@ -484,6 +562,14 @@ def main(argv: list[str] | None = None) -> int:
                     f"cross-project weak overlaps: {payload['untriaged_weak_overlap_count']} untriaged "
                     f"(of {payload['weak_overlap_count']} total)"
                 )
+                if args.jev:
+                    for ov in payload["untriaged_weak_overlaps"]:
+                        adv = ov.get("jev_advisory") or {}
+                        print(
+                            f"  [jev:{adv.get('provider')}] {ov['left_observation_id']} <-> "
+                            f"{ov['right_observation_id']} -> {adv.get('effective_output')} "
+                            f"(conf={adv.get('confidence', 0.0):.2f})"
+                        )
                 print(
                     f"frontier candidate decisions: {payload['pending_candidate_count']} pending approval "
                     f"({payload['approved_candidate_count']} already approved)"
@@ -581,6 +667,94 @@ def main(argv: list[str] | None = None) -> int:
             if args.check and not payload["in_sync"]:
                 return 5
             return 0
+
+        if args.command == "jev":
+            if args.jev_action == "heads":
+                heads = jev_list_heads()
+                payload = {"count": len(heads), "heads": heads}
+                if args.json:
+                    _print_json(payload)
+                else:
+                    for h in heads:
+                        print(
+                            f"{h['id']}\ttype={h['type']}\tauthority={h['authority']}\t"
+                            f"ceiling={h['ceiling']}\tmodel={h['provider']['model']}"
+                        )
+                return 0
+
+            if args.jev_action == "decide":
+                raw_state = str(args.state)
+                if raw_state.startswith("@"):
+                    state_text = Path(raw_state[1:]).read_text(encoding="utf-8")
+                else:
+                    state_text = raw_state
+                parsed_state = json.loads(state_text)
+                if not isinstance(parsed_state, dict):
+                    raise ValueError("--state must decode to a JSON object.")
+                eff_prov = args.provider or ("jev" if args.live else None)
+                payload = jev_decide(
+                    list(args.head_ids),
+                    parsed_state,
+                    trace_dir=Path(args.state_dir) if args.trace else None,
+                    provider=eff_prov,
+                    allow_vault=bool(args.live),
+                    force_live=bool(args.live),
+                    record_trace=bool(args.trace),
+                )
+                if args.json:
+                    _print_json(payload)
+                else:
+                    for d in payload["decisions"]:
+                        print(
+                            f"{d['head_id']}\toutput={d['effective_output']}\t"
+                            f"provider={d['provider']}\tconf={d['confidence']:.3f}\t"
+                            f"ceiling={d['ceiling']}"
+                        )
+                return 0
+
+            if args.jev_action == "project":
+                eff_prov = args.provider or ("jev" if args.live else None)
+                payload = project_advisory_for_referent(
+                    Path(args.state_dir),
+                    args.referent,
+                    provider=eff_prov,
+                    force_live=bool(args.live),
+                    allow_vault=bool(args.live),
+                    record_trace=False,
+                )
+                if args.json:
+                    _print_json(payload)
+                elif payload.get("status") == "resolved":
+                    adv = payload["jev_advisory"]
+                    print(f"project: {payload['canonical_project_id']} ({payload['project_key']})")
+                    print(f"lifecycle posture (advisory): {adv['lifecycle_posture']}")
+                    print(f"attention urgency (advisory): {adv['attention_urgency']}/3")
+                else:
+                    print(f"{payload.get('status', 'unresolved')} {args.referent!r}")
+                return {"resolved": 0, "ambiguous": 3, "unresolved": 4}.get(
+                    str(payload.get("status")),
+                    2,
+                )
+
+            if args.jev_action == "eval":
+                eff_prov = "jev" if (args.live and args.provider == "code") else args.provider
+                payload = jev_evaluate_heads(
+                    provider=eff_prov,
+                    head_filter=args.head_filter,
+                    allow_vault=bool(args.live),
+                    force_live=bool(args.live or eff_prov == "jev"),
+                    skip_pre_rule=bool(args.skip_pre_rule),
+                )
+                if args.json:
+                    _print_json(payload)
+                else:
+                    print(
+                        f"jev eval ({eff_prov}, skip_pre_rule={payload['skip_pre_rule']}): "
+                        f"{payload['correct']}/{payload['total']} ({payload['accuracy'] * 100:.1f}%) "
+                        f"pre_rule={payload['pre_rule_hits']} live_calls={payload['live_model_calls']} "
+                        f"tokens={payload['total_input_tokens']}"
+                    )
+                return 0 if (payload["abstained"] == 0 and payload["accuracy"] >= 0.85) else 2
 
         if args.command == "mcp":
             return run_mcp_from_args(args)

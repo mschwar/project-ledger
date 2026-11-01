@@ -1,0 +1,36 @@
+{
+  "id": "project_lifecycle_inference",
+  "version": "1.0.0",
+  "type": "choice",
+  "authority": false,
+  "tier": "judge",
+  "promotion_state": "ADVISORY",
+  "ceiling": "ADVISORY",
+  "instructions": "Infer the advisory operational lifecycle posture of a canonical project from observed git freshness, worktree activity, Machina handoff presence, structural ctx surface count, and source classes. Keep strictly advisory and separate from observed facts.",
+  "options": {
+    "active_development": "Actively worked project with recent commits (<= 14 days), dirty worktree, unpushed commits ahead of upstream, or an active Machina session handoff.",
+    "maintained_stable": "Structured, clean codebase with governance docs, multiple subsystems, or operational surfaces and no recent churn or drift.",
+    "dormant_archive": "Long-inactive (>= 120 days since commit) or backup/archive-only project with clean or absent live worktrees and no active handoff.",
+    "ephemeral_experiment": "Tiny scratch spike or prototype (<= 5 files, zero operational surfaces, no governance docs, and no active continuity handoff)."
+  },
+  "state_keys": [
+    "source_classes",
+    "days_since_last_commit",
+    "dirty_worktree",
+    "ahead_count",
+    "has_machina_handoff",
+    "total_files",
+    "subsystem_count",
+    "operational_surface_count",
+    "has_governance_docs",
+    "open_review_count"
+  ],
+  "thresholds": {
+    "act_min_confidence": 0.50
+  },
+  "provider": {
+    "name": "jev",
+    "model": "jev-1.13.0"
+  },
+  "fallback": "code"
+}

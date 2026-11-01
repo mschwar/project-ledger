@@ -305,6 +305,77 @@ _GO_SYMBOL_RE = re.compile(
 _GO_IMPORT_SINGLE_RE = re.compile(r'^\s*import\s+"([^"]+)"', re.MULTILINE)
 _GO_IMPORT_BLOCK_RE = re.compile(r"^\s*import\s*\(([^)]*)\)", re.MULTILINE)
 _GO_QUOTED_PKG_RE = re.compile(r'"([^"]+)"')
+
+_ENV_KEY_RE = re.compile(r"^[A-Z][A-Z0-9_]{2,63}$")
+_IGNORED_GENERIC_ENV_VARS = frozenset(
+    {
+        "CI",
+        "COLUMNS",
+        "COMPUTERNAME",
+        "EDITOR",
+        "HOME",
+        "HOSTNAME",
+        "LANG",
+        "LC_ALL",
+        "LINES",
+        "LOGNAME",
+        "NODE_ENV",
+        "OLDPWD",
+        "PAGER",
+        "PATH",
+        "PWD",
+        "PYTHONPATH",
+        "RUST_BACKTRACE",
+        "RUST_LOG",
+        "SHELL",
+        "SHLVL",
+        "SYSTEMROOT",
+        "TEMP",
+        "TERM",
+        "TMP",
+        "TMPDIR",
+        "TZ",
+        "USER",
+        "USERPROFILE",
+        "VIRTUAL_ENV",
+        "XDG_CACHE_HOME",
+        "XDG_CONFIG_HOME",
+        "XDG_DATA_HOME",
+        "XDG_RUNTIME_DIR",
+        "XDG_STATE_HOME",
+    }
+)
+_HTTP_METHODS = frozenset({"get", "post", "put", "delete", "patch", "head", "options"})
+_SURFACE_KIND_ORDER = {
+    "cli_command": 0,
+    "http_route": 1,
+    "mcp_tool": 2,
+    "mcp_resource": 3,
+    "env_var": 4,
+}
+_JS_HTTP_ROUTE_RE = re.compile(
+    r"""\b(?:app|router|server|fastify|hono)\.(get|post|put|delete|patch)\(\s*['"`]([^'"`\s]+)['"`]""",
+    re.MULTILINE,
+)
+_NEXT_APP_ROUTE_RE = re.compile(
+    r"^\s*export\s+(?:async\s+)?function\s+(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b",
+    re.MULTILINE,
+)
+_JS_ENV_RE = re.compile(r"\bprocess\.env\.([A-Z][A-Z0-9_]{2,63})\b")
+_GO_HTTP_ROUTE_RE = re.compile(
+    r"""\b(?:http|mux|r|router|api|v1|group)\.(?:HandleFunc|Handle|Get|Post|Put|Delete|Patch|GET|POST|PUT|DELETE|PATCH)\(\s*"(?:(GET|POST|PUT|DELETE|PATCH)\s+)?(/[^"]*)" """,
+    re.VERBOSE,
+)
+_GO_HTTP_ROUTE_SIMPLE_RE = re.compile(
+    r"""\b(?:http|mux|r|router|api|v1|group)\.(HandleFunc|Handle|Get|Post|Put|Delete|Patch|GET|POST|PUT|DELETE|PATCH)\(\s*"(?:(GET|POST|PUT|DELETE|PATCH)\s+)?(/[^"]*)" """.strip()
+)
+_GO_ENV_RE = re.compile(r'\bos\.(?:Getenv|LookupEnv)\(\s*"([A-Z][A-Z0-9_]{2,63})"\s*\)')
+_RUST_ATTR_ROUTE_RE = re.compile(
+    r'#\[(get|post|put|delete|patch)\(\s*"([^"]+)"',
+    re.MULTILINE,
+)
+_RUST_AXUM_ROUTE_RE = re.compile(r'\.route\(\s*"(/[^"]*)"')
+_RUST_ENV_RE = re.compile(r'\benv::var(?:_os)?\(\s*"([A-Z][A-Z0-9_]{2,63})"\s*\)')
 _NODE_BUILTINS = frozenset(
     {
         "assert",
@@ -443,25 +514,346 @@ def _subsystem_for_rel_path(rel_posix: str) -> str:
     return top
 
 
+def _ast_const_str(node: ast.AST | None) -> str | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value.strip()
+    return None
+
+
+def _dict_literal_strings(node: ast.Dict) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for k_node, v_node in zip(node.keys, node.values):
+        key = _ast_const_str(k_node)
+        val = _ast_const_str(v_node)
+        if key and val:
+            out[key] = val
+    return out
+
+
+def _dict_literal_keys(node: ast.Dict) -> set[str]:
+    out: set[str] = set()
+    for k_node in node.keys:
+        key = _ast_const_str(k_node)
+        if key:
+            out.add(key)
+    return out
+
+
+def _extract_python_surfaces(tree: ast.Module, rel_posix: str) -> list[dict[str, str]]:
+    surfaces: list[dict[str, str]] = []
+
+    def _add(kind: str, name: str, detail: str = "") -> None:
+        clean_name = name.strip()[:120]
+        if not clean_name:
+            return
+        rec: dict[str, str] = {"kind": kind, "name": clean_name, "file": rel_posix}
+        if detail.strip():
+            rec["detail"] = detail.strip()[:120]
+        surfaces.append(rec)
+
+    for node in ast.walk(tree):
+        # 1. Decorated functions: Click/Typer CLI, FastAPI/Flask/Starlette HTTP, MCP @mcp.tool / @mcp.resource
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            for dec in node.decorator_list:
+                dec_call = dec if isinstance(dec, ast.Call) else None
+                dec_target = dec_call.func if dec_call is not None else dec
+                if not isinstance(dec_target, ast.Attribute):
+                    continue
+                owner_name = (
+                    dec_target.value.id.lower()
+                    if isinstance(dec_target.value, ast.Name)
+                    else ""
+                )
+                attr = dec_target.attr
+                attr_lower = attr.lower()
+                first_arg = _ast_const_str(dec_call.args[0]) if (dec_call and dec_call.args) else None
+                kw_map: dict[str, ast.AST] = (
+                    {kw.arg: kw.value for kw in dec_call.keywords if kw.arg}
+                    if dec_call is not None
+                    else {}
+                )
+                kw_name = _ast_const_str(kw_map.get("name"))
+
+                if attr_lower in {"command", "group"} and owner_name not in {"mcp", "fastmcp"}:
+                    cmd_name = first_arg or kw_name or node.name.replace("_", "-")
+                    _add("cli_command", cmd_name)
+                elif attr_lower in _HTTP_METHODS and first_arg and first_arg.startswith("/"):
+                    _add("http_route", f"{attr.upper()} {first_arg}")
+                elif attr_lower in {"route", "api_route"} and first_arg and first_arg.startswith("/"):
+                    methods_node = kw_map.get("methods")
+                    verbs: list[str] = []
+                    if isinstance(methods_node, (ast.List, ast.Tuple, ast.Set)):
+                        for elt in methods_node.elts:
+                            v = _ast_const_str(elt)
+                            if v:
+                                verbs.append(v.upper())
+                    for verb in (verbs or ["ANY"]):
+                        _add("http_route", f"{verb} {first_arg}")
+                elif attr_lower == "tool" and (
+                    "mcp" in owner_name or "server" in owner_name or owner_name in {"app", "srv"}
+                ):
+                    tool_name = first_arg or kw_name or node.name
+                    _add("mcp_tool", tool_name)
+                elif attr_lower == "resource" and (
+                    "mcp" in owner_name or "server" in owner_name
+                ):
+                    uri = first_arg or kw_name or node.name
+                    _add("mcp_resource", uri)
+
+        # 2. Call sites: argparse add_parser(...) and os.getenv / os.environ.get(...)
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            attr = node.func.attr
+            if attr == "add_parser" and node.args:
+                cmd_name = _ast_const_str(node.args[0])
+                if cmd_name:
+                    help_str = ""
+                    for kw in node.keywords:
+                        if kw.arg == "help":
+                            help_str = _ast_const_str(kw.value) or ""
+                    _add("cli_command", cmd_name, help_str)
+            elif attr == "getenv" and isinstance(node.func.value, ast.Name) and node.func.value.id == "os":
+                key = _ast_const_str(node.args[0]) if node.args else None
+                if key and _ENV_KEY_RE.match(key) and key not in _IGNORED_GENERIC_ENV_VARS:
+                    _add("env_var", key)
+            elif (
+                attr == "get"
+                and isinstance(node.func.value, ast.Attribute)
+                and node.func.value.attr == "environ"
+            ):
+                key = _ast_const_str(node.args[0]) if node.args else None
+                if key and _ENV_KEY_RE.match(key) and key not in _IGNORED_GENERIC_ENV_VARS:
+                    _add("env_var", key)
+
+        # 3. Subscript os.environ["KEY"]
+        elif isinstance(node, ast.Subscript):
+            if (
+                isinstance(node.value, ast.Attribute)
+                and node.value.attr == "environ"
+                and isinstance(node.value.value, ast.Name)
+                and node.value.value.id == "os"
+            ):
+                key = _ast_const_str(node.slice)
+                if key and _ENV_KEY_RE.match(key) and key not in _IGNORED_GENERIC_ENV_VARS:
+                    _add("env_var", key)
+
+        # 4. Table-driven MCP tool/resource catalogs (e.g. `_TOOLS = (...)`, `_STATIC_RESOURCES = (...)`)
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+            var_names: list[str] = []
+            if isinstance(node, ast.Assign):
+                for tgt in node.targets:
+                    if isinstance(tgt, ast.Name):
+                        var_names.append(tgt.id.upper())
+                val_node = node.value
+            else:
+                if isinstance(node.target, ast.Name):
+                    var_names.append(node.target.id.upper())
+                val_node = node.value
+            if not var_names or not isinstance(val_node, (ast.List, ast.Tuple)):
+                continue
+            is_tool_var = any("TOOL" in vn for vn in var_names)
+            is_res_var = any(("RESOURCE" in vn or "TEMPLATE" in vn) for vn in var_names)
+            if not (is_tool_var or is_res_var):
+                continue
+            for elt in val_node.elts:
+                if not isinstance(elt, ast.Dict):
+                    continue
+                str_map = _dict_literal_strings(elt)
+                all_keys = _dict_literal_keys(elt)
+                if is_tool_var and "name" in str_map and (
+                    "inputSchema" in all_keys or "description" in all_keys
+                ):
+                    _add("mcp_tool", str_map["name"], str_map.get("description", ""))
+                elif is_res_var and ("uri" in str_map or "uriTemplate" in str_map):
+                    uri_val = str_map.get("uri") or str_map.get("uriTemplate") or ""
+                    _add("mcp_resource", uri_val, str_map.get("name", ""))
+
+    return surfaces
+
+
+def _extract_text_surfaces(content: str, language: str, rel_posix: str) -> list[dict[str, str]]:
+    surfaces: list[dict[str, str]] = []
+
+    def _add(kind: str, name: str) -> None:
+        clean_name = name.strip()[:120]
+        if clean_name:
+            surfaces.append({"kind": kind, "name": clean_name, "file": rel_posix})
+
+    if language in {"TypeScript", "JavaScript"}:
+        for match in _JS_HTTP_ROUTE_RE.finditer(content):
+            route = match.group(2).strip()
+            if route.startswith("/"):
+                _add("http_route", f"{match.group(1).upper()} {route}")
+        lower_rel = rel_posix.lower()
+        if lower_rel.endswith(("/route.ts", "/route.js", "/route.tsx", "/route.jsx")):
+            # Next.js App Router route handler
+            parts = rel_posix.split("/")
+            app_idx = next((i for i, seg in enumerate(parts) if seg == "app"), -1)
+            route_segs = parts[app_idx + 1 : -1] if app_idx != -1 else parts[:-1]
+            route_path = "/" + "/".join(s for s in route_segs if not (s.startswith("(") and s.endswith(")")))
+            for match in _NEXT_APP_ROUTE_RE.finditer(content):
+                _add("http_route", f"{match.group(1).upper()} {route_path}")
+        for match in _JS_ENV_RE.finditer(content):
+            key = match.group(1)
+            if key not in _IGNORED_GENERIC_ENV_VARS:
+                _add("env_var", key)
+    elif language == "Go":
+        for match in _GO_HTTP_ROUTE_SIMPLE_RE.finditer(content):
+            call_name = match.group(1)
+            explicit_verb = match.group(2)
+            route = match.group(3)
+            verb = (
+                explicit_verb.upper()
+                if explicit_verb
+                else (call_name.upper() if call_name.lower() in _HTTP_METHODS else "ANY")
+            )
+            _add("http_route", f"{verb} {route}")
+        for match in _GO_ENV_RE.finditer(content):
+            key = match.group(1)
+            if key not in _IGNORED_GENERIC_ENV_VARS:
+                _add("env_var", key)
+    elif language == "Rust":
+        for match in _RUST_ATTR_ROUTE_RE.finditer(content):
+            _add("http_route", f"{match.group(1).upper()} {match.group(2)}")
+        for match in _RUST_AXUM_ROUTE_RE.finditer(content):
+            _add("http_route", f"ANY {match.group(1)}")
+        for match in _RUST_ENV_RE.finditer(content):
+            key = match.group(1)
+            if key not in _IGNORED_GENERIC_ENV_VARS:
+                _add("env_var", key)
+
+    return surfaces
+
+
+def compute_subsystem_dependency_summary(subsystems: list[dict[str, Any]]) -> dict[str, int]:
+    """Compute ``internal_edge_count`` and Tarjan SCC ``cycle_count`` over subsystem deps."""
+    known = {str(s.get("path") or "").strip() for s in subsystems if isinstance(s, dict)}
+    known.discard("")
+    adj: dict[str, list[str]] = {name: [] for name in sorted(known)}
+    edge_count = 0
+    for sub in subsystems:
+        if not isinstance(sub, dict):
+            continue
+        src = str(sub.get("path") or "").strip()
+        if src not in adj:
+            continue
+        raw_deps = sub.get("internal_deps")
+        if not isinstance(raw_deps, list):
+            continue
+        seen_targets: set[str] = set()
+        for dep in raw_deps:
+            dst = str(dep or "").strip()
+            if dst and dst != src and dst in adj and dst not in seen_targets:
+                seen_targets.add(dst)
+                adj[src].append(dst)
+                edge_count += 1
+
+    index = 0
+    indices: dict[str, int] = {}
+    lowlink: dict[str, int] = {}
+    scc_stack: list[str] = []
+    on_stack: set[str] = set()
+    cycle_count = 0
+
+    for root_node in sorted(adj):
+        if root_node in indices:
+            continue
+        indices[root_node] = index
+        lowlink[root_node] = index
+        index += 1
+        scc_stack.append(root_node)
+        on_stack.add(root_node)
+        call_stack: list[tuple[str, list[str], int]] = [
+            (root_node, list(adj.get(root_node, ())), 0)
+        ]
+
+        while call_stack:
+            node, succs, idx = call_stack[-1]
+            if idx < len(succs):
+                nxt = succs[idx]
+                call_stack[-1] = (node, succs, idx + 1)
+                if nxt not in indices:
+                    indices[nxt] = index
+                    lowlink[nxt] = index
+                    index += 1
+                    scc_stack.append(nxt)
+                    on_stack.add(nxt)
+                    call_stack.append((nxt, list(adj.get(nxt, ())), 0))
+                elif nxt in on_stack:
+                    if indices[nxt] < lowlink[node]:
+                        lowlink[node] = indices[nxt]
+            else:
+                call_stack.pop()
+                if call_stack:
+                    parent = call_stack[-1][0]
+                    if lowlink[node] < lowlink[parent]:
+                        lowlink[parent] = lowlink[node]
+                if lowlink[node] == indices[node]:
+                    scc: list[str] = []
+                    while True:
+                        w = scc_stack.pop()
+                        on_stack.discard(w)
+                        scc.append(w)
+                        if w == node:
+                            break
+                    if len(scc) > 1:
+                        cycle_count += 1
+
+    return {
+        "internal_edge_count": edge_count,
+        "cycle_count": cycle_count,
+    }
+
+
+def infer_subsystem_arch_role(
+    sub_path: str,
+    languages: list[str],
+    *,
+    has_entrypoint: bool = False,
+    has_interface_surface: bool = False,
+) -> str:
+    """Classify a subsystem into one of 6 deterministic architectural roles using whole-token segments."""
+    lower = sub_path.lower().strip("/")
+    tokens = {tok for tok in re.split(r"[/_\-.]+", lower) if tok}
+    leaf = lower.rsplit("/", 1)[-1] if lower else "."
+    if tokens & {"tests", "test", "spec", "specs", "e2e", "benchmarks", "benchmark", "bench", "fixtures"}:
+        return "test_or_verification"
+    if tokens & {"docs", "doc", "schemas", "schema", "adr", "adrs", "design", "rfcs", "rfc"} or (
+        languages
+        and all(lang in {"Markdown", "reStructuredText", "JSON", "YAML"} for lang in languages)
+        and leaf not in {".", "registry", "heads"}
+    ):
+        return "docs_or_specs"
+    if tokens & {"scripts", "script", "ops", "infra", "deploy", "ci", "github", "tools", "tooling", "bin", "docker"}:
+        return "tooling_or_ops"
+    if tokens & {"sources", "adapters", "adapter", "clients", "client", "providers", "provider", "drivers", "connectors", "db", "storage"}:
+        return "adapter_or_io"
+    if has_entrypoint or has_interface_surface or (
+        tokens & {"cli", "api", "web", "ui", "frontend", "server", "cmd", "mcp"}
+    ):
+        return "entrypoint_or_interface"
+    return "core_domain"
+
+
 def _parse_code_file(
     path: Path,
     language: str,
     rel_posix: str,
-) -> tuple[list[str], list[tuple[str, bool]]]:
-    """Return ``(symbols, [(import_target, is_relative), ...])``."""
+) -> tuple[list[str], list[tuple[str, bool]], list[dict[str, str]]]:
+    """Return ``(symbols, [(import_target, is_relative), ...], operational_surfaces)``."""
     try:
         raw = path.read_bytes()
     except OSError:
-        return [], []
+        return [], [], []
     if len(raw) > STRUCTURAL_CTX_MAX_PARSE_BYTES:
-        return [], []
+        return [], [], []
     try:
         content = raw.decode("utf-8")
     except UnicodeDecodeError:
-        return [], []
+        return [], [], []
 
     symbols: list[str] = []
     imports: list[tuple[str, bool]] = []
+    surfaces: list[dict[str, str]] = []
 
     if language == "Python":
         try:
@@ -469,7 +861,7 @@ def _parse_code_file(
                 warnings.simplefilter("ignore", SyntaxWarning)
                 tree = ast.parse(content)
         except SyntaxError:
-            return [], []
+            return [], [], []
         for node in tree.body:
             if isinstance(node, ast.ClassDef):
                 if not node.name.startswith("_"):
@@ -510,6 +902,7 @@ def _parse_code_file(
                     if item not in seen_imps:
                         seen_imps.add(item)
                         imports.append(item)
+        surfaces = _extract_python_surfaces(tree, rel_posix)
     elif language in {"TypeScript", "JavaScript"}:
         kind_map = {
             "class": "class",
@@ -528,6 +921,7 @@ def _parse_code_file(
             if target and target not in seen_js:
                 seen_js.add(target)
                 imports.append((target, target.startswith(".")))
+        surfaces = _extract_text_surfaces(content, language, rel_posix)
     elif language == "Rust":
         kind_map = {
             "struct": "struct",
@@ -546,6 +940,7 @@ def _parse_code_file(
             if target and target not in seen_rs:
                 seen_rs.add(target)
                 imports.append((target, target.startswith(("crate::", "self::", "super::"))))
+        surfaces = _extract_text_surfaces(content, language, rel_posix)
     elif language == "Go":
         for match in _GO_SYMBOL_RE.finditer(content):
             prefix = "fn" if match.group(1) == "func" else "type"
@@ -562,9 +957,10 @@ def _parse_code_file(
                 if pkg_clean and pkg_clean not in seen_go:
                     seen_go.add(pkg_clean)
                     imports.append((pkg_clean, False))
+        surfaces = _extract_text_surfaces(content, language, rel_posix)
 
     imports.sort(key=lambda item: item[0])
-    return symbols[:16], imports
+    return symbols[:16], imports, surfaces
 
 
 def _extract_manifest_entrypoints(repo_dir: Path) -> list[str]:
@@ -681,12 +1077,15 @@ def extract_structural_ctx(
     lang_counts: Counter[str] = Counter()
     boundary_candidates: list[tuple[tuple[int, int, str], dict[str, Any]]] = []
     file_entrypoints: list[str] = []
+    raw_surfaces: list[dict[str, str]] = []
 
     sub_file_counts: Counter[str] = Counter()
     sub_code_counts: Counter[str] = Counter()
     sub_lang_counts: dict[str, Counter[str]] = defaultdict(Counter)
     sub_symbols: dict[str, list[str]] = defaultdict(list)
     sub_raw_imports: dict[str, list[tuple[str, bool, str]]] = defaultdict(list)
+    sub_has_entrypoint: set[str] = set()
+    sub_has_interface_surface: set[str] = set()
 
     known_subsystems: set[str] = set()
     known_top_modules: dict[str, str] = {}
@@ -722,11 +1121,12 @@ def extract_structural_ctx(
                     )
                 )
 
+        sub_name = _subsystem_for_rel_path(rel_posix)
         fname_lower = fpath.name.lower()
         if depth <= 2 and fname_lower in _ENTRYPOINT_FILENAMES:
             file_entrypoints.append(f"file:{rel_posix}")
+            sub_has_entrypoint.add(sub_name)
 
-        sub_name = _subsystem_for_rel_path(rel_posix)
         sub_file_counts[sub_name] += 1
         if lang:
             sub_lang_counts[sub_name][lang] += 1
@@ -735,14 +1135,19 @@ def extract_structural_ctx(
 
         symbols: list[str] = []
         imports: list[tuple[str, bool]] = []
+        file_surfaces: list[dict[str, str]] = []
         if lang in _PARSEABLE_LANGUAGES and parsed_code_files < max_parse_files:
             parsed_code_files += 1
-            symbols, imports = _parse_code_file(fpath, lang, rel_posix)
+            symbols, imports, file_surfaces = _parse_code_file(fpath, lang, rel_posix)
             for sym in symbols:
                 if sym not in sub_symbols[sub_name] and len(sub_symbols[sub_name]) < 12:
                     sub_symbols[sub_name].append(sym)
             for imp_target, is_rel in imports:
                 sub_raw_imports[sub_name].append((imp_target, is_rel, lang))
+            for surf in file_surfaces:
+                raw_surfaces.append(surf)
+                if surf.get("kind") in {"cli_command", "http_route", "mcp_tool", "mcp_resource"}:
+                    sub_has_interface_surface.add(sub_name)
 
         struct_hasher.update(rel_posix.encode("utf-8"))
         struct_hasher.update(b"\x00")
@@ -767,6 +1172,35 @@ def extract_structural_ctx(
         struct_hasher.update(b"ep:")
         struct_hasher.update(ep.encode("utf-8"))
         struct_hasher.update(b"\x1e")
+
+    deduped_surfaces_map: dict[tuple[str, str], dict[str, str]] = {}
+    for surf in raw_surfaces:
+        skind = str(surf.get("kind") or "").strip()
+        sname = str(surf.get("name") or "").strip()
+        sfile = str(surf.get("file") or "").strip()
+        if not skind or not sname:
+            continue
+        dedup_key = (skind, sname)
+        if dedup_key not in deduped_surfaces_map:
+            entry_surf: dict[str, str] = {"kind": skind, "name": sname, "file": sfile}
+            sdetail = str(surf.get("detail") or "").strip()
+            if sdetail:
+                entry_surf["detail"] = sdetail
+            deduped_surfaces_map[dedup_key] = entry_surf
+
+    ordered_surfaces = sorted(
+        deduped_surfaces_map.values(),
+        key=lambda item: (
+            _SURFACE_KIND_ORDER.get(item["kind"], 99),
+            item["kind"],
+            item["name"],
+            item["file"],
+        ),
+    )
+    for surf in ordered_surfaces:
+        struct_hasher.update(b"surf:")
+        struct_hasher.update(f"{surf['kind']}:{surf['name']}@{surf['file']}".encode("utf-8"))
+        struct_hasher.update(b"\x1e")
     structural_hash = f"sha256:{struct_hasher.hexdigest()}"
 
     boundary_candidates.sort(key=lambda pair: pair[0])
@@ -782,6 +1216,7 @@ def extract_structural_ctx(
     boundary_doc_hash = f"sha256:{bdoc_hasher.hexdigest()}"
 
     subsystems: list[dict[str, Any]] = []
+    full_dep_subsystems: list[dict[str, Any]] = []
     ordered_sub_names = sorted(
         sub_file_counts,
         key=lambda s: (
@@ -839,13 +1274,22 @@ def extract_structural_ctx(
                 sub_lang_counts[sub_name].items(), key=lambda pair: (-pair[1], pair[0])
             )[:3]
         ]
+        sorted_int_deps = sorted(internal_deps)
+        full_dep_subsystems.append({"path": sub_name, "internal_deps": sorted_int_deps})
+        arch_role = infer_subsystem_arch_role(
+            sub_name,
+            sub_langs,
+            has_entrypoint=sub_name in sub_has_entrypoint,
+            has_interface_surface=sub_name in sub_has_interface_surface,
+        )
         subsystems.append(
             {
                 "path": sub_name,
+                "arch_role": arch_role,
                 "file_count": sub_file_counts[sub_name],
                 "languages": sub_langs,
                 "key_symbols": sub_symbols.get(sub_name, [])[:6],
-                "internal_deps": sorted(internal_deps)[:8],
+                "internal_deps": sorted_int_deps[:8],
                 "external_deps": sorted(external_deps)[:8],
             }
         )
@@ -854,6 +1298,7 @@ def extract_structural_ctx(
         lname: count
         for lname, count in sorted(lang_counts.items(), key=lambda pair: (-pair[1], pair[0]))
     }
+    dependency_summary = compute_subsystem_dependency_summary(full_dep_subsystems)
 
     return {
         "structural_hash": structural_hash,
@@ -861,6 +1306,9 @@ def extract_structural_ctx(
         "total_files": len(discovered_files),
         "languages": languages_sorted,
         "entrypoints": entrypoints,
+        "operational_surfaces": ordered_surfaces[:24],
+        "operational_surface_count": len(ordered_surfaces),
+        "dependency_summary": dependency_summary,
         "boundary_docs": boundary_docs,
         "subsystems": subsystems,
         "subsystem_count": len(subsystems),

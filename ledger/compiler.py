@@ -429,7 +429,14 @@ def compile_state(
             and "ctx_raw_skeleton" in cand
         ):
             cached_ctx = cand.get("ctx_raw_skeleton")
-            return dict(cached_ctx) if isinstance(cached_ctx, dict) else None
+            if cached_ctx is None:
+                return None
+            if (
+                isinstance(cached_ctx, dict)
+                and "operational_surfaces" in cached_ctx
+                and "dependency_summary" in cached_ctx
+            ):
+                return dict(cached_ctx)
         scanned_ctx = extract_structural_ctx(repo_dir)
         if isinstance(cand, dict) and cand_fp:
             pending_ctx_by_obs[oid] = scanned_ctx

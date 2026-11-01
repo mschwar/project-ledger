@@ -29,6 +29,12 @@ from .compiler import load_manifest, orient_payload
 from .config import LedgerConfigError, default_workspace_path
 from .explain import explain_payload
 from .identity import resolve_payload
+from .jev import (
+    decide as jev_decide,
+    evaluate_heads as jev_evaluate_heads,
+    list_heads as jev_list_heads,
+    project_advisory_for_referent,
+)
 from .lineage import lineage_status_payload
 from .triage import review_payload
 
@@ -216,6 +222,50 @@ _TOOLS: tuple[dict[str, Any], ...] = (
             "type": "object",
             "additionalProperties": False,
             "properties": {},
+        },
+        "annotations": _READ_ONLY_ANNOTATIONS,
+    },
+    {
+        "name": "ledger_jev",
+        "description": (
+            "Read-only governed Type 1 Jev (`jev-1.13.0`) System-One advisory decision surface: "
+            "list validated head contracts (`heads`), infer advisory lifecycle posture & attention "
+            "urgency for a canonical project (`project`), classify untriaged weak overlaps (`triage`), "
+            "execute governed head(s) on explicit state (`decide`), or run the 15-case gold eval (`eval`)."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["action"],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": ["heads", "project", "triage", "decide", "eval"],
+                    "description": "Read-only Jev operation to execute.",
+                },
+                "referent": {
+                    "type": "string",
+                    "description": "Project referent when action == 'project'.",
+                },
+                "head_ids": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Head ID(s) for action == 'decide' (or single head filter for 'eval').",
+                },
+                "state": {
+                    "type": "object",
+                    "description": "State JSON object when action == 'decide'.",
+                },
+                "provider": {
+                    "type": "string",
+                    "enum": ["code", "jev"],
+                    "description": "Optional provider override ('code' offline deterministic or 'jev').",
+                },
+                "skip_pre_rule": {
+                    "type": "boolean",
+                    "description": "Bypass deterministic pre-rules during action == 'eval'.",
+                },
+            },
         },
         "annotations": _READ_ONLY_ANNOTATIONS,
     },
@@ -535,6 +585,84 @@ class LedgerMcpServer:
                     state_dir=self.state_dir,
                     lineage_path=self.project_lineage_path,
                     sync=False,
+                )
+                return _tool_result(payload)
+
+            if name == "ledger_jev":
+                action = _require_nonempty_str(arguments, "action")
+                if action not in {"heads", "project", "triage", "decide", "eval"}:
+                    raise _JsonRpcError(
+                        JSONRPC_INVALID_PARAMS,
+                        f"Unsupported ledger_jev action {action!r}.",
+                    )
+                prov = _optional_str(arguments, "provider")
+                if prov is not None and prov not in {"code", "jev"}:
+                    raise _JsonRpcError(
+                        JSONRPC_INVALID_PARAMS,
+                        f"Unsupported provider {prov!r}; expected 'code' or 'jev'.",
+                    )
+                if action == "heads":
+                    heads = jev_list_heads()
+                    return _tool_result({"count": len(heads), "heads": heads})
+                if action == "project":
+                    referent = _require_nonempty_str(arguments, "referent")
+                    payload = project_advisory_for_referent(
+                        self.state_dir,
+                        referent,
+                        provider=prov,
+                        force_live=False,
+                        allow_vault=False,
+                        record_trace=False,
+                    )
+                    return _tool_result(payload, is_error=(payload.get("status") != "resolved"))
+                if action == "triage":
+                    payload = review_payload(
+                        self.state_dir,
+                        candidates_path=self.candidates_path,
+                        decisions_path=self.identity_decisions_path,
+                        include_jev=True,
+                        jev_provider=prov,
+                        jev_force_live=False,
+                        jev_allow_vault=False,
+                    )
+                    return _tool_result(payload)
+                if action == "decide":
+                    raw_hids = arguments.get("head_ids")
+                    if not isinstance(raw_hids, list) or not raw_hids or not all(
+                        isinstance(h, str) and h.strip() for h in raw_hids
+                    ):
+                        raise _JsonRpcError(
+                            JSONRPC_INVALID_PARAMS,
+                            "ledger_jev action 'decide' requires non-empty string array 'head_ids'.",
+                        )
+                    raw_state = arguments.get("state")
+                    if not isinstance(raw_state, dict):
+                        raise _JsonRpcError(
+                            JSONRPC_INVALID_PARAMS,
+                            "ledger_jev action 'decide' requires object 'state'.",
+                        )
+                    payload = jev_decide(
+                        [h.strip() for h in raw_hids],
+                        raw_state,
+                        provider=prov,
+                        allow_vault=False,
+                        force_live=False,
+                        record_trace=False,
+                    )
+                    return _tool_result(payload)
+                raw_hids = arguments.get("head_ids")
+                h_filter = (
+                    raw_hids[0].strip()
+                    if isinstance(raw_hids, list) and len(raw_hids) == 1 and isinstance(raw_hids[0], str)
+                    else None
+                )
+                skip_pre = bool(arguments.get("skip_pre_rule", False))
+                payload = jev_evaluate_heads(
+                    provider=prov or "code",
+                    head_filter=h_filter,
+                    allow_vault=False,
+                    force_live=False,
+                    skip_pre_rule=skip_pre,
                 )
                 return _tool_result(payload)
         except (LedgerConfigError, OSError, ValueError) as exc:
