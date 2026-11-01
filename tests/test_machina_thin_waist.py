@@ -188,31 +188,91 @@ class MachinaThinWaistTests(unittest.TestCase):
             self.assertIn("ledger validate failed", bad_cfg.stderr)
             (fake_root / "ledger_config.json").write_text(good_cfg, encoding="utf-8")
 
-            # 4. Degraded state/system-manifest.json fails closed.
+            # 4a. Partial-source degraded state/system-manifest.json is contained per Law 11.
             (fake_root / "state").mkdir(parents=True, exist_ok=True)
             (fake_root / "state" / "system-manifest.json").write_text(
                 json.dumps(
                     {
-                        "health": {"state": "degraded"},
+                        "health": {
+                            "state": "degraded",
+                            "available_source_count": 1,
+                            "unavailable_source_count": 1,
+                        },
                         "counts": {
-                            "sources": 1,
+                            "sources": 2,
                             "observations": 1,
                             "canonical_projects": 1,
-                            "review_items": 1,
+                            "review_items": 0,
                         },
                     }
                 )
                 + "\n",
                 encoding="utf-8",
             )
-            degraded = subprocess.run(
+            partial_degraded = subprocess.run(
                 ["bash", str(ADAPTER), "map"],
                 capture_output=True,
                 text=True,
                 env=env,
             )
-            self.assertNotEqual(degraded.returncode, 0)
-            self.assertIn("degraded or invalid system-manifest health", degraded.stderr)
+            self.assertEqual(partial_degraded.returncode, 0, partial_degraded.stderr)
+            partial_kv = dict(
+                line.split("=", 1) for line in partial_degraded.stdout.strip().splitlines()
+            )
+            self.assertEqual(partial_kv["manifest_health"], "degraded")
+
+            # 4b. Total-outage degraded manifest (zero available sources) or invalid health fails closed.
+            (fake_root / "state" / "system-manifest.json").write_text(
+                json.dumps(
+                    {
+                        "health": {
+                            "state": "degraded",
+                            "available_source_count": 0,
+                            "unavailable_source_count": 1,
+                        },
+                        "counts": {
+                            "sources": 1,
+                            "observations": 0,
+                            "canonical_projects": 0,
+                            "review_items": 0,
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            total_outage = subprocess.run(
+                ["bash", str(ADAPTER), "map"],
+                capture_output=True,
+                text=True,
+                env=env,
+            )
+            self.assertNotEqual(total_outage.returncode, 0)
+            self.assertIn("zero available sources", total_outage.stderr)
+
+            (fake_root / "state" / "system-manifest.json").write_text(
+                json.dumps(
+                    {
+                        "health": {"state": "corrupt"},
+                        "counts": {
+                            "sources": 1,
+                            "observations": 1,
+                            "canonical_projects": 1,
+                            "review_items": 0,
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            invalid_health = subprocess.run(
+                ["bash", str(ADAPTER), "map"],
+                capture_output=True,
+                text=True,
+                env=env,
+            )
+            self.assertNotEqual(invalid_health.returncode, 0)
+            self.assertIn("invalid system-manifest health", invalid_health.stderr)
 
     def test_adapter_map_fails_closed_when_head_is_behind_origin_main(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

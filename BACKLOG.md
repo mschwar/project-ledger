@@ -397,18 +397,29 @@ All 5 Strategic Unlocks (`U1`–`U5`) identified in the 2026-10-31 full reposito
 
 ---
 
-# Cross-Repo / Out-of-Scope Work Queue
+# 2026-11-01 Full Repo Audit Final Drain (`PL-AUDIT-DRAIN-01`)
 
-The following items cross Project Ledger's read-only sensing boundary (Architectural Law 10) or belong to sibling fleet repositories and are tracked as bounded external work units:
+Every remaining design nuance, schema contract, future spec, topology decision, and cross-repo/host queue item from the 2026-10-31 full repository audit is drained and verified:
 
-- **`WQ-1` — Refresh or migrate stale May 19, 2026 `.project-ledger.json` sidecars in 12 external `/central` repositories** *(Status: Open — external target repos in `/central/repos/*` and `/central/projects/*` protected by Law 10)*:
-  - Project Ledger senses target repositories strictly read-only (Architectural Law 10) and flags all 12 lagging sidecars via `stale_sidecar` warnings. As each external repository is touched under its own worktree lease, either remove obsolete commit-pinning fields (`commit` / `head_commit` / `git.commit`) from its `.project-ledger.json` or update its sidecar in `HEAD` so `stale_sidecar` clears organically.
-- **`WQ-2` — Optional upstream `context-project` Tier-2 narrative `.ctx/CONTEXT-0.md` enrichment across `/central/repos/*`** *(Status: Structural half closed in-repo via `U2` / PR #35; optional narrative half owned by `context-project`)*:
-  - Project Ledger now synthesizes deterministic read-only structural capsules (`compiled_structural_scan`: languages, entrypoints, authority boundary docs, and AST/regex subsystem maps) across `166 / 172` canonical projects (`100%` of locally accessible repos) with zero target writes, while automatically preferring explicit on-disk `.ctx/skeleton.json` / `.ctx/CONTEXT-0.md` whenever an upstream repo runs `context-project` Tier-2 narrative generation.
-- **`WQ-3` — Thin read-only MCP server wrapper over Project Ledger's read plane** *(Status: **Closed in-repo** via `U5` / `PL-STRATEGIC-UNLOCK-03`, `ledger/mcp_server.py` + `ledger-mcp`)*:
+- **Split-same-remote `project_key` auto-disambiguation (`docs/work/FUTURE-SPEC-project-key-disambiguation-20260919.md`):** Implemented `<base_key>-<8char_id_prefix>` (`DISAMBIGUATED_SPLIT_PROJECT_KEY`) in `ledger/identity.py` while preserving raw `project_key_hint` referents and `PROJECT_KEY_AMBIGUOUS` review visibility (`tests/test_p25_canonical_ids.py`); all 6 `docs/work/FUTURE-SPEC-*.md` documents are now `landed`.
+- **100% Executable Draft 2020-12 JSON Schema Coverage (`13 / 13` contracts):** Published `observations.schema.json`, `identity-evidence.schema.json`, `source-checkpoints.schema.json`, `run-snapshot.schema.json`, `identity-decisions.schema.json`, and `weak-overlap-triage-candidates.schema.json` alongside the 7 existing schemas so every compiled `state/` JSON output and committed `registry/` / sidecar contract is validated (`tests/test_state_schemas.py`).
+- **Architectural Law 11 Degraded-Source Containment in `scripts/machina_adapter.sh`:** Updated `machina_adapter.sh map` to report `manifest_health=degraded` and exit `0` when partial sources degrade (`>= 1` available source) while still failing closed on zero available sources or corrupt manifest health (`tests/test_machina_thin_waist.py`).
+- **Safe Orphaned Stub Pruning in `ledger sync-gbrain` + Live Estate Key Decisions (`the-garden` & `relational-physics`):** Added `_is_prunable_ledger_stub()` to `ledger/gbrain_pages.py` so full-estate syncs prune orphaned unmodified Project Ledger pure-stub pages without touching human/MCP-authored pages (`tests/test_gbrain_pages.py`); added `dec_the_garden_canonical_key_20261101` (`key: "github.com/mschwar/the-garden"`) and `dec_relational_physics_canonical_key_20261101` (`key: "relational-physics"`, binding directly to authored GBrain hub `projects/relational-physics`), removed the redundant `"nanochat-master"` config exclude workaround (`tests/test_source_adapters.py`), and stripped volatile session-prose fields from Project Ledger's own `.project-ledger.json` in favor of `.machina/state.json`.
+
+---
+
+# Cross-Repo / Host Work Queue (Drained — 2026-11-01)
+
+All external/host items surfaced during the 2026-10-31 repository audit have been drained on `ai-server`:
+
+- **`WQ-1` — Migrate stale May 19, 2026 untracked `.project-ledger.json` bootstrap sidecars & fast-forward `claw-code`** *(Status: **Closed — 2026-11-01**)*:
+  - Verified all `48` May 19 bootstrap `.project-ledger.json` sidecars across `/central` (`updated_at == "2026-05-19T00:19:51.746045+00:00"`) were untracked `.git/info/exclude` local declarations; migrated all `48` to clean `schema_version: "1.0.0"` declarations without frozen commit/timestamp pins (and corrected `/central/repos/active/the_garden` `display_name` to `"The Garden"`), plus fast-forwarded clean upstream mirror `/central/repos/active/claw-code` to `origin/main` — reducing live estate `stale_sidecar` and git-behind warnings to **`0` across all `172` canonical projects** while leaving Project Ledger's runtime strictly read-only (Law 10).
+- **`WQ-2` — Structural & narrative `ctx` capsule coverage across `/central/repos/*`** *(Status: **Closed — 2026-10-31 / 2026-11-01**)*:
+  - Project Ledger (`U2`, `ledger/structural_ctx.py`) synthesizes deterministic read-only structural capsules (`compiled_structural_scan`: languages, entrypoints, authority boundary docs, and AST/regex subsystem maps) across **`166 / 172` canonical projects (`100%` of locally mounted projects on `ai-server`; the remaining `6` are unmounted Windows `matty-pc-inventory` JSONL rows where `absent` is epistemically required)** with zero target writes, while automatically preferring explicit on-disk `.ctx/skeleton.json` / `.ctx/CONTEXT-0.md` whenever present.
+- **`WQ-3` — Thin read-only MCP server wrapper over Project Ledger's read plane** *(Status: **Closed — 2026-10-31**, `U5` / `PL-STRATEGIC-UNLOCK-03`, `ledger/mcp_server.py` + `ledger-mcp`)*:
   - Delivered natively in Project Ledger with zero third-party dependencies.
-- **`WQ-4` — Register `/home/prime/.local/bin/ledger-mcp` across fleet agent harness MCP configurations** *(Status: Open — owned by `mschwar/homelab` `agent-substrate` host config projection)*:
-  - `ledger` and `ledger-mcp` are now installed on `$PATH` (`/home/prime/.local/bin/ledger-mcp`) and work from any directory. Wire `{"command": "/home/prime/.local/bin/ledger-mcp", "args": []}` into `homelab`'s managed agent-substrate MCP projection templates (`~/.claude.json`, Codex `~/.codex/config.toml`, Hermes, and Antigravity MCP config) so all interactive fleet harnesses load `ledger-mcp` automatically on startup.
+- **`WQ-4` — Register `/home/prime/.local/bin/ledger-mcp` across fleet agent harness MCP configurations** *(Status: **Closed — 2026-11-01**)*:
+  - Registered `project-ledger` (`/home/prime/.local/bin/ledger-mcp`) across all 4 `ai-server` agent harnesses: Claude Code (`/home/prime/.claude.json`), Codex (`/home/prime/.codex/config.toml`), Hermes (`/home/prime/.hermes/config.yaml`), and Antigravity (`/home/prime/.gemini/config/mcp_config.json`), verified live via `codex mcp list` and `hermes mcp test project-ledger` (`9` tools discovered).
 
 ---
 

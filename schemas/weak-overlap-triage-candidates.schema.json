@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/weak-overlap-triage-candidates.schema.json",
+  "title": "Project Ledger Weak-Overlap Triage Candidates Registry (v1.0.0)",
+  "description": "Frontier zero-shot triage candidate decisions over cross-project weak overlaps promoted via `ledger review --approve-candidates` (registry/weak-overlap-triage-candidates.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "triage_method",
+    "source_run_id",
+    "candidates"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "triage_method": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/triage_candidate"
+      }
+    }
+  },
+  "$defs": {
+    "triage_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "type",
+        "authority",
+        "rationale",
+        "decided_at"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "merge",
+            "split",
+            "reject_match",
+            "alias",
+            "canonical_key",
+            "supersede"
+          ]
+        },
+        "observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "observation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "left_observation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "right_observation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "alias": {
+          "type": "string",
+          "minLength": 1
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supersedes_decision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority": {
+          "type": "string",
+          "enum": [
+            "operator",
+            "trusted_automation",
+            "reviewed_agent"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "object"
+            ]
+          }
+        },
+        "decided_at": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

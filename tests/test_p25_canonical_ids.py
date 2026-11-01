@@ -157,6 +157,86 @@ class DistinctCanonicalIdTests(unittest.TestCase):
             [p["canonical_project_id"] for p in second["projects"]],
         )
 
+    def test_split_same_remote_projects_auto_disambiguate_project_key_and_resolve_individually(
+        self,
+    ) -> None:
+        a = observation(
+            "obs-a",
+            project_key="dupe",
+            name="Dupe",
+            path="/a/dupe",
+            remote_url="https://github.com/mschwar/dupe.git",
+        )
+        b = observation(
+            "obs-b",
+            project_key="dupe",
+            name="Dupe",
+            path="/b/dupe",
+            remote_url="git@github.com:mschwar/dupe.git",
+        )
+        decisions_doc = {
+            "schema_version": "1.0.0",
+            "decisions": [
+                {
+                    "decision_id": "dec-split",
+                    "type": "split",
+                    "observation_ids": ["obs-a", "obs-b"],
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            state_dir = Path(tmp) / "state"
+            decisions_path = Path(tmp) / "decisions.json"
+            import json as _json
+
+            decisions_path.write_text(_json.dumps(decisions_doc), encoding="utf-8")
+            canonical, reviews = materialize_identity(
+                observations=[a, b],
+                decisions_path=decisions_path,
+                state_dir=state_dir,
+                run_id="run_000000000000000000000001",
+                compiled_at="2026-11-01T02:30:00Z",
+            )
+            self.assertEqual(canonical["canonical_project_count"], 2)
+            projs = sorted(canonical["projects"], key=lambda p: p["canonical_project_id"])
+            p0, p1 = projs[0], projs[1]
+            expected_key_0 = f"dupe-{p0['canonical_project_id'].removeprefix('prj_')[:8]}"
+            expected_key_1 = f"dupe-{p1['canonical_project_id'].removeprefix('prj_')[:8]}"
+            self.assertEqual(p0["project_key"], expected_key_0)
+            self.assertEqual(p1["project_key"], expected_key_1)
+            self.assertNotEqual(p0["project_key"], p1["project_key"])
+
+            # Raw key hint remains on both projects and PROJECT_KEY_AMBIGUOUS stays open.
+            for proj in (p0, p1):
+                self.assertEqual(proj["project_key_hints"], ["dupe"])
+                self.assertTrue(
+                    any(
+                        ref["kind"] == "project_key_hint" and ref["value"] == "dupe"
+                        for ref in proj["referents"]
+                    )
+                )
+                self.assertEqual(
+                    proj["resolved_fields"]["project_key"]["provenance"][-1]["reason_code"],
+                    "DISAMBIGUATED_SPLIT_PROJECT_KEY",
+                )
+            review_codes = {item["code"] for item in reviews["items"]}
+            self.assertIn("AUTO_MATCH_BLOCKED_BY_DECISION", review_codes)
+            self.assertIn("PROJECT_KEY_AMBIGUOUS", review_codes)
+
+            # Each disambiguated key resolves individually; raw 'dupe' returns ambiguous with distinct keys.
+            res0 = resolve_payload(state_dir, expected_key_0)
+            self.assertEqual(res0["status"], "resolved")
+            self.assertEqual(res0["canonical_project_id"], p0["canonical_project_id"])
+
+            res1 = resolve_payload(state_dir, expected_key_1)
+            self.assertEqual(res1["status"], "resolved")
+            self.assertEqual(res1["canonical_project_id"], p1["canonical_project_id"])
+
+            res_raw = resolve_payload(state_dir, "dupe")
+            self.assertEqual(res_raw["status"], "ambiguous")
+            cand_keys = sorted(c["project_key"] for c in res_raw["candidates"])
+            self.assertEqual(cand_keys, sorted([expected_key_0, expected_key_1]))
+
 
 class ResolvedFieldProvenanceTests(unittest.TestCase):
     def test_project_key_from_single_declaration_has_observation_provenance(self) -> None:

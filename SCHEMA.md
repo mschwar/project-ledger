@@ -936,7 +936,7 @@ Examples:
 # 5. Identity invariants
 
 1. `canonical_project_id` is pinned durably in `registry/project-lineage.json` (`schemas/project-lineage.schema.json`, `ledger/lineage.py`, `ledger lineage [--sync|--check]`, `U3`) so it remains immutable across remote additions, GitHub repository renames, merge absorptions, and `state/` wipes, with superseded anchor IDs preserved as `historical_canonical_id` referents.
-2. `project_key` is a human-readable alias, not canonical identity.
+2. `project_key` is a human-readable alias, not canonical identity. When an explicit `split` or `reject_match` decision keeps observations sharing an exact normalized remote in separate conceptual projects and their auto-derived `project_key` would otherwise collide (with no explicit `canonical_key` override), the compiler deterministically disambiguates each project's `project_key` as `<base_key>-<8char_id_prefix>` (`reason_code = "DISAMBIGUATED_SPLIT_PROJECT_KEY"`) while retaining `<base_key>` as a `project_key_hint` referent and preserving `PROJECT_KEY_AMBIGUOUS` review visibility until an operator assigns a `canonical_key`.
 3. observation IDs and canonical IDs are different namespaces.
 4. remotes/URLs/paths/names are identity evidence and aliases, not sufficient universal identity.
 5. ambiguous matches create review items rather than silent merges.
@@ -967,7 +967,7 @@ These compatibility rules remain important hardening work. The first identity sl
 
 1. preserve the flat compatibility output as an explicit v0 contract — **done (P1.1)**: frozen in `docs/COMPATIBILITY.md` + `tests/fixtures/compat-contract.json`;
 2. introduce typed entity collections beside it rather than silently changing field meanings;
-3. validate generated schemas at compile boundaries;
+3. validate generated schemas at compile boundaries — **done (`PL-GAP-CLOSEOUT-03` + `PL-AUDIT-DRAIN-01`)**: all 13 JSON contracts (`system-manifest`, `observations`, `canonical-projects`, `project-capsule`, `identity-evidence`, `review-queue`, `changes`, `source-checkpoints`, `run-snapshot`, `project-lineage`, `identity-decisions`, `weak-overlap-triage-candidates`, and `project-ledger-sidecar`) are governed by strict Draft 2020-12 JSON Schemas under `schemas/*.schema.json` and validated by `tests/test_state_schemas.py`;
 4. define major/minor compatibility behavior and migration notes — **done (P1.1)**: semver major/minor/patch policy in `docs/COMPATIBILITY.md` §3;
 5. reject or explicitly degrade on unsupported major versions — **done (P1.1)**: `ledger/compat_contract.py` rejects an unsupported `format` (`COMPAT_FORMAT_UNSUPPORTED`) and an unsupported schema major (`COMPAT_MAJOR_UNSUPPORTED`) at the compile boundary rather than guessing through; no version marker defaults to supported v0;
 6. let generated view versions evolve without changing immutable entity identity.

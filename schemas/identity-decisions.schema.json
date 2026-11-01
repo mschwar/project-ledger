@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/identity-decisions.schema.json",
+  "title": "Project Ledger Durable Identity Decisions Registry (v1.0.0)",
+  "description": "Durable append/supersede-oriented identity decisions consumed by the canonical identity compiler (registry/identity-decisions.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decisions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/identity_decision"
+      }
+    }
+  },
+  "$defs": {
+    "identity_decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "type"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "merge",
+            "split",
+            "reject_match",
+            "alias",
+            "canonical_key",
+            "supersede"
+          ]
+        },
+        "observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "observation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "left_observation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "right_observation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "alias": {
+          "type": "string",
+          "minLength": 1
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "supersedes_decision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority": {
+          "type": "string",
+          "enum": [
+            "operator",
+            "trusted_automation",
+            "reviewed_agent"
+          ]
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "object"
+            ]
+          }
+        },
+        "decided_at": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

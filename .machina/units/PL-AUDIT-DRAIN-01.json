@@ -1,0 +1,21 @@
+{
+  "authority": {
+    "allowed": [
+      "create .machina/specs/PL-AUDIT-DRAIN-01.json and schemas/{observations,identity-evidence,source-checkpoints,run-snapshot,identity-decisions,weak-overlap-triage-candidates}.schema.json",
+      "edit ledger/identity.py, ledger/gbrain_pages.py, scripts/machina_adapter.sh, ledger_config.json, registry/identity-decisions.json, registry/project-lineage.json, and .project-ledger.json",
+      "edit docs/work/FUTURE-SPEC-project-key-disambiguation-20260919.md, SCHEMA.md, CURRENT.md, AGENTS.md, BACKLOG.md, and tests/{test_p25_canonical_ids.py,test_machina_thin_waist.py,test_gbrain_pages.py,test_state_schemas.py,test_source_adapters.py}",
+      "run uvx --offline ruff check ., python3 -m ledger validate, python3 -m unittest discover -s tests -q, and bash scripts/machina_adapter.sh map"
+    ],
+    "forbidden": [
+      "mutate /central/repos/active/machina",
+      "introduce execution_state into Project Ledger domain surfaces or schemas",
+      "add em dashes to .machina/specs/*.json, scripts/machina_adapter.sh, or tests/test_machina_thin_waist.py"
+    ]
+  },
+  "completion": "All 6 FUTURE-SPEC-*.md documents are landed; all 13 Draft 2020-12 JSON Schemas validate compiled state/ and committed registry/ contracts; machina_adapter.sh contains degraded partial sources per Law 11; sync-gbrain prunes stale Project Ledger stubs safely; relational-physics and the-garden canonical keys and lineage are clean; Project Ledger's .project-ledger.json is permanently drift-free; ruff and all unit tests pass.",
+  "id": "PL-AUDIT-DRAIN-01",
+  "initial_next_action": "Implement split-same-remote project_key disambiguation, degraded-source containment in machina_adapter.sh, sync-gbrain stale-stub pruning, the 6 remaining JSON schemas, config/decision/lineage updates, tests, and docs.",
+  "objective": "Drain all remaining in-repo nuances and contracts referenced in the 2026-10-31 repository audit: (1) implement FUTURE-SPEC-project-key-disambiguation-20260919.md so split same-remote projects auto-derive distinct suffixed project_key values while preserving raw hints and PROJECT_KEY_AMBIGUOUS; (2) relax scripts/machina_adapter.sh map under Architectural Law 11 so partial-source degradation reports manifest_health=degraded and exits 0 while total outage or corrupt manifest health fails closed; (3) add safe orphaned Project Ledger stub pruning to ledger sync-gbrain while preserving human/MCP-authored GBrain pages; (4) publish Draft 2020-12 JSON Schemas for observations, identity-evidence, source-checkpoints, run-snapshot, identity-decisions, and weak-overlap-triage-candidates so 100% of compiled state/ and committed registry/ contracts are validated; (5) remove the manual nanochat-master exclude workaround from ledger_config.json, add durable canonical_key decisions for the-garden and relational-physics, sync project-lineage.json, and strip volatile session-prose fields from Project Ledger's own .project-ledger.json in favor of .machina/state.json; and (6) update SCHEMA.md, CURRENT.md, AGENTS.md, and BACKLOG.md.",
+  "schema_version": 1,
+  "title": "Drain remaining repository audit nuances, schemas, future specs, degraded-source adapter, and GBrain stub pruning"
+}
