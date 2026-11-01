@@ -6,18 +6,18 @@
   "last_checkpoint": null,
   "last_completed": {
     "slice": 1,
-    "summary": "Contained Python 3.12+ PermissionError across unreadable directories (such as root-owned 0700 service directories inside children roots like /central/services/gbrain-pgdump) across ledger/sources/, ledger/checkpoints.py, ledger/sidecar.py, ledger/structural_ctx.py, ledger/capsules.py, and ledger/config.py under Architectural Law 11, with chmod 000 regression coverage.",
-    "timestamp": "2026-11-01T03:05:24.447538Z",
+    "summary": "Synchronized mschwar/sentinel governed C8 retirement (mschwar/sentinel#1 @ ee9318f, lifecycle_state='retired', tags=['retired', 'superseded-by:mschwar/homelab']) into Project Ledger estate inventory (172 canonical projects, 0 open reviews, 190/190 tests OK).",
+    "timestamp": "2026-11-01T04:43:24.721028Z",
     "unit": {
-      "id": "PL-AUDIT-DRAIN-01B",
-      "spec": ".machina/units/PL-AUDIT-DRAIN-01B.json",
-      "spec_digest": "91480c019b56f76aa3f5e2711aeb691a556f7e728a3215197f556e9742e0dc2b",
-      "title": "Contain Python 3.12+ PermissionError across unreadable directories during source probing, scanning, checkpointing, and capsule synthesis"
+      "id": "PL-SENTINEL-RETIREMENT-SYNC-01",
+      "spec": ".machina/units/PL-SENTINEL-RETIREMENT-SYNC-01.json",
+      "spec_digest": "2d63ced6b05bf7bc6c57efc2f14b6d6f913788943f647d6dd1fe686e83de2064",
+      "title": "Synchronize mschwar/sentinel governed retirement into Project Ledger estate inventory"
     }
   },
   "next_action": null,
   "schema_version": 1,
-  "sequence": 50,
+  "sequence": 53,
   "slice": 1,
-  "updated_at": "2026-11-01T03:05:24.449933Z"
+  "updated_at": "2026-11-01T04:43:24.728910Z"
 }

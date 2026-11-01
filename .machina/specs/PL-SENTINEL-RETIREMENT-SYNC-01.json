@@ -1,0 +1,18 @@
+{
+  "authority": {
+    "allowed": [
+      "run python3 -m ledger.cli refresh --full-scan and python3 -m ledger.cli lineage --sync",
+      "update docs/ledgers/projects-ledger.md, registry/project-lineage.json, and .machina/",
+      "run ruff check, ledger.cli validate, unittest, and machina verify-candidate"
+    ],
+    "forbidden": [
+      "modify external repositories during scan (Law 10 read-only scanning)",
+      "hand-edit generated state/ projections"
+    ]
+  },
+  "completion": "ledger.cli show github.com/mschwar/sentinel --json reports current_state.lifecycle_state='retired' (lifecycle_basis='declared_sidecar'), ledger.cli validate reports ok=true, ruff check . and unittest pass, and machina verify-candidate --require-adapter passes.",
+  "id": "PL-SENTINEL-RETIREMENT-SYNC-01",
+  "initial_next_action": "Run full-scan ledger refresh and lineage --sync to ingest mschwar/sentinel governed retirement sidecar, then verify show/validate/ruff/unittest.",
+  "objective": "Synchronize mschwar/sentinel governed C8 retirement (.project-ledger.json v1.0.0 sidecar + RETIRED.md from mschwar/sentinel#1) into Project Ledger estate inventory and lineage registry.",
+  "title": "Synchronize mschwar/sentinel governed retirement into Project Ledger estate inventory"
+}
