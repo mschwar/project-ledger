@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 
 from . import COMPILER_VERSION, IDENTITY_DECISION_SCHEMA_VERSION, REVIEW_QUEUE_SCHEMA_VERSION
+from .capsules import _infer_source_class
 from .identity import load_identity_decisions
 
 README_EXCERPT_MAX_CHARS = 280
@@ -35,12 +36,23 @@ def _read_readme_excerpt(readme_path: str | None) -> str | None:
     return compact[:README_EXCERPT_MAX_CHARS]
 
 
-def _observation_triage_brief(observation: dict) -> dict:
+def _observation_triage_brief(
+    observation: dict,
+    sources_by_id: dict[str, dict] | None = None,
+) -> dict:
     compat = observation.get("compat_entry") if isinstance(observation.get("compat_entry"), dict) else {}
     readme_path = str(compat.get("readme_path") or "").strip() or None
+    source_id = str(observation.get("source_id") or "").strip()
+    src_rec = (sources_by_id or {}).get(source_id) or {}
+    source_class = (
+        str(observation.get("source_class") or "").strip()
+        or str(src_rec.get("source_class") or "").strip()
+        or _infer_source_class(observation, compat)
+    )
     return {
         "observation_id": observation["observation_id"],
         "source_id": observation.get("source_id"),
+        "source_class": source_class,
         "location": observation.get("location"),
         "project_key": observation.get("project_key"),
         "name": compat.get("name"),
@@ -68,6 +80,10 @@ def review_payload(
     *,
     candidates_path: Path | None = None,
     decisions_path: Path | None = None,
+    include_jev: bool = False,
+    jev_provider: str | None = None,
+    jev_force_live: bool = False,
+    jev_allow_vault: bool = False,
 ) -> dict:
     """Return open identity reviews, untriaged weak overlaps, and pending candidate decisions."""
     state_dir = state_dir.resolve()
@@ -95,6 +111,21 @@ def review_payload(
     )
     observations_by_id = {str(o["observation_id"]): o for o in observations_list if o.get("observation_id")}
 
+    manifest_file = state_dir / "system-manifest.json"
+    sources_list: list = []
+    if manifest_file.is_file():
+        try:
+            manifest_payload = json.loads(manifest_file.read_text(encoding="utf-8"))
+            if isinstance(manifest_payload, dict) and isinstance(manifest_payload.get("sources"), list):
+                sources_list = manifest_payload["sources"]
+        except (OSError, json.JSONDecodeError):
+            sources_list = []
+    sources_by_id = {
+        str(s["source_id"]): s
+        for s in sources_list
+        if isinstance(s, dict) and s.get("source_id")
+    }
+
     overlaps = list(evidence.get("cross_project_weak_overlaps", []))
     untriaged_overlaps: list[dict] = []
     for item in overlaps:
@@ -113,8 +144,16 @@ def review_payload(
                 "right_observation_id": rid,
                 "verdict": item.get("verdict"),
                 "shared_weak": list(item.get("shared_weak", [])),
-                "left": _observation_triage_brief(left_obs) if left_obs else {"observation_id": lid},
-                "right": _observation_triage_brief(right_obs) if right_obs else {"observation_id": rid},
+                "left": (
+                    _observation_triage_brief(left_obs, sources_by_id=sources_by_id)
+                    if left_obs
+                    else {"observation_id": lid}
+                ),
+                "right": (
+                    _observation_triage_brief(right_obs, sources_by_id=sources_by_id)
+                    if right_obs
+                    else {"observation_id": rid}
+                ),
             }
         )
 
@@ -131,7 +170,33 @@ def review_payload(
     pending_candidates = [c for c in candidates if str(c.get("decision_id", "")) not in existing_ids]
     approved_candidates = [c for c in candidates if str(c.get("decision_id", "")) in existing_ids]
 
-    return {
+    jev_summary: dict | None = None
+    if include_jev:
+        from .jev import decide, effective_jev_mode, overlap_to_relation_state
+
+        by_relation: dict[str, int] = {}
+        for ov in untriaged_overlaps:
+            rel_state = overlap_to_relation_state(ov)
+            dec = decide(
+                ["weak_overlap_relation"],
+                rel_state,
+                provider=jev_provider,
+                force_live=jev_force_live,
+                allow_vault=jev_allow_vault,
+                record_trace=False,
+            )
+            head_dec = dec["decisions"][0]
+            ov["jev_advisory"] = head_dec
+            rel_label = str(head_dec.get("effective_output") or "abstained")
+            by_relation[rel_label] = by_relation.get(rel_label, 0) + 1
+        jev_summary = {
+            "inference_layer": "jev_system_one_advisory",
+            "mode": effective_jev_mode(),
+            "evaluated_count": len(untriaged_overlaps),
+            "by_relation": by_relation,
+        }
+
+    result = {
         "schema_version": REVIEW_QUEUE_SCHEMA_VERSION,
         "compiler_version": COMPILER_VERSION,
         "run_id": reviews.get("run_id"),
@@ -146,6 +211,9 @@ def review_payload(
         "approved_candidate_count": len(approved_candidates),
         "candidate_decisions": pending_candidates,
     }
+    if jev_summary is not None:
+        result["jev_triage_summary"] = jev_summary
+    return result
 
 
 def approve_candidate_decisions(

@@ -1,0 +1,37 @@
+{
+  "id": "weak_overlap_relation",
+  "version": "1.0.0",
+  "type": "choice",
+  "authority": true,
+  "tier": "judge",
+  "promotion_state": "ADVISORY",
+  "ceiling": "ADVISORY",
+  "instructions": "Classify the identity relationship between two Project Ledger repository observations that share a weak signal (such as name token or partial slug overlap) without a deterministic remote-URL or git-root match. Output is strictly advisory for human triage.",
+  "options": {
+    "distinct_projects": "Separate, unrelated codebases that merely share a generic name token, org prefix, or boilerplate template word.",
+    "related_distinct_siblings": "Separate sibling repositories in the same ecosystem or workflow (e.g. a companion CLI, SDK, or infra repo) that must remain distinct canonical projects.",
+    "redundant_checkout_or_mirror": "Secondary mirror, backup snapshot, worktree, or stale copy of the exact same repository on another path or host.",
+    "same_project_candidate": "High-likelihood manifestations of the exact same canonical project across paths or hosts warranting human merge review."
+  },
+  "state_keys": [
+    "shared_weak",
+    "left_name",
+    "right_name",
+    "left_source_class",
+    "right_source_class",
+    "left_remote_url",
+    "right_remote_url",
+    "left_readme_excerpt",
+    "right_readme_excerpt",
+    "same_normalized_remote",
+    "exact_name_match"
+  ],
+  "thresholds": {
+    "act_min_confidence": 0.55
+  },
+  "provider": {
+    "name": "jev",
+    "model": "jev-1.13.0"
+  },
+  "fallback": "code"
+}

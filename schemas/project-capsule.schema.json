@@ -1117,6 +1117,9 @@
         "total_files",
         "languages",
         "entrypoints",
+        "operational_surfaces",
+        "operational_surface_count",
+        "dependency_summary",
         "authority_boundaries",
         "subsystems",
         "subsystem_count",
@@ -1180,6 +1183,62 @@
             "type": "string"
           }
         },
+        "operational_surfaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "name",
+              "file"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "cli_command",
+                  "http_route",
+                  "mcp_tool",
+                  "mcp_resource",
+                  "env_var"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "file": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "operational_surface_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dependency_summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "internal_edge_count",
+            "cycle_count"
+          ],
+          "properties": {
+            "internal_edge_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cycle_count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
         "authority_boundaries": {
           "type": "array",
           "items": {
@@ -1231,6 +1290,9 @@
             ],
             "properties": {
               "path": {
+                "type": "string"
+              },
+              "arch_role": {
                 "type": "string"
               },
               "file_count": {

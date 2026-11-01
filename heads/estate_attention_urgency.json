@@ -1,0 +1,34 @@
+{
+  "id": "estate_attention_urgency",
+  "version": "1.0.0",
+  "type": "score",
+  "authority": false,
+  "tier": "judge",
+  "promotion_state": "ADVISORY",
+  "ceiling": "ADVISORY",
+  "instructions": "Score how urgently a canonical project warrants operator attention from 0 to 3 based on git drift across checkouts, diverged branches, dirty worktrees, and open identity review items.",
+  "criteria": [
+    "0: Healthy, clean project with zero git drift, zero open identity reviews, and available sources",
+    "1: Low-priority hygiene note (backup/inventory-only manifestation or minor non-blocking review without git drift)",
+    "2: Moderate attention needed (single dirty live worktree or unpushed commits ahead of upstream without history divergence)",
+    "3: High urgency (diverged git history, multiple dirty checkouts across paths/hosts, or high-severity open identity review)"
+  ],
+  "state_keys": [
+    "git_drift_codes",
+    "dirty_checkout_count",
+    "ahead_total",
+    "behind_total",
+    "diverged",
+    "open_review_count",
+    "high_severity_review_count",
+    "source_health_state"
+  ],
+  "thresholds": {
+    "act_min_confidence": 0.45
+  },
+  "provider": {
+    "name": "jev",
+    "model": "jev-1.13.0"
+  },
+  "fallback": "code"
+}

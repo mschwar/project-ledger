@@ -32,10 +32,11 @@ compatibility observations + single-pass scandir source/candidate/compile checkp
  -> typed observations
  -> exact normalized remote identity + durable identity decisions + immutable project lineage registry (registry/project-lineage.json) + frontier zero-shot triage
  -> canonical projects + review queue + GBrain cross-links + idempotent GBrain reality-block projector (ledger sync-gbrain)
- -> bounded project capsules (with read-only structural ctx synthesis + Machina continuity) + preferred-location resolution + human canonical view
+ -> bounded project capsules (with read-only structural ctx synthesis including operational surfaces, dependency summary, & subsystem arch_role + Machina continuity) + preferred-location resolution + human canonical view
  -> header-indexed semantic run snapshots (state/runs/) + semantic change feed (state/changes.json)
+ -> governed Type 1 Jev (`jev-1.13.0`) System-One decision heads (`ledger/jev.py`, `heads/*.json`, `LEDGER_JEV=off` offline default, permanent `ADVISORY` ceiling on authority heads)
  -> system manifest
- -> ledger CLI + stdlib read-only MCP stdio server (ledger-mcp / ledger mcp): orient / sources / resolve / show / locate / explain / review / changes / lineage / sync-gbrain / mcp
+ -> ledger CLI + stdlib read-only MCP stdio server (ledger-mcp / ledger mcp): orient / sources / resolve / show / locate / explain / review / changes / lineage / sync-gbrain / jev / mcp
 ```
 
 The identity layer is intentionally conservative. Exact normalized repository remote is the only automatic merge rule. Names/project-key hints are referents, not identity authority. Explicit committed decisions can merge/split/reject/alias, assign a canonical human key, and supersede a prior decision.

@@ -38,7 +38,7 @@ from .identity import observation_facts, resolve_payload
 from .models import parse_iso_datetime, portable_artifact_path
 from .sources.common import safe_path_is_dir, safe_path_is_file
 from .sources.git import resolve_observation_git_drift
-from .structural_ctx import extract_structural_ctx
+from .structural_ctx import compute_subsystem_dependency_summary, extract_structural_ctx
 
 CAPSULE_MAX_BYTES = 16384
 CAPSULE_MAX_OBSERVATION_SUMMARIES = 25
@@ -46,6 +46,7 @@ CAPSULE_MAX_PROVENANCE_REFS = 5
 CAPSULE_PURPOSE_MAX_CHARS = 240
 CAPSULE_MAX_CTX_LANGUAGES = 10
 CAPSULE_MAX_CTX_ENTRYPOINTS = 10
+CAPSULE_MAX_CTX_SURFACES = 12
 CAPSULE_MAX_CTX_BOUNDARY_DOCS = 8
 CAPSULE_MAX_CTX_SUBSYSTEMS = 12
 CAPSULE_MAX_CTX_SYMBOLS = 6
@@ -136,6 +137,12 @@ def _absent_ctx_capsule() -> dict[str, Any]:
         "total_files": None,
         "languages": {},
         "entrypoints": [],
+        "operational_surfaces": [],
+        "operational_surface_count": 0,
+        "dependency_summary": {
+            "internal_edge_count": 0,
+            "cycle_count": 0,
+        },
         "authority_boundaries": [],
         "subsystems": [],
         "subsystem_count": 0,
@@ -165,10 +172,24 @@ _CTX_LANG_PAIR_RE = re.compile(r"([A-Za-z0-9_+#.-]+)\s*\((\d+)\)")
 _CTX_BOUNDARY_LINE_RE = re.compile(
     r"^-\s+\*\*([^*]+)\*\*\s+\[`([^`]+)`\](?:\s+\(([^)]*)\))?(?:\s+—\s+Sections:\s*(.+))?$"
 )
+_CTX_SURFACE_LINE_RE = re.compile(r"^-\s+\*\*([^(]+?)(?:\s*\(\d+\))?:\*\*\s*(.+)$")
+_CTX_BACKTICK_TOKEN_RE = re.compile(r"`([^`]+)`(?:\s*\(`([^`]+)`\))?")
+_CTX_SURFACE_LABEL_TO_KIND = {
+    "cli": "cli_command",
+    "cli commands": "cli_command",
+    "http": "http_route",
+    "http routes": "http_route",
+    "mcp": "mcp_tool",
+    "mcp tools": "mcp_tool",
+    "mcp resources": "mcp_resource",
+    "env": "env_var",
+    "env config": "env_var",
+    "configuration env vars": "env_var",
+}
 
 
 def _parse_tier2_context_0_body(md_path: Path) -> dict[str, Any]:
-    """Extract languages, boundary docs, entrypoints, and subsystem table from CONTEXT-0.md."""
+    """Extract languages, boundary docs, entrypoints, surfaces, and subsystem table from CONTEXT-0.md."""
     try:
         lines = md_path.read_text(encoding="utf-8", errors="replace").splitlines()
     except OSError:
@@ -176,6 +197,7 @@ def _parse_tier2_context_0_body(md_path: Path) -> dict[str, Any]:
     languages: dict[str, int] = {}
     authority_boundaries: list[dict[str, Any]] = []
     entrypoints: list[str] = []
+    operational_surfaces: list[dict[str, str]] = []
     subsystems: list[dict[str, Any]] = []
     section = ""
     in_frontmatter = False
@@ -193,10 +215,10 @@ def _parse_tier2_context_0_body(md_path: Path) -> dict[str, Any]:
             for name, count_str in _CTX_LANG_PAIR_RE.findall(lang_part):
                 languages[name] = int(count_str)
             continue
-        if stripped.startswith("## "):
-            section = stripped[3:].strip().lower()
+        if stripped.startswith("## ") or stripped.startswith("### "):
+            section = stripped.lstrip("#").strip().lower()
             continue
-        if section.startswith("authority boundaries") and stripped.startswith("- **"):
+        if section.startswith(("authority boundaries", "authority & architecture boundaries", "governance & architecture docs")) and stripped.startswith("- **"):
             bmatch = _CTX_BOUNDARY_LINE_RE.match(stripped)
             if bmatch:
                 headings = (
@@ -212,13 +234,48 @@ def _parse_tier2_context_0_body(md_path: Path) -> dict[str, Any]:
                         "headings": headings,
                     }
                 )
-        elif section.startswith("entrypoints") and stripped.startswith("- `") and stripped.endswith("`"):
-            ep = stripped[3:-1].strip()
-            if ep:
-                entrypoints.append(ep)
-        elif section.startswith("subsystem overview") and stripped.startswith("| `"):
+        elif section.startswith("entrypoints") or section.startswith("operational surfaces"):
+            if stripped.startswith("- `") and stripped.endswith("`"):
+                ep = stripped[3:-1].strip()
+                if ep:
+                    entrypoints.append(ep)
+            elif stripped.startswith("- **"):
+                smatch = _CTX_SURFACE_LINE_RE.match(stripped)
+                if smatch:
+                    label = smatch.group(1).strip().lower()
+                    skind = _CTX_SURFACE_LABEL_TO_KIND.get(label)
+                    if skind:
+                        for name_tok, file_tok in _CTX_BACKTICK_TOKEN_RE.findall(smatch.group(2)):
+                            clean_name = name_tok.strip()
+                            if clean_name:
+                                operational_surfaces.append(
+                                    {
+                                        "kind": skind,
+                                        "name": clean_name,
+                                        "file": file_tok.strip(),
+                                    }
+                                )
+        elif section.startswith(("subsystem overview", "subsystem map")) and stripped.startswith("| `"):
             cells = [c.strip() for c in stripped.strip("|").split("|")]
-            if len(cells) >= 4:
+            if len(cells) >= 5 and cells[2].isdigit():
+                sub_path = cells[0].strip("`").strip()
+                arch_role = cells[1].strip("`").strip()
+                fcount = int(cells[2])
+                sub_langs = [x.strip() for x in cells[3].split(",") if x.strip() and x.strip() != "-"]
+                syms = [x.strip().strip("`") for x in cells[4].split(",") if x.strip() and x.strip() != "-"]
+                if sub_path:
+                    sub_rec: dict[str, Any] = {
+                        "path": sub_path,
+                        "file_count": fcount,
+                        "languages": sub_langs,
+                        "key_symbols": syms,
+                        "internal_deps": [],
+                        "external_deps": [],
+                    }
+                    if arch_role and arch_role != "-":
+                        sub_rec["arch_role"] = arch_role
+                    subsystems.append(sub_rec)
+            elif len(cells) >= 4:
                 sub_path = cells[0].strip("`").strip()
                 fcount = int(cells[1]) if cells[1].isdigit() else 0
                 sub_langs = [x.strip() for x in cells[2].split(",") if x.strip() and x.strip() != "-"]
@@ -238,6 +295,7 @@ def _parse_tier2_context_0_body(md_path: Path) -> dict[str, Any]:
         "languages": languages,
         "authority_boundaries": authority_boundaries,
         "entrypoints": entrypoints,
+        "operational_surfaces": operational_surfaces,
         "subsystems": subsystems,
     }
 
@@ -333,6 +391,38 @@ def _normalize_ctx_mapping(
             if len(authority_boundaries) >= CAPSULE_MAX_CTX_BOUNDARY_DOCS:
                 break
 
+    raw_surfaces = raw.get("operational_surfaces")
+    all_surfaces: list[dict[str, str]] = []
+    allowed_surface_kinds = {"cli_command", "http_route", "mcp_tool", "mcp_resource", "env_var"}
+    kind_aliases = {"config_env": "env_var", "cli": "cli_command", "http": "http_route"}
+    if isinstance(raw_surfaces, list):
+        seen_surf_keys: set[tuple[str, str]] = set()
+        for surf in raw_surfaces:
+            if not isinstance(surf, dict):
+                continue
+            raw_kind = str(surf.get("kind") or "").strip().lower()
+            skind = kind_aliases.get(raw_kind, raw_kind)
+            sname = str(surf.get("name") or "").strip()[:120]
+            sfile = str(surf.get("file") or surf.get("source_file") or "").strip()[:160]
+            if skind not in allowed_surface_kinds or not sname:
+                continue
+            dedup_key = (skind, sname)
+            if dedup_key in seen_surf_keys:
+                continue
+            seen_surf_keys.add(dedup_key)
+            rec_surf: dict[str, str] = {"kind": skind, "name": sname, "file": sfile}
+            sdetail = str(surf.get("detail") or "").strip()[:120]
+            if sdetail:
+                rec_surf["detail"] = sdetail
+            all_surfaces.append(rec_surf)
+
+    declared_surf_count = raw.get("operational_surface_count")
+    if isinstance(declared_surf_count, int) and not isinstance(declared_surf_count, bool):
+        total_surf_count = max(declared_surf_count, len(all_surfaces))
+    else:
+        total_surf_count = len(all_surfaces)
+    shown_surfaces = all_surfaces[:CAPSULE_MAX_CTX_SURFACES]
+
     raw_subs = raw.get("subsystems")
     all_subsystems: list[dict[str, Any]] = []
     if isinstance(raw_subs, list):
@@ -370,16 +460,33 @@ def _normalize_ctx_mapping(
                 if isinstance(sub.get("external_deps"), list)
                 else []
             )
-            all_subsystems.append(
-                {
-                    "path": sub_path,
-                    "file_count": file_count,
-                    "languages": sub_langs,
-                    "key_symbols": key_syms,
-                    "internal_deps": int_deps,
-                    "external_deps": ext_deps,
-                }
-            )
+            sub_entry: dict[str, Any] = {
+                "path": sub_path,
+                "file_count": file_count,
+                "languages": sub_langs,
+                "key_symbols": key_syms,
+                "internal_deps": int_deps,
+                "external_deps": ext_deps,
+            }
+            arch_role = str(sub.get("arch_role") or "").strip()[:64]
+            if arch_role and arch_role != "-":
+                sub_entry["arch_role"] = arch_role
+            all_subsystems.append(sub_entry)
+
+    raw_dep_summary = raw.get("dependency_summary")
+    if (
+        isinstance(raw_dep_summary, dict)
+        and isinstance(raw_dep_summary.get("internal_edge_count"), int)
+        and not isinstance(raw_dep_summary.get("internal_edge_count"), bool)
+        and isinstance(raw_dep_summary.get("cycle_count"), int)
+        and not isinstance(raw_dep_summary.get("cycle_count"), bool)
+    ):
+        dependency_summary = {
+            "internal_edge_count": max(0, int(raw_dep_summary["internal_edge_count"])),
+            "cycle_count": max(0, int(raw_dep_summary["cycle_count"])),
+        }
+    else:
+        dependency_summary = compute_subsystem_dependency_summary(all_subsystems)
 
     declared_sub_count = raw.get("subsystem_count")
     if isinstance(declared_sub_count, int) and not isinstance(declared_sub_count, bool):
@@ -400,6 +507,9 @@ def _normalize_ctx_mapping(
         "total_files": total_files,
         "languages": languages,
         "entrypoints": entrypoints,
+        "operational_surfaces": shown_surfaces,
+        "operational_surface_count": total_surf_count,
+        "dependency_summary": dependency_summary,
         "authority_boundaries": authority_boundaries,
         "subsystems": shown_subs,
         "subsystem_count": total_sub_count,
@@ -521,6 +631,7 @@ def ingest_project_ctx_capsule(
                     "subsystem_count": sub_count,
                     "languages": body_parsed.get("languages") or {},
                     "entrypoints": body_parsed.get("entrypoints") or [],
+                    "operational_surfaces": body_parsed.get("operational_surfaces") or [],
                     "authority_boundaries": body_parsed.get("authority_boundaries") or [],
                     "subsystems": body_parsed.get("subsystems") or [],
                 }
@@ -1356,6 +1467,11 @@ def build_project_capsule(
             ctx_block["subsystems"] = list(ctx_block["subsystems"][:ctx_sub_limit])
             ctx_block["subsystems_truncated"] = True
             capsule = _assemble(shown_count, observations_truncated, ctx_block)
+        elif len(ctx_block.get("operational_surfaces") or []) > 4:
+            ctx_surf_limit = len(ctx_block["operational_surfaces"]) - 2
+            ctx_block = dict(ctx_block)
+            ctx_block["operational_surfaces"] = list(ctx_block["operational_surfaces"][:ctx_surf_limit])
+            capsule = _assemble(shown_count, observations_truncated, ctx_block)
         elif shown_count > 1:
             shown_count -= 1
             observations_truncated = True
@@ -1364,6 +1480,10 @@ def build_project_capsule(
             ctx_block = dict(ctx_block)
             ctx_block["subsystems"] = []
             ctx_block["subsystems_truncated"] = True
+            capsule = _assemble(shown_count, observations_truncated, ctx_block)
+        elif len(ctx_block.get("operational_surfaces") or []) > 0:
+            ctx_block = dict(ctx_block)
+            ctx_block["operational_surfaces"] = []
             capsule = _assemble(shown_count, observations_truncated, ctx_block)
         else:
             break
