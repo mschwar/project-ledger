@@ -23,6 +23,7 @@ from __future__ import annotations
 import copy
 import datetime as dt
 import hashlib
+import http.client
 import json
 import math
 import os
@@ -45,6 +46,24 @@ _PROMOTION_RANK = {state: idx for idx, state in enumerate(PROMOTION_STATES)}
 HEAD_TYPES = ("noul", "choice", "score")
 TIERS = ("code", "judge", "deliberate")
 VALID_JEV_MODES = ("off", "auto", "shadow", "advisory", "routing", "actuating")
+PERMANENT_AUTHORITY_HEAD_IDS = frozenset({"weak_overlap_relation"})
+
+
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Refuse HTTP 30x redirects so `Authorization: Bearer` is never forwarded cross-origin."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        raise urllib.error.HTTPError(
+            req.full_url,
+            code,
+            f"Refusing HTTP {code} redirect on authenticated Jev request",
+            headers,
+            fp,
+        )
+
+
+_ORIG_URLOPEN = urllib.request.urlopen
+_NO_REDIRECT_OPENER = urllib.request.build_opener(_NoRedirectHandler())
 
 BUILTIN_HEADS: dict[str, dict[str, Any]] = {
     "weak_overlap_relation": {
@@ -230,7 +249,12 @@ def validate_head(head: dict[str, Any], *, expected_id: str | None = None) -> li
         if _PROMOTION_RANK[promo] > _PROMOTION_RANK[ceiling]:
             errors.append(f"promotion_state '{promo}' exceeds ceiling '{ceiling}'.")
 
-    if bool(head["authority"]):
+    if not isinstance(head["authority"], bool):
+        errors.append("'authority' must be a boolean.")
+    if hid in PERMANENT_AUTHORITY_HEAD_IDS and head["authority"] is not True:
+        errors.append(f"Permanent authority head '{hid}' must declare 'authority': true.")
+
+    if bool(head["authority"]) or hid in PERMANENT_AUTHORITY_HEAD_IDS:
         if ceiling != "ADVISORY":
             errors.append("Authority heads ('authority': true) have a permanent ceiling ADVISORY.")
         if promo in _PROMOTION_RANK and _PROMOTION_RANK[promo] > _PROMOTION_RANK["ADVISORY"]:
@@ -374,6 +398,75 @@ def _project_state(state: dict[str, Any], state_keys: list[str]) -> dict[str, An
     return {k: state.get(k) for k in state_keys if k in state}
 
 
+def check_state(head: dict[str, Any], state: Any) -> None:
+    """Validate that *state* is a JSON object containing all required `state_keys` for *head*."""
+    if not isinstance(state, dict):
+        raise ValueError(f"Head '{head['id']}' requires a JSON object state.")
+    missing = [k for k in head["state_keys"] if k not in state]
+    if missing:
+        raise ValueError(
+            f"State missing required keys for head '{head['id']}': {', '.join(missing)}"
+        )
+
+
+def _safe_int(val: Any, *, field: str = "") -> int:
+    if val is None:
+        return 0
+    if isinstance(val, bool):
+        raise ValueError(f"State field '{field}' must be an integer, got boolean.")
+    if isinstance(val, (int, float)):
+        if not math.isfinite(float(val)):
+            raise ValueError(f"State field '{field}' must be finite.")
+        return int(val)
+    if isinstance(val, str) and val.strip():
+        try:
+            return int(val.strip())
+        except ValueError as exc:
+            raise ValueError(f"State field '{field}' must be an integer, got {val!r}.") from exc
+    raise ValueError(f"State field '{field}' must be an integer, got {type(val).__name__}.")
+
+
+def _safe_float_or_none(val: Any, *, field: str = "") -> float | None:
+    if val is None:
+        return None
+    if isinstance(val, bool):
+        raise ValueError(f"State field '{field}' must be a number or null, got boolean.")
+    if isinstance(val, (int, float)):
+        if not math.isfinite(float(val)):
+            raise ValueError(f"State field '{field}' must be finite.")
+        return float(val)
+    raise ValueError(f"State field '{field}' must be a number or null, got {type(val).__name__}.")
+
+
+def _safe_bool(val: Any, *, field: str = "") -> bool:
+    if val is None:
+        return False
+    if isinstance(val, bool):
+        return val
+    raise ValueError(f"State field '{field}' must be a boolean, got {type(val).__name__}.")
+
+
+def _safe_opt_str(val: Any, *, field: str = "") -> str:
+    if val is None:
+        return ""
+    if isinstance(val, str):
+        return val
+    raise ValueError(f"State field '{field}' must be a string or null, got {type(val).__name__}.")
+
+
+def _safe_str_list(val: Any, *, field: str = "") -> list[str]:
+    if val is None:
+        return []
+    if not isinstance(val, (list, tuple, set)):
+        raise ValueError(f"State field '{field}' must be a list of strings, got {type(val).__name__}.")
+    out: list[str] = []
+    for item in val:
+        if not isinstance(item, str):
+            raise ValueError(f"State field '{field}' elements must be strings, got {type(item).__name__}.")
+        out.append(item)
+    return out
+
+
 def state_digest(projected_state: dict[str, Any]) -> str:
     canonical = json.dumps(projected_state, sort_keys=True, separators=(",", ":"), default=str)
     return "sha256:" + hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
@@ -408,18 +501,27 @@ def _token_set(text: str | None) -> set[str]:
 
 
 def _pre_rule_weak_overlap_relation(state: dict[str, Any]) -> tuple[str, float] | None:
-    same_remote = bool(state.get("same_normalized_remote"))
-    l_remote = _norm_url(state.get("left_remote_url"))
-    r_remote = _norm_url(state.get("right_remote_url"))
+    _safe_str_list(state.get("shared_weak"), field="shared_weak")
+    same_remote = _safe_bool(state.get("same_normalized_remote"), field="same_normalized_remote")
+    exact_match = _safe_bool(state.get("exact_name_match"), field="exact_name_match")
+    l_remote = _norm_url(_safe_opt_str(state.get("left_remote_url"), field="left_remote_url"))
+    r_remote = _norm_url(_safe_opt_str(state.get("right_remote_url"), field="right_remote_url"))
+    l_cls = _safe_opt_str(state.get("left_source_class"), field="left_source_class")
+    r_cls = _safe_opt_str(state.get("right_source_class"), field="right_source_class")
+    _safe_opt_str(state.get("left_name"), field="left_name")
+    _safe_opt_str(state.get("right_name"), field="right_name")
+    _safe_opt_str(state.get("left_readme_excerpt"), field="left_readme_excerpt")
+    _safe_opt_str(state.get("right_readme_excerpt"), field="right_readme_excerpt")
+
     if (same_remote and l_remote) or (l_remote and r_remote and l_remote == r_remote):
-        classes = {str(state.get("left_source_class") or ""), str(state.get("right_source_class") or "")}
+        classes = {l_cls, r_cls}
         if classes & {"mirror", "backup"}:
             return "redundant_checkout_or_mirror", 0.98
         return "same_project_candidate", 0.96
     if l_remote and r_remote and l_remote != r_remote:
         l_org = l_remote.split("/")[1] if "/" in l_remote else ""
         r_org = r_remote.split("/")[1] if "/" in r_remote else ""
-        if l_org and r_org and l_org != r_org and not bool(state.get("exact_name_match")):
+        if l_org and r_org and l_org != r_org and not exact_match:
             return "distinct_projects", 0.95
     return None
 
@@ -429,14 +531,19 @@ def _rule_weak_overlap_relation(state: dict[str, Any]) -> tuple[str, float]:
     if hit is not None:
         return hit
 
-    l_name = str(state.get("left_name") or "").strip().lower()
-    r_name = str(state.get("right_name") or "").strip().lower()
-    exact_name = bool(state.get("exact_name_match")) or (bool(l_name) and l_name == r_name)
-    classes = {str(state.get("left_source_class") or ""), str(state.get("right_source_class") or "")}
-    l_remote = _norm_url(state.get("left_remote_url"))
-    r_remote = _norm_url(state.get("right_remote_url"))
-    l_tokens = _token_set(state.get("left_readme_excerpt"))
-    r_tokens = _token_set(state.get("right_readme_excerpt"))
+    l_name = _safe_opt_str(state.get("left_name"), field="left_name").strip().lower()
+    r_name = _safe_opt_str(state.get("right_name"), field="right_name").strip().lower()
+    exact_name = _safe_bool(state.get("exact_name_match"), field="exact_name_match") or (
+        bool(l_name) and l_name == r_name
+    )
+    classes = {
+        _safe_opt_str(state.get("left_source_class"), field="left_source_class"),
+        _safe_opt_str(state.get("right_source_class"), field="right_source_class"),
+    }
+    l_remote = _norm_url(_safe_opt_str(state.get("left_remote_url"), field="left_remote_url"))
+    r_remote = _norm_url(_safe_opt_str(state.get("right_remote_url"), field="right_remote_url"))
+    l_tokens = _token_set(_safe_opt_str(state.get("left_readme_excerpt"), field="left_readme_excerpt"))
+    r_tokens = _token_set(_safe_opt_str(state.get("right_readme_excerpt"), field="right_readme_excerpt"))
     overlap_ratio = (
         len(l_tokens & r_tokens) / max(1, min(len(l_tokens), len(r_tokens)))
         if (l_tokens and r_tokens)
@@ -462,13 +569,20 @@ def _rule_weak_overlap_relation(state: dict[str, Any]) -> tuple[str, float]:
 
 
 def _pre_rule_project_lifecycle_inference(state: dict[str, Any]) -> tuple[str, float] | None:
-    total_files = int(state.get("total_files") or 0)
-    surfaces = int(state.get("operational_surface_count") or 0)
-    has_gov = bool(state.get("has_governance_docs"))
-    has_handoff = bool(state.get("has_machina_handoff"))
+    _safe_str_list(state.get("source_classes"), field="source_classes")
+    _safe_float_or_none(state.get("days_since_last_commit"), field="days_since_last_commit")
+    dirty = _safe_bool(state.get("dirty_worktree"), field="dirty_worktree")
+    _safe_int(state.get("ahead_count"), field="ahead_count")
+    has_handoff = _safe_bool(state.get("has_machina_handoff"), field="has_machina_handoff")
+    total_files = _safe_int(state.get("total_files"), field="total_files")
+    _safe_int(state.get("subsystem_count"), field="subsystem_count")
+    surfaces = _safe_int(state.get("operational_surface_count"), field="operational_surface_count")
+    has_gov = _safe_bool(state.get("has_governance_docs"), field="has_governance_docs")
+    _safe_int(state.get("open_review_count"), field="open_review_count")
+
     if 0 < total_files <= 4 and surfaces == 0 and not has_gov and not has_handoff:
         return "ephemeral_experiment", 0.96
-    if bool(state.get("dirty_worktree")) and has_handoff:
+    if dirty and has_handoff:
         return "active_development", 0.97
     return None
 
@@ -478,15 +592,14 @@ def _rule_project_lifecycle_inference(state: dict[str, Any]) -> tuple[str, float
     if hit is not None:
         return hit
 
-    classes = {str(c) for c in (state.get("source_classes") or [])}
-    days = state.get("days_since_last_commit")
-    days_num = float(days) if isinstance(days, (int, float)) else None
-    dirty = bool(state.get("dirty_worktree"))
-    ahead = int(state.get("ahead_count") or 0)
-    handoff = bool(state.get("has_machina_handoff"))
-    total_files = int(state.get("total_files") or 0)
-    surfaces = int(state.get("operational_surface_count") or 0)
-    has_gov = bool(state.get("has_governance_docs"))
+    classes = set(_safe_str_list(state.get("source_classes"), field="source_classes"))
+    days_num = _safe_float_or_none(state.get("days_since_last_commit"), field="days_since_last_commit")
+    dirty = _safe_bool(state.get("dirty_worktree"), field="dirty_worktree")
+    ahead = _safe_int(state.get("ahead_count"), field="ahead_count")
+    handoff = _safe_bool(state.get("has_machina_handoff"), field="has_machina_handoff")
+    total_files = _safe_int(state.get("total_files"), field="total_files")
+    surfaces = _safe_int(state.get("operational_surface_count"), field="operational_surface_count")
+    has_gov = _safe_bool(state.get("has_governance_docs"), field="has_governance_docs")
 
     if dirty or ahead > 0 or handoff or (days_num is not None and days_num <= 14):
         return "active_development", 0.89
@@ -502,16 +615,18 @@ def _rule_project_lifecycle_inference(state: dict[str, Any]) -> tuple[str, float
 
 
 def _pre_rule_estate_attention_urgency(state: dict[str, Any]) -> tuple[int, float] | None:
-    drift = [str(c) for c in (state.get("git_drift_codes") or [])]
-    dirty_cnt = int(state.get("dirty_checkout_count") or 0)
-    ahead = int(state.get("ahead_total") or 0)
-    behind = int(state.get("behind_total") or 0)
-    diverged = bool(state.get("diverged"))
-    open_rev = int(state.get("open_review_count") or 0)
-    health = str(state.get("source_health_state") or "healthy")
+    drift = _safe_str_list(state.get("git_drift_codes"), field="git_drift_codes")
+    dirty_cnt = _safe_int(state.get("dirty_checkout_count"), field="dirty_checkout_count")
+    ahead = _safe_int(state.get("ahead_total"), field="ahead_total")
+    behind = _safe_int(state.get("behind_total"), field="behind_total")
+    diverged = _safe_bool(state.get("diverged"), field="diverged")
+    open_rev = _safe_int(state.get("open_review_count"), field="open_review_count")
+    high_rev = _safe_int(state.get("high_severity_review_count"), field="high_severity_review_count")
+    health = _safe_opt_str(state.get("source_health_state"), field="source_health_state") or "healthy"
+
     if not drift and dirty_cnt == 0 and ahead == 0 and behind == 0 and not diverged and open_rev == 0 and health == "healthy":
         return 0, 0.99
-    if diverged or dirty_cnt >= 2 or int(state.get("high_severity_review_count") or 0) >= 1:
+    if diverged or dirty_cnt >= 2 or high_rev >= 1:
         return 3, 0.97
     return None
 
@@ -521,15 +636,33 @@ def _rule_estate_attention_urgency(state: dict[str, Any]) -> tuple[int, float]:
     if hit is not None:
         return hit
 
-    dirty_cnt = int(state.get("dirty_checkout_count") or 0)
-    ahead = int(state.get("ahead_total") or 0)
-    behind = int(state.get("behind_total") or 0)
-    open_rev = int(state.get("open_review_count") or 0)
-    drift = {str(c) for c in (state.get("git_drift_codes") or [])}
+    dirty_cnt = _safe_int(state.get("dirty_checkout_count"), field="dirty_checkout_count")
+    ahead = _safe_int(state.get("ahead_total"), field="ahead_total")
+    behind = _safe_int(state.get("behind_total"), field="behind_total")
+    open_rev = _safe_int(state.get("open_review_count"), field="open_review_count")
+    drift = set(_safe_str_list(state.get("git_drift_codes"), field="git_drift_codes"))
+    health = _safe_opt_str(state.get("source_health_state"), field="source_health_state") or "healthy"
 
-    if dirty_cnt >= 1 or ahead >= 1 or ("GIT_WORKTREE_DIRTY" in drift) or ("GIT_AHEAD_UNPUSHED" in drift):
+    if (
+        dirty_cnt >= 1
+        or ahead >= 1
+        or bool(
+            drift
+            & {
+                "GIT_DIRTY_WORKTREE",
+                "GIT_AHEAD_OF_UPSTREAM",
+                "GIT_WORKTREE_DIRTY",
+                "GIT_AHEAD_UNPUSHED",
+            }
+        )
+    ):
         return 2, 0.88
-    if behind >= 1 or open_rev >= 1 or str(state.get("source_health_state") or "healthy") != "healthy":
+    if (
+        behind >= 1
+        or open_rev >= 1
+        or bool(drift & {"GIT_BEHIND_UPSTREAM", "GIT_MAIN_BEHIND_ORIGIN", "GIT_DETACHED_HEAD"})
+        or health != "healthy"
+    ):
         return 1, 0.85
     return 0, 0.85
 
@@ -545,6 +678,7 @@ def apply_pre_rule(head_id: str, state: dict[str, Any]) -> tuple[Any, float] | N
 
 
 def run_code_fallback(head: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
+    check_state(head, state)
     hid = head["id"]
     t0 = time.perf_counter()
     if hid == "weak_overlap_relation":
@@ -633,12 +767,17 @@ def _parse_wire_answer(head: dict[str, Any], ans: dict[str, Any]) -> tuple[Any, 
         return choice, round(conf, 6), probs, None
 
     if htype == "score":
+        n_levels = len(head.get("criteria") or [])
+        if n_levels < 2:
+            raise ValueError(f"Invalid score criteria for '{head['id']}'")
         raw_score = ans.get("score")
         if raw_score is not None:
             if (
                 not isinstance(raw_score, (int, float))
                 or isinstance(raw_score, bool)
                 or not math.isfinite(float(raw_score))
+                or float(raw_score) < -0.5
+                or float(raw_score) > float(n_levels - 1) + 0.5
             ):
                 raise ValueError(f"Invalid score for '{head['id']}'")
             expected: float | None = float(raw_score)
@@ -646,6 +785,8 @@ def _parse_wire_answer(head: dict[str, Any], ans: dict[str, Any]) -> tuple[Any, 
             expected = None
         if probs:
             top_k, top_p = max(probs.items(), key=lambda kv: kv[1])
+            if not isinstance(top_k, str) or not re.fullmatch(r"\d+", top_k):
+                raise ValueError(f"Invalid score bucket '{top_k}' for '{head['id']}'")
             discrete = int(top_k)
             conf = float(raw_conf) if raw_conf is not None else float(top_p)
         elif expected is not None:
@@ -653,6 +794,8 @@ def _parse_wire_answer(head: dict[str, Any], ans: dict[str, Any]) -> tuple[Any, 
             conf = float(raw_conf) if raw_conf is not None else 0.5
         else:
             raise ValueError(f"Malformed score answer for '{head['id']}'")
+        if not (0 <= discrete < n_levels):
+            raise ValueError(f"Out-of-range score {discrete} for '{head['id']}' (0..{n_levels - 1})")
         return discrete, round(conf, 6), probs, expected
 
     raise ValueError(f"Unsupported head type '{htype}'")
@@ -670,6 +813,9 @@ def run_jev(
     """Execute one or more Jev heads against shared *state* in a single `/v1/systemone` batch."""
     results: dict[str, dict[str, Any]] = {}
     pending_heads: list[dict[str, Any]] = []
+
+    for head in heads:
+        check_state(head, state)
 
     for head in heads:
         hid = head["id"]
@@ -760,7 +906,12 @@ def run_jev(
 
     t0 = time.perf_counter()
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
+        open_fn = (
+            _NO_REDIRECT_OPENER.open
+            if urllib.request.urlopen is _ORIG_URLOPEN
+            else urllib.request.urlopen
+        )
+        with open_fn(req, timeout=timeout) as resp:
             raw_bytes = resp.read()
         latency_ms = round((time.perf_counter() - t0) * 1000.0, 2)
         payload = json.loads(raw_bytes.decode("utf-8"))
@@ -785,7 +936,14 @@ def run_jev(
                 "est_cost_usd": 0.0,
             }
         return results
-    except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as exc:
+    except (
+        urllib.error.URLError,
+        TimeoutError,
+        OSError,
+        http.client.HTTPException,
+        UnicodeDecodeError,
+        json.JSONDecodeError,
+    ) as exc:
         latency_ms = round((time.perf_counter() - t0) * 1000.0, 2)
         reason = f"JEV_UNAVAILABLE: {type(exc).__name__}"
         for head in pending_heads:
@@ -803,9 +961,34 @@ def run_jev(
             }
         return results
 
+    if not isinstance(payload, dict):
+        for head in pending_heads:
+            results[head["id"]] = {
+                "output": None,
+                "confidence": 0.0,
+                "probabilities": {},
+                "provider": "jev",
+                "model": model_name,
+                "abstained": True,
+                "abstain_reason": "MALFORMED_UPSTREAM_RESPONSE: non-object payload",
+                "latency_ms": latency_ms,
+                "input_tokens": 0,
+                "est_cost_usd": 0.0,
+            }
+        return results
+
     answers = payload.get("answers") if isinstance(payload.get("answers"), dict) else {}
     usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else {}
-    total_in_tok = int(usage.get("input_tokens") or 0)
+    raw_in_tok = usage.get("input_tokens")
+    if (
+        isinstance(raw_in_tok, (int, float))
+        and not isinstance(raw_in_tok, bool)
+        and math.isfinite(float(raw_in_tok))
+        and raw_in_tok >= 0
+    ):
+        total_in_tok = int(raw_in_tok)
+    else:
+        total_in_tok = 0
     n_heads = max(1, len(pending_heads))
     per_head_tok = total_in_tok // n_heads
     remainder_tok = total_in_tok % n_heads
@@ -878,7 +1061,8 @@ def append_decision_traces(
     resolved_dir = trace_dir.resolve()
     trace_path = trace_dir / "jev-decisions.jsonl"
     lock_path = trace_dir / "jev-decisions.jsonl.lock"
-    for p in (trace_path, lock_path):
+    tmp_path = trace_dir / ".jev-decisions.jsonl.tmp"
+    for p in (trace_path, lock_path, tmp_path):
         if p.is_symlink() or not p.resolve().is_relative_to(resolved_dir):
             raise ValueError(f"Refusing to write Jev trace through symlink: {p}")
 
@@ -906,9 +1090,10 @@ def append_decision_traces(
                 lines = trace_path.read_text(encoding="utf-8", errors="replace").splitlines()
                 if len(lines) > max_entries:
                     kept = lines[-max_entries:]
-                    tmp = trace_dir / ".jev-decisions.jsonl.tmp"
-                    tmp.write_text("\n".join(kept) + "\n", encoding="utf-8")
-                    os.replace(tmp, trace_path)
+                    if tmp_path.is_symlink() or not tmp_path.resolve().is_relative_to(resolved_dir):
+                        raise ValueError(f"Refusing to write Jev trace through symlink: {tmp_path}")
+                    tmp_path.write_text("\n".join(kept) + "\n", encoding="utf-8")
+                    os.replace(tmp_path, trace_path)
         finally:
             if acquired:
                 try:
@@ -932,6 +1117,8 @@ def decide(
 ) -> dict[str, Any]:
     """Governed execution of one or more Jev heads with ceiling enforcement & deterministic fallback."""
     heads = [load_head(hid, heads_dir=heads_dir) for hid in head_ids]
+    for h in heads:
+        check_state(h, state)
     mode = effective_jev_mode()
     eff_provider = (provider or ("code" if (mode == "off" and not force_live) else "jev")).strip().lower()
 
@@ -966,6 +1153,9 @@ def decide(
 
         promo = head["promotion_state"]
         ceiling = head["ceiling"]
+        is_authority = bool(head["authority"]) or (hid in PERMANENT_AUTHORITY_HEAD_IDS)
+        if is_authority:
+            ceiling = "ADVISORY"
         if mode in {"shadow", "advisory", "routing", "actuating"}:
             requested_promo = mode.upper()
             eff_promo = (
@@ -975,7 +1165,7 @@ def decide(
             )
         else:
             eff_promo = promo if _PROMOTION_RANK[promo] <= _PROMOTION_RANK[ceiling] else ceiling
-        if bool(head["authority"]):
+        if is_authority:
             eff_promo = "ADVISORY" if _PROMOTION_RANK[eff_promo] > _PROMOTION_RANK["ADVISORY"] else eff_promo
 
         effective_output = res.get("output")
@@ -991,7 +1181,7 @@ def decide(
         dec_record: dict[str, Any] = {
             "head_id": hid,
             "head_version": head["version"],
-            "authority": bool(head["authority"]),
+            "authority": is_authority,
             "promotion_state": eff_promo,
             "ceiling": ceiling,
             "tier": effective_tier,
@@ -1021,7 +1211,7 @@ def decide(
         try:
             tp = append_decision_traces(trace_dir, trace_entries)
             trace_path_str = str(tp)
-        except OSError:
+        except (OSError, ValueError):
             trace_path_str = None
 
     all_decided = all(d["effective_output"] is not None for d in decisions)
@@ -1471,7 +1661,7 @@ GOLD_EVAL_CASES: tuple[dict[str, Any], ...] = (
         "case_id": "urgency_2_single_dirty_worktree",
         "head_id": "estate_attention_urgency",
         "state": {
-            "git_drift_codes": ["GIT_WORKTREE_DIRTY", "GIT_AHEAD_UNPUSHED"],
+            "git_drift_codes": ["GIT_DIRTY_WORKTREE", "GIT_AHEAD_OF_UPSTREAM"],
             "dirty_checkout_count": 1,
             "ahead_total": 2,
             "behind_total": 0,
@@ -1501,7 +1691,7 @@ GOLD_EVAL_CASES: tuple[dict[str, Any], ...] = (
         "case_id": "urgency_3_multi_host_dirty_conflict",
         "head_id": "estate_attention_urgency",
         "state": {
-            "git_drift_codes": ["GIT_WORKTREE_DIRTY", "GIT_CROSS_CHECKOUT_HEAD_MISMATCH"],
+            "git_drift_codes": ["GIT_DIRTY_WORKTREE", "GIT_CROSS_CHECKOUT_HEAD_MISMATCH"],
             "dirty_checkout_count": 2,
             "ahead_total": 1,
             "behind_total": 1,

@@ -742,7 +742,7 @@ def main(argv: list[str] | None = None) -> int:
                     provider=eff_prov,
                     head_filter=args.head_filter,
                     allow_vault=bool(args.live),
-                    force_live=bool(args.live or eff_prov == "jev"),
+                    force_live=bool(args.live),
                     skip_pre_rule=bool(args.skip_pre_rule),
                 )
                 if args.json:
@@ -815,7 +815,7 @@ def main(argv: list[str] | None = None) -> int:
     except LedgerCompatError as exc:
         print(f"{exc.code}: {exc}", file=sys.stderr)
         return 2
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, TypeError) as exc:
         print(f"LEDGER_ERROR: {exc}", file=sys.stderr)
         return 2
     return 2

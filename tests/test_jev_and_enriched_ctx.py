@@ -515,6 +515,226 @@ class EnrichedCtxAndJevTests(unittest.TestCase):
             self.assertTrue(bad_dec["abstained"])
             self.assertTrue(bad_dec["fallback_used"])
 
+    def test_qa_hardening_mcp_malformed_state_redirect_refusal_authority_and_upstream_fuzz(self) -> None:
+        import http.server
+        import threading
+        from ledger.mcp_server import LedgerMcpServer
+
+        # 1. Permanent authority head (`weak_overlap_relation`) cannot disable `authority: true`
+        spoofed_auth = copy.deepcopy(jev.BUILTIN_HEADS["weak_overlap_relation"])
+        spoofed_auth["authority"] = False
+        spoof_errs = jev.validate_head(spoofed_auth, expected_id="weak_overlap_relation")
+        self.assertTrue(any("Permanent authority head" in e for e in spoof_errs))
+
+        # 2. Malformed state types via MCP `ledger_jev decide` and CLI `ledger jev decide`
+        #    MUST return structured error (`isError=True` / exit 2) and never crash `serve_stdio`.
+        with tempfile.TemporaryDirectory() as tmp:
+            base_tmp = Path(tmp)
+            srv = LedgerMcpServer(
+                state_dir=base_tmp / "state",
+                identity_decisions_path=base_tmp / "identity-decisions.json",
+                project_lineage_path=base_tmp / "project-lineage.json",
+                candidates_path=base_tmp / "candidates.json",
+            )
+            bad_states = [
+                {"total_files": [1]},  # missing keys + wrong type
+                {
+                    "source_classes": ["live"],
+                    "days_since_last_commit": 5.0,
+                    "dirty_worktree": False,
+                    "ahead_count": 0,
+                    "has_machina_handoff": False,
+                    "total_files": [1],
+                    "subsystem_count": 1,
+                    "operational_surface_count": 0,
+                    "has_governance_docs": False,
+                    "open_review_count": 0,
+                },
+                {
+                    "git_drift_codes": 5,
+                    "dirty_checkout_count": 0,
+                    "ahead_total": 0,
+                    "behind_total": 0,
+                    "diverged": False,
+                    "open_review_count": 0,
+                    "high_severity_review_count": 0,
+                    "source_health_state": "healthy",
+                },
+            ]
+            heads_for_bad = [
+                "project_lifecycle_inference",
+                "project_lifecycle_inference",
+                "estate_attention_urgency",
+            ]
+            for hid, st in zip(heads_for_bad, bad_states):
+                frame = srv.handle_message(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 99,
+                        "method": "tools/call",
+                        "params": {
+                            "name": "ledger_jev",
+                            "arguments": {
+                                "action": "decide",
+                                "head_ids": [hid],
+                                "state": st,
+                                "provider": "code",
+                            },
+                        },
+                    }
+                )
+                self.assertIsNotNone(frame)
+                assert frame is not None
+                self.assertTrue(frame["result"]["isError"])
+
+                err_buf = io.StringIO()
+                with contextlib.redirect_stderr(err_buf):
+                    rc_bad = cli.main(
+                        ["jev", "decide", "--head", hid, "--state", json.dumps(st), "--provider", "code"]
+                    )
+                self.assertEqual(rc_bad, 2)
+                self.assertIn("LEDGER_ERROR:", err_buf.getvalue())
+
+        # 3. Upstream non-object JSON `[]`, bad `usage.input_tokens`, and out-of-range `score: 9`
+        #    MUST abstain cleanly into deterministic `code` fallback.
+        urg_state = {
+            "git_drift_codes": ["GIT_DIRTY_WORKTREE"],
+            "dirty_checkout_count": 0,
+            "ahead_total": 0,
+            "behind_total": 0,
+            "diverged": False,
+            "open_review_count": 0,
+            "high_severity_review_count": 0,
+            "source_health_state": "healthy",
+        }
+        # Also verifies real Project Ledger drift code `GIT_DIRTY_WORKTREE` scores urgency 2 even with dirty_checkout_count=0
+        self.assertEqual(
+            jev.decide(["estate_attention_urgency"], urg_state, provider="code")["decisions"][0]["effective_output"],
+            2,
+        )
+
+        class _RawResp:
+            def __init__(self, raw: bytes) -> None:
+                self._raw = raw
+
+            def read(self) -> bytes:
+                return self._raw
+
+            def __enter__(self) -> "_RawResp":
+                return self
+
+            def __exit__(self, *args: object) -> bool:
+                return False
+
+        for bad_wire in (
+            b"[]",
+            json.dumps(
+                {
+                    "answers": {"estate_attention_urgency": {"score": 9, "confidence": 0.9}},
+                    "usage": {"input_tokens": "bad-token-count"},
+                }
+            ).encode("utf-8"),
+            json.dumps(
+                {
+                    "answers": {
+                        "estate_attention_urgency": {
+                            "probabilities": {"0": 0.05, "9": 0.95},
+                        }
+                    },
+                    "usage": {"input_tokens": [123]},
+                }
+            ).encode("utf-8"),
+        ):
+            with (
+                patch.dict(os.environ, {"LEDGER_JEV": "auto", "TYPESAFE_API_KEY": "ts-unit-key"}),
+                patch("urllib.request.urlopen", side_effect=lambda req, timeout=15.0, b=bad_wire: _RawResp(b)),
+            ):
+                res_bad = jev.decide(
+                    ["estate_attention_urgency"],
+                    urg_state,
+                    provider="jev",
+                    skip_pre_rule=True,
+                    record_trace=False,
+                )["decisions"][0]
+            self.assertTrue(res_bad["abstained"])
+            self.assertTrue(res_bad["fallback_used"])
+            self.assertEqual(res_bad["effective_output"], 2)
+
+        # 4. `ledger jev eval --provider jev` without `--live` under `LEDGER_JEV=off` stays strictly offline
+        with patch.dict(os.environ, {"LEDGER_JEV": "off", "TYPESAFE_API_KEY": "ts-should-not-call"}):
+            out_buf = io.StringIO()
+            with (
+                patch("urllib.request.urlopen", side_effect=AssertionError("Network called while LEDGER_JEV=off!")),
+                contextlib.redirect_stdout(out_buf),
+            ):
+                rc_offline_eval = cli.main(["jev", "eval", "--provider", "jev", "--skip-pre-rule", "--json"])
+            self.assertEqual(rc_offline_eval, 2)
+            eval_doc = json.loads(out_buf.getvalue())
+            self.assertEqual(eval_doc["live_model_calls"], 0)
+            self.assertEqual(eval_doc["abstained"], 15)
+
+        # 5. HTTP 302 redirect MUST refuse to forward `Authorization: Bearer` to redirect target
+        leaked_headers: list[str] = []
+
+        class _TargetHandler(http.server.BaseHTTPRequestHandler):
+            def do_POST(self) -> None:  # noqa: N802
+                auth = self.headers.get("Authorization", "")
+                if auth:
+                    leaked_headers.append(auth)
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"{}")
+
+            def do_GET(self) -> None:  # noqa: N802
+                self.do_POST()
+
+            def log_message(self, *args: object) -> None:
+                pass
+
+        target_srv = http.server.HTTPServer(("127.0.0.1", 0), _TargetHandler)
+        target_port = target_srv.server_address[1]
+
+        class _RedirectHandler(http.server.BaseHTTPRequestHandler):
+            def do_POST(self) -> None:  # noqa: N802
+                self.send_response(302)
+                self.send_header("Location", f"http://127.0.0.1:{target_port}/steal")
+                self.end_headers()
+
+            def log_message(self, *args: object) -> None:
+                pass
+
+        redir_srv = http.server.HTTPServer(("127.0.0.1", 0), _RedirectHandler)
+        redir_port = redir_srv.server_address[1]
+
+        t1 = threading.Thread(target=target_srv.serve_forever, daemon=True)
+        t2 = threading.Thread(target=redir_srv.serve_forever, daemon=True)
+        t1.start()
+        t2.start()
+        try:
+            with patch.dict(
+                os.environ,
+                {
+                    "LEDGER_JEV": "auto",
+                    "TYPESAFE_API_KEY": "ts-super-secret-bearer",
+                    "LEDGER_JEV_ENDPOINT": f"http://127.0.0.1:{redir_port}/v1/systemone",
+                },
+            ):
+                redir_dec = jev.decide(
+                    ["estate_attention_urgency"],
+                    urg_state,
+                    provider="jev",
+                    skip_pre_rule=True,
+                    record_trace=False,
+                )["decisions"][0]
+            self.assertTrue(redir_dec["abstained"])
+            self.assertEqual(redir_dec["abstain_reason"], "JEV_UNAVAILABLE: HTTP 302")
+            self.assertEqual(leaked_headers, [])
+        finally:
+            redir_srv.shutdown()
+            target_srv.shutdown()
+            redir_srv.server_close()
+            target_srv.server_close()
+
 
 if __name__ == "__main__":
     unittest.main()
