@@ -575,17 +575,19 @@ def compile_identity(
 
     lineage_resolutions = resolve_lineage_for_components(component_descriptors, lineage_payload)
 
-    for comp, (canonical_project_id, lineage_hist_refs) in zip(
+    # Pre-scan base auto-derived project_key collisions so split/rejected components
+    # sharing a normalized remote (and lacking an explicit canonical_key decision)
+    # receive deterministic disambiguated `<key>-<anchor_short>` keys while preserving
+    # raw project_key_hint referents and PROJECT_KEY_AMBIGUOUS review visibility
+    # (docs/work/FUTURE-SPEC-project-key-disambiguation-20260919.md).
+    base_key_counts: dict[str, int] = {}
+    precomputed_keys: list[tuple[dict | None, str, bool]] = []
+    for comp, (canonical_project_id, _) in zip(
         component_descriptors, lineage_resolutions, strict=True
     ):
         member_ids = comp["member_ids"]
         remotes = comp["remotes"]
         key_hints = comp["key_hints"]
-        names = comp["names"]
-        merge_decision_ids = comp["merge_decision_ids"]
-        anchor_kind = comp["anchor_kind"]
-        anchor_value = comp["anchor_value"]
-        # An operator-approved canonical_key overrides the auto-derived project_key.
         canonical_key_decision = next(
             (
                 canonical_key_by_observation[obs_id]
@@ -595,9 +597,43 @@ def compile_identity(
             None,
         )
         if canonical_key_decision is not None:
-            project_key = canonical_key_decision["key"]
+            base_key = canonical_key_decision["key"]
+            is_split_remote_auto = False
         else:
-            project_key = key_hints[0] if len(key_hints) == 1 else (remotes[0] if len(remotes) == 1 else canonical_project_id)
+            base_key = (
+                key_hints[0]
+                if len(key_hints) == 1
+                else (remotes[0] if len(remotes) == 1 else canonical_project_id)
+            )
+            is_split_remote_auto = bool(remotes) and not comp["unique_remotes"]
+        folded_base = base_key.casefold()
+        base_key_counts[folded_base] = base_key_counts.get(folded_base, 0) + 1
+        precomputed_keys.append((canonical_key_decision, base_key, is_split_remote_auto))
+
+    disambiguated_base_key_by_project_id: dict[str, str] = {}
+
+    for comp, (canonical_project_id, lineage_hist_refs), (
+        canonical_key_decision,
+        base_key,
+        is_split_remote_auto,
+    ) in zip(component_descriptors, lineage_resolutions, precomputed_keys, strict=True):
+        member_ids = comp["member_ids"]
+        remotes = comp["remotes"]
+        key_hints = comp["key_hints"]
+        names = comp["names"]
+        merge_decision_ids = comp["merge_decision_ids"]
+        anchor_kind = comp["anchor_kind"]
+        anchor_value = comp["anchor_value"]
+        # An operator-approved canonical_key overrides the auto-derived project_key.
+        is_disambiguated_split_key = (
+            is_split_remote_auto and base_key_counts.get(base_key.casefold(), 0) > 1
+        )
+        if is_disambiguated_split_key:
+            anchor_short = canonical_project_id.removeprefix("prj_")[:8]
+            project_key = f"{base_key}-{anchor_short}"
+            disambiguated_base_key_by_project_id[canonical_project_id] = base_key
+        else:
+            project_key = base_key
         display_name = names[0] if names else project_key
         # Resolved-field claim provenance (P2.5): for each resolved canonical field,
         # record which observation/decision/evidence produced the value, so a cold
@@ -613,6 +649,35 @@ def compile_identity(
                         "reason_code": "CANONICAL_KEY_DECISION",
                     }
                 ],
+            }
+        elif is_disambiguated_split_key:
+            hint_obs = (
+                sorted(
+                    obs_id
+                    for obs_id in member_ids
+                    if facts[obs_id]["project_key"] == base_key
+                )
+                if len(key_hints) == 1
+                else []
+            )
+            prov_entries: list[dict] = [
+                {
+                    "kind": "declaration",
+                    "observation_id": obs_id,
+                    "reason_code": "PROJECT_KEY_DECLARATION",
+                }
+                for obs_id in hint_obs
+            ]
+            prov_entries.append(
+                {
+                    "kind": "derived",
+                    "value": canonical_project_id,
+                    "reason_code": "DISAMBIGUATED_SPLIT_PROJECT_KEY",
+                }
+            )
+            resolved_fields["project_key"] = {
+                "value": project_key,
+                "provenance": prov_entries,
             }
         elif len(key_hints) == 1:
             hint_obs = sorted(
@@ -835,7 +900,10 @@ def compile_identity(
     key_to_observations: dict[str, set[str]] = {}
     key_label_by_folded: dict[str, str] = {}
     for project in projects:
-        key = str(project.get("project_key") or "").strip()
+        raw_check_key = disambiguated_base_key_by_project_id.get(
+            project["canonical_project_id"], project.get("project_key")
+        )
+        key = str(raw_check_key or "").strip()
         if not key:
             continue
         folded = key.casefold()

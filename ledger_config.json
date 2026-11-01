@@ -1,6 +1,6 @@
 {
   "_provenance": {
-    "comment": "[Needs validation] The project-ledger-live (/home/matt/project-ledger), google-drive-inventory (/home/matt/GoogleDrive), and opt-homelab (/opt/homelab) roots were removed from this template on 2026-09-19 after the R0 live provider proof verified they are dead on ai-server (first two mode-750 matt-owned not readable by prime; /opt/homelab does not exist). Do NOT re-add without live evidence the path exists and is readable by prime. See docs/work/FUTURE-SPEC-reconcile-ledger-config-template-20260919.md. On 2026-10-29 (post-CONV-001 audit), central-agent-tooling (/central/repos/agent-tooling, excluding compatibility symlink nanochat-master -> /central/repos/research-ml/nanochat-master), central-research-ml (/central/repos/research-ml), and 3813-patio (/central/3813-patio) were added with live evidence. On 2026-10-31, duplicate top-level self roots 3813-patio (/central/3813-patio), proxy-lead (/central/proxy-lead), and white-rabbit (/central/white-rabbit) were retired and archived to /central/archive/retired-top-level-checkouts-20261031/ after reconciling all unique commits/artifacts into canonical checkouts under /central/repos/apps/ and /central/repos/active/."
+    "comment": "[Needs validation] The project-ledger-live (/home/matt/project-ledger), google-drive-inventory (/home/matt/GoogleDrive), and opt-homelab (/opt/homelab) roots were removed from this template on 2026-09-19 after the R0 live provider proof verified they are dead on ai-server (first two mode-750 matt-owned not readable by prime; /opt/homelab does not exist). Do NOT re-add without live evidence the path exists and is readable by prime. See docs/work/FUTURE-SPEC-reconcile-ledger-config-template-20260919.md. On 2026-10-29 (post-CONV-001 audit), central-agent-tooling (/central/repos/agent-tooling), central-research-ml (/central/repos/research-ml), and 3813-patio (/central/3813-patio) were added with live evidence (cross-root compatibility symlinks such as /central/repos/agent-tooling/nanochat-master -> /central/repos/research-ml/nanochat-master are suppressed natively by is_shadowed_symlink independent of roots[] ordering). On 2026-10-31, duplicate top-level self roots 3813-patio (/central/3813-patio), proxy-lead (/central/proxy-lead), and white-rabbit (/central/white-rabbit) were retired and archived to /central/archive/retired-top-level-checkouts-20261031/ after reconciling all unique commits/artifacts into canonical checkouts under /central/repos/apps/ and /central/repos/active/."
   },
   "defaults": {
     "exclude_names": [
@@ -32,10 +32,7 @@
       "source_id": "central-agent-tooling",
       "path": "/central/repos/agent-tooling",
       "label": "central-agent-tooling",
-      "discovery": "children",
-      "exclude_names": [
-        "nanochat-master"
-      ]
+      "discovery": "children"
     },
     {
       "source_id": "central-research-ml",

@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/identity-evidence.schema.json",
+  "title": "Project Ledger Identity Evidence (v1.0.0)",
+  "description": "Compiled strong, weak, and negative identity evidence per canonical project plus cross-project weak overlaps (state/identity-evidence.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler_version",
+    "run_id",
+    "compiled_at",
+    "identity_evidence_count",
+    "by_project",
+    "cross_project_weak_overlaps"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-9a-f]{24}$"
+    },
+    "compiled_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "identity_evidence_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "by_project": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/project_evidence_bundle"
+      }
+    },
+    "cross_project_weak_overlaps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/weak_overlap"
+      }
+    }
+  },
+  "$defs": {
+    "evidence_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity_evidence_id",
+        "kind",
+        "strength",
+        "authority",
+        "reason_code",
+        "observation_ids"
+      ],
+      "properties": {
+        "identity_evidence_id": {
+          "type": "string",
+          "pattern": "^ev_[0-9a-f]{24}$"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "strength": {
+          "type": "string",
+          "enum": [
+            "strong",
+            "weak",
+            "negative"
+          ]
+        },
+        "authority": {
+          "type": "string",
+          "enum": [
+            "observed",
+            "declared",
+            "derived",
+            "decision"
+          ]
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^obs_[0-9a-f]{24}$"
+          }
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "evidence_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_project_id",
+        "member_count",
+        "unifying_authority",
+        "strong_reason_code",
+        "automatic",
+        "weak_overlap_pair_count",
+        "evidence_count"
+      ],
+      "properties": {
+        "canonical_project_id": {
+          "type": "string",
+          "pattern": "^prj_[0-9a-f]{24}$"
+        },
+        "member_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "unifying_authority": {
+          "type": "string",
+          "enum": [
+            "exact_normalized_remote",
+            "explicit_decision",
+            "singleton",
+            "referential"
+          ]
+        },
+        "strong_reason_code": {
+          "type": "string"
+        },
+        "automatic": {
+          "type": "boolean"
+        },
+        "weak_overlap_pair_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "project_evidence_bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_project_id",
+        "observation_ids",
+        "summary",
+        "evidence"
+      ],
+      "properties": {
+        "canonical_project_id": {
+          "type": "string",
+          "pattern": "^prj_[0-9a-f]{24}$"
+        },
+        "observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^obs_[0-9a-f]{24}$"
+          }
+        },
+        "summary": {
+          "$ref": "#/$defs/evidence_summary"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_item"
+          }
+        }
+      }
+    },
+    "weak_overlap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "left_observation_id",
+        "right_observation_id",
+        "verdict",
+        "shared_weak",
+        "projects",
+        "evidence"
+      ],
+      "properties": {
+        "left_observation_id": {
+          "type": "string",
+          "pattern": "^obs_[0-9a-f]{24}$"
+        },
+        "right_observation_id": {
+          "type": "string",
+          "pattern": "^obs_[0-9a-f]{24}$"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "weak",
+            "negative"
+          ]
+        },
+        "shared_weak": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence_item"
+          }
+        }
+      }
+    }
+  }
+}

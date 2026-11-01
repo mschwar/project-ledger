@@ -1,6 +1,10 @@
 # Future Spec — Disambiguate auto-derived `project_key` for split same-remote projects
 
-- Status: **proposed / not landed**
+- Status: **landed (2026-11-01, `PL-AUDIT-DRAIN-01`)** — implemented in `ledger/identity.py`
+  (`DISAMBIGUATED_SPLIT_PROJECT_KEY`, `<key>-<8char_anchor_short>` auto-disambiguation for
+  split/rejected same-remote projects lacking an explicit `canonical_key` override, while
+  preserving raw `project_key_hint` referents and `PROJECT_KEY_AMBIGUOUS` review visibility)
+  and covered by `tests/test_p25_canonical_ids.py`.
 - Date: 2026-09-19 (UTC)
 - Node: Matthews-MacBook-Air-3 (Hermes child node)
 - Repo: `github.com/mschwar/project-ledger`
@@ -94,22 +98,22 @@ first landing.
 
 ## Acceptance criteria (when it lands)
 
-- [ ] Two split same-remote projects with a shared key get **distinct, stable**
+- [x] Two split same-remote projects with a shared key get **distinct, stable**
       auto-derived `project_key` values (e.g. `dupe-<suffix>` each), stable across
       repeated compiles.
-- [ ] `ledger resolve <shared-key>` resolves each project individually (returns one
+- [x] `ledger resolve <shared-key>` resolves each project individually (returns one
       candidate per distinct suffixed key) — **or**, if the raw hinted key still matches
       both, the resulting ambiguity is explicitly explained (e.g. both candidates show
       their distinct suffixed keys and anchors) rather than showing two identical `dupe`
       entries.
-- [ ] The raw key hint remains reachable as a `project_key_hint` referent on both
+- [x] The raw key hint remains reachable as a `project_key_hint` referent on both
       projects.
-- [ ] Existing pinned fixture IDs and the P2.5 distinct-canonical-ID behavior are
+- [x] Existing pinned fixture IDs and the P2.5 distinct-canonical-ID behavior are
       unchanged (the reproduction's two `canonical_project_id`s must not change).
-- [ ] The `PROJECT_KEY_AMBIGUOUS` review is preserved (or explicitly downgraded in the
+- [x] The `PROJECT_KEY_AMBIGUOUS` review is preserved (or explicitly downgraded in the
       same change, with rationale), and a regression fixture covers the
       split-same-remote-same-key case.
-- [ ] Full suite still passes (`python3 -m unittest discover -s tests`).
+- [x] Full suite still passes (`python3 -m unittest discover -s tests`).
 
 ## Explicitly out of scope now
 

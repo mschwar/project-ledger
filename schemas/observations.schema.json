@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/observations.schema.json",
+  "title": "Project Ledger Typed Observations (v1.0.0)",
+  "description": "Compiled manifestation-oriented observation records wrapping frozen compatibility entries and validated P1.7 sidecar envelopes (state/observations.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler_version",
+    "compat_schema_version",
+    "run_id",
+    "compiled_at",
+    "observed_at",
+    "observation_count",
+    "observations"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "compat_schema_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-9a-f]{24}$"
+    },
+    "compiled_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "observation_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/observation"
+      }
+    }
+  },
+  "$defs": {
+    "sidecar_issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "field",
+        "detail"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "field": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "sidecar_warning": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "reason",
+        "detail"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "const": "stale_sidecar"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "declared_commit_lags_head",
+            "declared_branch_lags_head",
+            "declared_metadata_lags_head"
+          ]
+        },
+        "declared_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "declared_branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "declared_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_commit_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "sidecar_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "present",
+        "path",
+        "status",
+        "declared_schema_version",
+        "normalized_schema_version",
+        "stale",
+        "declarations",
+        "issues",
+        "warnings"
+      ],
+      "properties": {
+        "present": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "absent",
+            "valid",
+            "legacy_unversioned",
+            "invalid"
+          ]
+        },
+        "declared_schema_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "normalized_schema_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "declarations": {
+          "type": "object"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sidecar_issue"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/sidecar_warning"
+          }
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "observation_id",
+        "source_id",
+        "snapshot_id",
+        "source_resolution",
+        "observed_at",
+        "project_key",
+        "location",
+        "sidecar",
+        "compat_entry"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "observation_id": {
+          "type": "string",
+          "pattern": "^obs_[0-9a-f]{24}$"
+        },
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_resolution": {
+          "type": "string",
+          "enum": [
+            "resolved",
+            "unresolved"
+          ]
+        },
+        "observed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sidecar": {
+          "$ref": "#/$defs/sidecar_envelope"
+        },
+        "compat_entry": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

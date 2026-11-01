@@ -120,12 +120,6 @@ if manifest_path.exists():
         health_val = raw_health.strip()
     else:
         health_val = ""
-    if health_val != "ok":
-        print(
-            f"machina_adapter.sh: degraded or invalid system-manifest health: {health_val or 'missing'}",
-            file=sys.stderr,
-        )
-        sys.exit(1)
     counts = manifest.get("counts")
     if not isinstance(counts, dict):
         print("machina_adapter.sh: state/system-manifest.json missing counts mapping", file=sys.stderr)
@@ -133,6 +127,24 @@ if manifest_path.exists():
     for req_count in ("sources", "observations", "canonical_projects", "review_items"):
         if not isinstance(counts.get(req_count), int) or isinstance(counts.get(req_count), bool):
             print(f"machina_adapter.sh: state/system-manifest.json missing integer count {req_count}", file=sys.stderr)
+            sys.exit(1)
+    if health_val not in ("ok", "degraded"):
+        print(
+            f"machina_adapter.sh: invalid system-manifest health: {health_val or 'missing'}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if health_val == "degraded":
+        avail_src = (
+            raw_health.get("available_source_count")
+            if isinstance(raw_health, dict)
+            else None
+        )
+        if not isinstance(avail_src, int) or isinstance(avail_src, bool) or avail_src < 1:
+            print(
+                "machina_adapter.sh: degraded system-manifest has zero available sources",
+                file=sys.stderr,
+            )
             sys.exit(1)
     manifest_state = "present"
     manifest_health = health_val

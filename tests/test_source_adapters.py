@@ -286,6 +286,33 @@ class GitAdapterTests(unittest.TestCase):
             # is not a valid "not a repo" probe.)
             self.assertEqual(git_output(Path("/nonexistent/pl-git-probe"), "rev-parse", "HEAD"), "")
 
+    def test_cross_root_shadowed_symlink_suppressed_independent_of_root_ordering(self) -> None:
+        with ScratchDir() as root:
+            tooling = root / "agent-tooling"
+            research = root / "research-ml"
+            tooling.mkdir()
+            research.mkdir()
+
+            real_proj = research / "nanochat-master"
+            real_proj.mkdir()
+            (real_proj / "README.md").write_text("# Nanochat\n", encoding="utf-8")
+            (real_proj / "train.py").write_text("print('ok')\n", encoding="utf-8")
+
+            # Symlink placed in the FIRST configured root pointing into the SECOND root.
+            (tooling / "nanochat-master").symlink_to(real_proj)
+
+            cfg_symlink_first = {
+                "defaults": {"min_score": 2},
+                "roots": [
+                    {"source_id": "tooling", "label": "tooling", "path": str(tooling), "discovery": "children"},
+                    {"source_id": "research", "label": "research", "path": str(research), "discovery": "children"},
+                ],
+            }
+            entries = sources_base.collect_entries(cfg_symlink_first, root, root / "output")
+            self.assertEqual(len(entries), 1)
+            self.assertEqual(entries[0]["source_label"], "research")
+            self.assertEqual(Path(entries[0]["path"]).resolve(), real_proj.resolve())
+
 
 if __name__ == "__main__":
     unittest.main()

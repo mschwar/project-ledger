@@ -793,6 +793,24 @@
       ],
       "rationale": "Unify surviving canonical checkout /central/repos/active/white-rabbit and matty-pc:white-rabbit after archiving duplicate top-level root /central/white-rabbit.",
       "type": "merge"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-11-01T02:30:00Z",
+      "decision_id": "dec_the_garden_canonical_key_20261101",
+      "key": "github.com/mschwar/the-garden",
+      "observation_id": "obs_771297911fd3d68356d02fe5",
+      "rationale": "Pin github.com/mschwar/the-garden as the authoritative project_key across the unified dual-branch repository manifestations (/central/repos/agent-tooling/the-garden main Covenant Obsidian vault and /central/git/the_garden + /central/repos/active/the_garden workspace branches pushed to github.com/mschwar/the-garden) so local sidecar key hints never trigger divergent-declaration ambiguity.",
+      "type": "canonical_key"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-11-01T02:30:00Z",
+      "decision_id": "dec_relational_physics_canonical_key_20261101",
+      "key": "relational-physics",
+      "observation_id": "obs_e481da9f2b8066807e403a82",
+      "rationale": "Assign canonical_key 'relational-physics' to the consolidated /central/projects/relational-physics research package (superseding its auto-slugified H1 title 'relational-physics-everything-in-one-place') so gbrain.page_key binds directly to the authored GBrain hub page projects/relational-physics.",
+      "type": "canonical_key"
     }
   ],
   "schema_version": "1.0.0"

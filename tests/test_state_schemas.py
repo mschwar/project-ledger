@@ -181,10 +181,14 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
 
     def test_compiled_state_artifacts_conform_to_published_json_schemas(self) -> None:
         manifest_schema = self._load_schema("system-manifest.schema.json")
+        observations_schema = self._load_schema("observations.schema.json")
         canonical_schema = self._load_schema("canonical-projects.schema.json")
         capsule_schema = self._load_schema("project-capsule.schema.json")
+        evidence_schema = self._load_schema("identity-evidence.schema.json")
         review_schema = self._load_schema("review-queue.schema.json")
         changes_schema = self._load_schema("changes.schema.json")
+        checkpoints_schema = self._load_schema("source-checkpoints.schema.json")
+        run_snapshot_schema = self._load_schema("run-snapshot.schema.json")
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -365,17 +369,33 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
             self.assertEqual(rc2, 0)
 
             manifest_doc = json.loads((state_dir / "system-manifest.json").read_text(encoding="utf-8"))
+            observations_doc = json.loads((state_dir / "observations.json").read_text(encoding="utf-8"))
             canonical_doc = json.loads((state_dir / "canonical-projects.json").read_text(encoding="utf-8"))
+            evidence_doc = json.loads((state_dir / "identity-evidence.json").read_text(encoding="utf-8"))
             review_doc = json.loads((state_dir / "review-queue.json").read_text(encoding="utf-8"))
             changes_doc = json.loads((state_dir / "changes.json").read_text(encoding="utf-8"))
+            checkpoints_doc = json.loads((state_dir / "source-checkpoints.json").read_text(encoding="utf-8"))
 
             self.assertEqual(validate_json_schema(manifest_doc, manifest_schema), [])
+            self.assertEqual(validate_json_schema(observations_doc, observations_schema), [])
             self.assertEqual(validate_json_schema(canonical_doc, canonical_schema), [])
+            self.assertEqual(validate_json_schema(evidence_doc, evidence_schema), [])
             self.assertGreaterEqual(review_doc["review_count"], 1)
             self.assertEqual(validate_json_schema(review_doc, review_schema), [])
             self.assertEqual(changes_doc["baseline_state"], "compared")
             self.assertGreaterEqual(changes_doc["change_count"], 1)
             self.assertEqual(validate_json_schema(changes_doc, changes_schema), [])
+            self.assertEqual(validate_json_schema(checkpoints_doc, checkpoints_schema), [])
+
+            run_files = sorted((state_dir / "runs").glob("run_*.json"))
+            self.assertEqual(len(run_files), 2)
+            for run_path in run_files:
+                run_doc = json.loads(run_path.read_text(encoding="utf-8"))
+                self.assertEqual(
+                    validate_json_schema(run_doc, run_snapshot_schema),
+                    [],
+                    f"Run snapshot failed schema validation: {run_path.name}",
+                )
 
             capsule_files = sorted((state_dir / "projects").glob("prj_*.json"))
             self.assertEqual(len(capsule_files), 3)
@@ -405,15 +425,40 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
 
     def test_project_lineage_registry_conforms_to_published_json_schema(self) -> None:
         lineage_schema = self._load_schema("project-lineage.schema.json")
+        decisions_schema = self._load_schema("identity-decisions.schema.json")
+        triage_schema = self._load_schema("weak-overlap-triage-candidates.schema.json")
+        sidecar_schema = self._load_schema("project-ledger-sidecar.schema.json")
+
         lineage_path = REPO_ROOT / "registry" / "project-lineage.json"
         self.assertTrue(lineage_path.is_file(), f"Missing lineage registry: {lineage_path}")
         lineage_doc = json.loads(lineage_path.read_text(encoding="utf-8"))
         self.assertEqual(validate_json_schema(lineage_doc, lineage_schema), [])
         self.assertGreaterEqual(len(lineage_doc["projects"]), 170)
 
+        decisions_path = REPO_ROOT / "registry" / "identity-decisions.json"
+        self.assertTrue(decisions_path.is_file(), f"Missing decisions registry: {decisions_path}")
+        decisions_doc = json.loads(decisions_path.read_text(encoding="utf-8"))
+        self.assertEqual(validate_json_schema(decisions_doc, decisions_schema), [])
+        self.assertGreaterEqual(len(decisions_doc["decisions"]), 80)
+
+        triage_path = REPO_ROOT / "registry" / "weak-overlap-triage-candidates.json"
+        self.assertTrue(triage_path.is_file(), f"Missing triage registry: {triage_path}")
+        triage_doc = json.loads(triage_path.read_text(encoding="utf-8"))
+        self.assertEqual(validate_json_schema(triage_doc, triage_schema), [])
+        self.assertGreaterEqual(len(triage_doc["candidates"]), 60)
+
+        self_sidecar_path = REPO_ROOT / ".project-ledger.json"
+        self.assertTrue(self_sidecar_path.is_file(), f"Missing self sidecar: {self_sidecar_path}")
+        self_sidecar_doc = json.loads(self_sidecar_path.read_text(encoding="utf-8"))
+        self.assertEqual(validate_json_schema(self_sidecar_doc, sidecar_schema), [])
+
         bad_lineage = copy.deepcopy(lineage_doc)
         bad_lineage["projects"][0]["canonical_project_id"] = "invalid_id"
         self.assertTrue(validate_json_schema(bad_lineage, lineage_schema))
+
+        bad_decisions = copy.deepcopy(decisions_doc)
+        bad_decisions["decisions"][0]["type"] = "bogus_decision_type"
+        self.assertTrue(validate_json_schema(bad_decisions, decisions_schema))
 
 
 if __name__ == "__main__":

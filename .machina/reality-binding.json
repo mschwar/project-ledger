@@ -1,40 +1,30 @@
 {
-  "advisory_warning_codes": [
-    "GIT_DIRTY_WORKTREE"
-  ],
+  "advisory_warning_codes": [],
   "blocking_warning_codes": [],
   "canonical_project_id": "prj_f07b53d92d07b50328ad46c8",
   "display_name": "Project Ledger",
-  "gate_reason": "GIT_DRIFT_WARNING",
+  "gate_reason": null,
   "gbrain_page_key": "projects/project-ledger",
   "gbrain_source_slug": "active-repos",
   "git_drift": {
     "ahead_count": 0,
     "behind_count": 0,
-    "dirty": true,
+    "dirty": false,
     "head_branch": "main",
-    "head_commit": "05567bd665b7f856f516d9fee91766e8d2a30735",
+    "head_commit": "3d1244fb8b3f18276741c05b9fb5d346af57a864",
     "main_behind_count": null,
-    "state": "dirty",
+    "state": "clean",
     "upstream_ref": "origin/main",
-    "warning_codes": [
-      "GIT_DIRTY_WORKTREE"
-    ],
-    "warnings": [
-      "warning: local working tree at /central/repos/active/project-ledger has uncommitted changes"
-    ]
+    "warning_codes": [],
+    "warnings": []
   },
   "preferred_location": "/central/repos/active/project-ledger",
   "preferred_location_state": "resolved",
   "project_key": "github.com/mschwar/project-ledger",
   "referent": "prj_f07b53d92d07b50328ad46c8",
   "resolution_status": "resolved",
-  "result": "PREFLIGHT_WARN",
+  "result": "PREFLIGHT_OK",
   "schema_version": 1,
-  "warning_codes": [
-    "GIT_DIRTY_WORKTREE"
-  ],
-  "warnings": [
-    "warning: local working tree at /central/repos/active/project-ledger has uncommitted changes"
-  ]
+  "warning_codes": [],
+  "warnings": []
 }

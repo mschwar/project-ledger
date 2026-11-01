@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/source-checkpoints.schema.json",
+  "title": "Project Ledger Source Checkpoints (v1.0.0)",
+  "description": "Incremental candidate fingerprint and compile-stage (sidecar_envelope, git_drift, ctx_raw_skeleton) cache (state/source-checkpoints.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler_version",
+    "updated_at",
+    "config_digest",
+    "output_dir",
+    "mode",
+    "summary",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "updated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "config_digest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "output_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "incremental",
+        "bypassed"
+      ]
+    },
+    "summary": {
+      "$ref": "#/$defs/checkpoint_summary"
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/source_checkpoint"
+      }
+    }
+  },
+  "$defs": {
+    "checkpoint_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_count",
+        "hit_source_count",
+        "partial_source_count",
+        "miss_source_count",
+        "unavailable_source_count",
+        "bypassed_source_count",
+        "candidate_count",
+        "reused_candidate_count",
+        "rebuilt_candidate_count"
+      ],
+      "properties": {
+        "source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hit_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "partial_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "miss_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unavailable_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bypassed_source_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reused_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rebuilt_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "candidate_checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fingerprint",
+        "included",
+        "entry"
+      ],
+      "properties": {
+        "fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "included": {
+          "type": "boolean"
+        },
+        "entry": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "compile_cache_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sidecar_envelope": {
+          "type": "object"
+        },
+        "git_drift": {
+          "type": "object"
+        },
+        "ctx_raw_skeleton": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    },
+    "source_checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "discovery",
+        "status",
+        "checkpoint_status",
+        "checkpoint_fingerprint",
+        "config_digest",
+        "checked_at",
+        "last_extracted_at",
+        "candidate_count",
+        "reused_candidate_count",
+        "rebuilt_candidate_count",
+        "entry_count",
+        "candidates"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "discovery": {
+          "type": "string",
+          "enum": [
+            "children",
+            "git_repos",
+            "self",
+            "inventory_policy"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "unavailable"
+          ]
+        },
+        "checkpoint_status": {
+          "type": "string",
+          "enum": [
+            "hit",
+            "partial",
+            "miss",
+            "unavailable",
+            "bypassed",
+            "not_applicable"
+          ]
+        },
+        "checkpoint_fingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "config_digest": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checked_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "last_extracted_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reused_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rebuilt_candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entry_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "inventory_artifacts_stat": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "all_candidates_unmounted": {
+          "type": "boolean"
+        },
+        "candidates": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/candidate_checkpoint"
+          }
+        }
+      }
+    }
+  }
+}

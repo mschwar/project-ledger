@@ -291,6 +291,98 @@ class GBrainPageProjectorTests(unittest.TestCase):
                 ]],
             )
 
+            # Seed 3 extra pages in brain/projects/:
+            # 1) Pure unmodified Project Ledger stub for a retired project -> MUST be pruned.
+            stale_stub = brain_dir / "projects" / "retired-delta.md"
+            stale_stub.write_text(
+                "---\n"
+                "type: project\n"
+                "title: 'Retired Delta'\n"
+                "status: 'active'\n"
+                "canonical_project_id: 'prj_000000000000000000000099'\n"
+                "project_key: 'retired-delta'\n"
+                "ingested_via: 'project-ledger:sync-gbrain'\n"
+                "source_kind: 'project-ledger:capsule'\n"
+                "tags:\n"
+                "  - 'project-ledger'\n"
+                "---\n\n"
+                "# Retired Delta\n\n"
+                "Canonical project stub materialized from Project Ledger compiled reality.\n\n"
+                "<!-- BEGIN PROJECT-LEDGER REALITY -->\n"
+                "## Project Ledger Reality\n\n"
+                "- **Canonical ID:** `prj_000000000000000000000099`\n"
+                "<!-- END PROJECT-LEDGER REALITY -->\n\n"
+                "<!-- timeline -->\n",
+                encoding="utf-8",
+            )
+            # 2) Enriched Project Ledger stub with custom ## section -> MUST survive.
+            enriched_stub = brain_dir / "projects" / "enriched-epsilon.md"
+            enriched_stub.write_text(
+                "---\n"
+                "type: project\n"
+                "title: 'Enriched Epsilon'\n"
+                "status: 'active'\n"
+                "canonical_project_id: 'prj_000000000000000000000098'\n"
+                "project_key: 'enriched-epsilon'\n"
+                "ingested_via: 'project-ledger:sync-gbrain'\n"
+                "source_kind: 'project-ledger:capsule'\n"
+                "---\n\n"
+                "# Enriched Epsilon\n\n"
+                "Summary.\n\n"
+                "## Human Notes\n\n"
+                "Keep this page.\n\n"
+                "<!-- timeline -->\n",
+                encoding="utf-8",
+            )
+            # 3) MCP-authored non-ledger page -> MUST survive.
+            authored_page = brain_dir / "projects" / "authored-zeta.md"
+            authored_page.write_text(
+                "---\n"
+                "type: project\n"
+                "title: 'Authored Zeta'\n"
+                "ingested_via: 'mcp:put_page'\n"
+                "source_kind: 'mcp:put_page'\n"
+                "---\n\n"
+                "# Authored Zeta\n\n"
+                "Keep this authored hub.\n",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "-C", str(brain_dir), "add", "--", "projects/"], check=True)
+            subprocess.run(
+                ["git", "-C", str(brain_dir), "commit", "-m", "seed extra pages"],
+                check=True,
+                capture_output=True,
+            )
+
+            sync3 = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "ledger",
+                    "sync-gbrain",
+                    "--state-dir",
+                    str(state_dir),
+                    "--brain-dir",
+                    str(brain_dir),
+                    "--ingest",
+                    "--gbrain-bin",
+                    str(fake_gbrain),
+                    "--json",
+                ],
+                cwd=str(repo_root),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(sync3.returncode, 0, sync3.stdout + sync3.stderr)
+            res3 = json.loads(sync3.stdout)
+            self.assertEqual(res3["pruned_count"], 1)
+            self.assertEqual(res3["pruned_pages"], ["projects/retired-delta.md"])
+            self.assertFalse(stale_stub.exists())
+            self.assertTrue(enriched_stub.exists())
+            self.assertTrue(authored_page.exists())
+            self.assertTrue(res3["ingest"]["git_committed"])
+
 
 if __name__ == "__main__":
     unittest.main()

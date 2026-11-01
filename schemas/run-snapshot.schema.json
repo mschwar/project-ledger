@@ -1,0 +1,580 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/run-snapshot.schema.json",
+  "title": "Project Ledger Run Snapshot (v1.0.0)",
+  "description": "Bounded semantic run snapshot retained in the 50-run ring buffer for multi-hop semantic change-feed comparison (state/runs/<run_id>.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler_version",
+    "run_id",
+    "compiled_at",
+    "input_observed_at",
+    "health_state",
+    "counts",
+    "sources",
+    "observations",
+    "projects",
+    "reviews",
+    "negative_decisions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-9a-f]{24}$"
+    },
+    "compiled_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input_observed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "health_state": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "degraded"
+      ]
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "counts": {
+      "$ref": "#/$defs/snapshot_counts"
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/source_snapshot"
+      }
+    },
+    "observations": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/observation_snapshot"
+      }
+    },
+    "projects": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/project_snapshot"
+      }
+    },
+    "reviews": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/review_snapshot"
+      }
+    },
+    "negative_decisions": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/negative_decision_snapshot"
+      }
+    }
+  },
+  "$defs": {
+    "snapshot_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sources",
+        "observations",
+        "canonical_projects",
+        "review_items",
+        "untriaged_weak_overlaps"
+      ],
+      "properties": {
+        "sources": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "canonical_projects": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "review_items": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "untriaged_weak_overlaps": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "source_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "label",
+        "source_class",
+        "status",
+        "status_reason",
+        "result_state",
+        "observation_count"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_class": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "unavailable"
+          ]
+        },
+        "status_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "result_state": {
+          "type": "string",
+          "enum": [
+            "observed",
+            "observed_empty",
+            "unavailable"
+          ]
+        },
+        "observation_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "observation_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_id",
+        "source_id",
+        "source_resolution",
+        "location",
+        "project_key",
+        "canonical_project_id"
+      ],
+      "properties": {
+        "observation_id": {
+          "type": "string",
+          "pattern": "^obs_[0-9a-f]{24}$"
+        },
+        "source_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_resolution": {
+          "type": "string",
+          "enum": [
+            "resolved",
+            "unresolved"
+          ]
+        },
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "project_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "canonical_project_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "project_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_project_id",
+        "project_key",
+        "display_name",
+        "gbrain_source_slug",
+        "gbrain_page_key",
+        "observation_ids",
+        "identity_anchor",
+        "normalized_remotes",
+        "merge_decision_ids",
+        "canonical_key_decision_id",
+        "alias_decision_ids",
+        "preferred_location",
+        "git_facts",
+        "current_state"
+      ],
+      "properties": {
+        "canonical_project_id": {
+          "type": "string",
+          "pattern": "^prj_[0-9a-f]{24}$"
+        },
+        "project_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gbrain_source_slug": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "gbrain_page_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^obs_[0-9a-f]{24}$"
+          }
+        },
+        "identity_anchor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "normalized_remote",
+                "merge_decision",
+                "observation"
+              ]
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "normalized_remotes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "merge_decision_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "canonical_key_decision_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "alias_decision_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "preferred_location": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "observation_id",
+            "source_id",
+            "source_class",
+            "location",
+            "confidence"
+          ],
+          "properties": {
+            "state": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "observation_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "source_class": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "location": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "confidence": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "git_facts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "observation_id",
+            "head_branch",
+            "head_commit",
+            "remote_url",
+            "drift_state",
+            "ahead_count",
+            "behind_count",
+            "main_behind_count",
+            "dirty",
+            "warning_codes",
+            "warnings"
+          ],
+          "properties": {
+            "state": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "observation_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "head_branch": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "head_commit": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "remote_url": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "drift_state": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ahead_count": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "behind_count": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "main_behind_count": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "dirty": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "warning_codes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "current_state": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "lifecycle_state",
+            "last_session_at",
+            "next_step"
+          ],
+          "properties": {
+            "lifecycle_state": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "last_session_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "next_step": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "review_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "review_id",
+        "code",
+        "state",
+        "severity",
+        "affected_observation_ids",
+        "affected_decision_ids",
+        "detail"
+      ],
+      "properties": {
+        "review_id": {
+          "type": "string",
+          "pattern": "^rev_[0-9a-f]{24}$"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "open"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "warning",
+            "error"
+          ]
+        },
+        "affected_observation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^obs_[0-9a-f]{24}$"
+          }
+        },
+        "affected_decision_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "detail": {
+          "type": "string"
+        }
+      }
+    },
+    "negative_decision_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_id",
+        "pairs"
+      ],
+      "properties": {
+        "decision_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pairs": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^obs_[0-9a-f]{24}$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

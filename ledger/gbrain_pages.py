@@ -88,6 +88,10 @@ def render_reality_block(project: dict[str, Any], capsule: dict[str, Any]) -> st
     else:
         lines.append(f"- **Preferred Location:** *({pref_state})*")
 
+    # Project full `<branch> @ <12-char-commit> (<drift>)` rather than omitting the SHA:
+    # advancing HEAD in a repository is a genuine reality transition that GBrain's
+    # fenced Reality block should reflect, while unchanged repositories remain 100%
+    # commit-free (`noop_unchanged`) across repeated `sync-gbrain --ingest` runs.
     if git_state.get("state") in {"known", "git_repo"}:
         branch = str(git_state.get("head_branch") or "detached")
         commit = str(git_state.get("head_commit") or "")[:12]
@@ -237,6 +241,50 @@ def render_new_project_stub(
     return "\n".join(parts)
 
 
+def _is_prunable_ledger_stub(existing_text: str) -> bool:
+    """Return True only for pure unmodified Project Ledger-generated stub pages.
+
+    Never returns True for human- or MCP-authored pages (`put_page` / `mcp:put_page`),
+    nor for Project Ledger stub pages to which custom `## ` sections or `<!-- timeline -->`
+    entries were subsequently appended.
+    """
+    normalized = _sanitize_text(existing_text).replace("\r\n", "\n")
+    if not normalized.startswith("---\n"):
+        return False
+    end_fm = normalized.find("\n---\n", 4)
+    if end_fm == -1:
+        return False
+    frontmatter = normalized[4:end_fm]
+    if not re.search(
+        r"^ingested_via:\s*['\"]?project-ledger:sync-gbrain['\"]?\s*$",
+        frontmatter,
+        re.MULTILINE,
+    ):
+        return False
+    if not re.search(
+        r"^source_kind:\s*['\"]?project-ledger:capsule['\"]?\s*$",
+        frontmatter,
+        re.MULTILINE,
+    ):
+        return False
+
+    body = normalized[end_fm + 5 :]
+    body_without_reality = _REALITY_BLOCK_RE.sub("", body)
+    timeline_idx = body_without_reality.find(TIMELINE_MARKER)
+    if timeline_idx != -1:
+        after_timeline = body_without_reality[timeline_idx + len(TIMELINE_MARKER) :].strip()
+        if after_timeline:
+            return False
+        before_timeline = body_without_reality[:timeline_idx]
+    else:
+        before_timeline = body_without_reality
+
+    for line in before_timeline.splitlines():
+        if line.lstrip().startswith("## "):
+            return False
+    return True
+
+
 def _select_target_projects(
     state_dir: Path,
     canonical_projects: list[dict[str, Any]],
@@ -286,7 +334,7 @@ def _ingest_changed_pages(
     git_commit: str | None = None
     if (brain_dir / ".git").exists():
         add_proc = subprocess.run(
-            ["git", "-C", str(brain_dir), "add", "--", *changed_rel_paths],
+            ["git", "-C", str(brain_dir), "add", "-A", "--", *changed_rel_paths],
             capture_output=True,
             text=True,
             check=False,
@@ -394,6 +442,7 @@ def sync_gbrain_pages(
     created_pages: list[str] = []
     updated_pages: list[str] = []
     unchanged_pages: list[str] = []
+    pruned_pages: list[str] = []
     seen_page_keys: dict[str, str] = {}
 
     for project in targets:
@@ -432,7 +481,26 @@ def sync_gbrain_pages(
                 tmp_path.replace(page_path)
             created_pages.append(rel_md)
 
-    changed_rel_paths = sorted(created_pages + updated_pages)
+    # Full-estate syncs (`not project_referents`) safely prune orphaned Project Ledger
+    # pure-stub pages left behind when projects merge, retire, or receive a new
+    # `canonical_key`, without touching any human- or MCP-authored GBrain pages.
+    if not project_referents and projects_dir.is_dir():
+        for existing_md in sorted(projects_dir.glob("*.md")):
+            cand_page_key = f"projects/{existing_md.stem}"
+            if cand_page_key in seen_page_keys:
+                continue
+            try:
+                existing_content = existing_md.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if not _is_prunable_ledger_stub(existing_content):
+                continue
+            rel_pruned = f"{cand_page_key}.md"
+            if not dry_run:
+                existing_md.unlink(missing_ok=True)
+            pruned_pages.append(rel_pruned)
+
+    changed_rel_paths = sorted(created_pages + updated_pages + pruned_pages)
     if ingest and not dry_run:
         ingest_result = _ingest_changed_pages(
             brain_dir=brain_dir,
@@ -455,8 +523,10 @@ def sync_gbrain_pages(
         "target_project_count": len(targets),
         "created_count": len(created_pages),
         "updated_count": len(updated_pages),
+        "pruned_count": len(pruned_pages),
         "unchanged_count": len(unchanged_pages),
         "created_pages": created_pages,
         "updated_pages": updated_pages,
+        "pruned_pages": pruned_pages,
         "ingest": ingest_result,
     }
