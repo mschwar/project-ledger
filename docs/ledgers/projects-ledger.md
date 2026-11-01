@@ -1,6 +1,6 @@
 # Project Ledger
 
-Generated: 2026-11-01T02:58:16+00:00
+Generated: 2026-11-01T04:40:17+00:00
 
 - Entries: 204
 - Git repos: 137
@@ -38,14 +38,15 @@ Generated: 2026-11-01T02:58:16+00:00
 
 | Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Project Ledger | git | shared | yes |  | 2026-11-01T02:57:22+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-10-31T20:48:42-06:00 |
+| Project Ledger | git | shared | yes |  | 2026-11-01T04:38:56+00:00 | [README](../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-10-31T21:06:31-06:00 |
+| sentinel | git | shared | yes |  | 2026-11-01T04:38:00+00:00 |  | [url](https://github.com/mschwar/sentinel.git) | sentinel | 2026-10-31T22:37:57-06:00 |
+| Machina | git | shared | yes |  | 2026-11-01T04:37:17+00:00 | [README](../../machina/README.md) | [url](git@github.com:mschwar/machina.git) | machina | 2026-10-31T22:26:48-06:00 |
+| Scratch | notes | local |  |  | 2026-11-01T04:27:05+00:00 |  | [scratch](../../../../projects/scratch) | scratch |  |
+| hermes-skills — the fleet-shared Hermes skill corpus | git | shared | yes |  | 2026-11-01T04:24:11+00:00 | [README](../../../agent-tooling/hermes-skills/README.md) | [url](https://github.com/mschwar/hermes-skills.git) | hermes-skills | 2026-10-30T23:11:52-06:00 |
+| homelab-traces | git | shared | yes |  | 2026-11-01T04:13:02+00:00 | [README](../../homelab-traces/README.md) | [url](https://github.com/mschwar/homelab-traces.git) | homelab-traces | 2026-10-31T22:12:57-06:00 |
 | GBrain Ops | git | shared | yes |  | 2026-11-01T02:55:12+00:00 | [README](../../../infra/gbrain-ops/README.md) | [url](https://github.com/mschwar/gbrain-ops.git) | gbrain-ops | 2026-10-31T20:55:09-06:00 |
-| Scratch | notes | local |  |  | 2026-11-01T02:54:04+00:00 |  | [scratch](../../../../projects/scratch) | scratch |  |
 | Initiate | git | shared | yes |  | 2026-11-01T02:53:46+00:00 | [README](../../../agent-tooling/initiate/README.md) | [url](https://github.com/mschwar/initiate.git) | initiate | 2026-10-31T20:53:42-06:00 |
 | Song Book | git+obsidian | shared | yes | yes | 2026-11-01T02:51:09+00:00 | [README](../../../apps/song-book/README.md) | [url](https://github.com/mschwar/song-book.git) | song-book | 2026-10-31T20:51:06-06:00 |
-| hermes-skills — the fleet-shared Hermes skill corpus | git | shared | yes |  | 2026-11-01T02:48:44+00:00 | [README](../../../agent-tooling/hermes-skills/README.md) | [url](https://github.com/mschwar/hermes-skills.git) | hermes-skills | 2026-10-30T23:11:52-06:00 |
-| homelab-traces | git | shared | yes |  | 2026-11-01T02:44:21+00:00 | [README](../../homelab-traces/README.md) | [url](https://github.com/mschwar/homelab-traces.git) | homelab-traces | 2026-10-31T20:44:18-06:00 |
-| Machina | git | shared | yes |  | 2026-11-01T02:42:11+00:00 | [README](../../machina/README.md) | [url](git@github.com:mschwar/machina.git) | machina | 2026-10-31T20:38:35-06:00 |
 | ﻿# Common Project: One Concept a Day | git+obsidian | shared | yes | yes | 2026-11-01T02:40:12+00:00 | [README](../../common-project/README.md) | [url](https://github.com/mschwar/common-project.git) | common-project | 2026-01-31T23:16:16-07:00 |
 | VibeCoding | git | local | yes |  | 2026-11-01T02:40:12+00:00 | [README](../../VibeCoding/README.md) | [VibeCoding](../../VibeCoding) | VibeCoding |  |
 | Turborepo starter | git | local | yes |  | 2026-11-01T02:40:12+00:00 | [README](../../counterweight-tim/README.md) | [counterweight-tim](../../counterweight-tim) | counterweight-tim |  |
@@ -164,7 +165,6 @@ Generated: 2026-11-01T02:58:16+00:00
 | repo-census | git | shared | yes |  | 2026-10-30T05:16:10+00:00 | [README](../../../infra/repo-census/README.md) | [url](https://github.com/mschwar/repo-census.git) | repo-census | 2026-09-16T17:05:05-06:00 |
 | Flow — Agentic Software Delivery Manual | git+obsidian | shared | yes | yes | 2026-10-30T05:16:10+00:00 | [README](../../../agent-tooling/flow/README.md) | [url](https://github.com/mschwar/flow.git) | flow | 2026-09-10T13:37:50-06:00 |
 | ai-onboard | git+obsidian | shared | yes | yes | 2026-10-30T05:16:10+00:00 |  | [url](https://github.com/mschwar/ai-onboard.git) | ai-onboard | 2026-09-16T17:24:38-06:00 |
-| sentinel | git | shared | yes |  | 2026-10-30T05:16:09+00:00 |  | [url](https://github.com/mschwar/sentinel.git) | sentinel | 2026-09-11T13:36:36-06:00 |
 | Agentic Workbench | git | shared | yes |  | 2026-10-30T05:16:09+00:00 | [README](../../../infra/miscellania/README.md) | [url](https://github.com/mschwar/miscellania.git) | miscellania | 2026-04-16T18:10:24-06:00 |
 | A standalone zero-dependency Python CLI tool that | git | shared | yes |  | 2026-10-30T05:16:09+00:00 | [README](../../../agent-tooling/a-standalone-zero-dependency-python-cli-tool-that-audits-dir/README.md) | [url](https://github.com/mschwar/a-standalone-zero-dependency-python-cli-tool-that-audits-dir.git) | a-standalone-zero-dependency-python-cli-tool-that-audits-dir | 2026-02-24T22:05:14-07:00 |
 | Civilizational Substrate Project | git+obsidian | shared | yes | yes | 2026-10-30T05:15:37+00:00 | [README](../../civstrate/README.md) | [url](https://github.com/mschwar/civstrate.git) | civstrate | 2026-09-09T19:21:19-06:00 |
