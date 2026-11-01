@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 
 from . import COMPILER_VERSION, IDENTITY_DECISION_SCHEMA_VERSION, REVIEW_QUEUE_SCHEMA_VERSION
+from .capsules import _infer_source_class
 from .identity import load_identity_decisions
 
 README_EXCERPT_MAX_CHARS = 280
@@ -35,13 +36,23 @@ def _read_readme_excerpt(readme_path: str | None) -> str | None:
     return compact[:README_EXCERPT_MAX_CHARS]
 
 
-def _observation_triage_brief(observation: dict) -> dict:
+def _observation_triage_brief(
+    observation: dict,
+    sources_by_id: dict[str, dict] | None = None,
+) -> dict:
     compat = observation.get("compat_entry") if isinstance(observation.get("compat_entry"), dict) else {}
     readme_path = str(compat.get("readme_path") or "").strip() or None
+    source_id = str(observation.get("source_id") or "").strip()
+    src_rec = (sources_by_id or {}).get(source_id) or {}
+    source_class = (
+        str(observation.get("source_class") or "").strip()
+        or str(src_rec.get("source_class") or "").strip()
+        or _infer_source_class(observation, compat)
+    )
     return {
         "observation_id": observation["observation_id"],
         "source_id": observation.get("source_id"),
-        "source_class": observation.get("source_class"),
+        "source_class": source_class,
         "location": observation.get("location"),
         "project_key": observation.get("project_key"),
         "name": compat.get("name"),
@@ -100,6 +111,21 @@ def review_payload(
     )
     observations_by_id = {str(o["observation_id"]): o for o in observations_list if o.get("observation_id")}
 
+    manifest_file = state_dir / "system-manifest.json"
+    sources_list: list = []
+    if manifest_file.is_file():
+        try:
+            manifest_payload = json.loads(manifest_file.read_text(encoding="utf-8"))
+            if isinstance(manifest_payload, dict) and isinstance(manifest_payload.get("sources"), list):
+                sources_list = manifest_payload["sources"]
+        except (OSError, json.JSONDecodeError):
+            sources_list = []
+    sources_by_id = {
+        str(s["source_id"]): s
+        for s in sources_list
+        if isinstance(s, dict) and s.get("source_id")
+    }
+
     overlaps = list(evidence.get("cross_project_weak_overlaps", []))
     untriaged_overlaps: list[dict] = []
     for item in overlaps:
@@ -118,8 +144,16 @@ def review_payload(
                 "right_observation_id": rid,
                 "verdict": item.get("verdict"),
                 "shared_weak": list(item.get("shared_weak", [])),
-                "left": _observation_triage_brief(left_obs) if left_obs else {"observation_id": lid},
-                "right": _observation_triage_brief(right_obs) if right_obs else {"observation_id": rid},
+                "left": (
+                    _observation_triage_brief(left_obs, sources_by_id=sources_by_id)
+                    if left_obs
+                    else {"observation_id": lid}
+                ),
+                "right": (
+                    _observation_triage_brief(right_obs, sources_by_id=sources_by_id)
+                    if right_obs
+                    else {"observation_id": rid}
+                ),
             }
         )
 

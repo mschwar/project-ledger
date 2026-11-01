@@ -294,12 +294,13 @@ _HEAD_ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 def _is_valid_prob(value: Any) -> bool:
     """Return True iff `value` is a finite non-boolean float/int in [0.0, 1.0]."""
-    return (
-        isinstance(value, (int, float))
-        and not isinstance(value, bool)
-        and math.isfinite(float(value))
-        and 0.0 <= float(value) <= 1.0
-    )
+    if isinstance(value, bool):
+        return False
+    if isinstance(value, int):
+        return value in (0, 1)
+    if isinstance(value, float):
+        return math.isfinite(value) and 0.0 <= value <= 1.0
+    return False
 
 
 def list_head_ids(heads_dir: Path | None = None) -> list[str]:
@@ -409,21 +410,36 @@ def check_state(head: dict[str, Any], state: Any) -> None:
         )
 
 
-def _safe_int(val: Any, *, field: str = "") -> int:
+_MAX_SAFE_STATE_INT = 10**12
+
+
+def _safe_opt_int(val: Any, *, field: str = "") -> int | None:
     if val is None:
-        return 0
+        return None
     if isinstance(val, bool):
         raise ValueError(f"State field '{field}' must be an integer, got boolean.")
-    if isinstance(val, (int, float)):
-        if not math.isfinite(float(val)):
-            raise ValueError(f"State field '{field}' must be finite.")
+    if isinstance(val, int):
+        if not (-_MAX_SAFE_STATE_INT <= val <= _MAX_SAFE_STATE_INT):
+            raise ValueError(f"State field '{field}' integer out of range.")
+        return val
+    if isinstance(val, float):
+        if not math.isfinite(val) or not (-float(_MAX_SAFE_STATE_INT) <= val <= float(_MAX_SAFE_STATE_INT)):
+            raise ValueError(f"State field '{field}' must be a finite integer in range.")
         return int(val)
     if isinstance(val, str) and val.strip():
         try:
-            return int(val.strip())
+            parsed = int(val.strip())
         except ValueError as exc:
             raise ValueError(f"State field '{field}' must be an integer, got {val!r}.") from exc
+        if not (-_MAX_SAFE_STATE_INT <= parsed <= _MAX_SAFE_STATE_INT):
+            raise ValueError(f"State field '{field}' integer out of range.")
+        return parsed
     raise ValueError(f"State field '{field}' must be an integer, got {type(val).__name__}.")
+
+
+def _safe_int(val: Any, *, field: str = "") -> int:
+    parsed = _safe_opt_int(val, field=field)
+    return 0 if parsed is None else parsed
 
 
 def _safe_float_or_none(val: Any, *, field: str = "") -> float | None:
@@ -432,9 +448,13 @@ def _safe_float_or_none(val: Any, *, field: str = "") -> float | None:
     if isinstance(val, bool):
         raise ValueError(f"State field '{field}' must be a number or null, got boolean.")
     if isinstance(val, (int, float)):
-        if not math.isfinite(float(val)):
+        try:
+            fval = float(val)
+        except OverflowError as exc:
+            raise ValueError(f"State field '{field}' numeric value overflowed.") from exc
+        if not math.isfinite(fval):
             raise ValueError(f"State field '{field}' must be finite.")
-        return float(val)
+        return fval
     raise ValueError(f"State field '{field}' must be a number or null, got {type(val).__name__}.")
 
 
@@ -574,13 +594,13 @@ def _pre_rule_project_lifecycle_inference(state: dict[str, Any]) -> tuple[str, f
     dirty = _safe_bool(state.get("dirty_worktree"), field="dirty_worktree")
     _safe_int(state.get("ahead_count"), field="ahead_count")
     has_handoff = _safe_bool(state.get("has_machina_handoff"), field="has_machina_handoff")
-    total_files = _safe_int(state.get("total_files"), field="total_files")
+    total_files = _safe_opt_int(state.get("total_files"), field="total_files")
     _safe_int(state.get("subsystem_count"), field="subsystem_count")
     surfaces = _safe_int(state.get("operational_surface_count"), field="operational_surface_count")
     has_gov = _safe_bool(state.get("has_governance_docs"), field="has_governance_docs")
     _safe_int(state.get("open_review_count"), field="open_review_count")
 
-    if 0 < total_files <= 4 and surfaces == 0 and not has_gov and not has_handoff:
+    if total_files is not None and 0 < total_files <= 4 and surfaces == 0 and not has_gov and not has_handoff:
         return "ephemeral_experiment", 0.96
     if dirty and has_handoff:
         return "active_development", 0.97
@@ -597,19 +617,19 @@ def _rule_project_lifecycle_inference(state: dict[str, Any]) -> tuple[str, float
     dirty = _safe_bool(state.get("dirty_worktree"), field="dirty_worktree")
     ahead = _safe_int(state.get("ahead_count"), field="ahead_count")
     handoff = _safe_bool(state.get("has_machina_handoff"), field="has_machina_handoff")
-    total_files = _safe_int(state.get("total_files"), field="total_files")
+    total_files = _safe_opt_int(state.get("total_files"), field="total_files")
     surfaces = _safe_int(state.get("operational_surface_count"), field="operational_surface_count")
     has_gov = _safe_bool(state.get("has_governance_docs"), field="has_governance_docs")
 
     if dirty or ahead > 0 or handoff or (days_num is not None and days_num <= 14):
         return "active_development", 0.89
-    if total_files <= 5 and surfaces == 0 and not has_gov:
+    if total_files is not None and total_files <= 5 and surfaces == 0 and not has_gov:
         return "ephemeral_experiment", 0.87
     if (classes and classes <= {"backup", "inventory", "mirror"}) or (
         days_num is not None and days_num >= 120
     ):
         return "dormant_archive", 0.90
-    if has_gov or surfaces > 0 or total_files >= 8:
+    if has_gov or surfaces > 0 or (total_files is not None and total_files >= 8):
         return "maintained_stable", 0.88
     return "dormant_archive", 0.78
 
@@ -772,15 +792,19 @@ def _parse_wire_answer(head: dict[str, Any], ans: dict[str, Any]) -> tuple[Any, 
             raise ValueError(f"Invalid score criteria for '{head['id']}'")
         raw_score = ans.get("score")
         if raw_score is not None:
+            if not isinstance(raw_score, (int, float)) or isinstance(raw_score, bool):
+                raise ValueError(f"Invalid score for '{head['id']}'")
+            try:
+                fscore = float(raw_score)
+            except OverflowError as exc:
+                raise ValueError(f"Overflowing score for '{head['id']}'") from exc
             if (
-                not isinstance(raw_score, (int, float))
-                or isinstance(raw_score, bool)
-                or not math.isfinite(float(raw_score))
-                or float(raw_score) < -0.5
-                or float(raw_score) > float(n_levels - 1) + 0.5
+                not math.isfinite(fscore)
+                or fscore < -0.5
+                or fscore > float(n_levels - 1) + 0.5
             ):
                 raise ValueError(f"Invalid score for '{head['id']}'")
-            expected: float | None = float(raw_score)
+            expected: float | None = fscore
         else:
             expected = None
         if probs:
@@ -980,13 +1004,16 @@ def run_jev(
     answers = payload.get("answers") if isinstance(payload.get("answers"), dict) else {}
     usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else {}
     raw_in_tok = usage.get("input_tokens")
-    if (
-        isinstance(raw_in_tok, (int, float))
-        and not isinstance(raw_in_tok, bool)
-        and math.isfinite(float(raw_in_tok))
-        and raw_in_tok >= 0
-    ):
-        total_in_tok = int(raw_in_tok)
+    if isinstance(raw_in_tok, bool):
+        total_in_tok = 0
+    elif isinstance(raw_in_tok, int):
+        total_in_tok = raw_in_tok if 0 <= raw_in_tok <= _MAX_SAFE_STATE_INT else 0
+    elif isinstance(raw_in_tok, float):
+        total_in_tok = (
+            int(raw_in_tok)
+            if (math.isfinite(raw_in_tok) and 0.0 <= raw_in_tok <= float(_MAX_SAFE_STATE_INT))
+            else 0
+        )
     else:
         total_in_tok = 0
     n_heads = max(1, len(pending_heads))
@@ -1029,7 +1056,7 @@ def run_jev(
             if expected_score is not None:
                 rec["expected_score"] = round(expected_score, 4)
             results[hid] = rec
-        except (ValueError, KeyError, TypeError) as exc:
+        except (ValueError, KeyError, TypeError, OverflowError) as exc:
             results[hid] = {
                 "output": None,
                 "confidence": 0.0,
@@ -1240,8 +1267,8 @@ def overlap_to_relation_state(overlap_item: dict[str, Any]) -> dict[str, Any]:
         "shared_weak": list(overlap_item.get("shared_weak") or []),
         "left_name": l_name,
         "right_name": r_name,
-        "left_source_class": str(left.get("source_class") or left.get("source_id") or ""),
-        "right_source_class": str(right.get("source_class") or right.get("source_id") or ""),
+        "left_source_class": str(left.get("source_class") or ""),
+        "right_source_class": str(right.get("source_class") or ""),
         "left_remote_url": l_remote,
         "right_remote_url": r_remote,
         "left_readme_excerpt": left.get("readme_excerpt") or left.get("description"),
@@ -1314,7 +1341,16 @@ def capsule_to_lifecycle_state(
     )
 
     ctx_blk = capsule.get("ctx") if isinstance(capsule.get("ctx"), dict) else {}
-    total_files = int(ctx_blk.get("total_files") or 0)
+    raw_tf = ctx_blk.get("total_files")
+    total_files: int | None = (
+        int(raw_tf)
+        if (
+            ctx_blk.get("state") == "available"
+            and isinstance(raw_tf, int)
+            and not isinstance(raw_tf, bool)
+        )
+        else None
+    )
     subsystems = ctx_blk.get("subsystems") if isinstance(ctx_blk.get("subsystems"), list) else []
     sub_count = int(ctx_blk.get("subsystem_count") or len(subsystems))
     op_count = int(ctx_blk.get("operational_surface_count") or len(ctx_blk.get("operational_surfaces") or []))

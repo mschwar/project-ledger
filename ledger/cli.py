@@ -815,7 +815,7 @@ def main(argv: list[str] | None = None) -> int:
     except LedgerCompatError as exc:
         print(f"{exc.code}: {exc}", file=sys.stderr)
         return 2
-    except (OSError, ValueError, TypeError) as exc:
+    except (OSError, ValueError, TypeError, ArithmeticError) as exc:
         print(f"LEDGER_ERROR: {exc}", file=sys.stderr)
         return 2
     return 2

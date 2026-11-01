@@ -735,6 +735,230 @@ class EnrichedCtxAndJevTests(unittest.TestCase):
             redir_srv.server_close()
             target_srv.server_close()
 
+    def test_round3_qa_oversize_int_overflow_serve_stdio_triage_source_class_and_law5_unknown_files(self) -> None:
+        from ledger.mcp_server import LedgerMcpServer
+        from ledger.triage import review_payload
+
+        huge_int = 10**400
+
+        # 1. MCP `serve_stdio`: 400-digit integer in `ledger_jev decide` state must return
+        #    a structured error (`isError=True`), never raise `OverflowError`, and continue
+        #    serving subsequent JSON-RPC frames on the same stdio session.
+        with tempfile.TemporaryDirectory() as tmp:
+            base_tmp = Path(tmp)
+            srv = LedgerMcpServer(
+                state_dir=base_tmp / "state",
+                identity_decisions_path=base_tmp / "identity-decisions.json",
+                project_lineage_path=base_tmp / "project-lineage.json",
+                candidates_path=base_tmp / "candidates.json",
+            )
+            req_overflow = {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {
+                    "name": "ledger_jev",
+                    "arguments": {
+                        "action": "decide",
+                        "head_ids": ["estate_attention_urgency"],
+                        "state": {
+                            "git_drift_codes": [],
+                            "dirty_checkout_count": huge_int,
+                            "ahead_total": 0,
+                            "behind_total": 0,
+                            "diverged": False,
+                            "open_review_count": 0,
+                            "high_severity_review_count": 0,
+                            "source_health_state": "healthy",
+                        },
+                    },
+                },
+            }
+            req_list = {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+            in_buf = io.BytesIO(
+                (json.dumps(req_overflow) + "\n" + json.dumps(req_list) + "\n").encode("utf-8")
+            )
+            out_buf = io.BytesIO()
+            rc = srv.serve_stdio(in_stream=in_buf, out_stream=out_buf)
+            self.assertEqual(rc, 0)
+            lines = [ln for ln in out_buf.getvalue().decode("utf-8").splitlines() if ln.strip()]
+            self.assertEqual(len(lines), 2)
+            resp1 = json.loads(lines[0])
+            resp2 = json.loads(lines[1])
+            self.assertEqual(resp1["id"], 1)
+            self.assertTrue(resp1["result"]["isError"])
+            self.assertEqual(resp2["id"], 2)
+            self.assertGreater(len(resp2["result"]["tools"]), 0)
+
+        # 2. CLI `ledger jev decide` with 400-digit integer returns exit code 2 without crashing,
+        #    and upstream Jev wire response with 400-digit score/confidence/input_tokens abstains cleanly.
+        cli_state_json = json.dumps(
+            {
+                "git_drift_codes": [],
+                "dirty_checkout_count": huge_int,
+                "ahead_total": 0,
+                "behind_total": 0,
+                "diverged": False,
+                "open_review_count": 0,
+                "high_severity_review_count": 0,
+                "source_health_state": "healthy",
+            }
+        )
+        err_capture = io.StringIO()
+        with contextlib.redirect_stderr(err_capture):
+            cli_rc = cli.main(
+                ["jev", "decide", "--head", "estate_attention_urgency", "--state", cli_state_json]
+            )
+        self.assertEqual(cli_rc, 2)
+
+        valid_urg_state = {
+            "git_drift_codes": [],
+            "dirty_checkout_count": 0,
+            "ahead_total": 0,
+            "behind_total": 0,
+            "diverged": False,
+            "open_review_count": 0,
+            "high_severity_review_count": 0,
+            "source_health_state": "healthy",
+        }
+        huge_wire = json.dumps(
+            {
+                "model": "jev-1.13.0",
+                "answers": {
+                    "estate_attention_urgency": {
+                        "score": huge_int,
+                        "confidence": huge_int,
+                    }
+                },
+                "usage": {"input_tokens": huge_int},
+            }
+        ).encode("utf-8")
+
+        class _HugeWireResp:
+            def read(self) -> bytes:
+                return huge_wire
+
+            def __enter__(self) -> "_HugeWireResp":
+                return self
+
+            def __exit__(self, *args: object) -> bool:
+                return False
+
+        with (
+            patch.dict(os.environ, {"LEDGER_JEV": "auto", "TYPESAFE_API_KEY": "ts-unit-key"}),
+            patch("urllib.request.urlopen", side_effect=lambda req, timeout=15.0: _HugeWireResp()),
+        ):
+            huge_res = jev.decide(
+                ["estate_attention_urgency"],
+                valid_urg_state,
+                provider="jev",
+                skip_pre_rule=True,
+                record_trace=False,
+            )
+        self.assertTrue(huge_res["decisions"][0]["abstained"])
+        self.assertTrue(huge_res["decisions"][0]["fallback_used"])
+        self.assertEqual(huge_res["decisions"][0]["input_tokens"], 0)
+
+        # 3. `review_payload(..., include_jev=True)` resolves `source_class` from `system-manifest.json`
+        #    `sources[]` when `observations.json` entries carry only `source_id`.
+        with tempfile.TemporaryDirectory() as tmp:
+            st_dir = Path(tmp) / "state"
+            st_dir.mkdir(parents=True, exist_ok=True)
+            (st_dir / "review-queue.json").write_text(
+                json.dumps({"run_id": "r1", "compiled_at": "2026-11-01T00:00:00Z", "review_count": 0, "items": []}),
+                encoding="utf-8",
+            )
+            (st_dir / "system-manifest.json").write_text(
+                json.dumps(
+                    {
+                        "sources": [
+                            {"source_id": "central-active", "source_class": "live"},
+                            {"source_id": "macbook-air-2-homelab", "source_class": "mirror"},
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (st_dir / "observations.json").write_text(
+                json.dumps(
+                    {
+                        "observations": [
+                            {
+                                "observation_id": "obs-live",
+                                "source_id": "central-active",
+                                "location": "/central/repos/active/foo",
+                                "project_key": "proj-a",
+                                "compat_entry": {"name": "foo", "description": "Homelab foo service"},
+                            },
+                            {
+                                "observation_id": "obs-mirror",
+                                "source_id": "macbook-air-2-homelab",
+                                "location": "/Users/mschwar/repos/foo",
+                                "project_key": "proj-b",
+                                "compat_entry": {"name": "foo", "description": "Homelab foo service"},
+                            },
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (st_dir / "identity-evidence.json").write_text(
+                json.dumps(
+                    {
+                        "cross_project_weak_overlaps": [
+                            {
+                                "left_observation_id": "obs-live",
+                                "right_observation_id": "obs-mirror",
+                                "verdict": "weak_overlap",
+                                "shared_weak": ["name:foo"],
+                                "evidence": [],
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            rev = review_payload(
+                st_dir,
+                candidates_path=Path(tmp) / "candidates.json",
+                decisions_path=Path(tmp) / "decisions.json",
+                include_jev=True,
+                jev_provider="code",
+            )
+            ov = rev["untriaged_weak_overlaps"][0]
+            self.assertEqual(ov["left"]["source_class"], "live")
+            self.assertEqual(ov["right"]["source_class"], "mirror")
+            self.assertEqual(ov["jev_advisory"]["effective_output"], "redundant_checkout_or_mirror")
+
+        # 4. Law 5 explicit uncertainty: inventory-only capsule with `ctx.state != "available"`
+        #    and `ctx.total_files = None` keeps `total_files = None` and classifies as `dormant_archive`
+        #    rather than `ephemeral_experiment`.
+        import datetime as dt
+
+        inv_capsule = {
+            "observations": [{"source_class": "inventory"}],
+            "freshness": {"content_as_of": "2025-01-01T00:00:00Z"},
+            "git_facts": {"dirty": False, "ahead_count": 0},
+            "current_state": {"machina_continuity": {"state": "absent"}},
+            "ctx": {
+                "state": "absent",
+                "total_files": None,
+                "subsystem_count": 0,
+                "operational_surface_count": 0,
+                "authority_boundaries": [],
+            },
+            "review": {"open_review_count": 0},
+        }
+        lc_state = jev.capsule_to_lifecycle_state(
+            inv_capsule,
+            reference_now=dt.datetime(2026, 11, 1, tzinfo=dt.timezone.utc),
+        )
+        self.assertIsNone(lc_state["total_files"])
+        lc_dec = jev.decide(["project_lifecycle_inference"], lc_state, provider="code", record_trace=False)[
+            "decisions"
+        ][0]
+        self.assertEqual(lc_dec["effective_output"], "dormant_archive")
+
 
 if __name__ == "__main__":
     unittest.main()

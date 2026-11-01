@@ -443,7 +443,7 @@ class LedgerMcpServer:
             return _jsonrpc_result(req_id, result)
         except _JsonRpcError as exc:
             return _jsonrpc_error(req_id, exc.code, exc.message, exc.data)
-        except (LedgerConfigError, OSError, ValueError, TypeError) as exc:
+        except (LedgerConfigError, OSError, ValueError, TypeError, ArithmeticError) as exc:
             return _jsonrpc_error(req_id, JSONRPC_INTERNAL_ERROR, str(exc))
 
     def _dispatch(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
@@ -665,7 +665,7 @@ class LedgerMcpServer:
                     skip_pre_rule=skip_pre,
                 )
                 return _tool_result(payload)
-        except (LedgerConfigError, OSError, ValueError, TypeError) as exc:
+        except (LedgerConfigError, OSError, ValueError, TypeError, ArithmeticError) as exc:
             err_payload = {
                 "status": "error",
                 "code": getattr(exc, "code", "LEDGER_STATE_UNAVAILABLE"),
@@ -814,7 +814,13 @@ class LedgerMcpServer:
                 _write_stdio_frame(writer, err_resp, framing=framing)
                 continue
 
-            response = self.handle_message(decoded)
+            try:
+                response = self.handle_message(decoded)
+            except Exception as exc:
+                if isinstance(decoded, dict) and "id" in decoded:
+                    response = _jsonrpc_error(decoded.get("id"), JSONRPC_INTERNAL_ERROR, str(exc))
+                else:
+                    response = None
             if response is not None:
                 _write_stdio_frame(writer, response, framing=framing)
 
