@@ -33,6 +33,7 @@ from .common import (
     parse_readme_summary,
     safe_path_exists,
     safe_path_is_dir,
+    safe_path_is_symlink,
 )
 from .git import gather_git_metadata
 
@@ -225,7 +226,7 @@ def summarize_tree(
         filtered_dirs = []
         for dirname in dirs:
             candidate = root_path / dirname
-            if dirname in ignore_names or candidate.is_symlink():
+            if dirname in ignore_names or safe_path_is_symlink(candidate):
                 continue
             if rel_depth + 1 > max_depth:
                 continue

@@ -27,6 +27,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+from .sources.common import safe_path_is_dir, safe_path_is_file
+
 STRUCTURAL_CTX_MAX_FILES = 800
 STRUCTURAL_CTX_MAX_DEPTH = 6
 STRUCTURAL_CTX_MAX_PARSE_FILES = 200
@@ -345,7 +347,7 @@ def _load_simple_gitignore_dirs(repo_dir: Path) -> tuple[set[str], set[str]]:
     gitignore_path = repo_dir / ".gitignore"
     any_depth: set[str] = set()
     root_only: set[str] = set()
-    if not gitignore_path.is_file():
+    if not safe_path_is_file(gitignore_path):
         return any_depth, root_only
     try:
         lines = gitignore_path.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -569,7 +571,7 @@ def _extract_manifest_entrypoints(repo_dir: Path) -> list[str]:
     entrypoints: list[str] = []
 
     pyproject_path = repo_dir / "pyproject.toml"
-    if pyproject_path.is_file():
+    if safe_path_is_file(pyproject_path):
         try:
             py_data = tomllib.loads(pyproject_path.read_text(encoding="utf-8"))
             scripts = (py_data.get("project") or {}).get("scripts")
@@ -582,7 +584,7 @@ def _extract_manifest_entrypoints(repo_dir: Path) -> list[str]:
             pass
 
     package_json_path = repo_dir / "package.json"
-    if package_json_path.is_file():
+    if safe_path_is_file(package_json_path):
         try:
             pkg_data = json.loads(package_json_path.read_text(encoding="utf-8"))
             if isinstance(pkg_data, dict):
@@ -602,7 +604,7 @@ def _extract_manifest_entrypoints(repo_dir: Path) -> list[str]:
             pass
 
     cargo_toml_path = repo_dir / "Cargo.toml"
-    if cargo_toml_path.is_file():
+    if safe_path_is_file(cargo_toml_path):
         try:
             cargo_data = tomllib.loads(cargo_toml_path.read_text(encoding="utf-8"))
             bins = cargo_data.get("bin")
@@ -627,10 +629,7 @@ def extract_structural_ctx(
     max_parse_files: int = STRUCTURAL_CTX_MAX_PARSE_FILES,
 ) -> dict[str, Any] | None:
     """Scan ``repo_dir`` read-only and synthesize a ``RepoSkeleton``-compatible dict."""
-    try:
-        if not repo_dir.is_dir():
-            return None
-    except OSError:
+    if not safe_path_is_dir(repo_dir):
         return None
 
     ignore_any_depth, ignore_root_only = _load_simple_gitignore_dirs(repo_dir)

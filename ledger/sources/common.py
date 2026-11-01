@@ -106,23 +106,37 @@ def safe_path_is_dir(path: Path) -> bool:
         return False
 
 
+def safe_path_is_file(path: Path) -> bool:
+    try:
+        return path.is_file()
+    except OSError:
+        return False
+
+
+def safe_path_is_symlink(path: Path) -> bool:
+    try:
+        return path.is_symlink()
+    except OSError:
+        return False
+
+
 def iter_shallow_files(directory: Path, ignore_names: set[str], max_depth: int = 1) -> Iterable[Path]:
     try:
         for child in directory.iterdir():
             if child.name in ignore_names:
                 continue
-            if child.is_file():
-                yield child
-                continue
-            if child.is_dir() and not child.is_symlink() and max_depth >= 1:
-                try:
+            try:
+                if child.is_file():
+                    yield child
+                    continue
+                if child.is_dir() and not child.is_symlink() and max_depth >= 1:
                     for nested in child.iterdir():
                         if nested.name in ignore_names:
                             continue
-                        if nested.is_file():
+                        if safe_path_is_file(nested):
                             yield nested
-                except OSError:
-                    continue
+            except OSError:
+                continue
     except OSError:
         return
 
@@ -156,7 +170,9 @@ def merge_exclude_names(root_cfg: dict, defaults: dict) -> set[str]:
 
 def effective_candidate_excludes(directory: Path, root_cfg: dict, defaults: dict) -> set[str]:
     exclude_names = merge_exclude_names(root_cfg, defaults)
-    if (directory / "build_ledger.py").is_file() and (directory / "ledger" / "__init__.py").is_file():
+    if safe_path_is_file(directory / "build_ledger.py") and safe_path_is_file(
+        directory / "ledger" / "__init__.py"
+    ):
         exclude_names.update(_PROJECT_LEDGER_SELF_EXCLUDES)
     return exclude_names
 

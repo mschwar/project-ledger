@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any
 
 from .models import parse_iso_datetime
+from .sources.common import safe_path_exists
 from .sources.git import git_output
 
 SIDECAR_NORMALIZED_SCHEMA_VERSION = "1.0.0"
@@ -284,7 +285,7 @@ def check_sidecar_head_drift(
        timestamp AND the sidecar file itself was not modified in ``HEAD``.
     """
     target_dir = repo_dir if repo_dir is not None else sidecar_path.parent
-    if not (target_dir / ".git").exists():
+    if not safe_path_exists(target_dir / ".git"):
         return []
 
     live_head = git_output(target_dir, "rev-parse", "HEAD")
@@ -637,7 +638,7 @@ def inspect_entry_sidecar(compat_entry: dict[str, Any]) -> dict[str, Any]:
         return absent_sidecar_envelope()
 
     path = Path(raw_path)
-    if path.exists():
+    if safe_path_exists(path):
         envelope, _ = validate_sidecar_file(path)
         return envelope
 

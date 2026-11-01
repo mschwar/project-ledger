@@ -3,25 +3,21 @@
   "attempt_id": null,
   "execution_state": "idle",
   "frontier": null,
-  "last_checkpoint": {
-    "slice": 1,
-    "summary": "Slice 1: completed full-scan ledger refresh and lineage --sync; machina and gbrain-ops registered cleanly.",
-    "timestamp": "2026-11-01T02:58:22.353687Z"
-  },
+  "last_checkpoint": null,
   "last_completed": {
-    "slice": 2,
-    "summary": "Slice 2 (recovered in secondary git worktree): ruff check, ledger validate, and full unittest suite green; machina and gbrain-ops resolve cleanly.",
-    "timestamp": "2026-11-01T02:59:35.459332Z",
+    "slice": 1,
+    "summary": "Contained Python 3.12+ PermissionError across unreadable directories (such as root-owned 0700 service directories inside children roots like /central/services/gbrain-pgdump) across ledger/sources/, ledger/checkpoints.py, ledger/sidecar.py, ledger/structural_ctx.py, ledger/capsules.py, and ledger/config.py under Architectural Law 11, with chmod 000 regression coverage.",
+    "timestamp": "2026-11-01T03:05:24.447538Z",
     "unit": {
-      "id": "PL-ESTATE-REFRESH-20261101",
-      "spec": ".machina/units/PL-ESTATE-REFRESH-20261101.json",
-      "spec_digest": "424d30f57b739a6012fcbe8a0ac3584186e70206f6a9910aa6f49d56269e0231",
-      "title": "Refresh Project Ledger estate inventory and lineage registry across Machina and GBrain Ops"
+      "id": "PL-AUDIT-DRAIN-01B",
+      "spec": ".machina/units/PL-AUDIT-DRAIN-01B.json",
+      "spec_digest": "91480c019b56f76aa3f5e2711aeb691a556f7e728a3215197f556e9742e0dc2b",
+      "title": "Contain Python 3.12+ PermissionError across unreadable directories during source probing, scanning, checkpointing, and capsule synthesis"
     }
   },
   "next_action": null,
   "schema_version": 1,
-  "sequence": 47,
-  "slice": 2,
-  "updated_at": "2026-11-01T02:59:35.461676Z"
+  "sequence": 50,
+  "slice": 1,
+  "updated_at": "2026-11-01T03:05:24.449933Z"
 }

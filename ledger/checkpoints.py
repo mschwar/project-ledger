@@ -46,6 +46,7 @@ from .sources.common import (
     resolve_path,
     safe_path_exists,
     safe_path_is_dir,
+    safe_path_is_file,
 )
 
 CHECKPOINT_FILENAME = "source-checkpoints.json"
@@ -579,7 +580,7 @@ def inventory_candidate_fingerprint(
 
 def load_source_checkpoints(path: Path | None) -> dict | None:
     """Load persisted source checkpoints, returning None on missing/corrupt/incompatible files."""
-    if path is None or not path.is_file():
+    if path is None or not safe_path_is_file(path):
         return None
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -700,7 +701,7 @@ def collect_entries_incremental(
                 )
             if "policy_path" in root_cfg:
                 root_cfg["_policy_path"] = resolve_path(root_cfg["policy_path"], config_dir)
-            source_available = safe_path_exists(root_path)
+            source_available = safe_path_exists(root_path) and os.access(root_path, os.R_OK)
 
         source_cfg_digest = _source_config_digest(root_cfg, defaults, output_dir, source_id)
         if not source_available:
