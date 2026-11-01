@@ -1,0 +1,18 @@
+{
+  "id": "PL-ESTATE-REFRESH-20261101",
+  "title": "Refresh Project Ledger estate inventory and lineage registry across Machina and GBrain Ops",
+  "objective": "Run full-scan ledger refresh and lineage --sync in Slice 1 so mschwar/machina and mschwar/gbrain-ops resolve cleanly, checkpoint, and recover/complete Slice 2 verification inside an isolated secondary git worktree checkout.",
+  "authority": {
+    "allowed": [
+      "run python3 -m ledger refresh --full-scan and python3 -m ledger lineage --sync",
+      "update docs/ledgers/projects-ledger.md, registry/project-lineage.json, and .machina/",
+      "run ruff check, ledger validate, unittest, and machina verify-candidate"
+    ],
+    "forbidden": [
+      "modify external repositories during scan (Law 10 read-only scanning)",
+      "hand-edit generated state/ projections"
+    ]
+  },
+  "initial_next_action": "Execute Slice 1 full-scan ledger refresh and lineage --sync, then checkpoint.",
+  "completion": "registry/project-lineage.json and docs/ledgers/projects-ledger.md include machina and gbrain-ops, secondary worktree Slice 2 passes ruff + ledger validate + unittest, and ledger resolve /central/repos/active/machina returns status=resolved."
+}
