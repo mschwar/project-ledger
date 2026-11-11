@@ -322,6 +322,7 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
                 encoding="utf-8",
             )
             state_dir = root / "state"
+            output_dir = root / "output"
             decisions_path = root / "decisions.json"
             decisions_path.write_text(
                 json.dumps({"schema_version": "1.0.0", "decisions": []}) + "\n",
@@ -336,6 +337,8 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
                         "--no-markdown-mirror",
                         "--config",
                         str(config_path),
+                        "--output-dir",
+                        str(output_dir),
                         "--state-dir",
                         str(state_dir),
                         "--identity-decisions",
@@ -360,6 +363,8 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
                         "--no-markdown-mirror",
                         "--config",
                         str(config_path),
+                        "--output-dir",
+                        str(output_dir),
                         "--state-dir",
                         str(state_dir),
                         "--identity-decisions",
@@ -459,6 +464,39 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
         bad_decisions = copy.deepcopy(decisions_doc)
         bad_decisions["decisions"][0]["type"] = "bogus_decision_type"
         self.assertTrue(validate_json_schema(bad_decisions, decisions_schema))
+
+    def test_review_queue_schema_accepts_all_identity_compiler_review_codes(self) -> None:
+        review_schema = self._load_schema("review-queue.schema.json")
+        for code in (
+            "PROJECT_KEY_AMBIGUOUS",
+            "AUTO_MATCH_BLOCKED_BY_DECISION",
+            "DECISION_REFERENCE_UNAVAILABLE",
+            "DECISION_CONFLICT",
+            "DECISION_SUPERSEDE_UNKNOWN",
+            "DIVERGENT_SIDECAR_DECLARATIONS",
+            "SIDECAR_DECLARATION_INVALID",
+        ):
+            payload = {
+                "schema_version": "1.0.0",
+                "run_id": "run_0010f01b946138d47256d8fc",
+                "compiled_at": "2026-11-11T05:33:04Z",
+                "review_count": 1,
+                "items": [
+                    {
+                        "review_id": "rev_11076b49d561844ba4649c0d",
+                        "code": code,
+                        "state": "open",
+                        "severity": "warning",
+                        "affected_observation_ids": ["obs_2f29d73d48b88259acf8ac05"],
+                        "affected_decision_ids": [],
+                        "detail": f"Synthetic check for {code}",
+                        "reason_automation_stopped": "Review required.",
+                        "resolution_actions": ["Inspect review item."],
+                        "evidence": [],
+                    }
+                ],
+            }
+            self.assertEqual(validate_json_schema(payload, review_schema), [], code)
 
 
 if __name__ == "__main__":

@@ -322,6 +322,35 @@ class EnrichedCtxRulesAndRemoteDriftTests(unittest.TestCase):
         self.assertEqual(posture["lifecycle_posture"], "dormant_archive")
         self.assertEqual(absent_ctx_capsule["current_state"]["lifecycle_state"], "paused")
 
+        # Capsule dict authority_boundaries (`kind: "authority"` / `"architecture"`) set has_governance_docs
+        governed_capsule = {
+            "observations": [{"source_class": "live"}],
+            "git_facts": {"head_commit_at": "2026-09-01T00:00:00Z", "warning_codes": []},
+            "freshness": {"content_as_of": "2026-09-01T00:00:00Z"},
+            "current_state": {"lifecycle_state": None, "machina_continuity": {"state": "not_present"}},
+            "ctx": {
+                "state": "available",
+                "total_files": 4,
+                "subsystems": [],
+                "operational_surfaces": [],
+                "authority_boundaries": [{"kind": "authority", "path": "docs/GOVERNANCE.md"}],
+            },
+            "review": {"open_review_count": 0},
+            "preferred_location": {"state": "resolved"},
+        }
+        gov_state = rules.capsule_to_lifecycle_state(
+            governed_capsule,
+            reference_now=rules.dt.datetime(2026, 11, 11, tzinfo=rules.dt.timezone.utc),
+        )
+        self.assertTrue(gov_state["has_governance_docs"])
+        self.assertEqual(
+            rules.infer_capsule_posture(
+                governed_capsule,
+                reference_now=rules.dt.datetime(2026, 11, 11, tzinfo=rules.dt.timezone.utc),
+            )["lifecycle_posture"],
+            "maintained_stable",
+        )
+
         # Urgency levels 0..3 including GIT_REMOTE_AHEAD
         self.assertEqual(
             rules.classify_attention_urgency(

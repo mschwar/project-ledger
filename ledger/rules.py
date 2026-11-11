@@ -132,8 +132,6 @@ def classify_attention_urgency(state: dict[str, Any]) -> tuple[int, float]:
             & {
                 "GIT_DIRTY_WORKTREE",
                 "GIT_AHEAD_OF_UPSTREAM",
-                "GIT_WORKTREE_DIRTY",
-                "GIT_AHEAD_UNPUSHED",
             }
         )
     ):
@@ -247,7 +245,8 @@ def capsule_to_lifecycle_state(
         else []
     )
     has_gov = any(
-        ":authority:" in str(b)
+        (isinstance(b, dict) and b.get("kind") in {"authority", "architecture"})
+        or ":authority:" in str(b)
         or ":architecture:" in str(b)
         or any(
             tok in str(b).lower()
