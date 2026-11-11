@@ -20,6 +20,7 @@ from .config import (
 )
 from .explain import explain_payload
 from .gbrain_pages import sync_gbrain_pages
+from .github_sync import DEFAULT_CLONE_ROOT, sync_github_estate
 from .identity import resolve_payload
 from .lineage import lineage_status_payload
 from .mcp_server import add_mcp_args, run_mcp_from_args
@@ -218,6 +219,12 @@ def _parser() -> argparse.ArgumentParser:
         default=default_lineage,
         help="Path to durable project lineage registry (default: registry/project-lineage.json).",
     )
+    lineage.add_argument(
+        "--merge-from",
+        default=None,
+        dest="merge_from",
+        help="Optional secondary/runtime lineage file to merge into --project-lineage before syncing.",
+    )
     lineage_mode = lineage.add_mutually_exclusive_group()
     lineage_mode.add_argument(
         "--sync",
@@ -230,6 +237,71 @@ def _parser() -> argparse.ArgumentParser:
         help="Exit non-zero (code 5) if registry/project-lineage.json is out of sync with compiled state.",
     )
     lineage.add_argument("--json", action="store_true")
+
+    sync_gh = sub.add_parser(
+        "sync-github",
+        help="Discover GitHub remotes, clone missing active repos over SSH, fast-forward clean default branches, and audit 1:1 git parity.",
+    )
+    sync_gh.add_argument("--config", default=default_workspace_path("ledger_config.json"))
+    sync_gh.add_argument("--state-dir", default=default_state)
+    sync_gh.add_argument(
+        "--clone-root",
+        default=DEFAULT_CLONE_ROOT,
+        help=f"Target local directory for auto-cloning missing active GitHub repos (default: {DEFAULT_CLONE_ROOT}).",
+    )
+    sync_gh_mode = sync_gh.add_mutually_exclusive_group()
+    sync_gh_mode.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Compute sync/parity actions without cloning, fetching, or modifying checkouts.",
+    )
+    sync_gh_mode.add_argument(
+        "--check",
+        action="store_true",
+        help="Read-only 1:1 parity check; exits code 6 when parity drift is present.",
+    )
+    sync_gh.add_argument(
+        "--no-clone",
+        action="store_true",
+        help="Report missing remote repos without cloning them.",
+    )
+    sync_gh.add_argument(
+        "--no-fetch",
+        action="store_true",
+        help="Skip fetching existing local checkouts.",
+    )
+    sync_gh.add_argument(
+        "--no-ff",
+        action="store_true",
+        help="Fetch remote refs without fast-forwarding clean default-branch checkouts.",
+    )
+    sync_gh.add_argument(
+        "--no-ssh-rewrite",
+        action="store_true",
+        help="Do not rewrite https://github.com/... remotes to git@github.com:...",
+    )
+    sync_gh.add_argument(
+        "--force-fetch",
+        action="store_true",
+        help="Bypass pushed_at cache and fetch all matched live checkouts.",
+    )
+    sync_gh.add_argument(
+        "--inventory-file",
+        default=None,
+        help="Optional local JSON file containing GitHub repository inventory records (offline/testing).",
+    )
+    sync_gh.add_argument(
+        "--ssh-fallback-host",
+        default=None,
+        help="Optional SSH target for `gh api user/repos` fallback (guarded by INV-FLEET-GAME-01).",
+    )
+    sync_gh.add_argument(
+        "--remote-timeout",
+        type=float,
+        default=45.0,
+        help="Per-repo timeout in seconds for git clone/fetch operations (default: 45.0).",
+    )
+    sync_gh.add_argument("--json", action="store_true")
 
     mcp = sub.add_parser(
         "mcp",
@@ -580,6 +652,7 @@ def main(argv: list[str] | None = None) -> int:
                 state_dir=Path(args.state_dir),
                 lineage_path=Path(args.project_lineage),
                 sync=bool(args.sync),
+                merge_from_path=Path(args.merge_from) if args.merge_from else None,
             )
             if args.json:
                 _print_json(payload)
@@ -593,6 +666,38 @@ def main(argv: list[str] | None = None) -> int:
                 )
             if args.check and not payload["in_sync"]:
                 return 5
+            return 0
+
+        if args.command == "sync-github":
+            mode = "check" if args.check else ("dry_run" if args.dry_run else "sync")
+            payload = sync_github_estate(
+                config_path=Path(args.config),
+                state_dir=Path(args.state_dir),
+                clone_root=Path(args.clone_root),
+                mode=mode,
+                clone_missing=not bool(args.no_clone),
+                fetch_existing=not bool(args.no_fetch),
+                ff_clean=not bool(args.no_ff),
+                normalize_ssh_remotes=not bool(args.no_ssh_rewrite),
+                force_fetch=bool(args.force_fetch),
+                inventory_file=Path(args.inventory_file) if args.inventory_file else None,
+                ssh_fallback_host=args.ssh_fallback_host,
+                remote_timeout=float(args.remote_timeout),
+            )
+            if args.json:
+                _print_json(payload)
+            else:
+                cnt = payload["counts"]
+                print(
+                    f"sync-github ({payload['mode']}): status={payload['status']} "
+                    f"source={payload['inventory_source']} parity={payload['in_1to1_parity']} "
+                    f"remote_active={cnt['remote_active']} matched={cnt['matched_local']} "
+                    f"cloned={cnt['cloned']} fetched={cnt['fetched']} "
+                    f"ff={cnt['fast_forwarded']} missing={cnt['missing_local']} "
+                    f"no_remote={cnt['local_without_remote']} errors={cnt['errors']}"
+                )
+            if args.check and not payload["in_1to1_parity"]:
+                return 6
             return 0
 
         if args.command == "mcp":

@@ -822,6 +822,263 @@
       "rationale": "Supersede dec_triage_agent_tooling_prompts_vs_active_prompts_reject_20261030 after /central/repos/active/prompts (obs_f600fe76d48e273577420ea0) was retired from /central/repos/active; /central/repos/agent-tooling/prompts remains canonical.",
       "supersedes_decision_id": "dec_triage_agent_tooling_prompts_vs_active_prompts_reject_20261030",
       "type": "supersede"
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_relational_physics_canonical_key_20261101_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_relational_physics_canonical_key_20261101",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_relational_physics_canonical_key_20261101 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_retire_song_clean_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_retire_song_clean_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_retire_song_clean_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_retire_white_rabbit_merge_20261031_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_retire_white_rabbit_merge_20261031",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_retire_white_rabbit_merge_20261031 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_agent_os_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_agent_os_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_agent_os_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_ai_field_briefing_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_ai_field_briefing_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_ai_field_briefing_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_awesome_hermes_vs_paperclip_reject_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_awesome_hermes_vs_paperclip_reject_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_awesome_hermes_vs_paperclip_reject_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_bahai_9yr_plan_kb_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_bahai_9yr_plan_kb_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_bahai_9yr_plan_kb_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_bahai_consultation_guide_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_bahai_consultation_guide_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_bahai_consultation_guide_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_civstrate_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_civstrate_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_civstrate_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_common_project_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_common_project_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_common_project_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_context_project_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_context_project_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_context_project_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_cpr_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_cpr_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_cpr_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_elemental_inc_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_elemental_inc_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_elemental_inc_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_flow_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_flow_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_flow_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_gstack_key_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_gstack_key_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_gstack_key_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_gstack_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_gstack_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_gstack_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_homelab_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_homelab_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_homelab_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_ledger_2_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_ledger_2_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_ledger_2_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_lee_ai_learning_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_lee_ai_learning_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_lee_ai_learning_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_lee_grapple_hook_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_lee_grapple_hook_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_lee_grapple_hook_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_orgatlas_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_orgatlas_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_orgatlas_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_pitch_perfect_vs_consultlink_reject_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_pitch_perfect_vs_consultlink_reject_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_pitch_perfect_vs_consultlink_reject_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_project_eidos_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_project_eidos_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_project_eidos_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_project_ledger_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_project_ledger_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_project_ledger_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_prompt_refinery_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_prompt_refinery_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_prompt_refinery_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_reality_ledger_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_reality_ledger_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_reality_ledger_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_scrollytelling_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_scrollytelling_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_scrollytelling_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_slopvault_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_slopvault_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_slopvault_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_substrate_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_substrate_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_substrate_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_toned_merge_20261030_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_toned_merge_20261030",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_toned_merge_20261030 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_git_1to1_supersede_triage_tsle_team_merge_20261029_20261111",
+      "type": "supersede",
+      "supersedes_decision_id": "dec_triage_tsle_team_merge_20261029",
+      "authority": "operator",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Supersede dec_triage_tsle_team_merge_20261029 after enforcing strict 1:1 git-repository scope (require_git=true, exclude_autosnapshot_repos=true, retiring non-git roots macbook-air-2-higgsfield-agent-project and matty-pc-inventory)."
+    },
+    {
+      "decision_id": "dec_triage_agentic_workbench_vs_miscellania_reject_20261111",
+      "type": "reject_match",
+      "left_observation_id": "obs_0bcd82f08069b92092bfc16b",
+      "right_observation_id": "obs_247ac89e7eff9bae0f0f13e2",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/active/agentic-workbench (github.com/lbibylb-glitch/agentic-workbench) and /central/repos/infra/miscellania (github.com/mschwar/miscellania) are distinct GitHub repositories; miscellania is an umbrella catch-all repository that absorbed an earlier agentic-workbench-main snapshot alongside unrelated tooling, whereas lbibylb-glitch/agentic-workbench is a separate collaborator workstation repository."
     }
   ],
   "schema_version": "1.0.0"

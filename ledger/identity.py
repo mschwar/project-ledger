@@ -183,6 +183,19 @@ def observation_facts(observation: dict) -> dict:
     canonical_remote = _canonical_url_repository_identity(str(compat.get("canonical_url") or ""))
     if canonical_remote:
         remotes.add(canonical_remote)
+    secondary_remotes: dict[str, str] = {}
+    secondary_raw_urls: dict[str, str] = {}
+    git_remotes_map = observation.get("git_remotes")
+    if isinstance(git_remotes_map, dict):
+        for raw_rname, raw_rurl in sorted(git_remotes_map.items(), key=lambda kv: str(kv[0])):
+            rname = str(raw_rname or "").strip()
+            rurl = str(raw_rurl or "").strip()
+            if not rname or not rurl:
+                continue
+            secondary_raw_urls[rname] = rurl
+            norm_sec = normalize_remote_identity(rurl)
+            if norm_sec and rname.lower() != "upstream" and norm_sec not in remotes:
+                secondary_remotes[rname] = norm_sec
     project_key = str(observation.get("project_key") or "").strip() or None
     names = {
         str(value).strip()
@@ -207,6 +220,8 @@ def observation_facts(observation: dict) -> dict:
         "source_id": str(observation.get("source_id") or "").strip() or None,
         "snapshot_id": str(observation.get("snapshot_id") or "").strip() or None,
         "remotes": remotes,
+        "secondary_remotes": secondary_remotes,
+        "secondary_raw_urls": secondary_raw_urls,
         "project_key": project_key,
         "names": names,
         "paths": paths,
@@ -775,6 +790,19 @@ def compile_identity(
         ]
         for remote in remotes:
             referents.append({"kind": "normalized_remote", "value": remote})
+        secondary_norm_set: set[str] = set()
+        for obs_id in member_ids:
+            for rname, sec_remote in sorted(facts[obs_id]["secondary_remotes"].items()):
+                secondary_norm_set.add(sec_remote)
+                referents.append(
+                    {
+                        "kind": "normalized_remote",
+                        "value": sec_remote,
+                        "observation_id": obs_id,
+                        "basis": f"git_remote:{rname}",
+                    }
+                )
+        all_normalized_remotes = sorted(set(remotes) | secondary_norm_set)
         for hint in key_hints:
             referents.append({"kind": "project_key_hint", "value": hint})
         for name in names:
@@ -784,6 +812,16 @@ def compile_identity(
                 referents.append({"kind": "path", "value": path, "observation_id": obs_id})
             for url in sorted(facts[obs_id]["raw_urls"]):
                 referents.append({"kind": "raw_url", "value": url, "observation_id": obs_id})
+            for rname, rurl in sorted(facts[obs_id]["secondary_raw_urls"].items()):
+                if rurl not in facts[obs_id]["raw_urls"]:
+                    referents.append(
+                        {
+                            "kind": "raw_url",
+                            "value": rurl,
+                            "observation_id": obs_id,
+                            "basis": f"git_remote:{rname}",
+                        }
+                    )
             referents.extend(aliases_by_observation.get(obs_id, []))
             obs_anchor_id = stable_id("prj", "observation", obs_id)
             if obs_anchor_id != canonical_project_id:
@@ -847,7 +885,7 @@ def compile_identity(
                 "canonical_project_id": canonical_project_id,
                 "observation_ids": member_ids,
                 "identity_anchor": {"kind": anchor_kind, "value": anchor_value},
-                "normalized_remotes": remotes,
+                "normalized_remotes": all_normalized_remotes,
                 "merge_decision_ids": merge_decision_ids,
             },
             by_id,
@@ -861,7 +899,7 @@ def compile_identity(
             "resolved_fields": resolved_fields,
             "observation_ids": member_ids,
             "identity_anchor": {"kind": anchor_kind, "value": anchor_value},
-            "normalized_remotes": remotes,
+            "normalized_remotes": all_normalized_remotes,
             "project_key_hints": key_hints,
             "referents": unique_refs,
             "identity_evidence": evidence,
@@ -1238,7 +1276,21 @@ def _referent_matches(query: str, ref: dict) -> bool:
         return False
     kind = str(ref.get("kind", ""))
     if kind == "normalized_remote":
-        return normalize_remote_identity(query) == value.casefold()
+        norm_q = normalize_remote_identity(query)
+        if norm_q is not None:
+            return norm_q == value.casefold()
+        if (
+            "/" in query
+            and query.count("/") == 1
+            and not query.startswith("/")
+            and ":" not in query
+            and " " not in query
+        ):
+            owner_part, repo_part = query.split("/", 1)
+            if owner_part and repo_part and "." not in owner_part:
+                shorthand = f"github.com/{owner_part}/{repo_part}".removesuffix(".git").casefold()
+                return shorthand == value.casefold()
+        return False
     if kind == "path":
         norm_v = normalize_locator(value).casefold()
         if normalize_locator(query).casefold() == norm_v:

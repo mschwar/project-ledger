@@ -98,6 +98,7 @@ REVIEW_QUEUE_SCHEMA_VERSION         = 1.0.0
 PROJECT_CAPSULE_SCHEMA_VERSION      = 1.0.0
 CHANGE_FEED_SCHEMA_VERSION          = 1.0.0
 SOURCE_CHECKPOINT_SCHEMA_VERSION    = 1.0.0
+GITHUB_SYNC_SCHEMA_VERSION          = 1.0.0
 ```
 
 Full compatibility/migration policy for these versions is still Gate B work. Unsupported future major versions must eventually fail/degrade explicitly rather than being guessed through.

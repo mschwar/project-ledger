@@ -8,6 +8,7 @@ Operate and extend Project Ledger safely while preserving its role as a project-
 
 ```bash
 python -m ledger validate
+python -m ledger sync-github [--check | --dry-run] [--clone-root /central/repos/active] [--force-fetch] [--json]
 python -m ledger refresh [--full-scan] [--check-remote]
 python -m ledger refresh --no-markdown-mirror [--full-scan] [--check-remote]
 python -m ledger compile [--check-remote]
@@ -19,7 +20,7 @@ python -m ledger locate <project>
 python -m ledger explain <referent>
 python -m ledger review [--approve-candidates] [--decision-id ID]
 python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
-python -m ledger lineage [--check | --sync] [--json]
+python -m ledger lineage [--check | --sync] [--merge-from PATH] [--json]
 python -m ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
 python -m ledger mcp
 python -m unittest discover -s tests
@@ -27,7 +28,7 @@ python -m unittest discover -s tests
 
 The compatibility scanner remains directly available as `python build_ledger.py`.
 
-Implemented today: `validate`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, `locate`, `explain`, `review`, `changes`, `lineage`, `sync-gbrain`, and `mcp` (`ledger-mcp`).
+Implemented today: `validate`, `sync-github`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, `locate`, `explain`, `review`, `changes`, `lineage`, `sync-gbrain`, and `mcp` (`ledger-mcp`).
 
 Session/attempt receipts are owned by `machina` (Project Ledger does not expose a competing `record-session` store). The manifest capability map is the executable source of truth.
 

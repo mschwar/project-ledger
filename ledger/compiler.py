@@ -14,7 +14,7 @@ from .ids import digest_json, observation_id_for, path_digest, stable_id
 from .identity import materialize_identity
 from .models import atomic_write_text, portable_artifact_path
 from .sidecar import inspect_entry_sidecar
-from .sources.git import resolve_observation_git_drift
+from .sources.git import inspect_entry_git_remotes, resolve_observation_git_drift
 from .structural_ctx import extract_structural_ctx
 
 
@@ -284,6 +284,7 @@ def compile_state(
         ):
             raw_project_key = None
         obs_id = observation_id_for(entry, source_id)
+        git_remotes = inspect_entry_git_remotes(entry)
         observation = {
             "schema_version": OBSERVATION_SCHEMA_VERSION,
             "observation_id": obs_id,
@@ -296,6 +297,8 @@ def compile_state(
             "sidecar": sidecar_envelope,
             "compat_entry": entry,
         }
+        if git_remotes:
+            observation["git_remotes"] = git_remotes
         if isinstance(cand, dict) and cand_fp:
             obs_cand_by_id[obs_id] = cand
         observations.append(observation)

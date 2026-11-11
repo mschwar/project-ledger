@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/github-sync.schema.json",
+  "title": "Project Ledger GitHub Remote Sync & 1:1 Parity Receipt (v1.0.0)",
+  "description": "Compiled receipt for GitHub remote discovery, SSH clone/fetch/fast-forward sync, and 1:1 git correspondence verification (state/github-sync.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler_version",
+    "synced_at",
+    "mode",
+    "inventory_source",
+    "status",
+    "status_reason",
+    "clone_root",
+    "in_1to1_parity",
+    "counts",
+    "cloned",
+    "fast_forwarded",
+    "fetched_only",
+    "skipped_archived",
+    "missing_local",
+    "local_without_remote",
+    "errors",
+    "remote_pushed_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "synced_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "sync",
+        "dry_run",
+        "check"
+      ]
+    },
+    "inventory_source": {
+      "type": "string",
+      "enum": [
+        "env_token",
+        "cached_token",
+        "gh_cli",
+        "ssh_fallback",
+        "inventory_file",
+        "unavailable"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "degraded",
+        "drift"
+      ]
+    },
+    "status_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "clone_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "in_1to1_parity": {
+      "type": "boolean"
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "remote_total",
+        "remote_active",
+        "remote_archived",
+        "matched_local",
+        "cloned",
+        "fetched",
+        "fast_forwarded",
+        "ssh_remotes_normalized",
+        "skipped_unchanged",
+        "skipped_archived",
+        "skipped_dirty_or_non_default",
+        "missing_local",
+        "local_without_remote",
+        "non_git_canonical_projects",
+        "errors"
+      ],
+      "properties": {
+        "remote_total": { "type": "integer", "minimum": 0 },
+        "remote_active": { "type": "integer", "minimum": 0 },
+        "remote_archived": { "type": "integer", "minimum": 0 },
+        "matched_local": { "type": "integer", "minimum": 0 },
+        "cloned": { "type": "integer", "minimum": 0 },
+        "fetched": { "type": "integer", "minimum": 0 },
+        "fast_forwarded": { "type": "integer", "minimum": 0 },
+        "ssh_remotes_normalized": { "type": "integer", "minimum": 0 },
+        "skipped_unchanged": { "type": "integer", "minimum": 0 },
+        "skipped_archived": { "type": "integer", "minimum": 0 },
+        "skipped_dirty_or_non_default": { "type": "integer", "minimum": 0 },
+        "missing_local": { "type": "integer", "minimum": 0 },
+        "local_without_remote": { "type": "integer", "minimum": 0 },
+        "non_git_canonical_projects": { "type": "integer", "minimum": 0 },
+        "errors": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "cloned": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["full_name", "clone_url", "target_path", "default_branch", "head_commit"],
+        "properties": {
+          "full_name": { "type": "string", "minLength": 1 },
+          "clone_url": { "type": "string", "minLength": 1 },
+          "target_path": { "type": "string", "minLength": 1 },
+          "default_branch": { "type": "string", "minLength": 1 },
+          "head_commit": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "fast_forwarded": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["full_name", "path", "branch", "old_commit", "new_commit"],
+        "properties": {
+          "full_name": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "branch": { "type": "string", "minLength": 1 },
+          "old_commit": { "type": "string" },
+          "new_commit": { "type": "string" }
+        }
+      }
+    },
+    "fetched_only": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["full_name", "path", "reason", "head_branch", "default_branch"],
+        "properties": {
+          "full_name": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "head_branch": { "type": ["string", "null"] },
+          "default_branch": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "skipped_archived": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["full_name", "resolution"],
+        "properties": {
+          "full_name": { "type": "string", "minLength": 1 },
+          "resolution": {
+            "type": "string",
+            "enum": ["local_present", "aliased_or_superseded", "archived_remote_only"]
+          }
+        }
+      }
+    },
+    "missing_local": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["full_name", "clone_url", "target_path"],
+        "properties": {
+          "full_name": { "type": "string", "minLength": 1 },
+          "clone_url": { "type": "string", "minLength": 1 },
+          "target_path": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "local_without_remote": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["canonical_project_id", "project_key", "preferred_path"],
+        "properties": {
+          "canonical_project_id": { "type": ["string", "null"] },
+          "project_key": { "type": "string", "minLength": 1 },
+          "preferred_path": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["full_name", "stage", "detail"],
+        "properties": {
+          "full_name": { "type": "string", "minLength": 1 },
+          "stage": { "type": "string", "minLength": 1 },
+          "detail": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "remote_pushed_at": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

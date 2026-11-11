@@ -265,6 +265,15 @@ def build_inventory_entry(
 
     obsidian_enabled = summary["has_obsidian"]
     git_enabled = git_meta["git"] or summary["has_git"]
+    if bool(root_cfg.get("require_git", defaults.get("require_git", False))):
+        inv_git_prefix = f"{str(candidate.get('inventory_path', '')).rstrip('/')}/.git"
+        has_direct_inv_git = any(
+            str(rec.get("path", "")).rstrip("/") == inv_git_prefix
+            or str(rec.get("path", "")).startswith(inv_git_prefix + "/")
+            for rec in candidate.get("records", [])
+        )
+        if not (git_meta["git"] or has_direct_inv_git):
+            return None
     markdown_count = summary["markdown_count"]
     project_type = classify_project_type(git_enabled, obsidian_enabled, markdown_count)
     machine_name = (

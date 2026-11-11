@@ -531,10 +531,104 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
                     "location": "/unmounted/mirror",
                     "compat_entry": {"project_key": "mirror-proj"},
                     "sidecar": unmounted_env,
+                    "git_remotes": {
+                        "origin": "git@github.com:example/mirror-proj.git",
+                        "fork": "git@github.com:mschwar/mirror-proj.git",
+                    },
                 }
             ],
         }
         self.assertEqual(validate_json_schema(payload, obs_schema), [])
+
+    def test_github_sync_artifact_conforms_to_published_json_schema(self) -> None:
+        github_sync_schema = self._load_schema("github-sync.schema.json")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            active_root = root / "active"
+            active_root.mkdir()
+            alpha = active_root / "alpha"
+            _init_git_repo(alpha, "git@github.com:mschwar/alpha.git")
+            (alpha / "README.md").write_text("# Alpha\n", encoding="utf-8")
+            subprocess.run(["git", "add", "."], cwd=alpha, check=True, capture_output=True)
+            subprocess.run(["git", "commit", "-m", "init"], cwd=alpha, check=True, capture_output=True)
+
+            config_path = root / "ledger_config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "defaults": {"require_git": True},
+                        "roots": [
+                            {
+                                "source_id": "active",
+                                "label": "active",
+                                "path": str(active_root),
+                                "discovery": "children",
+                                "storage_scope": "local",
+                            }
+                        ],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            inv_path = root / "inventory.json"
+            inv_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "name": "alpha",
+                            "full_name": "mschwar/alpha",
+                            "private": True,
+                            "fork": False,
+                            "archived": False,
+                            "default_branch": "main",
+                            "pushed_at": "2026-11-11T20:00:00Z",
+                            "ssh_url": "git@github.com:mschwar/alpha.git",
+                        },
+                        {
+                            "name": "old-retired",
+                            "full_name": "mschwar/old-retired",
+                            "private": True,
+                            "fork": False,
+                            "archived": True,
+                            "default_branch": "main",
+                            "pushed_at": "2026-01-01T00:00:00Z",
+                            "ssh_url": "git@github.com:mschwar/old-retired.git",
+                        },
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            state_dir = root / "state"
+            with contextlib.redirect_stdout(io.StringIO()):
+                rc = ledger_main(
+                    [
+                        "sync-github",
+                        "--config",
+                        str(config_path),
+                        "--state-dir",
+                        str(state_dir),
+                        "--clone-root",
+                        str(active_root),
+                        "--inventory-file",
+                        str(inv_path),
+                        "--no-fetch",
+                        "--json",
+                    ]
+                )
+            self.assertEqual(rc, 0)
+            sync_doc = json.loads((state_dir / "github-sync.json").read_text(encoding="utf-8"))
+            self.assertEqual(validate_json_schema(sync_doc, github_sync_schema), [])
+            self.assertTrue(sync_doc["in_1to1_parity"])
+
+            bad_sync = copy.deepcopy(sync_doc)
+            bad_sync["status"] = "bogus_status"
+            self.assertTrue(validate_json_schema(bad_sync, github_sync_schema))
+
+            bad_sync_extra = copy.deepcopy(sync_doc)
+            bad_sync_extra["unexpected_field"] = True
+            self.assertTrue(validate_json_schema(bad_sync_extra, github_sync_schema))
 
 
 if __name__ == "__main__":
