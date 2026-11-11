@@ -97,7 +97,8 @@
           "enum": [
             "declared_commit_lags_head",
             "declared_branch_lags_head",
-            "declared_metadata_lags_head"
+            "declared_metadata_lags_head",
+            "compat_include_reason"
           ]
         },
         "declared_commit": {
@@ -172,6 +173,8 @@
             "absent",
             "valid",
             "legacy_unversioned",
+            "foreign_schema",
+            "unmounted_compat",
             "invalid"
           ]
         },

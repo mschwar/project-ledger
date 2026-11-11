@@ -296,6 +296,8 @@ def build_inventory_entry(
     )
     if sidecar.get("_sidecar_error"):
         include_reasons.append("sidecar-error")
+    if sidecar.get("_stale_sidecar"):
+        include_reasons.append("stale_sidecar")
 
     tags = normalize_tags(sidecar.get("tags"))
     tags = normalize_tags(tags + ["google-drive", root_label, str(policy_root.get("root_class", ""))])

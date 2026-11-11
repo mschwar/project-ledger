@@ -206,3 +206,15 @@ def portable_artifact_path(path: Path, *, state_dir: Path) -> str:
     except ValueError:
         pass
     return Path(os.path.relpath(resolved_target, start=resolved_state)).as_posix()
+
+
+def atomic_write_text(path: Path, content: str) -> None:
+    """Write ``content`` UTF-8 atomically via a same-directory ``.<name>.tmp.<pid>`` swap."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f".{path.name}.tmp.{os.getpid()}")
+    try:
+        tmp_path.write_text(content, encoding="utf-8")
+        tmp_path.replace(path)
+    except BaseException:
+        tmp_path.unlink(missing_ok=True)
+        raise

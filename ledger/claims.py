@@ -31,7 +31,6 @@ from .identity import observation_facts
 CLAIM_KIND_DECLARED = "declared"
 CLAIM_KIND_OBSERVED = "observed"
 CLAIM_KIND_INFERRED = "inferred"
-CLAIM_KINDS = frozenset({CLAIM_KIND_DECLARED, CLAIM_KIND_OBSERVED, CLAIM_KIND_INFERRED})
 
 # The canonical identity fields a sidecar may declare. Today only ``project_key``
 # affects identity resolution, so it is the only field divergence detection tracks.
@@ -93,7 +92,6 @@ def divergent_declarations(
     decision) rather than the compiler picking by last-write-wins.
     """
     claims_by_field: dict[str, dict[str, str]] = {}
-    label_by_field: dict[str, str] = {}
     selected: list[dict] = []
     used_subjects: set[str] = set()
     for observation in observations:
@@ -107,7 +105,6 @@ def divergent_declarations(
         prior_value = claims_by_field.setdefault(field, {}).get(
             str(claim["subject_id"])
         )
-        label_by_field.setdefault(field, str(claim["value"]))
         if prior_value is None:
             claims_by_field[field][str(claim["subject_id"])] = value
         subject = str(claim["subject_id"])

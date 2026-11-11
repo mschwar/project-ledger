@@ -16,6 +16,7 @@ from pathlib import Path
 
 from . import COMPILER_VERSION
 from .capsules import load_project_capsule
+from .config import default_workspace_path
 from .identity import (
     _decision_observation_ids,
     load_canonical_projects,
@@ -72,7 +73,7 @@ def explain_payload(
     if decisions_path is not None and decisions_path.is_file():
         decisions_payload = load_identity_decisions(decisions_path)
     else:
-        default_dec = Path("registry/identity-decisions.json")
+        default_dec = Path(default_workspace_path("registry/identity-decisions.json"))
         decisions_payload = (
             load_identity_decisions(default_dec)
             if default_dec.is_file()

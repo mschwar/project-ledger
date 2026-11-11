@@ -50,9 +50,6 @@ from .sources.common import (
 )
 
 CHECKPOINT_FILENAME = "source-checkpoints.json"
-CHECKPOINT_STATUS_VALUES = frozenset(
-    {"hit", "partial", "miss", "unavailable", "bypassed", "not_applicable"}
-)
 
 
 def _now_utc() -> str:
@@ -489,7 +486,7 @@ def filesystem_candidate_fingerprint(
                     scanned_entries += 1
                     rel_file = f"{rel_dir}/{name}"
                     is_md = name.lower().endswith(".md")
-                    if is_md or deep_non_md_statted < stat_max_files:
+                    if not has_git or is_md or deep_non_md_statted < stat_max_files:
                         st = entry.stat(follow_symlinks=True)
                         if not is_md:
                             deep_non_md_statted += 1

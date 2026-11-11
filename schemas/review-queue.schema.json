@@ -61,12 +61,11 @@
           "type": "string",
           "enum": [
             "PROJECT_KEY_AMBIGUOUS",
-            "EXACT_REMOTE_REJECTED",
-            "DECISION_TARGET_MISSING",
-            "DECISION_CONFLICT_REJECTED_MERGE",
-            "DECISION_CONFLICT_CANONICAL_KEY",
+            "AUTO_MATCH_BLOCKED_BY_DECISION",
+            "DECISION_REFERENCE_UNAVAILABLE",
+            "DECISION_CONFLICT",
             "DECISION_SUPERSEDE_UNKNOWN",
-            "DECLARED_KEY_CONFLICT",
+            "DIVERGENT_SIDECAR_DECLARATIONS",
             "SIDECAR_DECLARATION_INVALID"
           ]
         },

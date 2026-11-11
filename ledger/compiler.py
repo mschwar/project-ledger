@@ -12,7 +12,7 @@ from .config import describe_sources, read_config, validate_config
 from .contracts import SOURCE_RESULT_STATES, capability
 from .ids import digest_json, observation_id_for, path_digest, stable_id
 from .identity import materialize_identity
-from .models import portable_artifact_path
+from .models import atomic_write_text, portable_artifact_path
 from .sidecar import inspect_entry_sidecar
 from .sources.git import resolve_observation_git_drift
 from .structural_ctx import extract_structural_ctx
@@ -397,7 +397,10 @@ def compile_state(
         "observation_count": len(observations),
         "observations": observations,
     }
-    observations_path.write_text(json.dumps(observation_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    atomic_write_text(
+        observations_path,
+        json.dumps(observation_payload, indent=2, sort_keys=True) + "\n",
+    )
 
     def _resolve_git_drift_with_cache(obs: dict, compat_entry: dict) -> dict:
         oid = str(obs.get("observation_id") or "")
@@ -614,7 +617,7 @@ def compile_state(
             "Current-state/session fields inside compatibility entries remain legacy declarations until the later current-state resolver lands.",
         ],
     }
-    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    atomic_write_text(manifest_path, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     return manifest
 
 

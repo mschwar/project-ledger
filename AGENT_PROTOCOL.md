@@ -141,15 +141,9 @@ Material work should leave structured durable state.
 
 Current mechanism:
 
-- project sidecar for thin project current-state metadata;
-- git commit/PR history for code changes;
-- backlog/docs for system work not yet represented structurally.
-
-Target mechanism:
-
-- session receipt linked to canonical project;
-- explicit identity/review decisions;
-- incremental compile producing refreshed project capsule/change feed.
+- static `.project-ledger.json` sidecar for durable project identity/classification declarations (never mutable per-commit/session fields);
+- `registry/identity-decisions.json` and `registry/project-lineage.json` for durable identity and lineage resolution;
+- git commit/PR history and external `machina` receipts for execution continuity.
 
 Never edit a compiled canonical artifact as the primary source of truth.
 

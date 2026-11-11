@@ -362,10 +362,6 @@ _NEXT_APP_ROUTE_RE = re.compile(
     re.MULTILINE,
 )
 _JS_ENV_RE = re.compile(r"\bprocess\.env\.([A-Z][A-Z0-9_]{2,63})\b")
-_GO_HTTP_ROUTE_RE = re.compile(
-    r"""\b(?:http|mux|r|router|api|v1|group)\.(?:HandleFunc|Handle|Get|Post|Put|Delete|Patch|GET|POST|PUT|DELETE|PATCH)\(\s*"(?:(GET|POST|PUT|DELETE|PATCH)\s+)?(/[^"]*)" """,
-    re.VERBOSE,
-)
 _GO_HTTP_ROUTE_SIMPLE_RE = re.compile(
     r"""\b(?:http|mux|r|router|api|v1|group)\.(HandleFunc|Handle|Get|Post|Put|Delete|Patch|GET|POST|PUT|DELETE|PATCH)\(\s*"(?:(GET|POST|PUT|DELETE|PATCH)\s+)?(/[^"]*)" """.strip()
 )

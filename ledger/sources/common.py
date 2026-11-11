@@ -208,26 +208,77 @@ def load_sidecar(sidecar_path: Path | None) -> dict:
     return result
 
 
+_HTML_HEADING_RE = re.compile(r"^<h[1-6]\b[^>]*>(.*?)</h[1-6]>$", re.IGNORECASE)
+_HTML_TAG_RE = re.compile(r"</?[A-Za-z!][^>]*>")
+_MD_BADGE_PREFIX_RE = re.compile(
+    r"^(?:(?:\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)|!\[[^\]]*\]\([^)]*\))\s*)+"
+)
+_EMPTY_MD_LINK_PREFIX_RE = re.compile(r"^(?:\[\s*\]\([^)]*\)\s*)+")
+_GENERIC_README_TITLES = frozenset({"directory summary"})
+
+
+def _decode_readme_text(readme_path: Path) -> str:
+    raw_bytes = readme_path.read_bytes()
+    if raw_bytes.startswith((b"\xff\xfe", b"\xfe\xff")):
+        text = raw_bytes.decode("utf-16", errors="replace")
+    else:
+        text = raw_bytes.decode("utf-8-sig", errors="replace")
+    return text.replace("\x00", "")
+
+
 def parse_readme_summary(readme_path: Path | None) -> tuple[str, str]:
     if not readme_path:
         return "", ""
     try:
-        lines = readme_path.read_text(encoding="utf-8", errors="replace").splitlines()
+        lines = _decode_readme_text(readme_path).splitlines()
     except OSError:
         return "", ""
 
     title = ""
     description = ""
-    for raw in lines[:80]:
+    in_comment = False
+    in_fence = False
+    for raw in lines[:120]:
         line = raw.strip()
-        if not line or line.startswith("```"):
+        if not line:
+            continue
+        if in_comment:
+            if "-->" in line:
+                in_comment = False
+            continue
+        if line.startswith("<!--"):
+            if "-->" not in line:
+                in_comment = True
+            continue
+        if line.startswith(("```", "~~~")):
+            in_fence = not in_fence
+            continue
+        if in_fence or line.startswith("---"):
+            continue
+        html_heading = _HTML_HEADING_RE.match(line)
+        if html_heading:
+            cand = _HTML_TAG_RE.sub("", html_heading.group(1)).strip()
+            if not title and cand and cand.casefold() not in _GENERIC_README_TITLES:
+                title = cand
             continue
         if line.startswith("#"):
-            title = line.lstrip("#").strip()
+            cand = _HTML_TAG_RE.sub("", line.lstrip("#")).strip()
+            if not title and cand and cand.casefold() not in _GENERIC_README_TITLES:
+                title = cand
+            continue
+        cleaned = _MD_BADGE_PREFIX_RE.sub("", line).strip()
+        cleaned = _HTML_TAG_RE.sub("", cleaned).strip()
+        cleaned = _EMPTY_MD_LINK_PREFIX_RE.sub("", cleaned).strip()
+        cleaned = _MD_BADGE_PREFIX_RE.sub("", cleaned).strip()
+        if not cleaned or cleaned.startswith(("[![", "![")):
+            continue
+        cleaned = re.sub(r"[*_`]+", "", cleaned).strip()
+        if not cleaned:
             continue
         if not title:
-            title = re.sub(r"[*_`]+", "", line)
+            if cleaned.casefold() not in _GENERIC_README_TITLES:
+                title = cleaned
             continue
-        description = re.sub(r"[*_`]+", "", line)
+        description = cleaned
         break
     return title[:160], description[:240]

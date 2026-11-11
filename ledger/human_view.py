@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .models import escape_md_cell
+from .models import atomic_write_text, escape_md_cell
 
 
 def render_canonical_markdown(
@@ -183,5 +183,5 @@ def write_canonical_markdown(
         compiled_at=compiled_at,
         input_observed_at=input_observed_at,
     )
-    output_path.write_text(text, encoding="utf-8")
+    atomic_write_text(output_path, text)
     return output_path

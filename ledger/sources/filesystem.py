@@ -289,7 +289,8 @@ def build_entry(
     )
 
     readme_path = quick["readme_path"]
-    title, readme_description = parse_readme_summary(readme_path)
+    title = quick["readme_title"]
+    readme_description = quick["readme_description"]
     readme_sha256 = ""
     if readme_path:
         try:
@@ -315,7 +316,6 @@ def build_entry(
     description = (
         str(sidecar.get("description", "")).strip()
         or readme_description
-        or quick["readme_description"]
     )
     repo_name = (
         str(sidecar.get("repo_name", "")).strip()

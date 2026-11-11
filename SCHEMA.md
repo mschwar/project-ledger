@@ -502,13 +502,13 @@ Current review codes include:
 - `DECISION_REFERENCE_UNAVAILABLE` (warning);
 - `DECISION_CONFLICT` (error);
 - `DECISION_SUPERSEDE_UNKNOWN` (warning);
-- `DIVERGENT_SIDECAR_DECLARATIONS` / `DECLARED_KEY_CONFLICT` (warning) — two observations that merged into one
+- `DIVERGENT_SIDECAR_DECLARATIONS` (warning) — two observations that merged into one
   canonical project carry conflicting sidecar `project_key` declarations (emitted only when an actual sidecar file is present on disk). The merge
   stands; the compiler does not pick a value by last-write-wins (SCHEMA.md §6). It
   resolves when the operator assigns a `canonical_key` (authoritative key) via the
   P2.8-style ratchet. Computed from the minimal epistemic claim surface in
   `ledger/claims.py` (programme P1.4);
-- `SIDECAR_DECLARATION_INVALID` (warning) — a project-local sidecar failed `schemas/project-ledger-sidecar.schema.json` validation (malformed JSON, unsupported `schema_version`, forbidden `canonical_project_id`, unknown field, or invalid field type); invalid fields are excluded locally without poisoning compilation (programme P1.7).
+- `SIDECAR_DECLARATION_INVALID` (warning) — a project-local sidecar failed `schemas/project-ledger-sidecar.schema.json` validation (malformed JSON, unsupported `schema_version`, forbidden `canonical_project_id`, unknown field, or invalid field type); foreign-schema `.project-ledger.json` files carrying an explicit non-Project-Ledger `"schema"` discriminator degrade cleanly as `status = "foreign_schema"` without raising false-positive reviews (programme P1.7).
 
 ### Exact resolve contract
 
@@ -834,7 +834,7 @@ Contents (bounded within `16 KiB` per capsule via `budget`):
 - `schema_version`, `compiler_version`, `run_id`, `compiled_at`, `as_of`
 - `canonical_project_id`, `project_key`, `display_name`, `aliases[]`, `purpose`, `canonical_url`, `normalized_remotes[]`, `identity_anchor`, `resolved_fields`
 - `gbrain_source_slug` and `gbrain` (`state`, `source_slug`, `fallback_source_slug`, `project_slug`, `page_key`, `match_basis`, `matched_observation_id`, optional `disambiguated_from`)
-- `ctx` (`state`: `available` | `absent` | `invalid`, `source_format`: `skeleton_json` | `fleet_capsule_json` | `tier2_ctx_dir` | `tier1_context_md` | `compiled_structural_scan`, `observation_id`, `artifact_path`, `structural_hash`, `boundary_doc_hash`, `total_files`, `languages`, `entrypoints[]`, `operational_surfaces[]` (`kind`: `cli_command` | `http_route` | `mcp_tool` | `mcp_resource` | `env_var`, `name`, `file`, optional `detail`, bounded to `CAPSULE_MAX_CTX_SURFACES = 12`), `operational_surface_count`, `dependency_summary` (`internal_edge_count`, `cycle_count`), `authority_boundaries[]`, `subsystems[]` (each carrying optional `arch_role`, e.g. `entrypoint_or_interface` | `core_domain` | `adapter_or_io` | `tooling_or_ops` | `test_or_verification` | `docs_or_specs`), `subsystem_count`, `subsystems_truncated`)
+- `ctx` (`state`: `available` | `absent` | `invalid`, `source_format`: `skeleton_json` | `fleet_capsule_json` | `tier2_ctx_dir` | `compiled_structural_scan`, `observation_id`, `artifact_path`, `structural_hash`, `boundary_doc_hash`, `total_files`, `languages`, `entrypoints[]`, `operational_surfaces[]` (`kind`: `cli_command` | `http_route` | `mcp_tool` | `mcp_resource` | `env_var`, `name`, `file`, optional `detail`, bounded to `CAPSULE_MAX_CTX_SURFACES = 12`), `operational_surface_count`, `dependency_summary` (`internal_edge_count`, `cycle_count`), `authority_boundaries[]`, `subsystems[]` (each carrying optional `arch_role`, e.g. `entrypoint_or_interface` | `core_domain` | `adapter_or_io` | `tooling_or_ops` | `test_or_verification` | `docs_or_specs`), `subsystem_count`, `subsystems_truncated`)
 - `freshness` (`state`, `input_observed_at`, `content_as_of`, `content_as_of_basis`, `available_observation_count`, `unavailable_observation_count`)
 - `preferred_location` (`state`: `resolved` | `inventory_only` | `unavailable`, `observation_id`, `source_id`, `source_class`, `machine_name`, `location`, `confidence`, `reason_codes[]`, `git_drift`, `warning_codes[]`, `warnings[]`, `explanation`)
 - `warnings[]` (top-level git working-tree drift and `stale_sidecar` warnings for `machina` / `homelab` pre-spawn checks, e.g. `"warning: local main is 20 commits behind origin/main"` or `"warning: stale_sidecar: declared commit 'ef38aca' in .project-ledger.json lags live HEAD e6c8007ad7dd"`)

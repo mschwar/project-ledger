@@ -14,11 +14,14 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import unquote
 
 from ledger.models import (
     CSV_FIELDS,
+    atomic_write_text,
     classify_project_type,
     coerce_bool,
     escape_md_cell,
@@ -267,9 +270,48 @@ def write_markdown(entries: list[dict], output_path: Path, root_summaries: list[
     output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+_MD_LINK_RE = re.compile(r"(\[[^\]]+\]\()((?:[^()\s]|\([^()\s]*\))+)(\))")
+_SCP_REMOTE_RE = re.compile(r"^[^/\s]+@[^/\s:]+:")
+_URI_SCHEME_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
+_WIN_DRIVE_RE = re.compile(r"^[A-Za-z]:[\\/]")
+
+
+def _rebase_relative_markdown_links(text: str, source_dir: Path, mirror_dir: Path) -> str:
+    if source_dir.resolve() == mirror_dir.resolve():
+        return text
+
+    def _replace(match: re.Match[str]) -> str:
+        prefix, raw_url, suffix = match.groups()
+        if (
+            "://" in raw_url
+            or raw_url.startswith(("#", "/"))
+            or _WIN_DRIVE_RE.match(raw_url)
+            or _SCP_REMOTE_RE.match(raw_url)
+            or _URI_SCHEME_RE.match(raw_url)
+        ):
+            return match.group(0)
+        path_part = raw_url
+        fragment = ""
+        if "#" in path_part:
+            path_part, frag = path_part.split("#", 1)
+            fragment = f"#{frag}"
+        query = ""
+        if "?" in path_part:
+            path_part, q = path_part.split("?", 1)
+            query = f"?{q}"
+        if not path_part:
+            return match.group(0)
+        target_path = (source_dir / unquote(path_part)).resolve()
+        rebased_target = markdown_target(target_path, mirror_dir.resolve())
+        return f"{prefix}{rebased_target}{query}{fragment}{suffix}"
+
+    return _MD_LINK_RE.sub(_replace, text)
+
+
 def write_markdown_mirror(source_path: Path, mirror_path: Path) -> None:
-    mirror_path.parent.mkdir(parents=True, exist_ok=True)
-    mirror_path.write_text(source_path.read_text(encoding="utf-8"), encoding="utf-8")
+    text = source_path.read_text(encoding="utf-8").replace("\x00", "")
+    rebased = _rebase_relative_markdown_links(text, source_path.parent, mirror_path.parent)
+    atomic_write_text(mirror_path, rebased)
 
 
 def ensure_output_dir(output_dir: Path) -> Path:

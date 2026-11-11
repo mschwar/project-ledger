@@ -29,7 +29,7 @@ from pathlib import Path
 from . import CHANGE_FEED_SCHEMA_VERSION, COMPILER_VERSION
 from .identity import resolve_payload
 from .ids import stable_id
-from .models import portable_artifact_path
+from .models import atomic_write_text, portable_artifact_path
 
 RUN_HISTORY_MAX_RUNS = 50
 
@@ -415,7 +415,7 @@ def _save_run_snapshot(
 
     to_write = dict(snapshot)
     to_write["sequence"] = seq
-    target_path.write_text(json.dumps(to_write, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    atomic_write_text(target_path, json.dumps(to_write, indent=2, sort_keys=True) + "\n")
 
     new_hdr = {
         "run_id": run_id,
@@ -1572,7 +1572,7 @@ def materialize_changes(
         available_run_ids=available_run_ids,
     )
     changes_path = state_dir / "changes.json"
-    changes_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    atomic_write_text(changes_path, json.dumps(payload, indent=2, sort_keys=True) + "\n")
     return payload
 
 

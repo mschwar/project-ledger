@@ -14,6 +14,7 @@ from pathlib import Path
 
 from . import COMPILER_VERSION, IDENTITY_DECISION_SCHEMA_VERSION, REVIEW_QUEUE_SCHEMA_VERSION
 from .capsules import _infer_source_class
+from .config import default_workspace_path
 from .identity import load_identity_decisions
 
 README_EXCERPT_MAX_CHARS = 280
@@ -153,7 +154,9 @@ def review_payload(
             }
         )
 
-    eff_decisions_path = decisions_path or Path("registry/identity-decisions.json")
+    eff_decisions_path = decisions_path or Path(
+        default_workspace_path("registry/identity-decisions.json")
+    )
     existing_decisions = (
         load_identity_decisions(eff_decisions_path)
         if eff_decisions_path.is_file()
@@ -161,7 +164,9 @@ def review_payload(
     )
     existing_ids = {str(d["decision_id"]) for d in existing_decisions.get("decisions", [])}
 
-    eff_candidates_path = candidates_path or Path("registry/weak-overlap-triage-candidates.json")
+    eff_candidates_path = candidates_path or Path(
+        default_workspace_path("registry/weak-overlap-triage-candidates.json")
+    )
     candidates = load_candidate_decisions(eff_candidates_path)
     pending_candidates = [c for c in candidates if str(c.get("decision_id", "")) not in existing_ids]
     approved_candidates = [c for c in candidates if str(c.get("decision_id", "")) in existing_ids]
