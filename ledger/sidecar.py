@@ -27,6 +27,7 @@ Contract:
 from __future__ import annotations
 
 import functools
+import importlib.resources as importlib_resources
 import json
 import re
 from pathlib import Path
@@ -140,8 +141,28 @@ KNOWN_SIDECAR_FIELDS: frozenset[str] = (
 
 @functools.lru_cache(maxsize=1)
 def load_sidecar_schema() -> dict[str, Any]:
-    """Load and cache ``schemas/project-ledger-sidecar.schema.json``."""
-    return json.loads(SIDECAR_SCHEMA_PATH.read_text(encoding="utf-8"))
+    """Load and cache ``project-ledger-sidecar.schema.json`` from repo root or package data."""
+    if SIDECAR_SCHEMA_PATH.is_file():
+        return json.loads(SIDECAR_SCHEMA_PATH.read_text(encoding="utf-8"))
+    packaged = importlib_resources.files("ledger.schemas").joinpath(
+        "project-ledger-sidecar.schema.json"
+    )
+    return json.loads(packaged.read_text(encoding="utf-8"))
+
+
+def _is_foreign_schema_declaration(raw: dict[str, Any]) -> bool:
+    """Return True when a JSON object explicitly declares a non-Project-Ledger ``schema`` family."""
+    if raw.get("schema_version") is not None:
+        return False
+    raw_schema = raw.get("schema")
+    if not isinstance(raw_schema, str):
+        return False
+    lowered = raw_schema.strip().lower()
+    if not lowered:
+        return False
+    if lowered.startswith("project-ledger") or "project-ledger-sidecar" in lowered:
+        return False
+    return True
 
 
 def absent_sidecar_envelope() -> dict[str, Any]:
@@ -417,6 +438,22 @@ def validate_sidecar_mapping(
                 "stale": False,
                 "declarations": {},
                 "issues": [issue],
+                "warnings": [],
+            },
+            {},
+        )
+
+    if _is_foreign_schema_declaration(raw):
+        return (
+            {
+                "present": True,
+                "path": sidecar_path,
+                "status": "foreign_schema",
+                "declared_schema_version": None,
+                "normalized_schema_version": None,
+                "stale": False,
+                "declarations": {},
+                "issues": [],
                 "warnings": [],
             },
             {},

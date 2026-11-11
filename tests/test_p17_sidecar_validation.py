@@ -414,6 +414,50 @@ class SidecarCompilerIntegrationTests(unittest.TestCase):
             self.assertEqual(explained["status"], "resolved")
             self.assertEqual(explained["subject_kind"], "review_item")
 
+    def test_foreign_schema_manifest_is_ignored_without_invalid_review(self) -> None:
+        envelope, accepted = validate_sidecar_mapping(
+            {
+                "schema": "lpes-project-ledger-v1",
+                "project_id": "lpes-cs",
+                "name": "LPES-CS",
+                "repository": "https://github.com/mschwar/LPES-CS",
+                "architecture": {"workday_model": "trunk-based"},
+                "verification_gates": ["python3 ops/scripts/project_ledger.py --check"],
+            },
+            sidecar_path="/tmp/lpes/.project-ledger.json",
+        )
+        self.assertEqual(envelope["status"], "foreign_schema")
+        self.assertEqual(accepted, {})
+        self.assertEqual(envelope["declarations"], {})
+        self.assertEqual(envelope["issues"], [])
+        self.assertEqual(envelope["warnings"], [])
+
+    def test_packaged_sidecar_schema_matches_repo_schema_and_supports_wheel_fallback(self) -> None:
+        from unittest import mock
+        from ledger import sidecar as sidecar_mod
+
+        packaged_path = (
+            Path(sidecar_mod.__file__).resolve().parent
+            / "schemas"
+            / "project-ledger-sidecar.schema.json"
+        )
+        self.assertTrue(packaged_path.is_file())
+        self.assertEqual(
+            packaged_path.read_text(encoding="utf-8"),
+            sidecar_mod.SIDECAR_SCHEMA_PATH.read_text(encoding="utf-8"),
+        )
+        sidecar_mod.load_sidecar_schema.cache_clear()
+        try:
+            with mock.patch.object(
+                sidecar_mod,
+                "SIDECAR_SCHEMA_PATH",
+                Path("/nonexistent/schemas/project-ledger-sidecar.schema.json"),
+            ):
+                loaded = sidecar_mod.load_sidecar_schema()
+            self.assertEqual(loaded["title"], "Project Ledger Sidecar Declaration (v1)")
+        finally:
+            sidecar_mod.load_sidecar_schema.cache_clear()
+
 
 if __name__ == "__main__":
     unittest.main()

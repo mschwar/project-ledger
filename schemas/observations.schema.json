@@ -172,6 +172,7 @@
             "absent",
             "valid",
             "legacy_unversioned",
+            "foreign_schema",
             "invalid"
           ]
         },
