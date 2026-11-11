@@ -35,6 +35,7 @@ from . import COMPILER_VERSION, SOURCE_CHECKPOINT_SCHEMA_VERSION
 from .ids import digest_json, source_id_for
 from .sources.base import ADAPTERS, get_adapter
 from .sources.filesystem import is_shadowed_symlink
+from .sources.git import is_autosnapshot_git_repo
 from .sources.common import (
     CODE_EXTENSIONS,
     README_CANDIDATES,
@@ -215,6 +216,13 @@ def _source_config_digest(root_cfg: dict, defaults: dict, output_dir: Path, sour
         ),
         "require_project_ledger_candidate": bool(
             root_cfg.get("require_project_ledger_candidate", True)
+        ),
+        "require_git": bool(root_cfg.get("require_git", defaults.get("require_git", False))),
+        "exclude_autosnapshot_repos": bool(
+            root_cfg.get(
+                "exclude_autosnapshot_repos",
+                defaults.get("exclude_autosnapshot_repos", False),
+            )
         ),
         "local_tz_offset_seconds": _local_tz_offset_seconds(),
     }
@@ -446,10 +454,19 @@ def filesystem_candidate_fingerprint(
     force_include_names = set(root_cfg.get("force_include_names", []))
     min_score = int(root_cfg.get("min_score", defaults.get("min_score", 2)))
     must_include = root_cfg.get("discovery") != "children"
-    should_include = (
-        must_include or directory.name in force_include_names or shallow_score >= min_score
+    require_git = bool(root_cfg.get("require_git", defaults.get("require_git", False)))
+    exclude_autosnapshot = bool(
+        root_cfg.get("exclude_autosnapshot_repos", defaults.get("exclude_autosnapshot_repos", False))
     )
-    _feed(h, "should_include", [should_include, shallow_score])
+    is_autosnapshot = (
+        is_autosnapshot_git_repo(directory) if (has_git and exclude_autosnapshot) else False
+    )
+    should_include = (
+        (not require_git or has_git)
+        and not is_autosnapshot
+        and (must_include or directory.name in force_include_names or shallow_score >= min_score)
+    )
+    _feed(h, "should_include", [should_include, shallow_score, require_git, is_autosnapshot])
     if not should_include:
         return h.hexdigest()
 

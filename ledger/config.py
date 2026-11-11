@@ -102,6 +102,9 @@ def validate_config(config: dict, config_dir: Path, *, check_artifacts: bool = T
     ):
         if key in defaults and (not isinstance(defaults[key], int) or defaults[key] < 0):
             raise LedgerConfigError("DEFAULT_INVALID_INTEGER", f"defaults.{key} must be a non-negative integer.")
+    for key in ("require_git", "exclude_autosnapshot_repos"):
+        if key in defaults and not isinstance(defaults[key], bool):
+            raise LedgerConfigError("DEFAULT_INVALID_BOOLEAN", f"defaults.{key} must be boolean.")
 
     seen_source_ids: set[str] = set()
     for index, root in enumerate(roots):
@@ -134,6 +137,9 @@ def validate_config(config: dict, config_dir: Path, *, check_artifacts: bool = T
         ):
             if key in root and (not isinstance(root[key], int) or root[key] < 0):
                 raise LedgerConfigError("ROOT_INVALID_INTEGER", f"{where}.{key} must be a non-negative integer.")
+        for key in ("require_git", "exclude_autosnapshot_repos"):
+            if key in root and not isinstance(root[key], bool):
+                raise LedgerConfigError("ROOT_INVALID_BOOLEAN", f"{where}.{key} must be boolean.")
 
         if discovery == "inventory_policy":
             inventory_raw = _require_nonempty_string(

@@ -270,6 +270,12 @@
         "sidecar": {
           "$ref": "#/$defs/sidecar_envelope"
         },
+        "git_remotes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
         "compat_entry": {
           "type": "object"
         }

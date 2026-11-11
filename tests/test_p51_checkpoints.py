@@ -515,7 +515,7 @@ class P51SourceCheckpointTests(unittest.TestCase):
         repo_root = Path(__file__).resolve().parents[1]
         candidates_path = repo_root / "registry" / "weak-overlap-triage-candidates.json"
         candidates = load_candidate_decisions(candidates_path)
-        self.assertEqual(len(candidates), 62)
+        self.assertEqual(len(candidates), 63)
 
         with tempfile.TemporaryDirectory() as tmp:
             temp_decisions = Path(tmp) / "decisions.json"
@@ -530,7 +530,7 @@ class P51SourceCheckpointTests(unittest.TestCase):
                 encoding="utf-8",
             )
             validated = load_identity_decisions(temp_decisions)
-            self.assertEqual(len(validated["decisions"]), 62)
+            self.assertEqual(len(validated["decisions"]), 63)
 
     def test_warm_refresh_reuses_compile_stage_sidecar_and_git_drift_and_invalidates_on_dirty_index(self) -> None:
         import ledger.compiler as compiler_mod

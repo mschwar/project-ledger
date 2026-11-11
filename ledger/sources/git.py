@@ -15,10 +15,149 @@ import subprocess
 from pathlib import Path
 
 from ..models import normalize_remote_url, repo_name_from_remote
-from .common import safe_path_exists
+from .common import safe_path_exists, safe_path_is_dir
 
 DEFAULT_REMOTE_TIMEOUT_SECONDS = 3.0
 _HEX_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+_GIT_SECTION_RE = re.compile(r'^\[\s*([A-Za-z0-9_-]+)(?:\s+"((?:\\.|[^"\\])*)")?\s*\]\s*$')
+_GIT_KV_RE = re.compile(r"^\s*([A-Za-z0-9_-]+)\s*(?:=\s*(.*?))?\s*$")
+
+
+def _resolve_git_common_config(directory: Path) -> Path | None:
+    """Resolve the repository's `.git/config` (including linked worktree `commondir`) without subprocesses."""
+    git_marker = directory / ".git"
+    if not safe_path_exists(git_marker):
+        return None
+    if safe_path_is_dir(git_marker):
+        cfg = git_marker / "config"
+        return cfg if safe_path_exists(cfg) else None
+    try:
+        raw = git_marker.read_text(encoding="utf-8", errors="replace").strip()
+    except OSError:
+        return None
+    if not raw.lower().startswith("gitdir:"):
+        return None
+    gitdir_text = raw.split(":", 1)[1].strip()
+    if not gitdir_text:
+        return None
+    git_dir = Path(gitdir_text)
+    if not git_dir.is_absolute():
+        git_dir = (directory / git_dir).resolve()
+    common_dir = git_dir
+    commondir_file = git_dir / "commondir"
+    if safe_path_exists(commondir_file):
+        try:
+            rel_common = commondir_file.read_text(encoding="utf-8", errors="replace").strip()
+            if rel_common:
+                cand_common = Path(rel_common)
+                common_dir = (
+                    cand_common if cand_common.is_absolute() else (git_dir / cand_common).resolve()
+                )
+        except OSError:
+            common_dir = git_dir
+    cfg = common_dir / "config"
+    return cfg if safe_path_exists(cfg) else None
+
+
+def _strip_git_config_value(raw_val: str | None) -> str:
+    if raw_val is None:
+        return "true"
+    out: list[str] = []
+    in_quotes = False
+    escaped = False
+    for ch in raw_val:
+        if escaped:
+            out.append(ch)
+            escaped = False
+            continue
+        if ch == "\\":
+            escaped = True
+            continue
+        if ch == '"':
+            in_quotes = not in_quotes
+            continue
+        if not in_quotes and ch in {"#", ";"}:
+            break
+        out.append(ch)
+    return "".join(out).strip()
+
+
+def list_git_remotes(directory: Path) -> dict[str, str]:
+    """Return all configured `{remote_name: url}` entries from `.git/config` in read-only mode."""
+    cfg_path = _resolve_git_common_config(directory)
+    if cfg_path is None:
+        return {}
+    try:
+        lines = cfg_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return {}
+    remotes: dict[str, str] = {}
+    current_remote: str | None = None
+    for raw_line in lines:
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith(("#", ";")):
+            continue
+        sec = _GIT_SECTION_RE.match(stripped)
+        if sec:
+            sec_type = sec.group(1).lower()
+            sec_name = sec.group(2)
+            current_remote = sec_name.strip() if sec_type == "remote" and sec_name else None
+            continue
+        if current_remote:
+            kv = _GIT_KV_RE.match(raw_line)
+            if kv and kv.group(1).lower() == "url":
+                url_val = _strip_git_config_value(kv.group(2))
+                if url_val and current_remote not in remotes:
+                    remotes[current_remote] = url_val
+    return dict(sorted(remotes.items()))
+
+
+def is_autosnapshot_git_repo(directory: Path) -> bool:
+    """Return True when `.git/config` marks the repository with `gbrain.autosnapshot = true`."""
+    cfg_path = _resolve_git_common_config(directory)
+    if cfg_path is None:
+        return False
+    try:
+        text = cfg_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    if "autosnapshot" not in text.lower():
+        return False
+    in_gbrain = False
+    for raw_line in text.splitlines():
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith(("#", ";")):
+            continue
+        sec = _GIT_SECTION_RE.match(stripped)
+        if sec:
+            in_gbrain = sec.group(1).lower() == "gbrain" and not sec.group(2)
+            continue
+        if in_gbrain:
+            kv = _GIT_KV_RE.match(raw_line)
+            if kv and kv.group(1).lower() == "autosnapshot":
+                val = _strip_git_config_value(kv.group(2)).lower()
+                return val in {"true", "yes", "on", "1"}
+    return False
+
+
+def inspect_entry_git_remotes(entry: dict) -> dict[str, str]:
+    """Resolve all configured git remotes for a compatibility entry from fixture hint or `.git/config`."""
+    explicit = entry.get("_git_remotes")
+    if isinstance(explicit, dict):
+        return {
+            str(k).strip(): str(v).strip()
+            for k, v in sorted(explicit.items(), key=lambda kv: str(kv[0]))
+            if str(k).strip() and str(v).strip()
+        }
+    if not entry.get("git"):
+        return {}
+    raw_path = str(entry.get("path") or "").strip()
+    if raw_path.startswith("/"):
+        remotes = list_git_remotes(Path(raw_path))
+        if remotes:
+            return remotes
+    remote_url = str(entry.get("remote_url") or "").strip()
+    return {"origin": remote_url} if remote_url else {}
 
 
 def git_output(directory: Path, *args: str) -> str:

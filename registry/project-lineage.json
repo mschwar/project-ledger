@@ -66,7 +66,6 @@
         "github.com/mschwar/slopvault"
       ],
       "observation_ids": [
-        "obs_6b6abeb67481b130de3285d9",
         "obs_a4f6324981613ac5091b065b"
       ],
       "project_key_hint": "github.com/mschwar/slopvault"
@@ -153,8 +152,7 @@
         "github.com/mschwar/elemental-inc"
       ],
       "observation_ids": [
-        "obs_30f8966f1aeb6531dbb32698",
-        "obs_a9fe172e4ff3050229fe4105"
+        "obs_30f8966f1aeb6531dbb32698"
       ],
       "project_key_hint": "github.com/mschwar/elemental-inc"
     },
@@ -196,7 +194,6 @@
         "github.com/mschwar/bahai-9yr-plan-kb"
       ],
       "observation_ids": [
-        "obs_1302816be8f2e7b3bb819428",
         "obs_442e7c05eec7a23a13be858a"
       ],
       "project_key_hint": "github.com/mschwar/bahai-9yr-plan-kb"
@@ -302,6 +299,34 @@
       "project_key_hint": "repos"
     },
     {
+      "canonical_project_id": "prj_34594ae7792e7fa67f6db052",
+      "historical_canonical_ids": [
+        "prj_83936ea7770c521b67887290"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/lbibylb-glitch/agentic-workbench"
+      ],
+      "observation_ids": [
+        "obs_0bcd82f08069b92092bfc16b"
+      ],
+      "project_key_hint": "github.com/lbibylb-glitch/agentic-workbench"
+    },
+    {
+      "canonical_project_id": "prj_357956dfaad4d930c5a471ef",
+      "historical_canonical_ids": [
+        "prj_c89a2ed12f537e3ed36ef7b3"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/warcraft-infra"
+      ],
+      "observation_ids": [
+        "obs_825b3a2db42f3b2df31ee065"
+      ],
+      "project_key_hint": "github.com/mschwar/warcraft-infra"
+    },
+    {
       "canonical_project_id": "prj_36613bd3157503a136a05d0a",
       "historical_canonical_ids": [
         "prj_9960e2cf067708fdacad2079"
@@ -360,7 +385,6 @@
         "github.com/mschwar/homelab"
       ],
       "observation_ids": [
-        "obs_b4d97e0f5318ed3ba8d08f11",
         "obs_cc508b56483db8d8e146107a",
         "obs_f0c43e37fa8e90f8dafd9d52"
       ],
@@ -428,7 +452,6 @@
         "github.com/mschwar/cpr"
       ],
       "observation_ids": [
-        "obs_2d5bcf2d6b2e33e60752bedd",
         "obs_e7327884d5a94c970dd1ff50"
       ],
       "project_key_hint": "github.com/mschwar/cpr"
@@ -490,8 +513,7 @@
         "github.com/mschwar/substrate"
       ],
       "observation_ids": [
-        "obs_86f186797eb3a2c0080e84ad",
-        "obs_f2c910768f3d82e82d55dd34"
+        "obs_86f186797eb3a2c0080e84ad"
       ],
       "project_key_hint": "substrate"
     },
@@ -634,6 +656,20 @@
       "project_key_hint": "plots"
     },
     {
+      "canonical_project_id": "prj_5ddce3a8f60a242dd87503a7",
+      "historical_canonical_ids": [
+        "prj_91f6d30e5e8e038606c0cb3a"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/pz-observer"
+      ],
+      "observation_ids": [
+        "obs_a1094fab0a0fb35711ec2b84"
+      ],
+      "project_key_hint": "github.com/mschwar/pz-observer"
+    },
+    {
       "canonical_project_id": "prj_5f20551f04ceecc0cb3288a9",
       "historical_canonical_ids": [
         "prj_2084c8aa8d76a2b22fa54152"
@@ -691,9 +727,13 @@
     },
     {
       "canonical_project_id": "prj_628f79ae56c02781f3290fb2",
-      "historical_canonical_ids": [],
+      "historical_canonical_ids": [
+        "prj_c77417be52ba50c42dd1e942"
+      ],
       "merge_decision_ids": [],
-      "normalized_remotes": [],
+      "normalized_remotes": [
+        "github.com/mschwar/vibecoding"
+      ],
       "observation_ids": [
         "obs_2f64864b600fa315b0c64eb3"
       ],
@@ -771,7 +811,6 @@
         "github.com/mschwar/bahai-consultation-guide"
       ],
       "observation_ids": [
-        "obs_8709a2bcb7e7dcc898cfe501",
         "obs_fa9843b912ce166c5e3fc679"
       ],
       "project_key_hint": "bahai-consultation-guide"
@@ -820,7 +859,6 @@
         "github.com/mschwar/context-project"
       ],
       "observation_ids": [
-        "obs_671fcc1f0eb50480aacaacef",
         "obs_f69938867fd6567892533140"
       ],
       "project_key_hint": "context-project"
@@ -895,10 +933,23 @@
         "github.com/mschwar/lee-grapple-hook"
       ],
       "observation_ids": [
-        "obs_0aff3d60cd8664a1e4eba2cc",
         "obs_602a0ce6dfff4e120af68597"
       ],
       "project_key_hint": "github.com/mschwar/lee-grapple-hook"
+    },
+    {
+      "canonical_project_id": "prj_7480df99900051d41829b988",
+      "historical_canonical_ids": [
+        "prj_fb936ff5245812ea91f2868f"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/init-mockup"
+      ],
+      "observation_ids": [
+        "obs_750af21af1a95884e4de25b7"
+      ],
+      "project_key_hint": "github.com/mschwar/init-mockup"
     },
     {
       "canonical_project_id": "prj_767c04eec5f858d1cf36c35c",
@@ -922,9 +973,13 @@
     },
     {
       "canonical_project_id": "prj_78dcd800bcd29d3ff1af77ca",
-      "historical_canonical_ids": [],
+      "historical_canonical_ids": [
+        "prj_f85257700706555951ae1e2e"
+      ],
       "merge_decision_ids": [],
-      "normalized_remotes": [],
+      "normalized_remotes": [
+        "github.com/mschwar/bridgeai"
+      ],
       "observation_ids": [
         "obs_d82391f30baf67cf792c7c72"
       ],
@@ -1106,8 +1161,7 @@
         "github.com/mschwar/ai-field-briefing"
       ],
       "observation_ids": [
-        "obs_336a1d72291c2cd6101030e6",
-        "obs_ace0d02862ecdf1f216276a3"
+        "obs_336a1d72291c2cd6101030e6"
       ],
       "project_key_hint": "github.com/mschwar/ai-field-briefing"
     },
@@ -1145,7 +1199,6 @@
         "github.com/mschwar/white-rabbit"
       ],
       "observation_ids": [
-        "obs_3f044b92e89cb88b23ad455f",
         "obs_9ddd0040fce7668f9c3aa442"
       ],
       "project_key_hint": "white-rabbit"
@@ -1216,7 +1269,6 @@
         "github.com/mschwar/project-eidos"
       ],
       "observation_ids": [
-        "obs_482dbfeae7a1a8515ce22be8",
         "obs_b701fb9af2aadd709fab04b0"
       ],
       "project_key_hint": "github.com/mschwar/project-eidos"
@@ -1275,8 +1327,7 @@
       ],
       "observation_ids": [
         "obs_d04229543f0f27e9cda304c7",
-        "obs_e78c1dfefc3786c34da9bf7a",
-        "obs_ff6d12c1314cbd63cebd7d61"
+        "obs_e78c1dfefc3786c34da9bf7a"
       ],
       "project_key_hint": "reality-ledger"
     },
@@ -1293,6 +1344,20 @@
         "obs_7a59dd9f5dfead014b644992"
       ],
       "project_key_hint": "github.com/modelcontextprotocol/servers"
+    },
+    {
+      "canonical_project_id": "prj_9c559233b0d688be67eba30d",
+      "historical_canonical_ids": [
+        "prj_ea416118dc7ba3bfffa36972"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/two-track-education"
+      ],
+      "observation_ids": [
+        "obs_dfb8ecfe116f91e48951fca0"
+      ],
+      "project_key_hint": "github.com/mschwar/two-track-education"
     },
     {
       "canonical_project_id": "prj_9c82490ecbe7c6323c199a95",
@@ -1346,7 +1411,6 @@
         "github.com/mschwar/ledger-2"
       ],
       "observation_ids": [
-        "obs_d975853f706afbd57e4cfc12",
         "obs_e9c36d463cf68f1c19282287"
       ],
       "project_key_hint": "github.com/mschwar/ledger-2"
@@ -1365,8 +1429,7 @@
         "github.com/mschwar/prompt-refinery"
       ],
       "observation_ids": [
-        "obs_5c7642d413f1b326e5be0d11",
-        "obs_9b2b77ed032e0f7f722dcb7a"
+        "obs_5c7642d413f1b326e5be0d11"
       ],
       "project_key_hint": "github.com/mschwar/prompt-refinery"
     },
@@ -1494,8 +1557,7 @@
         "github.com/mschwar/flow"
       ],
       "observation_ids": [
-        "obs_0c05fef5140af5e6084b6505",
-        "obs_5c876f6fc20d9f7d7c80fc3e"
+        "obs_0c05fef5140af5e6084b6505"
       ],
       "project_key_hint": "github.com/mschwar/flow"
     },
@@ -1571,8 +1633,7 @@
         "github.com/mschwar/2026.tsle.team_internal-ms"
       ],
       "observation_ids": [
-        "obs_2611569afe37ebe344f849ce",
-        "obs_330dc8b78ee698583e0b69f0"
+        "obs_2611569afe37ebe344f849ce"
       ],
       "project_key_hint": "2026-tsle-team_internal-ms"
     },
@@ -1668,7 +1729,6 @@
         "github.com/mschwar/common-project"
       ],
       "observation_ids": [
-        "obs_9e2344fc75b7dbcf541df2d8",
         "obs_d108e2975d6225f4f50ddeea"
       ],
       "project_key_hint": "common-project"
@@ -1715,8 +1775,7 @@
         "github.com/mschwar/song-clean"
       ],
       "observation_ids": [
-        "obs_84e116b893245d4e427f442d",
-        "obs_a71c0864d1426f490084f947"
+        "obs_84e116b893245d4e427f442d"
       ],
       "project_key_hint": "song-clean"
     },
@@ -1744,8 +1803,7 @@
         "github.com/mschwar/toned"
       ],
       "observation_ids": [
-        "obs_2556e18a83891301d610b0d9",
-        "obs_ee0d284a178fec57cad06062"
+        "obs_2556e18a83891301d610b0d9"
       ],
       "project_key_hint": "github.com/mschwar/toned"
     },
@@ -1806,10 +1864,12 @@
     {
       "canonical_project_id": "prj_d008ee93a15abe0d6e55fa53",
       "historical_canonical_ids": [
+        "prj_4c2143a62bf207caaa5d6a40",
         "prj_ba435e66a43e5b0dc0cad74b"
       ],
       "merge_decision_ids": [],
       "normalized_remotes": [
+        "github.com/mschwar/paperclip",
         "github.com/paperclipai/paperclip"
       ],
       "observation_ids": [
@@ -1954,10 +2014,23 @@
         "github.com/mschwar/civstrate"
       ],
       "observation_ids": [
-        "obs_96eebea5b6d6c2af9528485e",
         "obs_c0a543afb1afaed2fa3f5ba9"
       ],
       "project_key_hint": "github.com/mschwar/civstrate"
+    },
+    {
+      "canonical_project_id": "prj_e312b5c2322810d2feceff5a",
+      "historical_canonical_ids": [
+        "prj_7a274d129497b6d2a6ccfdc8"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/class-sync"
+      ],
+      "observation_ids": [
+        "obs_fff4e685feee070ae85e0775"
+      ],
+      "project_key_hint": "github.com/mschwar/class-sync"
     },
     {
       "canonical_project_id": "prj_e6d9a71ac17f98273ebdd71a",
@@ -1973,7 +2046,6 @@
         "github.com/mschwar/scrollytelling"
       ],
       "observation_ids": [
-        "obs_4f33d1499e11ac827181eec3",
         "obs_7093a00a06d67874eacdb995"
       ],
       "project_key_hint": "scrollytelling"
@@ -2027,7 +2099,6 @@
         "github.com/mschwar/orgatlas"
       ],
       "observation_ids": [
-        "obs_998dc5640c04088c65968b7d",
         "obs_9df94fbbac1356c1bcbf43e1"
       ],
       "project_key_hint": "github.com/mschwar/orgatlas"
@@ -2046,7 +2117,6 @@
         "github.com/mschwar/project-ledger"
       ],
       "observation_ids": [
-        "obs_284c730562a98efa43602cb6",
         "obs_f0b59c4cb6f5e691384c753a"
       ],
       "project_key_hint": "github.com/mschwar/project-ledger"
@@ -2083,10 +2153,12 @@
       "canonical_project_id": "prj_f29daac767707d7d303cd268",
       "historical_canonical_ids": [
         "prj_1515362224d93c1152da2e6b",
+        "prj_40201abc67f8312967ebd981",
         "prj_60f818039ae361c6318ebf96"
       ],
       "merge_decision_ids": [],
       "normalized_remotes": [
+        "github.com/mschwar/hermes-paperclip-adapter",
         "github.com/nousresearch/hermes-paperclip-adapter"
       ],
       "observation_ids": [
@@ -2107,9 +2179,13 @@
     },
     {
       "canonical_project_id": "prj_f52b15ab00a89de5e4fc8473",
-      "historical_canonical_ids": [],
+      "historical_canonical_ids": [
+        "prj_b53e050d3bbc46819b9e7354"
+      ],
       "merge_decision_ids": [],
-      "normalized_remotes": [],
+      "normalized_remotes": [
+        "github.com/mschwar/counterweight-tim"
+      ],
       "observation_ids": [
         "obs_546ed622069f21d31d2e17e7"
       ],
@@ -2177,7 +2253,6 @@
         "github.com/mschwar/agent-os"
       ],
       "observation_ids": [
-        "obs_0ef8500cd40225c893746859",
         "obs_8e34b0cd367a91947de57108"
       ],
       "project_key_hint": "github.com/mschwar/agent-os"
@@ -2224,7 +2299,6 @@
         "github.com/mschwar/lee-ai-learning"
       ],
       "observation_ids": [
-        "obs_ad585eeb24937433b1df04a5",
         "obs_ef88b09e106bd02c32b099c1"
       ],
       "project_key_hint": "github.com/mschwar/lee-ai-learning"

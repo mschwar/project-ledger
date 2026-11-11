@@ -1,6 +1,6 @@
 {
   "_provenance": {
-    "comment": "[Needs validation] The project-ledger-live (/home/matt/project-ledger), google-drive-inventory (/home/matt/GoogleDrive), and opt-homelab (/opt/homelab) roots were removed from this template on 2026-09-19 after the R0 live provider proof verified they are dead on ai-server (first two mode-750 matt-owned not readable by prime; /opt/homelab does not exist). Do NOT re-add without live evidence the path exists and is readable by prime. See docs/work/FUTURE-SPEC-reconcile-ledger-config-template-20260919.md. On 2026-10-29 (post-CONV-001 audit), central-agent-tooling (/central/repos/agent-tooling), central-research-ml (/central/repos/research-ml), and 3813-patio (/central/3813-patio) were added with live evidence (cross-root compatibility symlinks such as /central/repos/agent-tooling/nanochat-master -> /central/repos/research-ml/nanochat-master are suppressed natively by is_shadowed_symlink independent of roots[] ordering). On 2026-10-31, duplicate top-level self roots 3813-patio (/central/3813-patio), proxy-lead (/central/proxy-lead), and white-rabbit (/central/white-rabbit) were retired and archived to /central/archive/retired-top-level-checkouts-20261031/ after reconciling all unique commits/artifacts into canonical checkouts under /central/repos/apps/ and /central/repos/active/."
+    "comment": "[Needs validation] The project-ledger-live (/home/matt/project-ledger), google-drive-inventory (/home/matt/GoogleDrive), and opt-homelab (/opt/homelab) roots were removed from this template on 2026-09-19 after the R0 live provider proof verified they are dead on ai-server (first two mode-750 matt-owned not readable by prime; /opt/homelab does not exist). Do NOT re-add without live evidence the path exists and is readable by prime. See docs/work/FUTURE-SPEC-reconcile-ledger-config-template-20260919.md. On 2026-10-29 (post-CONV-001 audit), central-agent-tooling (/central/repos/agent-tooling), central-research-ml (/central/repos/research-ml), and 3813-patio (/central/3813-patio) were added with live evidence (cross-root compatibility symlinks such as /central/repos/agent-tooling/nanochat-master -> /central/repos/research-ml/nanochat-master are suppressed natively by is_shadowed_symlink independent of roots[] ordering). On 2026-10-31, duplicate top-level self roots 3813-patio (/central/3813-patio), proxy-lead (/central/proxy-lead), and white-rabbit (/central/white-rabbit) were retired and archived to /central/archive/retired-top-level-checkouts-20261031/ after reconciling all unique commits/artifacts into canonical checkouts under /central/repos/apps/ and /central/repos/active/. On 2026-11-11, strict 1:1 git repository correspondence was enforced (defaults.require_git=true, defaults.exclude_autosnapshot_repos=true), retiring non-git macbook-air-2-higgsfield-agent-project and the static May-2026 matty-pc-inventory Google-Drive/Documents snapshot root."
   },
   "defaults": {
     "exclude_names": [
@@ -16,6 +16,8 @@
       "node_modules",
       "venv"
     ],
+    "require_git": true,
+    "exclude_autosnapshot_repos": true,
     "min_score": 2,
     "tree_scan_max_entries": 5000,
     "tree_scan_max_depth": 8,
@@ -80,13 +82,6 @@
       "machine_name": "matthews-macbook-air-2"
     },
     {
-      "source_id": "macbook-air-2-higgsfield-agent-project",
-      "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/higgsfield-agent-project",
-      "label": "matthews-macbook-air-2:higgsfield-agent-project",
-      "discovery": "self",
-      "machine_name": "matthews-macbook-air-2"
-    },
-    {
       "source_id": "macbook-air-2-homelab",
       "path": "/central/registry/mirrors/matthews-macbook-air-2/Documents/homelab",
       "label": "matthews-macbook-air-2:homelab",
@@ -99,21 +94,6 @@
       "label": "matthews-macbook-air-2:local-deep-research",
       "discovery": "self",
       "machine_name": "matthews-macbook-air-2"
-    },
-    {
-      "source_id": "matty-pc-inventory",
-      "path": "/central/registry/inventories/matty-pc-documents",
-      "label": "matty-pc",
-      "discovery": "inventory_policy",
-      "inventory_jsonl": "/central/registry/inventories/matty-pc-documents/matty_pc_documents_inventory_latest.jsonl",
-      "policy_path": "/central/registry/inventories/matty-pc-documents/matty_pc_documents_roots_policy.json",
-      "policy_crawl_treatments": [
-        "project_discovery"
-      ],
-      "require_project_ledger_candidate": true,
-      "remote_name": "matty-pc",
-      "machine_name": "matty-pc",
-      "storage_scope": "local"
     },
     {
       "source_id": "backup-20260416-repos",

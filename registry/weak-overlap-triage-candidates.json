@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-10-30T15:35:00Z",
+  "generated_at": "2026-11-11T20:15:00Z",
   "triage_method": "frontier_zero_shot_readme_and_evidence_pass",
   "source_run_id": "run_b8dfd06ba6e6f4fae72ae2c9",
   "candidates": [
@@ -628,6 +628,15 @@
       "authority": "reviewed_agent",
       "decided_at": "2026-10-30T15:35:00Z",
       "rationale": "Select post-rename authoritative repository key github.com/mschwar/gamma-steamdb over github.com/mschwar/steam-db-mattified."
+    },
+    {
+      "decision_id": "dec_triage_agentic_workbench_vs_miscellania_reject_20261111",
+      "type": "reject_match",
+      "left_observation_id": "obs_0bcd82f08069b92092bfc16b",
+      "right_observation_id": "obs_247ac89e7eff9bae0f0f13e2",
+      "authority": "reviewed_agent",
+      "decided_at": "2026-11-11T20:15:00Z",
+      "rationale": "Frontier zero-shot triage: /central/repos/active/agentic-workbench (github.com/lbibylb-glitch/agentic-workbench) and /central/repos/infra/miscellania (github.com/mschwar/miscellania) are distinct GitHub repositories; miscellania is an umbrella catch-all repository that absorbed an earlier agentic-workbench-main snapshot alongside unrelated tooling, whereas lbibylb-glitch/agentic-workbench is a separate collaborator workstation repository."
     }
   ]
 }

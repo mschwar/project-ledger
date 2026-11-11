@@ -456,6 +456,93 @@ def build_synced_lineage(
     }
 
 
+def merge_project_lineage(
+    primary: dict[str, Any] | None,
+    secondary: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Merge two normalized lineage payloads (e.g. committed registry + watchdog runtime overlay)."""
+    merged_by_id: dict[str, dict[str, Any]] = {}
+    for source_doc in (secondary, primary):
+        if not isinstance(source_doc, dict):
+            continue
+        for rec in source_doc.get("projects") or []:
+            if not isinstance(rec, dict):
+                continue
+            cid = str(rec.get("canonical_project_id") or "").strip()
+            if not _PRJ_ID_RE.match(cid):
+                continue
+            existing = merged_by_id.get(cid)
+            if existing is None:
+                merged_by_id[cid] = {
+                    "canonical_project_id": cid,
+                    "project_key_hint": rec.get("project_key_hint"),
+                    "normalized_remotes": sorted(
+                        str(r).casefold()
+                        for r in (rec.get("normalized_remotes") or [])
+                        if str(r).strip()
+                    ),
+                    "observation_ids": sorted(
+                        str(o) for o in (rec.get("observation_ids") or []) if str(o).strip()
+                    ),
+                    "merge_decision_ids": sorted(
+                        str(m) for m in (rec.get("merge_decision_ids") or []) if str(m).strip()
+                    ),
+                    "historical_canonical_ids": sorted(
+                        str(h)
+                        for h in (rec.get("historical_canonical_ids") or [])
+                        if _PRJ_ID_RE.match(str(h)) and str(h) != cid
+                    ),
+                }
+            else:
+                if rec.get("project_key_hint"):
+                    existing["project_key_hint"] = rec["project_key_hint"]
+                existing["normalized_remotes"] = sorted(
+                    set(existing["normalized_remotes"])
+                    | {
+                        str(r).casefold()
+                        for r in (rec.get("normalized_remotes") or [])
+                        if str(r).strip()
+                    }
+                )
+                existing["observation_ids"] = sorted(
+                    set(existing["observation_ids"])
+                    | {str(o) for o in (rec.get("observation_ids") or []) if str(o).strip()}
+                )
+                existing["merge_decision_ids"] = sorted(
+                    set(existing["merge_decision_ids"])
+                    | {str(m) for m in (rec.get("merge_decision_ids") or []) if str(m).strip()}
+                )
+                existing["historical_canonical_ids"] = sorted(
+                    (
+                        set(existing["historical_canonical_ids"])
+                        | {
+                            str(h)
+                            for h in (rec.get("historical_canonical_ids") or [])
+                            if _PRJ_ID_RE.match(str(h))
+                        }
+                    )
+                    - {cid}
+                )
+
+    active_ids = set(merged_by_id)
+    hist_owner_counts: dict[str, int] = {}
+    for rec in merged_by_id.values():
+        rec["historical_canonical_ids"] = [
+            h for h in rec["historical_canonical_ids"] if h not in active_ids
+        ]
+        for h in rec["historical_canonical_ids"]:
+            hist_owner_counts[h] = hist_owner_counts.get(h, 0) + 1
+    for rec in merged_by_id.values():
+        rec["historical_canonical_ids"] = [
+            h for h in rec["historical_canonical_ids"] if hist_owner_counts.get(h, 0) == 1
+        ]
+
+    return {
+        "schema_version": PROJECT_LINEAGE_SCHEMA_VERSION,
+        "projects": [merged_by_id[cid] for cid in sorted(merged_by_id)],
+    }
+
+
 def write_project_lineage(path: Path, payload: dict[str, Any]) -> None:
     resolved = path.resolve()
     resolved.parent.mkdir(parents=True, exist_ok=True)
@@ -469,19 +556,25 @@ def lineage_status_payload(
     state_dir: Path,
     lineage_path: Path,
     sync: bool = False,
+    merge_from_path: Path | None = None,
 ) -> dict[str, Any]:
     """Inspect, check, or sync ``registry/project-lineage.json`` against compiled state."""
     from .identity import load_canonical_projects
 
     canonical_payload = load_canonical_projects(state_dir)
     lineage_path = lineage_path.resolve()
-    existing = load_project_lineage(lineage_path, required=False)
+    existing_disk = load_project_lineage(lineage_path, required=False)
+    if merge_from_path is not None and merge_from_path.resolve().is_file():
+        overlay = load_project_lineage(merge_from_path.resolve(), required=False)
+        seed_lineage = merge_project_lineage(existing_disk, overlay)
+    else:
+        seed_lineage = existing_disk
     synced = build_synced_lineage(
         canonical_payload=canonical_payload,
-        existing_lineage=existing,
+        existing_lineage=seed_lineage,
     )
 
-    existing_by_id = {r["canonical_project_id"]: r for r in existing["projects"]}
+    existing_by_id = {r["canonical_project_id"]: r for r in existing_disk["projects"]}
     synced_by_id = {r["canonical_project_id"]: r for r in synced["projects"]}
     added_ids = sorted(set(synced_by_id) - set(existing_by_id))
     absorbed_ids = sorted(set(existing_by_id) - set(synced_by_id))
@@ -490,7 +583,7 @@ def lineage_status_payload(
         for cid in (set(synced_by_id) & set(existing_by_id))
         if synced_by_id[cid] != existing_by_id[cid]
     )
-    in_sync = lineage_path.is_file() and existing == synced
+    in_sync = lineage_path.is_file() and existing_disk == synced
 
     if sync and not in_sync:
         write_project_lineage(lineage_path, synced)

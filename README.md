@@ -44,6 +44,7 @@ Generated agent projections are:
 ```text
 state/system-manifest.json
 state/source-checkpoints.json
+state/github-sync.json
 state/observations.json
 state/canonical-projects.json
 state/canonical-projects.md
@@ -68,6 +69,7 @@ Both `ledger` and `ledger-mcp` resolve Project Ledger's workspace root automatic
 
 ```bash
 ledger validate
+ledger sync-github [--check | --dry-run] [--clone-root /central/repos/active] [--force-fetch] [--json]
 ledger refresh [--full-scan] [--check-remote] [--remote-timeout 3.0]
 ledger refresh --no-markdown-mirror [--full-scan] [--check-remote]
 ledger compile [--check-remote] [--remote-timeout 3.0]

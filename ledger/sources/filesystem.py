@@ -35,7 +35,7 @@ from .common import (
     safe_path_is_dir,
     safe_path_is_symlink,
 )
-from .git import gather_git_metadata
+from .git import gather_git_metadata, is_autosnapshot_git_repo
 
 
 def is_shadowed_symlink(
@@ -270,6 +270,14 @@ def build_entry(
     exclude_names = effective_candidate_excludes(directory, root_cfg, defaults)
 
     quick = inspect_candidate(directory, exclude_names)
+    require_git = bool(root_cfg.get("require_git", defaults.get("require_git", False)))
+    if require_git and not quick["has_git"]:
+        return None
+    exclude_autosnapshot = bool(
+        root_cfg.get("exclude_autosnapshot_repos", defaults.get("exclude_autosnapshot_repos", False))
+    )
+    if quick["has_git"] and exclude_autosnapshot and is_autosnapshot_git_repo(directory):
+        return None
     sidecar = load_sidecar(quick["sidecar_path"])
 
     force_include_names = set(root_cfg.get("force_include_names", []))
