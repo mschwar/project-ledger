@@ -13,6 +13,11 @@
   "x-forbidden-fields": [
     "canonical_project_id"
   ],
+  "x-ignored-mutable-fields": [
+    "commit",
+    "head_commit",
+    "next_step"
+  ],
   "properties": {
     "schema_version": {
       "description": "Supported v1 schema version ('1', '1.0', '1.0.0', or integer 1). Legacy unversioned sidecars omit this field.",
@@ -40,12 +45,6 @@
       }
     },
     "canonical_url": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "commit": {
       "type": [
         "string",
         "null"
@@ -127,12 +126,6 @@
         }
       }
     },
-    "head_commit": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
     "kind": {
       "type": [
         "string",
@@ -170,12 +163,6 @@
       ]
     },
     "name": {
-      "type": [
-        "string",
-        "null"
-      ]
-    },
-    "next_step": {
       "type": [
         "string",
         "null"

@@ -167,6 +167,8 @@ def compile_state(
     lineage_path: Path | None = None,
     generated_at: str | None = None,
     use_checkpoint_compile_cache: bool = False,
+    check_remote: bool = False,
+    remote_timeout: float = 3.0,
 ) -> dict:
     from .lineage import resolve_lineage_path
 
@@ -407,15 +409,24 @@ def compile_state(
         )
         if (
             allow_compile_cache_read
+            and not check_remote
             and cand_fp
             and cand.get("compile_cache_fingerprint") == cand_fp
             and isinstance(cand.get("git_drift"), dict)
             and not has_explicit_drift
         ):
             return dict(cand["git_drift"])
-        drift = resolve_observation_git_drift(obs, compat_entry)
-        if isinstance(cand, dict) and cand_fp and not has_explicit_drift:
-            pending_git_drift_by_obs[oid] = drift
+        if check_remote:
+            drift = resolve_observation_git_drift(
+                obs,
+                compat_entry,
+                check_remote=True,
+                remote_timeout=remote_timeout,
+            )
+        else:
+            drift = resolve_observation_git_drift(obs, compat_entry)
+            if isinstance(cand, dict) and cand_fp and not has_explicit_drift:
+                pending_git_drift_by_obs[oid] = drift
         return drift
 
     def _resolve_ctx_with_cache(obs: dict, repo_dir: Path) -> dict | None:

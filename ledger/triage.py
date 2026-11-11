@@ -80,10 +80,6 @@ def review_payload(
     *,
     candidates_path: Path | None = None,
     decisions_path: Path | None = None,
-    include_jev: bool = False,
-    jev_provider: str | None = None,
-    jev_force_live: bool = False,
-    jev_allow_vault: bool = False,
 ) -> dict:
     """Return open identity reviews, untriaged weak overlaps, and pending candidate decisions."""
     state_dir = state_dir.resolve()
@@ -170,33 +166,7 @@ def review_payload(
     pending_candidates = [c for c in candidates if str(c.get("decision_id", "")) not in existing_ids]
     approved_candidates = [c for c in candidates if str(c.get("decision_id", "")) in existing_ids]
 
-    jev_summary: dict | None = None
-    if include_jev:
-        from .jev import decide, effective_jev_mode, overlap_to_relation_state
-
-        by_relation: dict[str, int] = {}
-        for ov in untriaged_overlaps:
-            rel_state = overlap_to_relation_state(ov)
-            dec = decide(
-                ["weak_overlap_relation"],
-                rel_state,
-                provider=jev_provider,
-                force_live=jev_force_live,
-                allow_vault=jev_allow_vault,
-                record_trace=False,
-            )
-            head_dec = dec["decisions"][0]
-            ov["jev_advisory"] = head_dec
-            rel_label = str(head_dec.get("effective_output") or "abstained")
-            by_relation[rel_label] = by_relation.get(rel_label, 0) + 1
-        jev_summary = {
-            "inference_layer": "jev_system_one_advisory",
-            "mode": effective_jev_mode(),
-            "evaluated_count": len(untriaged_overlaps),
-            "by_relation": by_relation,
-        }
-
-    result = {
+    return {
         "schema_version": REVIEW_QUEUE_SCHEMA_VERSION,
         "compiler_version": COMPILER_VERSION,
         "run_id": reviews.get("run_id"),
@@ -211,9 +181,6 @@ def review_payload(
         "approved_candidate_count": len(approved_candidates),
         "candidate_decisions": pending_candidates,
     }
-    if jev_summary is not None:
-        result["jev_triage_summary"] = jev_summary
-    return result
 
 
 def approve_candidate_decisions(

@@ -68,9 +68,9 @@ Both `ledger` and `ledger-mcp` resolve Project Ledger's workspace root automatic
 
 ```bash
 ledger validate
-ledger refresh [--full-scan]
-ledger refresh --no-markdown-mirror [--full-scan]
-ledger compile
+ledger refresh [--full-scan] [--check-remote] [--remote-timeout 3.0]
+ledger refresh --no-markdown-mirror [--full-scan] [--check-remote]
+ledger compile [--check-remote] [--remote-timeout 3.0]
 ledger orient
 ledger sources
 ledger resolve <referent>
@@ -184,9 +184,7 @@ The new `ledger/` package compiles around this stable output rather than rewriti
 
 ## Sidecars
 
-`.project-ledger.json` remains a thin declaration/current-session compatibility source. It is not canonical truth and should not become a task manager.
-
-Target architecture will turn declarations into typed claims and expose conflicting copies rather than using implicit last-write-wins behavior.
+`.project-ledger.json` is a static repository identity declaration (`project_key`, `display_name`, `description`, `status`, `tags`, `canonical_url`, `repo_name`, `gbrain_source_slug`, `shared`, `storage_scope`). Mutable per-commit/session fields (`commit`, `head_commit`, `next_step`) are ignored during validation so static sidecars never go stale after `git commit`.
 
 See `templates/project-ledger.sidecar.example.json` and `prompts/session_end_prompt.md`.
 

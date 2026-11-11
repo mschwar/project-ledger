@@ -48,15 +48,21 @@ FORBIDDEN_SIDECAR_FIELDS: frozenset[str] = frozenset(
     }
 )
 
+IGNORED_MUTABLE_SIDECAR_FIELDS: frozenset[str] = frozenset(
+    {
+        "commit",
+        "head_commit",
+        "next_step",
+    }
+)
+
 STRING_SIDECAR_FIELDS: frozenset[str] = frozenset(
     {
         "canonical_url",
-        "commit",
         "description",
         "display_name",
         "gbrain_source",
         "gbrain_source_slug",
-        "head_commit",
         "kind",
         "last_push_at",
         "last_session_at",
@@ -64,7 +70,6 @@ STRING_SIDECAR_FIELDS: frozenset[str] = frozenset(
         "lifecycle_state",
         "machine_name",
         "name",
-        "next_step",
         "notes",
         "owner",
         "path",
@@ -392,6 +397,9 @@ def validate_sidecar_mapping(
     schema = load_sidecar_schema()
     schema_props = schema.get("properties") if isinstance(schema.get("properties"), dict) else {}
     forbidden_fields = frozenset(schema.get("x-forbidden-fields") or FORBIDDEN_SIDECAR_FIELDS)
+    ignored_mutable_fields = frozenset(
+        schema.get("x-ignored-mutable-fields") or IGNORED_MUTABLE_SIDECAR_FIELDS
+    )
 
     if not isinstance(raw, dict):
         issue = {
@@ -439,7 +447,7 @@ def validate_sidecar_mapping(
     declarations: dict[str, Any] = {}
 
     for key in sorted(raw.keys()):
-        if key == "schema_version":
+        if key == "schema_version" or key in ignored_mutable_fields:
             continue
         val = raw[key]
 
@@ -671,7 +679,6 @@ def inspect_entry_sidecar(compat_entry: dict[str, Any]) -> dict[str, Any]:
         ("name", "display_name"),
         ("status", "status"),
         ("description", "description"),
-        ("next_step", "next_step"),
         ("last_session_at", "last_session_at"),
         ("last_session_summary", "last_session_summary"),
         ("last_push_at", "last_push_at"),

@@ -13,6 +13,7 @@ from ledger.capsules import show_payload
 from ledger.explain import explain_payload
 from ledger.sidecar import (
     FORBIDDEN_SIDECAR_FIELDS,
+    IGNORED_MUTABLE_SIDECAR_FIELDS,
     KNOWN_GIT_OBJECT_FIELDS,
     KNOWN_SIDECAR_FIELDS,
     SIDECAR_SCHEMA_PATH,
@@ -46,9 +47,55 @@ class SidecarValidationUnitTests(unittest.TestCase):
         self.assertEqual(schema["type"], "object")
         self.assertFalse(schema["additionalProperties"])
         self.assertEqual(set(schema["x-forbidden-fields"]), set(FORBIDDEN_SIDECAR_FIELDS))
+        self.assertEqual(set(schema["x-ignored-mutable-fields"]), set(IGNORED_MUTABLE_SIDECAR_FIELDS))
         self.assertEqual(set(schema["properties"].keys()), set(KNOWN_SIDECAR_FIELDS))
         git_props = schema["properties"]["git"]["properties"]
         self.assertEqual(set(git_props.keys()), set(KNOWN_GIT_OBJECT_FIELDS))
+
+    def test_mutable_commit_and_next_step_fields_are_stripped_and_stay_fresh_across_commits(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td) / "static-identity-repo"
+            repo.mkdir()
+            (repo / "README.md").write_text("# Static Identity\n", encoding="utf-8")
+            first_sha = _git_init_and_commit(repo, "initial commit")
+            sidecar_file = repo / ".project-ledger.json"
+            sidecar_file.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0.0",
+                        "project_key": "github.com/mschwar/static-identity-repo",
+                        "display_name": "Static Identity Repo",
+                        "commit": first_sha[:7],
+                        "head_commit": first_sha,
+                        "next_step": "outdated session task",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "-C", str(repo), "add", ".project-ledger.json"], check=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", "add sidecar"], check=True)
+
+            # Advance HEAD twice without touching .project-ledger.json.
+            (repo / "README.md").write_text("# Static Identity\n\nCommit 2.\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(repo), "add", "README.md"], check=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "-q", "-m", "advance 2"], check=True)
+
+            envelope, accepted = validate_sidecar_mapping(
+                json.loads(sidecar_file.read_text(encoding="utf-8")),
+                sidecar_path=str(sidecar_file),
+            )
+            self.assertEqual(envelope["status"], "valid")
+            self.assertEqual(envelope["issues"], [])
+            self.assertNotIn("commit", accepted)
+            self.assertNotIn("head_commit", accepted)
+            self.assertNotIn("next_step", accepted)
+            self.assertNotIn("commit", envelope["declarations"])
+            self.assertNotIn("head_commit", envelope["declarations"])
+            self.assertNotIn("next_step", envelope["declarations"])
+
+            loaded = load_sidecar(sidecar_file)
+            self.assertFalse(loaded.get("_stale_sidecar"))
+            self.assertIsNone(loaded.get("_sidecar_error"))
 
     def test_v1_versions_and_legacy_unversioned_are_accepted(self) -> None:
         for raw_ver, expected_status in (
