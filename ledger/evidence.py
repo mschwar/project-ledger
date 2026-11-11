@@ -426,27 +426,6 @@ def _active_decisions(decisions_payload: dict) -> list[dict]:
     return [d for d in decisions if str(d.get("decision_id", "")).strip() not in superseded]
 
 
-def negative_pairs_from_decisions(decisions_payload: dict) -> set[tuple[str, str]]:
-    """Pairs of observations an explicit split/reject decision keeps apart."""
-    pairs: set[tuple[str, str]] = set()
-    for decision in _active_decisions(decisions_payload):
-        decision_type = str(decision.get("type", "")).strip()
-        if decision_type == "split":
-            refs = [
-                str(v).strip()
-                for v in decision.get("observation_ids", [])
-                if str(v).strip()
-            ]
-            for left, right in combinations(refs, 2):
-                pairs.add(_pair(left, right))
-        elif decision_type == "reject_match":
-            left = str(decision.get("left_observation_id", "")).strip()
-            right = str(decision.get("right_observation_id", "")).strip()
-            if left and right and left != right:
-                pairs.add(_pair(left, right))
-    return pairs
-
-
 def negative_decision_ids_by_pair(
     decisions_payload: dict,
 ) -> dict[tuple[str, str], set[str]]:

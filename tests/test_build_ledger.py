@@ -52,6 +52,62 @@ class ProjectLedgerTests(unittest.TestCase):
             self.assertTrue(mirror.exists())
             self.assertEqual(mirror.read_text(encoding="utf-8"), source.read_text(encoding="utf-8"))
 
+    def test_write_markdown_mirror_rebases_relative_links_and_strips_nul_bytes(self) -> None:
+        with ScratchDir() as root:
+            target_readme = root / "sample-proj" / "README.md"
+            target_readme.parent.mkdir(parents=True, exist_ok=True)
+            target_readme.write_text("# Sample\n", encoding="utf-8")
+            source = root / "output" / "projects.md"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text(
+                "| C\x00entral | [README](../sample-proj/README.md) | [url](https://example.com) |\n",
+                encoding="utf-8",
+            )
+            mirror = root / "docs" / "ledgers" / "projects-ledger.md"
+
+            build_ledger.write_markdown_mirror(source, mirror)
+
+            rendered = mirror.read_text(encoding="utf-8")
+            self.assertNotIn("\x00", rendered)
+            self.assertIn("| Central |", rendered)
+            self.assertIn("[README](../../sample-proj/README.md)", rendered)
+            self.assertIn("[url](https://example.com)", rendered)
+
+    def test_parse_readme_summary_skips_html_boilerplate_and_decodes_utf16(self) -> None:
+        with ScratchDir() as root:
+            html_readme = root / "README_HTML.md"
+            html_readme.write_text(
+                '<a id="readme-top"></a>\n'
+                "<!-- multi-line\ncomment -->\n"
+                '<div align="center">\n'
+                '<img src="banner.png" alt="banner" />\n'
+                '<h1 align="center">Paperclip Studio</h1>\n'
+                "</div>\n\n"
+                "Runs autonomous workflows cleanly.\n",
+                encoding="utf-8",
+            )
+            title, desc = build_ledger.parse_readme_summary(html_readme)
+            self.assertEqual(title, "Paperclip Studio")
+            self.assertEqual(desc, "Runs autonomous workflows cleanly.")
+
+            utf16_readme = root / "README_UTF16.md"
+            utf16_readme.write_bytes(
+                "# Central Git test from Windows\n\nUTF-16 description.\n".encode("utf-16")
+            )
+            u_title, u_desc = build_ledger.parse_readme_summary(utf16_readme)
+            self.assertEqual(u_title, "Central Git test from Windows")
+            self.assertEqual(u_desc, "UTF-16 description.")
+            self.assertNotIn("\x00", u_title)
+
+            generic_readme = root / "README_GENERIC.md"
+            generic_readme.write_text(
+                "# Directory Summary\n\nPrompt evaluation harness.\n",
+                encoding="utf-8",
+            )
+            g_title, g_desc = build_ledger.parse_readme_summary(generic_readme)
+            self.assertEqual(g_title, "Prompt evaluation harness.")
+            self.assertEqual(g_desc, "")
+
     def test_find_first_existing_skips_unreadable_candidate(self) -> None:
         with ScratchDir() as root:
             project = root / "sample-project"

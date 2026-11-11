@@ -13,6 +13,7 @@ from . import (
     REVIEW_QUEUE_SCHEMA_VERSION,
 )
 from .ids import normalize_locator, stable_id
+from .models import atomic_write_text
 
 
 _ALLOWED_REMOTE_SCHEMES = {"http", "https", "ssh", "git"}
@@ -1174,14 +1175,15 @@ def materialize_identity(
 
     canonical_path = state_dir / "canonical-projects.json"
     review_path = state_dir / "review-queue.json"
-    canonical_path.write_text(json.dumps(canonical, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    review_path.write_text(json.dumps(reviews, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    atomic_write_text(canonical_path, json.dumps(canonical, indent=2, sort_keys=True) + "\n")
+    atomic_write_text(review_path, json.dumps(reviews, indent=2, sort_keys=True) + "\n")
 
     identity_evidence = build_identity_evidence(observations, canonical, decisions)
     identity_evidence.update({"run_id": run_id, "compiled_at": compiled_at})
     evidence_path = state_dir / "identity-evidence.json"
-    evidence_path.write_text(
-        json.dumps(identity_evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    atomic_write_text(
+        evidence_path,
+        json.dumps(identity_evidence, indent=2, sort_keys=True) + "\n",
     )
     observed_at = input_observed_at or (
         str(observations[0].get("observed_at") or "") if observations else ""

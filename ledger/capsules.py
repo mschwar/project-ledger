@@ -27,7 +27,6 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Callable
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -35,7 +34,7 @@ from . import COMPILER_VERSION, PROJECT_CAPSULE_SCHEMA_VERSION
 from .gbrain import resolve_gbrain_link
 from .human_view import write_canonical_markdown
 from .identity import observation_facts, resolve_payload
-from .models import parse_iso_datetime, portable_artifact_path
+from .models import atomic_write_text, parse_iso_datetime, portable_artifact_path
 from .rules import (
     capsule_to_lifecycle_state,
     capsule_to_urgency_state,
@@ -76,20 +75,6 @@ SOURCE_CLASS_REASON = {
 }
 
 _FRONTMATTER_KV_RE = re.compile(r'^([a-zA-Z0-9_]+):\s*(.+?)\s*$')
-
-
-def _parse_iso_instant(value: str | None) -> datetime | None:
-    text = str(value or "").strip()
-    if not text:
-        return None
-    text = re.sub(r"\.(\d{6})\d+(?=[+-]\d{2}:\d{2}$|Z$|$)", r".\1", text)
-    try:
-        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        return None
-    return parsed
 
 
 def _iso_epoch(value: str | None) -> float:
@@ -1519,9 +1504,9 @@ def materialize_capsules(
         )
         filename = f"{project['canonical_project_id']}.json"
         active_filenames.add(filename)
-        (capsules_dir / filename).write_text(
+        atomic_write_text(
+            capsules_dir / filename,
             json.dumps(capsule, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
         )
         capsules.append(capsule)
 
