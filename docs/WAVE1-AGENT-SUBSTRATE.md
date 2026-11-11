@@ -225,7 +225,7 @@ This tranche uses them selectively; later schema work should replace compatibili
 
 This subsystem stays in `project-ledger`.
 
-- AGENT05 owns reusable execution/control grammar and may later consume the manifest/capsules as REALITY inputs.
+- `machina` owns reusable execution/control grammar and consumes the manifest/capsules as REALITY inputs.
 - homelab owns real-machine deployment/orchestration and may later schedule refreshes or expose the query interface across nodes.
 - neither should duplicate Project Ledger's source/identity schema.
 

@@ -8,9 +8,9 @@ Operate and extend Project Ledger safely while preserving its role as a project-
 
 ```bash
 python -m ledger validate
-python -m ledger refresh [--full-scan]
-python -m ledger refresh --no-markdown-mirror [--full-scan]
-python -m ledger compile
+python -m ledger refresh [--full-scan] [--check-remote]
+python -m ledger refresh --no-markdown-mirror [--full-scan] [--check-remote]
+python -m ledger compile [--check-remote]
 python -m ledger orient
 python -m ledger sources
 python -m ledger resolve <referent>
@@ -19,12 +19,15 @@ python -m ledger locate <project>
 python -m ledger explain <referent>
 python -m ledger review [--approve-candidates] [--decision-id ID]
 python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
+python -m ledger lineage [--check | --sync] [--json]
+python -m ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
+python -m ledger mcp
 python -m unittest discover -s tests
 ```
 
 The compatibility scanner remains directly available as `python build_ledger.py`.
 
-Implemented today: `validate`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, `locate`, `explain`, `review`, and `changes`.
+Implemented today: `validate`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, `locate`, `explain`, `review`, `changes`, `lineage`, `sync-gbrain`, and `mcp` (`ledger-mcp`).
 
 Session/attempt receipts are owned by `machina` (Project Ledger does not expose a competing `record-session` store). The manifest capability map is the executable source of truth.
 
@@ -172,40 +175,26 @@ When the target claim model lands, preserve observed/declaration/inference/decis
 
 # Sidecar/declaration operations
 
-Today `.project-ledger.json` is the thin project-local overlay for stable key/display/current-session hints.
+`.project-ledger.json` is a static versioned repository identity declaration (`schemas/project-ledger-sidecar.schema.json`).
 
 Rules:
 
-- only write facts justified by the project/current session;
-- do not invent push timestamps;
-- do not casually replace stable keys;
-- keep `next_step` bounded;
-- do not encode a task tree;
-- recognize that copied projects can have divergent sidecars.
+- only declare durable identity/classification metadata (`schema_version`, `project_key`, `display_name`, `description`, `status`, `tags`, `canonical_url`, `repo_name`, `gbrain_source_slug`, `shared`, `storage_scope`);
+- never write mutable per-commit or per-session fields (`commit`, `head_commit`, `next_step`, `last_session_at`, `last_session_summary`, `last_push_at`) into `.project-ledger.json`;
+- do not casually replace stable keys or declare `canonical_project_id` (assigned by compilation);
+- recognize that copied projects can have divergent sidecars (`DIVERGENT_SIDECAR_DECLARATIONS`).
 
-Target state: sidecars become versioned declaration sources. Conflicting sidecars create competing claims/review rather than last-write-wins canonical state.
+Conflicting sidecars create competing claims/review rather than last-write-wins canonical state.
 
 ---
 
 # Session-end operations
 
-## Compatibility workflow today
-
 For material downstream project work:
 
-1. update sidecar factual current-state fields when appropriate;
-2. factual bounded session summary;
-3. one continuation point;
-4. `last_push_at` only if actually justified;
-5. return/record exact changed files, verification, commit/PR refs, unresolved issues.
-
-Use `prompts/session_end_prompt.md`.
-
-## Target workflow
-
-Prefer a structured session receipt linked to canonical project identity, then compile affected state/views. The receipt should capture landed state and evidence pointers, not narrate the whole session.
-
-A future agent should be able to continue from project capsule + receipt without replaying chat history.
+1. keep `.project-ledger.json` static (update only when durable identity/classification changed);
+2. record what landed, verification evidence, commit/PR refs, and one continuation point in PR/commit/handoff artifacts (`prompts/session_end_prompt.md`);
+3. leave session/attempt receipts to `machina` and worktree leases to `homelab`.
 
 ---
 

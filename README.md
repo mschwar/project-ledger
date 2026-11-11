@@ -192,11 +192,11 @@ See `templates/project-ledger.sidecar.example.json` and `prompts/session_end_pro
 
 Project Ledger owns **project topology and compiled project reality**.
 
-- **AGENT05** owns the reusable execution/control grammar: Work Objects, Assertions, Receipts, evidence, control packets, and disposable-agent continuity.
+- **machina** owns the reusable execution/control grammar: Work Units, Assertions, Receipts, evidence, control packets, and disposable-agent continuity.
 - **homelab** owns deployment/orchestration against the real machine/service estate and its existing WorkSpec execution plane.
 - **Project Ledger** owns source/project topology, provenance, identity/current-state compilation, and the compact reality surfaces those systems can consume.
 
-Do not duplicate Project Ledger's schema/identity engine into AGENT05 or homelab. Integrate through explicit stable outputs once the relevant contract is implemented.
+Do not duplicate Project Ledger's schema/identity engine into `machina` or `homelab`. Integrate through explicit stable outputs once the relevant contract is implemented.
 
 ## Tests & verification
 

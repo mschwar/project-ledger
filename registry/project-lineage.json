@@ -503,7 +503,7 @@
       "observation_ids": [
         "obs_7b8612ab06d408f30c865354"
       ],
-      "project_key_hint": "div-align-center"
+      "project_key_hint": "run-and-deploy-your-ai-studio-app"
     },
     {
       "canonical_project_id": "prj_4bda36895c4e722e54743856",
@@ -575,7 +575,7 @@
       "observation_ids": [
         "obs_612b1fb5fcdd93671c517b3b"
       ],
-      "project_key_hint": "p-align-center"
+      "project_key_hint": "awesome-hermes-agent"
     },
     {
       "canonical_project_id": "prj_550d6f7e1c4b149cd7cc10cd",
@@ -1257,7 +1257,7 @@
       "observation_ids": [
         "obs_906df7ab12aa9b049fab5602"
       ],
-      "project_key_hint": "a-id-readme-top-a"
+      "project_key_hint": "open-notebook"
     },
     {
       "canonical_project_id": "prj_981bd44f515a9c435684919c",
@@ -2242,6 +2242,20 @@
         "obs_4a385da2046911ca06345fad"
       ],
       "project_key_hint": "letters"
+    },
+    {
+      "canonical_project_id": "prj_fe6820646d4b45c68f341f4d",
+      "historical_canonical_ids": [
+        "prj_a2986d235bc657131fa7c245"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/unslop"
+      ],
+      "observation_ids": [
+        "obs_63ff03d4569d38f5d07fed9e"
+      ],
+      "project_key_hint": "github.com/mschwar/unslop"
     },
     {
       "canonical_project_id": "prj_feafc66421c51148dc734c0c",

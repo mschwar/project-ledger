@@ -811,6 +811,17 @@
       "observation_id": "obs_e481da9f2b8066807e403a82",
       "rationale": "Assign canonical_key 'relational-physics' to the consolidated /central/projects/relational-physics research package (superseding its auto-slugified H1 title 'relational-physics-everything-in-one-place') so gbrain.page_key binds directly to the authored GBrain hub page projects/relational-physics.",
       "type": "canonical_key"
+    },
+    {
+      "authority": "operator",
+      "decided_at": "2026-11-11T16:45:00Z",
+      "decision_id": "dec_retire_supersede_active_prompts_reject_20261111",
+      "evidence": [
+        "rev_11076b49d561844ba4649c0d"
+      ],
+      "rationale": "Supersede dec_triage_agent_tooling_prompts_vs_active_prompts_reject_20261030 after /central/repos/active/prompts (obs_f600fe76d48e273577420ea0) was retired from /central/repos/active; /central/repos/agent-tooling/prompts remains canonical.",
+      "supersedes_decision_id": "dec_triage_agent_tooling_prompts_vs_active_prompts_reject_20261030",
+      "type": "supersede"
     }
   ],
   "schema_version": "1.0.0"

@@ -1,16 +1,11 @@
-# Identity Decision Registry
+# Identity & Lineage Registries
 
-This directory contains durable **compiler inputs**, not generated canonical state.
+This directory contains durable **compiler inputs**, not generated canonical state:
 
-`identity-decisions.json` is intentionally empty until an ambiguity is explicitly resolved.
+- `identity-decisions.json` (`schemas/identity-decisions.schema.json`) — operator- and reviewed-agent-approved identity resolutions (`merge`, `split`, `reject_match`, `alias`, `canonical_key`, `supersede`).
+- `project-lineage.json` (`schemas/project-lineage.schema.json`) — durable immutable `canonical_project_id` lineage registry (`ledger lineage --check` / `ledger lineage --sync`).
+- `weak-overlap-triage-candidates.json` (`schemas/weak-overlap-triage-candidates.schema.json`) — reviewed frontier triage candidate batches (`ledger review --approve-candidates`).
 
-Supported first-slice decision types:
-
-- `merge` — authoritative union of two or more observation IDs;
-- `split` — authoritative negative relationship across the listed observation IDs;
-- `reject_match` — authoritative negative relationship for one observation pair;
-- `alias` — attach an exact operator-approved referent to the canonical project containing an observation.
-
-Decisions use stable `decision_id` values and should include rationale/evidence metadata when humans or reviewed agents add them. Missing referenced observations degrade into bounded review items during compilation rather than erasing the rest of the estate.
+Decisions use stable `decision_id` values and include rationale/authority/timestamp metadata. Missing referenced observations degrade into bounded `DECISION_REFERENCE_UNAVAILABLE` review items during compilation (resolved via append-only `supersede` decisions) rather than erasing the rest of the estate.
 
 Generated `state/canonical-projects.json` and `state/review-queue.json` are rebuildable views and must not be edited as decision sources.
