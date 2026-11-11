@@ -1238,7 +1238,15 @@ def _referent_matches(query: str, ref: dict) -> bool:
     if kind == "normalized_remote":
         return normalize_remote_identity(query) == value.casefold()
     if kind == "path":
-        return normalize_locator(query).casefold() == normalize_locator(value).casefold()
+        norm_v = normalize_locator(value).casefold()
+        if normalize_locator(query).casefold() == norm_v:
+            return True
+        if query.startswith("/"):
+            try:
+                return normalize_locator(str(Path(query).resolve())).casefold() == norm_v
+            except OSError:
+                return False
+        return False
     if kind == "raw_url":
         remote_query = normalize_remote_identity(query)
         remote_value = normalize_remote_identity(value)

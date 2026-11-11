@@ -296,7 +296,9 @@ class P51SourceCheckpointTests(unittest.TestCase):
                     {
                         "project_key": "github.com/example/beta",
                         "status": "paused",
-                        "next_step": "ship v2",
+                        "description": "ship v2",
+                        "commit": "deadbeef",
+                        "next_step": "ignored mutable field",
                     }
                 ),
                 encoding="utf-8",
@@ -311,7 +313,8 @@ class P51SourceCheckpointTests(unittest.TestCase):
             self.assertEqual(cp_promote["sources"]["src-active"]["reused_candidate_count"], 1)
             beta_entry = next(e for e in entries_after_promote if e["repo_name"] == "beta")
             self.assertEqual(beta_entry["status"], "paused")
-            self.assertEqual(beta_entry["next_step"], "ship v2")
+            self.assertEqual(beta_entry["description"], "ship v2")
+            self.assertEqual(beta_entry["next_step"], "")
             self.assertTrue(any(e["name"] == "Promoted Project" for e in entries_after_promote))
             self.assertEqual(
                 entries_after_promote, collect_entries(config, config_path.parent, output_dir)

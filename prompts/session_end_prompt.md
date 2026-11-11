@@ -1,7 +1,5 @@
 # Session-End Agent Prompt
 
-Use this compatibility prompt until structured Project Ledger session receipts are implemented.
-
 ```text
 Before ending this material work session, leave an evidence-bearing project handoff that makes the next agent cheaper and more accurate.
 
@@ -10,19 +8,14 @@ Before ending this material work session, leave an evidence-bearing project hand
    - Distinguish completed-and-landed work from attempted/uncommitted work.
    - Record the verification actually performed (tests/checks/scan), not what was intended.
 
-2. If the current live project uses `.project-ledger.json`, update only fields you can justify from this session:
-   - `project_key`: only if missing and you have a stable justified key; do not casually rename an existing stable key.
-   - `display_name`
-   - `status`
-   - `tags`
-   - `canonical_url`
-   - `repo_name`
-   - `shared`
-   - `storage_scope`
-   - `last_session_at`: ISO 8601 with timezone.
-   - `last_session_summary`: 2-5 concrete sentences describing what actually landed/currently exists.
-   - `next_step`: one bounded continuation action, not a task tree.
-   - `last_push_at`: ONLY if a push actually occurred and the timestamp is justified; otherwise preserve the prior value/blank.
+2. Keep `.project-ledger.json` a static repository identity manifest:
+   - Only update durable identity/classification fields when justified:
+     `schema_version`, `project_key`, `display_name`, `description`, `status`,
+     `tags`, `canonical_url`, `repo_name`, `gbrain_source_slug`, `shared`, `storage_scope`.
+   - NEVER write mutable per-commit or per-session fields (`commit`, `head_commit`,
+     `next_step`, `last_session_at`, `last_session_summary`, `last_push_at`) into
+     `.project-ledger.json`, so static repo identity manifests do not become stale
+     after every `git commit`.
 
 3. Preserve uncertainty.
    - List unresolved issues discovered during the session.
@@ -44,20 +37,6 @@ Before ending this material work session, leave an evidence-bearing project hand
 Rules:
 - Do not invent push timestamps, test results, source freshness, or merge state.
 - Do not replace stable identity fields with inferred guesses.
-- Keep the sidecar a thin project declaration/current-state pointer, not a task manager.
-- Prefer references to git/tasks/evidence over copying large histories into the sidecar.
+- Keep the sidecar a static project identity declaration, not a session log or task manager.
 - If the same ambiguity was conclusively resolved during this session, flag it for a durable identity/review decision or regression fixture so future agents do not pay for it again.
 ```
-
-## Target migration
-
-When the structured receipt system lands, the preferred closeout becomes:
-
-```text
-material work
- -> structured session receipt
- -> project/current-state compile
- -> refreshed project capsule/change feed
-```
-
-The sidecar remains a project-local declaration source, while the receipt carries session-specific landed work and verification evidence.

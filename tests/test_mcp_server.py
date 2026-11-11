@@ -186,7 +186,6 @@ class StdlibMcpServerAndGlobalCliTests(unittest.TestCase):
                     "ledger_changes",
                     "ledger_review",
                     "ledger_lineage",
-                    "ledger_jev",
                 ],
             )
             for t in tools:
@@ -224,6 +223,8 @@ class StdlibMcpServerAndGlobalCliTests(unittest.TestCase):
             self.assertFalse(show_res["isError"])
             self.assertEqual(show_res["structuredContent"]["ctx"]["state"], "available")
             self.assertEqual(show_res["structuredContent"]["ctx"]["source_format"], "compiled_structural_scan")
+            self.assertIn("lifecycle_posture", show_res["structuredContent"]["posture"])
+            self.assertIn("attention_urgency", show_res["structuredContent"]["posture"])
 
             locate_res = _call_tool("ledger_locate", {"referent": "alpha"})
             self.assertFalse(locate_res["isError"])
@@ -247,21 +248,6 @@ class StdlibMcpServerAndGlobalCliTests(unittest.TestCase):
             lineage_res = _call_tool("ledger_lineage")
             self.assertFalse(lineage_res["isError"])
             self.assertTrue(lineage_res["structuredContent"]["in_sync"])
-
-            jev_heads_res = _call_tool("ledger_jev", {"action": "heads"})
-            self.assertFalse(jev_heads_res["isError"])
-            self.assertEqual(jev_heads_res["structuredContent"]["count"], 3)
-
-            jev_proj_res = _call_tool("ledger_jev", {"action": "project", "referent": pid})
-            self.assertFalse(jev_proj_res["isError"])
-            self.assertEqual(
-                jev_proj_res["structuredContent"]["jev_advisory"]["inference_layer"],
-                "jev_system_one_advisory",
-            )
-
-            jev_eval_res = _call_tool("ledger_jev", {"action": "eval", "provider": "code"})
-            self.assertFalse(jev_eval_res["isError"])
-            self.assertEqual(jev_eval_res["structuredContent"]["accuracy"], 1.0)
 
             # Unresolved referent returns isError=True with structured status payload
             missing_res = _call_tool("ledger_resolve", {"referent": "nonexistent-project-xyz"})

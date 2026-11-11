@@ -311,12 +311,19 @@
             "clean",
             "ahead",
             "behind",
+            "remote_ahead",
             "diverged",
             "dirty",
             "detached",
             "no_upstream",
             "unknown",
             "not_applicable"
+          ]
+        },
+        "remote_head_commit": {
+          "type": [
+            "string",
+            "null"
           ]
         },
         "warning_codes": {
@@ -758,12 +765,19 @@
             "clean",
             "ahead",
             "behind",
+            "remote_ahead",
             "diverged",
             "dirty",
             "detached",
             "no_upstream",
             "unknown",
             "not_applicable"
+          ]
+        },
+        "remote_head_commit": {
+          "type": [
+            "string",
+            "null"
           ]
         },
         "head_branch": {
