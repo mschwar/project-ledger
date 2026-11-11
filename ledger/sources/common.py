@@ -209,7 +209,11 @@ def load_sidecar(sidecar_path: Path | None) -> dict:
 
 
 _HTML_HEADING_RE = re.compile(r"^<h[1-6]\b[^>]*>(.*?)</h[1-6]>$", re.IGNORECASE)
-_HTML_TAG_RE = re.compile(r"<[^>]+>")
+_HTML_TAG_RE = re.compile(r"</?[A-Za-z!][^>]*>")
+_MD_BADGE_PREFIX_RE = re.compile(
+    r"^(?:(?:\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)|!\[[^\]]*\]\([^)]*\))\s*)+"
+)
+_EMPTY_MD_LINK_PREFIX_RE = re.compile(r"^(?:\[\s*\]\([^)]*\)\s*)+")
 _GENERIC_README_TITLES = frozenset({"directory summary"})
 
 
@@ -233,6 +237,7 @@ def parse_readme_summary(readme_path: Path | None) -> tuple[str, str]:
     title = ""
     description = ""
     in_comment = False
+    in_fence = False
     for raw in lines[:120]:
         line = raw.strip()
         if not line:
@@ -245,22 +250,26 @@ def parse_readme_summary(readme_path: Path | None) -> tuple[str, str]:
             if "-->" not in line:
                 in_comment = True
             continue
-        if line.startswith("```") or line.startswith("---"):
+        if line.startswith(("```", "~~~")):
+            in_fence = not in_fence
+            continue
+        if in_fence or line.startswith("---"):
             continue
         html_heading = _HTML_HEADING_RE.match(line)
         if html_heading:
             cand = _HTML_TAG_RE.sub("", html_heading.group(1)).strip()
-            if cand and cand.casefold() not in _GENERIC_README_TITLES:
+            if not title and cand and cand.casefold() not in _GENERIC_README_TITLES:
                 title = cand
             continue
         if line.startswith("#"):
             cand = _HTML_TAG_RE.sub("", line.lstrip("#")).strip()
-            if cand and cand.casefold() not in _GENERIC_README_TITLES:
+            if not title and cand and cand.casefold() not in _GENERIC_README_TITLES:
                 title = cand
             continue
-        cleaned = _HTML_TAG_RE.sub("", line).strip()
-        cleaned = re.sub(r"^!\[[^\]]*\]\([^)]*\)\s*", "", cleaned).strip()
-        cleaned = re.sub(r"^\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)\s*", "", cleaned).strip()
+        cleaned = _MD_BADGE_PREFIX_RE.sub("", line).strip()
+        cleaned = _HTML_TAG_RE.sub("", cleaned).strip()
+        cleaned = _EMPTY_MD_LINK_PREFIX_RE.sub("", cleaned).strip()
+        cleaned = _MD_BADGE_PREFIX_RE.sub("", cleaned).strip()
         if not cleaned or cleaned.startswith(("[![", "![")):
             continue
         cleaned = re.sub(r"[*_`]+", "", cleaned).strip()

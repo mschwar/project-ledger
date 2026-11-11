@@ -57,10 +57,17 @@ class ProjectLedgerTests(unittest.TestCase):
             target_readme = root / "sample-proj" / "README.md"
             target_readme.parent.mkdir(parents=True, exist_ok=True)
             target_readme.write_text("# Sample\n", encoding="utf-8")
+            paren_readme = root / "My Project (v2)" / "README.md"
+            paren_readme.parent.mkdir(parents=True, exist_ok=True)
+            paren_readme.write_text("# Paren\n", encoding="utf-8")
             source = root / "output" / "projects.md"
             source.parent.mkdir(parents=True, exist_ok=True)
             source.write_text(
-                "| C\x00entral | [README](../sample-proj/README.md) | [url](https://example.com) |\n",
+                "| C\x00entral | [README](../sample-proj/README.md#overview) "
+                "| [Paren](../My%20Project%20(v2)/README.md) "
+                "| [scp](git@github.com:mschwar/machina.git) "
+                "| [obsidian](obsidian://open?vault=notes) "
+                "| [url](https://example.com) |\n",
                 encoding="utf-8",
             )
             mirror = root / "docs" / "ledgers" / "projects-ledger.md"
@@ -70,7 +77,10 @@ class ProjectLedgerTests(unittest.TestCase):
             rendered = mirror.read_text(encoding="utf-8")
             self.assertNotIn("\x00", rendered)
             self.assertIn("| Central |", rendered)
-            self.assertIn("[README](../../sample-proj/README.md)", rendered)
+            self.assertIn("[README](../../sample-proj/README.md#overview)", rendered)
+            self.assertIn("[Paren](../../My%20Project%20(v2)/README.md)", rendered)
+            self.assertIn("[scp](git@github.com:mschwar/machina.git)", rendered)
+            self.assertIn("[obsidian](obsidian://open?vault=notes)", rendered)
             self.assertIn("[url](https://example.com)", rendered)
 
     def test_parse_readme_summary_skips_html_boilerplate_and_decodes_utf16(self) -> None:
@@ -82,13 +92,20 @@ class ProjectLedgerTests(unittest.TestCase):
                 '<div align="center">\n'
                 '<img src="banner.png" alt="banner" />\n'
                 '<h1 align="center">Paperclip Studio</h1>\n'
+                "<h3>Subheading Should Not Overwrite Title</h3>\n"
+                '[<img src="badge.svg" alt="build">](https://example.com/ci)\n'
                 "</div>\n\n"
-                "Runs autonomous workflows cleanly.\n",
+                "```bash\n"
+                "# shell comment inside fence must be ignored\n"
+                "echo ok\n"
+                "```\n\n"
+                "## Installation\n\n"
+                "Runs when x < 4 and y > 2 cleanly.\n",
                 encoding="utf-8",
             )
             title, desc = build_ledger.parse_readme_summary(html_readme)
             self.assertEqual(title, "Paperclip Studio")
-            self.assertEqual(desc, "Runs autonomous workflows cleanly.")
+            self.assertEqual(desc, "Runs when x < 4 and y > 2 cleanly.")
 
             utf16_readme = root / "README_UTF16.md"
             utf16_readme.write_bytes(

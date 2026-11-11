@@ -40,7 +40,7 @@ Generated: 2026-11-01T04:40:17+00:00
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Project Ledger | git | shared | yes |  | 2026-11-01T04:38:56+00:00 | [README](../../README.md) | [url](https://github.com/mschwar/project-ledger.git) | project-ledger | 2026-10-31T21:06:31-06:00 |
 | sentinel | git | shared | yes |  | 2026-11-01T04:38:00+00:00 |  | [url](https://github.com/mschwar/sentinel.git) | sentinel | 2026-10-31T22:37:57-06:00 |
-| Machina | git | shared | yes |  | 2026-11-01T04:37:17+00:00 | [README](../../../machina/README.md) | [url](../../output/git%40github.com%3Amschwar/machina.git) | machina | 2026-10-31T22:26:48-06:00 |
+| Machina | git | shared | yes |  | 2026-11-01T04:37:17+00:00 | [README](../../../machina/README.md) | [url](git@github.com:mschwar/machina.git) | machina | 2026-10-31T22:26:48-06:00 |
 | Scratch | notes | local |  |  | 2026-11-01T04:27:05+00:00 |  | [scratch](../../../../../projects/scratch) | scratch |  |
 | hermes-skills — the fleet-shared Hermes skill corpus | git | shared | yes |  | 2026-11-01T04:24:11+00:00 | [README](../../../../agent-tooling/hermes-skills/README.md) | [url](https://github.com/mschwar/hermes-skills.git) | hermes-skills | 2026-10-30T23:11:52-06:00 |
 | homelab-traces | git | shared | yes |  | 2026-11-01T04:13:02+00:00 | [README](../../../homelab-traces/README.md) | [url](https://github.com/mschwar/homelab-traces.git) | homelab-traces | 2026-10-31T22:12:57-06:00 |

@@ -498,6 +498,44 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
             }
             self.assertEqual(validate_json_schema(payload, review_schema), [], code)
 
+    def test_observations_schema_accepts_unmounted_compat_and_foreign_schema_envelopes(self) -> None:
+        from ledger.sidecar import inspect_entry_sidecar
+
+        obs_schema = self._load_schema("observations.schema.json")
+        unmounted_env = inspect_entry_sidecar(
+            {
+                "sidecar_path": "/unmounted/mirror/.project-ledger.json",
+                "include_reason": "git,stale_sidecar",
+                "project_key": "mirror-proj",
+                "name": "Mirror Proj",
+            }
+        )
+        self.assertEqual(unmounted_env["status"], "unmounted_compat")
+        payload = {
+            "schema_version": "1.0.0",
+            "compiler_version": "0.1.0",
+            "compat_schema_version": "legacy-projects-json-v1",
+            "run_id": "run_0010f01b946138d47256d8fc",
+            "compiled_at": "2026-11-11T05:33:04Z",
+            "observed_at": "2026-11-11T05:33:04Z",
+            "observation_count": 1,
+            "observations": [
+                {
+                    "schema_version": "1.0.0",
+                    "observation_id": "obs_2f29d73d48b88259acf8ac05",
+                    "source_id": "mirror-source",
+                    "snapshot_id": "snap_2f29d73d48b88259acf8ac05",
+                    "source_resolution": "resolved",
+                    "observed_at": "2026-11-11T05:33:04Z",
+                    "project_key": "mirror-proj",
+                    "location": "/unmounted/mirror",
+                    "compat_entry": {"project_key": "mirror-proj"},
+                    "sidecar": unmounted_env,
+                }
+            ],
+        }
+        self.assertEqual(validate_json_schema(payload, obs_schema), [])
+
 
 if __name__ == "__main__":
     unittest.main()

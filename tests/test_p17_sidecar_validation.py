@@ -432,6 +432,20 @@ class SidecarCompilerIntegrationTests(unittest.TestCase):
         self.assertEqual(envelope["issues"], [])
         self.assertEqual(envelope["warnings"], [])
 
+        for malformed in (
+            {"schema": "1.0.0", "project_key": "my-proj"},
+            {"schema": "v1", "name": "Typo Version"},
+            {"schema": "project_ledger_v1", "name": "Typo Family"},
+            {"schema": "custom-tool-v1", "canonical_project_id": "prj_000000000000000000000000"},
+        ):
+            bad_env, bad_accepted = validate_sidecar_mapping(
+                malformed,
+                sidecar_path="/tmp/bad/.project-ledger.json",
+            )
+            self.assertEqual(bad_env["status"], "invalid", malformed)
+            self.assertNotIn("canonical_project_id", bad_accepted, malformed)
+            self.assertTrue(bad_env["issues"], malformed)
+
     def test_packaged_sidecar_schema_matches_repo_schema_and_supports_wheel_fallback(self) -> None:
         from unittest import mock
         from ledger import sidecar as sidecar_mod

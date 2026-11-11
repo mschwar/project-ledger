@@ -150,17 +150,51 @@ def load_sidecar_schema() -> dict[str, Any]:
     return json.loads(packaged.read_text(encoding="utf-8"))
 
 
+_PL_SPECIFIC_SIDECAR_FIELDS: frozenset[str] = (
+    FORBIDDEN_SIDECAR_FIELDS
+    | IGNORED_MUTABLE_SIDECAR_FIELDS
+    | frozenset(
+        {
+            "aliases",
+            "canonical_url",
+            "display_name",
+            "gbrain_source",
+            "gbrain_source_slug",
+            "git",
+            "last_push_at",
+            "last_session_at",
+            "last_session_summary",
+            "lifecycle_state",
+            "machine_name",
+            "path",
+            "project_key",
+            "project_type",
+            "repo_name",
+            "shared",
+            "storage_scope",
+        }
+    )
+)
+_BARE_VERSION_RE = re.compile(r"^v?\d+(?:\.\d+)*(?:-[a-z0-9._-]+)?$")
+
+
 def _is_foreign_schema_declaration(raw: dict[str, Any]) -> bool:
     """Return True when a JSON object explicitly declares a non-Project-Ledger ``schema`` family."""
     if raw.get("schema_version") is not None:
+        return False
+    if any(field in raw for field in _PL_SPECIFIC_SIDECAR_FIELDS):
         return False
     raw_schema = raw.get("schema")
     if not isinstance(raw_schema, str):
         return False
     lowered = raw_schema.strip().lower()
-    if not lowered:
+    if not lowered or _BARE_VERSION_RE.match(lowered):
         return False
-    if lowered.startswith("project-ledger") or "project-ledger-sidecar" in lowered:
+    if (
+        lowered.startswith(("project-ledger", "project_ledger"))
+        or "project-ledger-sidecar" in lowered
+        or "project_ledger" in lowered
+    ):
         return False
     return True
 
