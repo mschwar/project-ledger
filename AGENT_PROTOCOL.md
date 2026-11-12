@@ -12,6 +12,17 @@ The goal is to minimize reconstruction cost, hidden assumptions, duplicated reas
 ORIENT -> RESOLVE -> INSPECT -> DECIDE -> ACT -> VERIFY -> RECORD -> HAND OFF
 ```
 
+Stage summary:
+
+- ORIENT: read the manifest and source health first.
+- RESOLVE: map a user referent to one canonical project or explicit ambiguity.
+- INSPECT: load the bounded project capsule and ranked locations.
+- DECIDE: separate observed, declared, inferred, and decided claims.
+- ACT: execute one bounded change without mutating target repositories during sensing.
+- VERIFY: record the exact tests, validations, and scan coverage executed.
+- RECORD: persist durable declarations, lineage entries, and identity decisions.
+- HAND (handoff summary) and OFF (session closeout): leave continuation state for the next agent.
+
 Do not begin routine work with repo archaeology or a broad filesystem crawl if a compiled view can answer the question.
 
 ## 1. ORIENT
@@ -34,7 +45,7 @@ Before acting, know:
 - which requested capabilities are actually available in the manifest;
 - whether the task is product work, source ingestion, identity work, review resolution, or downstream project work.
 
-Current boundary: `orient` describes the estate, `resolve` performs exact canonical resolution (returning `canonical_project_id`, `gbrain_source_slug`, `preferred_location`, and git working-tree drift warnings), `show` loads bounded project capsules (`state/projects/<canonical_project_id>.json`), `locate` returns the preferred working location and ranked observations with reason codes and git drift warnings, `explain` returns provenance for any canonical project, observation, review item, identity decision, or change event (`chg_...`), `review` lists open reviews plus frontier zero-shot weak-overlap triage candidates (`--approve-candidates`), and `changes` (`state/changes.json`, `ledger changes [--since <run_id>] [--project <referent>]`) reports semantic deltas across compiled runs without raw timestamp churn; `machina` owns session/attempt receipts.
+Current boundary: `orient` describes the estate, and `resolve` performs exact canonical resolution returning `canonical_project_id`, `gbrain_source_slug`, `preferred_location`, and git working-tree drift warnings. `show` loads bounded project capsules (`state/projects/<canonical_project_id>.json`), while `locate` returns the preferred working location and ranked observations with reason codes and git drift warnings. `explain` returns provenance for any canonical project, observation, review item, identity decision, or change event (`chg_...`), and `review` lists open reviews plus frontier zero-shot weak-overlap triage candidates (`--approve-candidates`). Finally, `changes` (`state/changes.json`, `ledger changes [--since <run_id>] [--project <referent>]`) reports semantic deltas across compiled runs without raw timestamp churn, while `machina` owns session and attempt receipts.
 
 ## 2. RESOLVE
 

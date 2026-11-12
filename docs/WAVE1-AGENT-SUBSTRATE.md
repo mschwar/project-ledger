@@ -129,7 +129,7 @@ Each source carries a materialized `result_state` distinguishing `unavailable`
 
 `freshness_state` is honest: it is `known` only when an upstream source supplied
 authoritative timestamp evidence, exposed as `content_as_of` + `content_as_of_basis`
-(authoritative priority: git remote-ref committer date, then HEAD commit date, then
+(authoritative priority: git remote-ref committer date, then `HEAD` commit date, then
 filesystem last-touch). It is `unknown` for an observed source with no such evidence —
 freshness is never invented from compile time or path mtime — and `unavailable` for an
 unprobeable source.
@@ -225,7 +225,7 @@ This tranche uses them selectively; later schema work should replace compatibili
 
 This subsystem stays in `project-ledger`.
 
-- `machina` owns reusable execution/control grammar and consumes the manifest/capsules as REALITY inputs.
+- `machina` owns reusable execution/control grammar and consumes the manifest/capsules as reality inputs.
 - homelab owns real-machine deployment/orchestration and may later schedule refreshes or expose the query interface across nodes.
 - neither should duplicate Project Ledger's source/identity schema.
 

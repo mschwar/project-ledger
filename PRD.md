@@ -2,7 +2,7 @@
 
 ## Product
 
-Project Ledger — project-reality compiler and agent control substrate.
+Project Ledger Product Requirements Document (PRD) — project-reality compiler and agent control substrate.
 
 ## Product thesis
 
