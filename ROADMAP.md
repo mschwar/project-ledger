@@ -22,7 +22,7 @@ Gate A exit (satisfied): `main` is authoritative, tests pass, and source refresh
 
 # Wave 1 — Agent substrate and contracts
 
-Status: **complete (2026-10-31)**. Stable source/snapshot/observation IDs, source health/fingerprints, strict config validation, frozen v0 compatibility contract (`P1.1`), minimal epistemic claims (`P1.4`), honest upstream freshness/result states (`P1.5`), versioned sidecar validation (`P1.7`), executable `schemas/*.schema.json` validation for compiled `state/*.json` outputs, and the `validate` / `refresh` / `compile` / `orient` / `sources` CLI surface are all landed on `main`.
+Status: **complete (2026-10-31)**. Stable source, snapshot, and observation IDs, source health and fingerprints, strict config validation, and the frozen v0 compatibility contract (`P1.1`) are landed on `main`. Minimal epistemic claims (`P1.4`), honest upstream freshness and result states (`P1.5`), versioned sidecar validation (`P1.7`), executable `schemas/*.schema.json` validation, and the `validate` / `refresh` / `compile` / `orient` / `sources` CLI surface are also landed.
 
 Goal: make evidence/state machine-readable and unambiguous before canonicalization grows.
 
@@ -57,7 +57,7 @@ This tranche deliberately does **not** introduce canonical projects, semantic de
 
 ### Source/freshness model
 
-- strengthen source `as_of` / freshness semantics where upstream sources provide authoritative timestamps — **done (P1.5)**: `content_as_of` / `content_as_of_basis` derived only from genuine upstream evidence (git remote-ref > HEAD commit > filesystem last-touch), never invented from compile time or path mtime;
+- strengthen source `as_of` / freshness semantics where upstream sources provide authoritative timestamps — **done (P1.5)**: `content_as_of` / `content_as_of_basis` derived only from genuine upstream evidence (git remote-ref > `HEAD` commit > filesystem last-touch), never invented from compile time or path mtime;
 - distinguish unavailable vs stale vs successfully-observed-empty source outcomes in the materialized contracts — **done (P1.5)**: per-source `result_state` (`observed` / `observed_empty` / `unavailable`) + `observation_count` and manifest-health `observed_empty_source_count`; `freshness_state` is `known`/`unknown`/`unavailable` and honest about what can be known;
 - add previous-snapshot/checkpoint links needed for later incremental operation — **done (P5.1 + `PL-GAP-CLOSEOUT-02`)**: `state/source-checkpoints.json`.
 
@@ -234,7 +234,7 @@ Gate D exit (satisfied):
    - `ledger resolve <referent>` and `ledger locate <project>` tell `machina` and `Hermes` before spawning a worker: the `canonical_project_id`, the authoritative checkout path on `ai-server`, and explicit git working-tree drift warnings (e.g., `"warning: local main is 20 commits behind origin/main"`).
    - `machina` owns work-unit and attempt receipts; Project Ledger capsules point `pointers.task_system` to `machina`.
 2. **Cross-Linking `canonical_project_id` to `gbrain` Sources**:
-   - Every canonical project in `state/canonical-projects.json` and `state/projects/<id>.json` maps to its registered `gbrain` source slug (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry`, or `default`) and `projects/<project_slug>` page key (`ledger/gbrain.py`), so resolving a project yields both deterministic git/filesystem truth (from Project Ledger) and semantic history/decisions (from GBrain).
+   - Every canonical project in `state/canonical-projects.json` and `state/projects/<id>.json` maps to its registered `gbrain` source slug (`active-repos`, `the-garden`, `central-notes`, `central-knowledge`, `central-catalog`, `atlas-registry`, or `default`) and `projects/<project_slug>` page key (`ledger/gbrain.py`). Resolving a project yields both deterministic git and filesystem truth from Project Ledger and semantic history and decisions from GBrain.
 3. **Frontier Zero-Shot Triage on `cross_project_weak_overlaps`**:
    - Replaces Wave 5's custom local-model deduplication pipeline with a single frontier agent pass over `state/identity-evidence.json` + repo READMEs, emitting a candidate decision batch (`registry/weak-overlap-triage-candidates.json`) inspectable via `ledger review` and promotable via one-click human approval (`ledger review --approve-candidates`). Both Batch 1 (21 pairs / 33 durable decisions) and Batch 2 (19 post-`CONV-001` pairs / 29 durable decisions) were approved into `registry/identity-decisions.json` on 2026-10-30 (`65` total active decisions, `176` canonical projects, `0` untriaged weak overlaps).
 4. **Semantic Change Feed (`P4.5`)**:

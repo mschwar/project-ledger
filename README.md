@@ -1,22 +1,28 @@
 # Project Ledger
 
+## TL;DR
+
+Project Ledger reads configured repository directories, git remotes, inventory files, and static `.project-ledger.json` declarations across machines. It validates schemas, checks source health and git drift, reconciles duplicate checkouts without guessing, and writes JSON manifests, per-project capsules, review queues, and change feeds in `state/` for CLI and server queries.
+
+## Overview
+
 Project Ledger is a **project-reality compiler and control substrate** for a distributed project estate.
 
-It ingests project-like observations from directories, git repos, Obsidian vaults, mirrors, backups, and inventory/policy-backed sources, preserves provenance and uncertainty, and is being evolved into the shared project-identity/current-state layer for agents and operator tooling.
+It ingests project-like observations from directories, git repos, Obsidian vaults, mirrors, backups, and inventory/policy-backed sources. It preserves provenance and uncertainty as the shared project-identity and current-state layer for agents and operator tooling.
 
 The optimization target is simple: **a cold agent should be able to understand what project the user means, where trustworthy manifestations exist, how fresh the evidence is, what is uncertain, and what capability is actually available without replaying repo/filesystem archaeology.**
 
 ## Start here
 
-- `CURRENT.md` — canonical executable frontier and next bounded work
-- `SYSTEM.md` — canonical system model and invariants
-- `AGENT_PROTOCOL.md` — agent orientation/action/handoff protocol
-- `SCHEMA.md` — compatibility schema and typed target contracts
-- `docs/WAVE1-AGENT-SUBSTRATE.md` — exact executable Wave 1 contract
-- `ARCHITECTURE.md` — implementation/dataflow architecture
-- `ROADMAP.md` / `BACKLOG.md` — gated evolution and executable work
-- `RUNBOOK.md` — operations/recovery
-- `docs/decisions/` — durable architectural decisions
+- [CURRENT.md](CURRENT.md) — canonical executable frontier and next bounded work
+- [SYSTEM.md](SYSTEM.md) — canonical system model and invariants
+- [AGENT_PROTOCOL.md](AGENT_PROTOCOL.md) — agent orientation, action, and handoff protocol
+- [SCHEMA.md](SCHEMA.md) — compatibility schema and typed target contracts
+- [docs/WAVE1-AGENT-SUBSTRATE.md](docs/WAVE1-AGENT-SUBSTRATE.md) — exact executable Wave 1 contract
+- [ARCHITECTURE.md](ARCHITECTURE.md) — implementation and dataflow architecture
+- [ROADMAP.md](ROADMAP.md) / [BACKLOG.md](BACKLOG.md) — gated evolution and executable work
+- [RUNBOOK.md](RUNBOOK.md) — operations and recovery
+- [docs/decisions/README.md](docs/decisions/README.md) — durable architectural decisions
 
 ## Current executable boundary
 
@@ -65,7 +71,7 @@ Install onto `$PATH` (`~/.local/bin`) with `uv`:
 uv tool install --editable /central/repos/active/project-ledger
 ```
 
-Both `ledger` and `ledger-mcp` resolve Project Ledger's workspace root automatically from any working directory (via `PROJECT_LEDGER_HOME`, active CWD when inside a Project Ledger workspace, or the package checkout root):
+Both `ledger` and `ledger-mcp` resolve Project Ledger's workspace root automatically from any current working directory (CWD) via `PROJECT_LEDGER_HOME`, an active Project Ledger workspace checkout, or the package checkout root:
 
 ```bash
 ledger validate
@@ -87,7 +93,7 @@ ledger mcp
 ledger-mcp
 ```
 
-Use `--json` on the CLI commands when machine-readable output is preferred, or connect an MCP client over stdio to `ledger-mcp` (`python -m ledger mcp`) for zero-subprocess read-only Reality Provider tools (`ledger_orient`, `ledger_sources`, `ledger_resolve`, `ledger_show`, `ledger_locate`, `ledger_explain`, `ledger_changes`, `ledger_review`, `ledger_lineage`) and `ledger://` resources/templates.
+Use `--json` on the CLI commands when machine-readable output is preferred. Connect a Model Context Protocol (MCP) client over stdio to `ledger-mcp` (`python -m ledger mcp`) for zero-subprocess read-only Reality Provider tools (`ledger_orient`, `ledger_sources`, `ledger_resolve`, `ledger_show`, `ledger_locate`, `ledger_explain`, `ledger_changes`, `ledger_review`, `ledger_lineage`) and `ledger://` resources.
 
 `orient` is the cheapest current entrypoint after a compile. It reports run/as-of information, source and observation counts, estate health, and the capability boundary so agents do not mistake planned features for implemented ones.
 
@@ -161,7 +167,7 @@ An observation is a manifestation inside a source and is keyed primarily by sour
 
 The first canonical identity slice now compiles those observations into conceptual projects using only exact normalized repository remotes plus explicit durable decisions. This avoids treating names or compatibility keys as stronger evidence than they are.
 
-See `docs/WAVE1-AGENT-SUBSTRATE.md` for exact semantics and limitations.
+See [docs/WAVE1-AGENT-SUBSTRATE.md](docs/WAVE1-AGENT-SUBSTRATE.md) for exact semantics and limitations.
 
 ## Degraded-source semantics
 
@@ -188,7 +194,7 @@ The new `ledger/` package compiles around this stable output rather than rewriti
 
 `.project-ledger.json` is a static repository identity declaration (`project_key`, `display_name`, `description`, `status`, `tags`, `canonical_url`, `repo_name`, `gbrain_source_slug`, `shared`, `storage_scope`). Mutable per-commit/session fields (`commit`, `head_commit`, `next_step`) are ignored during validation so static sidecars never go stale after `git commit`.
 
-See `templates/project-ledger.sidecar.example.json` and `prompts/session_end_prompt.md`.
+See [templates/project-ledger.sidecar.example.json](templates/project-ledger.sidecar.example.json) and [prompts/session_end_prompt.md](prompts/session_end_prompt.md).
 
 ## System boundary across repos
 
@@ -205,6 +211,7 @@ Do not duplicate Project Ledger's schema/identity engine into `machina` or `home
 ```bash
 ruff check .
 python -m ledger validate
+/usr/bin/python3 -m unittest tests/test_doc_hygiene.py -v
 python -m unittest discover -s tests
 ```
 
@@ -214,4 +221,4 @@ Verification runs locally on the host per fleet proportional-verification policy
 
 Waves 0–5, live `ai-server` provider verification, frontier weak-overlap triage, GBrain reality-block projection, and executable Draft 2020-12 JSON Schemas (`schemas/*.schema.json`) are all landed on `main`.
 
-See `CURRENT.md` first, then `ROADMAP.md` / `BACKLOG.md` (including the Cross-Repo / Out-of-Scope Work Queue).
+See [CURRENT.md](CURRENT.md) first, then [ROADMAP.md](ROADMAP.md) / [BACKLOG.md](BACKLOG.md) (including the Cross-Repo / Out-of-Scope Work Queue).

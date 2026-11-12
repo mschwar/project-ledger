@@ -177,7 +177,7 @@ compile.
 - `known` — a genuine authoritative content timestamp was supplied by an upstream source
   and is exposed as `content_as_of` with `content_as_of_basis` naming the field that
   supplied it. Authoritative priority is git remote-ref committer date
-  (`compat.entry.last_remote_ref_at`), then git HEAD commit date
+  (`compat.entry.last_remote_ref_at`), then git `HEAD` commit date
   (`compat.entry.head_commit_at`), then filesystem last-touch time
   (`compat.entry.last_touch_at`).
 - `unavailable` — the source could not be probed, so its content freshness is unknown by
@@ -450,7 +450,7 @@ merge_decision_ids[]
 canonical_key_decision_id
 ```
 
-Current canonical IDs are deterministic under unchanged identity evidence. A single normalized remote is the preferred anchor; explicit merge decisions anchor multi-remote/non-remote merged groups; otherwise a singleton observation anchors the project. A normalized remote is only used as the anchor when it is **unique to one project** across the whole compile — when a split/reject keeps two observations that share an exact remote in separate projects, each falls back to a membership-scoped anchor so the two projects never share a `canonical_project_id` (P2.5). When a project upgrades its anchor (for example from a singleton observation or merge decision to a normalized remote, or across retained run history in `state/runs/`), unambiguous former `prj_*` IDs are preserved as `historical_canonical_id` referents so external references continue resolving seamlessly.
+Current canonical IDs are deterministic under unchanged identity evidence. A single normalized remote is the preferred anchor; explicit merge decisions anchor multi-remote/non-remote merged groups; otherwise a singleton observation anchors the project. A normalized remote is only used as the anchor when it is **unique to one project** across the whole compile. When a split or reject keeps two observations sharing an exact remote in separate projects, each falls back to a membership-scoped anchor so the two projects never share a `canonical_project_id` (P2.5). When a project upgrades its anchor (for example from a singleton observation or merge decision to a normalized remote, or across retained run history in `state/runs/`), unambiguous former `prj_*` IDs are preserved as `historical_canonical_id` referents so external references continue resolving seamlessly.
 
 `resolved_fields` records claim provenance for each resolved canonical field (`project_key`, `display_name`, `gbrain_source_slug`): which observation/decision/evidence produced the value, so a cold agent can see *why* a canonical value exists without re-running archaeology. Provenance kinds are `decision` (canonical_key), `declaration` (project_key sidecar), `observed` (remote/name/corpus path), or `derived` (fallback).
 
@@ -715,7 +715,7 @@ Durable explicit resolution (implemented in §1.7):
 - `decision_id`
 - decision type: merge, split, alias, reject-match, canonical-key assignment, supersede
 - affected observation/canonical IDs
-- resulting canonical ID if applicable
+- resulting canonical ID when the decision merges or assigns a canonical project
 - rationale/evidence refs
 - authority: operator, trusted automation, reviewed agent
 - `decided_at`
@@ -907,7 +907,7 @@ summary                 source_count, hit_source_count, partial_source_count, mi
 sources                 map of source_id -> per-source checkpoint & candidate cache
 ```
 
-Unlike Wave 1's shallow `probe_fingerprint`, `checkpoint_fingerprint` uses a single-pass `os.scandir` traversal (`U4`) hashing effective source/default configuration, pure-Python `.git` ref/HEAD/index/config state (including gitfile worktrees), `.machina/state.json`, `.ctx/`, `.obsidian`, `README` and sidecar bytes, and bounded descendant tree `(rel_path, st_mtime_ns, st_size)` state alongside source-level `inventory_policy` artifact stat signatures and compile-stage caches (`sidecar_envelope`, `git_drift`, `ctx_raw_skeleton`) so warm refreshes spawn zero subprocesses while preserving byte-identical compatibility entries. `ledger refresh --full-scan` bypasses and refreshes the checkpoint file.
+Unlike Wave 1's shallow `probe_fingerprint`, `checkpoint_fingerprint` uses a single-pass `os.scandir` traversal (`U4`) hashing effective configuration, pure-Python `.git` ref/`HEAD`/index/config state (including gitfile worktrees), `.machina/state.json`, `.ctx/`, `.obsidian`, `README` and sidecar bytes, and bounded descendant tree `(rel_path, st_mtime_ns, st_size)` state. It also caches source-level `inventory_policy` artifact stat signatures and compile-stage (`sidecar_envelope`, `git_drift`, `ctx_raw_skeleton`) outputs so warm refreshes spawn zero subprocesses while preserving byte-identical compatibility entries. `ledger refresh --full-scan` bypasses and refreshes the checkpoint file.
 
 ---
 
@@ -928,7 +928,7 @@ Each future canonical field policy should define:
 Examples:
 
 - identity merge decision outranks heuristic similarity;
-- observed current git HEAD outranks stale prose;
+- observed current git `HEAD` outranks stale prose;
 - explicit display-name declaration outranks README-title inference;
 - fresh trusted receipt may outrank older continuation metadata.
 
@@ -937,7 +937,7 @@ Examples:
 # 5. Identity invariants
 
 1. `canonical_project_id` is pinned durably in `registry/project-lineage.json` (`schemas/project-lineage.schema.json`, `ledger/lineage.py`, `ledger lineage [--sync|--check]`, `U3`) so it remains immutable across remote additions, GitHub repository renames, merge absorptions, and `state/` wipes, with superseded anchor IDs preserved as `historical_canonical_id` referents.
-2. `project_key` is a human-readable alias, not canonical identity. When an explicit `split` or `reject_match` decision keeps observations sharing an exact normalized remote in separate conceptual projects and their auto-derived `project_key` would otherwise collide (with no explicit `canonical_key` override), the compiler deterministically disambiguates each project's `project_key` as `<base_key>-<8char_id_prefix>` (`reason_code = "DISAMBIGUATED_SPLIT_PROJECT_KEY"`) while retaining `<base_key>` as a `project_key_hint` referent and preserving `PROJECT_KEY_AMBIGUOUS` review visibility until an operator assigns a `canonical_key`.
+2. `project_key` is a human-readable alias, not canonical identity. When an explicit `split` or `reject_match` decision keeps observations sharing an exact normalized remote in separate conceptual projects and their auto-derived `project_key` collides without an explicit `canonical_key` override, each disambiguates to `<base_key>-<8char_id_prefix>` (`reason_code = "DISAMBIGUATED_SPLIT_PROJECT_KEY"`). The compiler retains `<base_key>` as a `project_key_hint` referent and preserves `PROJECT_KEY_AMBIGUOUS` review visibility until an operator assigns a `canonical_key`.
 3. observation IDs and canonical IDs are different namespaces.
 4. remotes/URLs/paths/names are identity evidence and aliases, not sufficient universal identity.
 5. ambiguous matches create review items rather than silent merges.

@@ -77,7 +77,7 @@ The compiler rebuilds canonical state from those inputs. This makes state explai
 
 Do not flatten different kinds of knowledge into one field.
 
-- **Observation** — deterministic source fact: path existed, git HEAD was X, inventory contained ID Y.
+- **Observation** — deterministic source fact: path existed, git `HEAD` was X, inventory contained ID Y.
 - **Declaration** — explicit maintained assertion: project key, display name, lifecycle state.
 - **Inference** — machine conclusion with confidence: probable duplicate, likely preferred copy.
 - **Decision** — durable ambiguity resolution: merge/split observations, accept alias, prefer a claim.
@@ -86,7 +86,7 @@ Every important canonical value should be explainable through these layers.
 
 ## Authority is field-specific
 
-There is no universal rule like “sidecar always wins.” Resolution policy depends on the field. A human merge/split decision outranks identity heuristics; observed git HEAD outranks stale prose; a fresh trusted session receipt may outrank an older continuation pointer.
+There is no universal rule like “sidecar always wins.” Resolution policy depends on the field. A human merge/split decision outranks identity heuristics; observed git `HEAD` outranks stale prose; a fresh trusted session receipt may outrank an older continuation pointer.
 
 An agent should be able to ask of any resolved value: where did it come from, how fresh is it, what conflicts existed, and why was it selected?
 
@@ -130,7 +130,7 @@ It should expose compiler/schema version, run ID/time, config digest, source hea
 
 Target: `state/projects/<canonical_project_id>.json`
 
-One compact semantic cache per project containing identity/aliases, one-line purpose, lifecycle/current state, last trusted session and next step, canonical URL, observations ranked by utility/freshness, preferred working location when resolvable, fresh git facts, open conflicts/review items, `as_of` data, and pointers to deeper evidence/task/knowledge context.
+One compact semantic cache per project holds identity, aliases, a one-line purpose, lifecycle state, last trusted session, next step, and canonical URL. It also includes ranked observations, a preferred working location when resolvable, fresh git facts, open review items, `as_of` data, and pointers to deeper evidence, task, and knowledge context.
 
 ### Review queue
 

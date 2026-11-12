@@ -23,6 +23,7 @@ python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KI
 python -m ledger lineage [--check | --sync] [--merge-from PATH] [--json]
 python -m ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
 python -m ledger mcp
+/usr/bin/python3 -m unittest tests/test_doc_hygiene.py -v
 python -m unittest discover -s tests
 ```
 
@@ -105,7 +106,7 @@ Current required inputs:
 - `policy_path`;
 - intended `policy_crawl_treatments`, normally `project_discovery`;
 - normally `require_project_ledger_candidate: true`;
-- source/machine/storage metadata as appropriate.
+- explicit `source_id`, `machine_name`, and `storage_scope` metadata when the source spans remote or shared storage.
 
 Required metadata artifacts fail early with operator-readable validation errors.
 
