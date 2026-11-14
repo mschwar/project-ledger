@@ -9,6 +9,7 @@ if [[ -z "${PROJECT_LEDGER_REPO:-}" ]]; then
   fi
 fi
 PROJECT_LEDGER_CONFIG=${PROJECT_LEDGER_CONFIG:-$PROJECT_LEDGER_REPO/ledger_config.json}
+PROJECT_LEDGER_LINEAGE=${PROJECT_LEDGER_LINEAGE:-$PROJECT_LEDGER_REPO/registry/project-lineage.json}
 WATCHDOG_STATE_DIR=${PROJECT_LEDGER_WATCHDOG_STATE_DIR:-/central/registry/reports/project-ledger/watchdog}
 PROJECT_LEDGER_PYTHON=${PROJECT_LEDGER_PYTHON:-python3}
 PROJECT_LEDGER_FULL_SCAN=${PROJECT_LEDGER_FULL_SCAN:-0}
@@ -16,6 +17,7 @@ PROJECT_LEDGER_GITHUB_SYNC=${PROJECT_LEDGER_GITHUB_SYNC:-auto}
 PROJECT_LEDGER_CLONE_ROOT=${PROJECT_LEDGER_CLONE_ROOT:-/central/repos/active}
 PROJECT_LEDGER_GITHUB_INVENTORY_FILE=${PROJECT_LEDGER_GITHUB_INVENTORY_FILE:-}
 PROJECT_LEDGER_GBRAIN_SYNC=${PROJECT_LEDGER_GBRAIN_SYNC:-auto}
+PROJECT_LEDGER_GBRAIN_PUSH=${PROJECT_LEDGER_GBRAIN_PUSH:-1}
 PROJECT_LEDGER_BRAIN_DIR=${PROJECT_LEDGER_BRAIN_DIR:-/home/prime/brain}
 PROJECT_LEDGER_GBRAIN_SYNC_HOOK=${PROJECT_LEDGER_GBRAIN_SYNC_HOOK:-}
 PROJECT_LEDGER_NOTIFY_HOOK=${PROJECT_LEDGER_NOTIFY_HOOK:-}
@@ -259,6 +261,16 @@ if [[ "$has_review_queue" == "1" ]]; then
       --state-dir "$TMP/state" --json >"$TMP/review.json"
   )
 fi
+if [[ -f "$PROJECT_LEDGER_LINEAGE" && -f "$TMP/state/canonical-projects.json" ]]; then
+  (
+    cd "$PROJECT_LEDGER_REPO"
+    "$PROJECT_LEDGER_PYTHON" -m ledger lineage \
+      --state-dir "$TMP/state" \
+      --project-lineage "$PROJECT_LEDGER_LINEAGE" \
+      --check \
+      --json >"$TMP/lineage-check.json" || true
+  )
+fi
 
 # Maintain Wave 1 normalized semantic-snapshot.json both for backward-compatible
 # consumers and as fallback when running against a Wave 1-only fixture.
@@ -413,12 +425,17 @@ for optional_state_file in \
   github-sync.json \
   canonical-projects.json \
   canonical-projects.md \
+  portfolio-index.json \
   identity-evidence.json \
   review-queue.json; do
   if [[ -f "$TMP/state/$optional_state_file" ]]; then
     install -m 0644 "$TMP/state/$optional_state_file" "$WATCHDOG_STATE_DIR/$optional_state_file"
   fi
 done
+
+if [[ -s "$TMP/lineage-check.json" ]]; then
+  install -m 0644 "$TMP/lineage-check.json" "$WATCHDOG_STATE_DIR/lineage-check.json"
+fi
 
 if [[ "$use_staged_lineage" == "1" && -f "$TMP/project-lineage.json" ]]; then
   install -m 0644 "$TMP/project-lineage.json" "$WATCHDOG_STATE_DIR/project-lineage.json"
@@ -450,6 +467,7 @@ if [[ "$PROJECT_LEDGER_SYNC_REPO_STATE" == "1" ]]; then
     github-sync.json \
     canonical-projects.json \
     canonical-projects.md \
+    portfolio-index.json \
     identity-evidence.json \
     review-queue.json \
     changes.json; do
@@ -492,14 +510,16 @@ if [[ "$triggered" == "yes" ]]; then
     "$TMP/state/system-manifest.json" \
     "$TMP/changes.json" \
     "$TMP/state/canonical-projects.json" \
+    "$TMP/lineage-check.json" \
     "$TMP/alert-base.json" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-manifest_path, changes_path, projects_path, out_path = map(Path, sys.argv[1:5])
+manifest_path, changes_path, projects_path, lineage_path, out_path = map(Path, sys.argv[1:6])
 manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 changes = json.loads(changes_path.read_text(encoding="utf-8")) if changes_path.is_file() else {}
+lineage_doc = json.loads(lineage_path.read_text(encoding="utf-8")) if lineage_path.is_file() else {}
 projects_payload = (
     json.loads(projects_path.read_text(encoding="utf-8"))
     if projects_path.is_file()
@@ -532,11 +552,20 @@ for event in changes.get("changes") or []:
             }
         )
 
+lineage_in_sync = bool(lineage_doc.get("in_sync", True))
+lineage_unpinned_count = (
+    int(lineage_doc.get("added_count") or 0)
+    + int(lineage_doc.get("updated_count") or 0)
+    + int(lineage_doc.get("absorbed_count") or 0)
+)
+
 reasons = []
 if int(changes.get("change_count") or 0) > 0:
     reasons.append("SEMANTIC_CHANGES_DETECTED")
 if int(changes.get("untriaged_weak_overlap_count") or 0) > 0:
     reasons.append("UNTRIAGED_WEAK_OVERLAPS_PRESENT")
+if not lineage_in_sync:
+    reasons.append("LINEAGE_REGISTRY_DRIFT")
 if not reasons:
     reasons.append("INITIAL_TRIGGER_OVERRIDE")
 
@@ -547,6 +576,8 @@ alert = {
     "change_count": int(changes.get("change_count") or 0),
     "untriaged_weak_overlap_count": int(changes.get("untriaged_weak_overlap_count") or 0),
     "review_count": int(changes.get("review_count") or 0),
+    "lineage_in_sync": lineage_in_sync,
+    "lineage_unpinned_count": lineage_unpinned_count,
     "github_sync_status": None,
     "affected_gbrain_slugs": sorted(slugs),
     "affected_projects": affected_projects,
@@ -588,9 +619,14 @@ PY
       sync_gbrain_args=(
         --state-dir "$TMP/state"
         --brain-dir "$PROJECT_LEDGER_BRAIN_DIR"
-        --ingest
         --json
       )
+      if [[ -z "$PROJECT_LEDGER_GBRAIN_SYNC_HOOK" ]]; then
+        sync_gbrain_args+=(--ingest)
+        if [[ "$PROJECT_LEDGER_GBRAIN_PUSH" == "1" ]]; then
+          sync_gbrain_args+=(--push)
+        fi
+      fi
       if [[ "$scan_mode" != "full-scan" && -n "$affected_project_ids" ]]; then
         for pid in $affected_project_ids; do
           sync_gbrain_args+=(--project "$pid")

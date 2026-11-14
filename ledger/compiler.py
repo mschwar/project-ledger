@@ -13,6 +13,7 @@ from .contracts import SOURCE_RESULT_STATES, capability
 from .ids import digest_json, observation_id_for, path_digest, stable_id
 from .identity import materialize_identity
 from .models import atomic_write_text, portable_artifact_path
+from .portfolio import PORTFOLIO_INDEX_FILENAME, materialize_portfolio_index
 from .sidecar import inspect_entry_sidecar
 from .sources.git import inspect_entry_git_remotes, resolve_observation_git_drift
 from .structural_ctx import extract_structural_ctx
@@ -531,6 +532,15 @@ def compile_state(
             if cap_file.is_file():
                 capsules_by_id[pid] = json.loads(cap_file.read_text(encoding="utf-8"))
 
+    portfolio_path = state_dir / PORTFOLIO_INDEX_FILENAME
+    portfolio_doc = materialize_portfolio_index(
+        capsules=list(capsules_by_id.values()),
+        state_dir=state_dir,
+        run_id=run_id,
+        compiled_at=compiled_at,
+        input_observed_at=observed_at,
+    )
+
     current_snapshot = build_run_snapshot(
         run_id=run_id,
         compiled_at=compiled_at,
@@ -577,6 +587,7 @@ def compile_state(
             "identity_evidence": evidence_payload["identity_evidence_count"],
             "review_items": review_payload["review_count"],
             "change_events": change_feed_payload["change_count"],
+            "ecosystem_edges": portfolio_doc["summary"]["ecosystem_edge_count"],
         },
         "changes": {
             "baseline_state": change_feed_payload["baseline_state"],
@@ -596,6 +607,9 @@ def compile_state(
             "canonical_projects": capability("available"),
             "identity_evidence": capability("available"),
             "project_capsules": capability("available"),
+            "portfolio_triage": capability("available"),
+            "ecosystem_graph": capability("available"),
+            "fleet_overlay": capability("available"),
             "review_queue": capability("available"),
             "change_feed": capability("available"),
             "gbrain_page_sync": capability("available"),
@@ -607,17 +621,18 @@ def compile_state(
             "canonical_projects": _rel_artifact(canonical_path),
             "canonical_markdown": _rel_artifact(state_dir / "canonical-projects.md"),
             "project_capsules": _rel_artifact(capsules_dir),
+            "portfolio_index": _rel_artifact(portfolio_path),
             "identity_evidence": _rel_artifact(evidence_path),
             "review_queue": _rel_artifact(review_path),
             "change_feed": _rel_artifact(changes_path),
             "system_manifest": _rel_artifact(manifest_path),
         },
         "limitations": [
-            "Canonical identity auto-merges only exact normalized repository remotes; names and compatibility project_key values are referents, not automatic identity authority.",
-            "Non-remote duplicate manifestations require an explicit identity decision until stronger typed declaration contracts land.",
-            "Source freshness is reported as known only where an upstream source supplies authoritative timestamp evidence (git remote-ref or HEAD commit); otherwise it is honestly unknown rather than invented.",
-            "Compatibility snapshot IDs are scoped by source and the v0 output generated_at; v0 does not preserve native per-source snapshot metadata.",
-            "Current-state/session fields inside compatibility entries remain legacy declarations until the later current-state resolver lands.",
+            "Canonical identity auto-merges only exact normalized primary repository remotes; names and compatibility project_key values are referents, not automatic identity authority.",
+            "Non-remote duplicate manifestations require an explicit durable decision in registry/identity-decisions.json so ambiguous observations are never silently collapsed.",
+            "Source freshness is reported as known only where an upstream source supplies authoritative timestamp evidence (git remote-ref or HEAD commit); otherwise it remains unknown.",
+            "Compatibility snapshot IDs remain scoped to the v0 compatibility scan pass while source-checkpoints.json tracks content-addressed candidate and git ref fingerprints.",
+            "Session and attempt execution receipts are intentionally owned externally by machina (.machina/state.json is ingested read-only when present).",
         ],
     }
     atomic_write_text(manifest_path, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
