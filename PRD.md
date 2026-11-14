@@ -14,16 +14,17 @@ The success criterion is not “we indexed everything.” It is **routine projec
 
 ## Current status
 
-As of October 31, 2026, the implementation on `main` has crossed all planned Wave 0–5 boundaries plus the fleet Reality Provider seam:
+As of November 14, 2026, the implementation on `main` has crossed all planned Wave 0–8 boundaries plus the fleet Reality Provider seam:
 
-1. estate observation/orientation with incremental extraction and compile-stage checkpointing (`P5.1`);
-2. conservative canonical-identity reconciliation, durable decisions, frontier zero-shot weak-overlap triage, and `historical_canonical_id` lineage (`P2.1`–`P2.8`, `P5.2`–`P5.3`);
-3. the full Wave 3 agent read plane (`P3.1`–`P3.7`): bounded `<= 16 KiB` project capsules (`state/projects/<canonical_project_id>.json`) with read-only `.ctx/` and `.machina/state.json` continuity ingestion, explainable preferred-location resolution, and `state/canonical-projects.md`;
+1. estate observation/orientation with in-process `scan_with_markdown_mirror()` refresh, incremental extraction, and compile-stage checkpointing (`P5.1`, Wave 6);
+2. conservative canonical-identity reconciliation, durable decisions, frontier zero-shot weak-overlap triage, and immutable `registry/project-lineage.json` + `historical_canonical_id` lineage (`P2.1`–`P2.8`, `P5.2`–`P5.3`, `U3`);
+3. the full Wave 3–7 agent read plane (`P3.1`–`P3.7`, Wave 7): bounded `<= 16 KiB` project capsules (`state/projects/<canonical_project_id>.json`), single-read estate portfolio triage (`state/portfolio-index.json`, `ledger portfolio`), pure-Python cross-repository dependency and reverse blast-radius edges (`ledger/ecosystem.py`), passive `INV-FLEET-GAME-01` fleet occupancy overlay (`ledger/fleet.py`), explainable preferred-location resolution, and `state/canonical-projects.md`;
 4. Wave 4's zero-churn semantic change feed (`P4.5`: `state/changes.json`, bounded `state/runs/<run_id>.json`, and `ledger changes`);
-5. versioned sidecar declaration validation (`P1.7`: `schemas/project-ledger-sidecar.schema.json`) and executable Draft 2020-12 JSON Schemas for compiled `state/*.json` outputs (`schemas/*.schema.json`);
-6. collision-free GBrain source/page cross-linking and idempotent `projects/<slug>.md` reality-block projection (`ledger sync-gbrain`).
+5. versioned sidecar declaration validation (`P1.7`: `schemas/project-ledger-sidecar.schema.json`) and 15 executable Draft 2020-12 `JSON` Schemas covering all compiled `state/*.json` and committed `registry/` contracts (`schemas/*.schema.json`);
+6. collision-free GBrain source/page cross-linking, shadow-source pruning, and idempotent `projects/<slug>.md` reality-block projection with origin push (`ledger sync-gbrain [--push] [--prune-shadow-source ID]`, Wave 6);
+7. 10-tool stdlib Model Context Protocol (MCP) read server over both stdio and tailnet-bound Streamable `HTTP` (`ledger mcp`, `ops/project-ledger-mcp-tailnet.sh`, Wave 8).
 
-Implemented CLI commands: `validate`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, `locate`, `explain`, `review`, `changes`, and `sync-gbrain`.
+Implemented `CLI` commands: `validate`, `sync-github`, `refresh`, `compile`, `orient`, `sources`, `portfolio`, `resolve`, `show`, `locate`, `explain`, `review`, `changes`, `lineage`, `sync-gbrain`, and `mcp`.
 
 Owned externally by sibling fleet planes (not duplicated in Project Ledger):
 - Work Unit / Attempt / Receipt execution kernel (`machina`);

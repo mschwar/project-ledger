@@ -88,7 +88,7 @@ Current constants from `ledger/__init__.py`:
 
 ```text
 COMPILER_VERSION                    = 0.2.0
-MANIFEST_SCHEMA_VERSION             = 1.2.0
+MANIFEST_SCHEMA_VERSION             = 1.3.0
 OBSERVATION_SCHEMA_VERSION          = 1.0.0
 COMPAT_FLAT_SCHEMA_VERSION          = 0.1.0
 CANONICAL_PROJECT_SCHEMA_VERSION    = 1.0.0
@@ -98,7 +98,9 @@ REVIEW_QUEUE_SCHEMA_VERSION         = 1.0.0
 PROJECT_CAPSULE_SCHEMA_VERSION      = 1.0.0
 CHANGE_FEED_SCHEMA_VERSION          = 1.0.0
 SOURCE_CHECKPOINT_SCHEMA_VERSION    = 1.0.0
+PROJECT_LINEAGE_SCHEMA_VERSION      = 1.0.0
 GITHUB_SYNC_SCHEMA_VERSION          = 1.0.0
+PORTFOLIO_INDEX_SCHEMA_VERSION      = 1.0.0
 ```
 
 Full compatibility/migration policy for these versions is still Gate B work. Unsupported future major versions must eventually fail/degrade explicitly rather than being guessed through.
@@ -848,6 +850,24 @@ Contents (bounded within `16 KiB` per capsule via `budget`):
 
 The capsule omits deep raw compatibility payloads unless needed via `ledger explain`.
 
+## Estate portfolio & blast-radius index
+
+Generated during `compile_state` (validated against `schemas/portfolio-index.schema.json`):
+
+```text
+state/portfolio-index.json
+```
+
+Provides single-read (`O(1)`) estate-wide triage, cross-repository blast-radius dependencies (`ledger/ecosystem.py`), and passive local `tmpfs` fleet occupancy (`ledger/fleet.py`, enforcing `INV-FLEET-GAME-01` without probing remote hosts):
+
+- `schema_version` (`PORTFOLIO_INDEX_SCHEMA_VERSION = "1.0.0"`), `compiler_version`, `run_id`, `compiled_at`, `as_of`
+- `summary` (`project_count`, `resolved_count`, `urgent_count`, `dirty_count`, `ahead_count`, `behind_count`, `remote_ahead_count`, `cycle_project_count`, `machina_active_count`, `ecosystem_edge_count`, `by_lifecycle_posture`, `by_urgency`)
+- `fleet` (`state`: `available` | `stale` | `unavailable`, `reason_code`, `pulse_path`, `generated_at`, `node_count`, `dispatchable_nodes[]`, `gaming_nodes[]`, `nodes[]`)
+- `ecosystem_edges[]` (`source_project_id`, `source_project_key`, `target_project_id`, `target_project_key`, `relation_kind`: `git_submodule` | `package_dependency` | `estate_path_reference` | `github_repo_reference` | `cli_or_mcp_binding`, `evidence_path`, `matched_token`)
+- `projects[]` (sorted by attention urgency, reverse consumer count, and cycle count; includes `preferred_location`, `git_state`, `posture` with deterministic `lifecycle_reasons[]` and `urgency_reasons[]`, `machina`, `structural_health`, and `ecosystem` `depends_on[]` / `depended_on_by[]`)
+
+Queried via `ledger portfolio` and Model Context Protocol (MCP) tool `ledger_portfolio` / resource `ledger://portfolio`. `ledger show` and `ledger explain` also attach each project's `ecosystem` slice when `portfolio-index.json` is present.
+
 ## Human canonical ledger view
 
 Generated:
@@ -968,7 +988,7 @@ These compatibility rules remain important hardening work. The first identity sl
 
 1. preserve the flat compatibility output as an explicit v0 contract — **done (P1.1)**: frozen in `docs/COMPATIBILITY.md` + `tests/fixtures/compat-contract.json`;
 2. introduce typed entity collections beside it rather than silently changing field meanings;
-3. validate generated schemas at compile boundaries — **done (`PL-GAP-CLOSEOUT-03` + `PL-AUDIT-DRAIN-01`)**: all 13 JSON contracts (`system-manifest`, `observations`, `canonical-projects`, `project-capsule`, `identity-evidence`, `review-queue`, `changes`, `source-checkpoints`, `run-snapshot`, `project-lineage`, `identity-decisions`, `weak-overlap-triage-candidates`, and `project-ledger-sidecar`) are governed by strict Draft 2020-12 JSON Schemas under `schemas/*.schema.json` and validated by `tests/test_state_schemas.py`;
+3. validate generated schemas at compile boundaries — **done (`PL-GAP-CLOSEOUT-03` + `PL-AUDIT-DRAIN-01` + Wave 7)**: all 15 JSON contracts (`system-manifest`, `observations`, `canonical-projects`, `project-capsule`, `portfolio-index`, `identity-evidence`, `review-queue`, `changes`, `source-checkpoints`, `github-sync`, `run-snapshot`, `project-lineage`, `identity-decisions`, `weak-overlap-triage-candidates`, and `project-ledger-sidecar`) are governed by strict Draft 2020-12 JSON Schemas under `schemas/*.schema.json` and validated by `tests/test_state_schemas.py`;
 4. define major/minor compatibility behavior and migration notes — **done (P1.1)**: semver major/minor/patch policy in `docs/COMPATIBILITY.md` §3;
 5. reject or explicitly degrade on unsupported major versions — **done (P1.1)**: `ledger/compat_contract.py` rejects an unsupported `format` (`COMPAT_FORMAT_UNSUPPORTED`) and an unsupported schema major (`COMPAT_MAJOR_UNSUPPORTED`) at the compile boundary rather than guessing through; no version marker defaults to supported v0;
 6. let generated view versions evolve without changing immutable entity identity.

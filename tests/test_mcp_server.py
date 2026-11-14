@@ -169,7 +169,7 @@ class StdlibMcpServerAndGlobalCliTests(unittest.TestCase):
             assert isinstance(ping_resp, dict)
             self.assertEqual(ping_resp["result"], {})
 
-            # 2. tools/list: all 9 read-only tools present, zero mutating tools
+            # 2. tools/list: all 10 read-only tools present, zero mutating tools
             tools_resp = server.handle_message({"jsonrpc": "2.0", "id": 4, "method": "tools/list"})
             assert isinstance(tools_resp, dict)
             tools = tools_resp["result"]["tools"]
@@ -179,6 +179,7 @@ class StdlibMcpServerAndGlobalCliTests(unittest.TestCase):
                 [
                     "ledger_orient",
                     "ledger_sources",
+                    "ledger_portfolio",
                     "ledger_resolve",
                     "ledger_show",
                     "ledger_locate",

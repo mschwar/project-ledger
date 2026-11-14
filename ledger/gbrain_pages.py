@@ -18,6 +18,7 @@ a GBrain markdown repository (such as ``/home/prime/brain``) under ``projects/<s
 
 from __future__ import annotations
 
+import json
 import re
 import shutil
 import subprocess
@@ -241,13 +242,8 @@ def render_new_project_stub(
     return "\n".join(parts)
 
 
-def _is_prunable_ledger_stub(existing_text: str) -> bool:
-    """Return True only for pure unmodified Project Ledger-generated stub pages.
-
-    Never returns True for human- or MCP-authored pages (`put_page` / `mcp:put_page`),
-    nor for Project Ledger stub pages to which custom `## ` sections or `<!-- timeline -->`
-    entries were subsequently appended.
-    """
+def _is_ledger_ingested_page(existing_text: str) -> bool:
+    """Return True when frontmatter declares Project Ledger capsule ingestion provenance."""
     normalized = _sanitize_text(existing_text).replace("\r\n", "\n")
     if not normalized.startswith("---\n"):
         return False
@@ -267,7 +263,20 @@ def _is_prunable_ledger_stub(existing_text: str) -> bool:
         re.MULTILINE,
     ):
         return False
+    return True
 
+
+def _is_prunable_ledger_stub(existing_text: str) -> bool:
+    """Return True only for pure unmodified Project Ledger-generated stub pages.
+
+    Never returns True for human- or MCP-authored pages (`put_page` / `mcp:put_page`),
+    nor for Project Ledger stub pages to which custom `## ` sections or `<!-- timeline -->`
+    entries were subsequently appended.
+    """
+    if not _is_ledger_ingested_page(existing_text):
+        return False
+    normalized = _sanitize_text(existing_text).replace("\r\n", "\n")
+    end_fm = normalized.find("\n---\n", 4)
     body = normalized[end_fm + 5 :]
     body_without_reality = _REALITY_BLOCK_RE.sub("", body)
     timeline_idx = body_without_reality.find(TIMELINE_MARKER)
@@ -315,18 +324,235 @@ def _select_target_projects(
     return [by_id[cid] for cid in selected_ids]
 
 
+def _resolve_gbrain_bin(gbrain_bin: str) -> str | None:
+    if "/" not in gbrain_bin:
+        return shutil.which(gbrain_bin)
+    return gbrain_bin if Path(gbrain_bin).is_file() else None
+
+
+def _push_brain_repo(brain_dir: Path, *, timeout_seconds: float = 60.0) -> dict[str, Any]:
+    """Best-effort rebase-pull and push for committed brain changes (Law 11 offline-safe)."""
+    if not (brain_dir / ".git").exists():
+        return {"attempted": False, "pushed": False, "error": None}
+
+    origin_proc = subprocess.run(
+        ["git", "-C", str(brain_dir), "remote", "get-url", "origin"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if origin_proc.returncode != 0 or not (origin_proc.stdout or "").strip():
+        return {"attempted": False, "pushed": False, "error": None}
+
+    branch_proc = subprocess.run(
+        ["git", "-C", str(brain_dir), "symbolic-ref", "--short", "-q", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    branch = (branch_proc.stdout or "").strip()
+    if branch_proc.returncode != 0 or not branch:
+        return {"attempted": False, "pushed": False, "error": "detached_head"}
+
+    upstream_ref = f"refs/remotes/origin/{branch}"
+    verify_proc = subprocess.run(
+        ["git", "-C", str(brain_dir), "rev-parse", "--verify", "-q", upstream_ref],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if verify_proc.returncode == 0:
+        ahead_proc = subprocess.run(
+            ["git", "-C", str(brain_dir), "rev-list", "--count", f"origin/{branch}..HEAD"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if ahead_proc.returncode == 0:
+            try:
+                if int((ahead_proc.stdout or "0").strip()) == 0:
+                    return {"attempted": False, "pushed": False, "error": None}
+            except ValueError:
+                pass
+
+    try:
+        pull_proc = subprocess.run(
+            ["git", "-C", str(brain_dir), "pull", "--rebase", "--autostash", "-q", "origin", branch],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout_seconds,
+        )
+        if pull_proc.returncode != 0:
+            detail = (pull_proc.stderr or pull_proc.stdout).strip() or f"exit {pull_proc.returncode}"
+            return {"attempted": True, "pushed": False, "error": f"git pull --rebase failed: {detail}"}
+
+        push_proc = subprocess.run(
+            ["git", "-C", str(brain_dir), "push", "-q", "origin", branch],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout_seconds,
+        )
+        if push_proc.returncode != 0:
+            detail = (push_proc.stderr or push_proc.stdout).strip() or f"exit {push_proc.returncode}"
+            return {"attempted": True, "pushed": False, "error": f"git push failed: {detail}"}
+        return {"attempted": True, "pushed": True, "error": None}
+    except subprocess.TimeoutExpired:
+        return {"attempted": True, "pushed": False, "error": "git push timed out"}
+
+
+def _discover_foreign_project_keys(
+    *,
+    resolved_bin: str,
+    brain_dir: Path,
+    source_id: str,
+) -> set[str]:
+    """Discover 2-segment ``projects/<slug>`` keys inside ``source_id`` when supported."""
+    keys: set[str] = set()
+    sources_proc = subprocess.run(
+        [resolved_bin, "sources", "list", "--json"],
+        cwd=str(brain_dir),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    list_cwd = brain_dir
+    if sources_proc.returncode == 0:
+        try:
+            doc = json.loads(sources_proc.stdout or "{}")
+            items = doc.get("sources") if isinstance(doc, dict) else doc
+            if isinstance(items, list):
+                for item in items:
+                    if isinstance(item, dict) and str(item.get("id") or item.get("slug") or "") == source_id:
+                        raw_local = str(item.get("local_path") or item.get("repo") or "").strip()
+                        if raw_local and Path(raw_local).is_dir():
+                            list_cwd = Path(raw_local)
+                        break
+        except (OSError, ValueError, TypeError):
+            pass
+
+    list_proc = subprocess.run(
+        [resolved_bin, "list", "--type", "project", "--limit", "1000"],
+        cwd=str(list_cwd),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if list_proc.returncode == 0:
+        for line in (list_proc.stdout or "").splitlines():
+            slug = line.split("\t", 1)[0].strip()
+            if slug.startswith("projects/") and len(slug.split("/")) == 2:
+                keys.add(slug)
+    return keys
+
+
+def _normalize_shadow_sources(shadow_sources: list[str] | None) -> list[str]:
+    normalized_sources: list[str] = []
+    for raw_src in shadow_sources or []:
+        sid = str(raw_src or "").strip()
+        if not sid:
+            continue
+        if sid == "default":
+            raise ValueError("Refusing to prune shadow pages from canonical 'default' GBrain source.")
+        if sid not in normalized_sources:
+            normalized_sources.append(sid)
+    return normalized_sources
+
+
+def prune_foreign_source_shadows(
+    *,
+    brain_dir: Path,
+    candidate_page_keys: set[str],
+    shadow_sources: list[str],
+    gbrain_bin: str = "gbrain",
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    """Soft-delete stale Project Ledger capsule shadow pages from non-default GBrain sources."""
+    normalized_sources = _normalize_shadow_sources(shadow_sources)
+
+    if not normalized_sources:
+        return {
+            "status": "skipped",
+            "sources": [],
+            "inspected_count": 0,
+            "pruned_count": 0,
+            "pruned_shadow_pages": [],
+        }
+
+    resolved_bin = _resolve_gbrain_bin(gbrain_bin)
+    if not resolved_bin:
+        return {
+            "status": "gbrain_bin_missing",
+            "sources": normalized_sources,
+            "inspected_count": 0,
+            "pruned_count": 0,
+            "pruned_shadow_pages": [],
+        }
+
+    inspected_count = 0
+    pruned_shadow_pages: list[str] = []
+    for source_id in normalized_sources:
+        keys = set(candidate_page_keys) | _discover_foreign_project_keys(
+            resolved_bin=resolved_bin,
+            brain_dir=brain_dir,
+            source_id=source_id,
+        )
+        for page_key in sorted(keys):
+            if not page_key.startswith("projects/") or len(page_key.split("/")) != 2:
+                continue
+            inspected_count += 1
+            get_proc = subprocess.run(
+                [resolved_bin, "get", page_key, "--source-id", source_id],
+                cwd=str(brain_dir),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if get_proc.returncode != 0:
+                continue
+            if not _is_ledger_ingested_page(get_proc.stdout or ""):
+                continue
+            if not dry_run:
+                del_proc = subprocess.run(
+                    [resolved_bin, "delete", page_key, "--source-id", source_id],
+                    cwd=str(brain_dir),
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                if del_proc.returncode != 0:
+                    raise RuntimeError(
+                        f"gbrain delete failed for {source_id}:{page_key} ({del_proc.returncode}): "
+                        f"{(del_proc.stderr or del_proc.stdout).strip()}"
+                    )
+            pruned_shadow_pages.append(f"{source_id}:{page_key}")
+
+    return {
+        "status": "dry_run" if dry_run else "pruned",
+        "sources": normalized_sources,
+        "inspected_count": inspected_count,
+        "pruned_count": len(pruned_shadow_pages),
+        "pruned_shadow_pages": pruned_shadow_pages,
+    }
+
+
 def _ingest_changed_pages(
     *,
     brain_dir: Path,
     changed_rel_paths: list[str],
     gbrain_bin: str = "gbrain",
+    push: bool = False,
 ) -> dict[str, Any]:
     """Commit only ``changed_rel_paths`` in ``brain_dir`` and run ``gbrain sync``."""
     if not changed_rel_paths:
+        push_info = _push_brain_repo(brain_dir) if push else {"attempted": False, "pushed": False, "error": None}
         return {
             "status": "noop_unchanged",
             "git_committed": False,
             "git_commit": None,
+            "git_pushed": push_info["pushed"],
+            "git_push_error": push_info["error"],
             "gbrain_synced": False,
         }
 
@@ -372,19 +598,31 @@ def _ingest_changed_pages(
             if rev_proc.returncode == 0:
                 git_commit = rev_proc.stdout.strip() or None
 
-    resolved_bin = shutil.which(gbrain_bin) if "/" not in gbrain_bin else (
-        gbrain_bin if Path(gbrain_bin).is_file() else None
-    )
+    push_info = _push_brain_repo(brain_dir) if push else {"attempted": False, "pushed": False, "error": None}
+
+    if not (brain_dir / ".git").exists() and "/" not in gbrain_bin:
+        return {
+            "status": "skipped_non_git_brain_dir",
+            "git_committed": False,
+            "git_commit": None,
+            "git_pushed": False,
+            "git_push_error": None,
+            "gbrain_synced": False,
+        }
+
+    resolved_bin = _resolve_gbrain_bin(gbrain_bin)
     if not resolved_bin:
         return {
             "status": "git_only_gbrain_bin_missing",
             "git_committed": git_committed,
             "git_commit": git_commit,
+            "git_pushed": push_info["pushed"],
+            "git_push_error": push_info["error"],
             "gbrain_synced": False,
         }
 
-    # Explicitly pin --source default and --no-pull:
-    # 1. Without --source default, running inside /central/repos/active/project-ledger
+    # Explicitly pin cwd=brain_dir, --source default, and --no-pull:
+    # 1. Without cwd=brain_dir and --source default, running inside /central/repos/active/*
     #    causes GBrain's local_path resolver to bind to source_id='active-repos'.
     # 2. Without --no-pull, uncommitted write-through MCP edits elsewhere in /home/prime/brain
     #    could cause git pull to abort before importing projects/*.md.
@@ -402,6 +640,7 @@ def _ingest_changed_pages(
             "--no-embed",
             "--no-extract",
         ],
+        cwd=str(brain_dir),
         capture_output=True,
         text=True,
         check=False,
@@ -415,6 +654,8 @@ def _ingest_changed_pages(
         "status": "ingested",
         "git_committed": git_committed,
         "git_commit": git_commit,
+        "git_pushed": push_info["pushed"],
+        "git_push_error": push_info["error"],
         "gbrain_synced": True,
     }
 
@@ -426,9 +667,12 @@ def sync_gbrain_pages(
     project_referents: list[str] | None = None,
     dry_run: bool = False,
     ingest: bool = False,
+    push: bool = False,
+    prune_shadow_sources: list[str] | None = None,
     gbrain_bin: str = "gbrain",
 ) -> dict[str, Any]:
     """Project canonical project capsules into ``<brain_dir>/projects/<slug>.md``."""
+    validated_shadow_sources = _normalize_shadow_sources(prune_shadow_sources)
     state_dir = state_dir.resolve()
     brain_dir = brain_dir.expanduser().resolve()
     canonical_payload = load_canonical_projects(state_dir)
@@ -506,14 +750,35 @@ def sync_gbrain_pages(
             brain_dir=brain_dir,
             changed_rel_paths=changed_rel_paths,
             gbrain_bin=gbrain_bin,
+            push=push,
         )
     else:
         ingest_result = {
             "status": "dry_run" if dry_run else "skipped",
             "git_committed": False,
             "git_commit": None,
+            "git_pushed": False,
+            "git_push_error": None,
             "gbrain_synced": False,
         }
+
+    candidate_shadow_keys = set(seen_page_keys)
+    for project in all_projects:
+        gb = project.get("gbrain") if isinstance(project.get("gbrain"), dict) else {}
+        pk = str(gb.get("page_key") or "").strip()
+        if pk.startswith("projects/") and len(pk.split("/")) == 2:
+            candidate_shadow_keys.add(pk)
+    if projects_dir.is_dir():
+        for existing_md in projects_dir.glob("*.md"):
+            candidate_shadow_keys.add(f"projects/{existing_md.stem}")
+
+    shadow_prune_result = prune_foreign_source_shadows(
+        brain_dir=brain_dir,
+        candidate_page_keys=candidate_shadow_keys,
+        shadow_sources=validated_shadow_sources,
+        gbrain_bin=gbrain_bin,
+        dry_run=dry_run,
+    )
 
     return {
         "ok": True,
@@ -529,4 +794,5 @@ def sync_gbrain_pages(
         "updated_pages": updated_pages,
         "pruned_pages": pruned_pages,
         "ingest": ingest_result,
+        "shadow_prune": shadow_prune_result,
     }

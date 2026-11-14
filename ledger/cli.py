@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -24,6 +23,7 @@ from .github_sync import DEFAULT_CLONE_ROOT, sync_github_estate
 from .identity import resolve_payload
 from .lineage import lineage_status_payload
 from .mcp_server import add_mcp_args, run_mcp_from_args
+from .portfolio import portfolio_payload
 from .triage import approve_candidate_decisions, review_payload
 
 
@@ -96,6 +96,59 @@ def _parser() -> argparse.ArgumentParser:
     sources = sub.add_parser("sources", help="Show source health from the latest manifest.")
     sources.add_argument("--state-dir", default=default_state)
     sources.add_argument("--json", action="store_true")
+
+    portfolio = sub.add_parser(
+        "portfolio",
+        help="Query estate-wide portfolio triage, cross-repo blast radius, and fleet occupancy.",
+    )
+    portfolio.add_argument("--state-dir", default=default_state)
+    portfolio.add_argument(
+        "--urgent",
+        action="store_true",
+        help="Show only projects with attention_urgency >= 1.",
+    )
+    portfolio.add_argument(
+        "--dirty",
+        action="store_true",
+        help="Show only projects with uncommitted worktree changes.",
+    )
+    portfolio.add_argument(
+        "--behind",
+        action="store_true",
+        help="Show only projects behind their tracked upstream branch.",
+    )
+    portfolio.add_argument(
+        "--remote-ahead",
+        action="store_true",
+        help="Show only projects with unfetched upstream commits (GIT_REMOTE_AHEAD).",
+    )
+    portfolio.add_argument(
+        "--cycles",
+        action="store_true",
+        help="Show only projects with internal subsystem dependency cycles.",
+    )
+    portfolio.add_argument(
+        "--lifecycle",
+        default=None,
+        help="Filter by lifecycle posture (e.g. active_development, maintained_stable, dormant_archive, ephemeral_experiment).",
+    )
+    portfolio.add_argument(
+        "--depends-on",
+        default=None,
+        help="Return reverse blast-radius consumers that depend on the given project referent.",
+    )
+    portfolio.add_argument(
+        "--depended-on-by",
+        default=None,
+        help="Return upstream projects depended on by the given project referent.",
+    )
+    portfolio.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Maximum number of matched projects to return.",
+    )
+    portfolio.add_argument("--json", action="store_true")
 
     resolve = sub.add_parser("resolve", help="Resolve an exact project referent to canonical identity.")
     resolve.add_argument("referent")
@@ -201,6 +254,18 @@ def _parser() -> argparse.ArgumentParser:
         "--ingest",
         action="store_true",
         help="Commit touched projects/<slug>.md files in --brain-dir and run gbrain sync --src-subpath projects --no-embed --no-extract.",
+    )
+    sync_gbrain.add_argument(
+        "--push",
+        action="store_true",
+        help="Best-effort rebase-pull and push committed project reality changes in --brain-dir to origin (offline-safe).",
+    )
+    sync_gbrain.add_argument(
+        "--prune-shadow-source",
+        action="append",
+        dest="prune_shadow_sources",
+        default=None,
+        help="Optional non-default GBrain source ID(s) (e.g. active-repos) from which to soft-delete stale Project Ledger capsule shadow pages.",
     )
     sync_gbrain.add_argument(
         "--gbrain-bin",
@@ -371,27 +436,15 @@ def main(argv: list[str] | None = None) -> int:
                     full_scan=bool(args.full_scan),
                 )
             else:
-                build_script = repo_root / "build_ledger.py"
-                cmd_prefix = (
-                    [sys.executable, str(build_script)]
-                    if build_script.is_file()
-                    else [sys.executable, "-m", "build_ledger"]
+                from .compat import scan_with_markdown_mirror
+
+                scan_with_markdown_mirror(
+                    config_path=config_path,
+                    output_dir=output_dir,
+                    mirror_path=repo_root / "docs" / "ledgers" / "projects-ledger.md",
+                    checkpoint_path=checkpoint_path,
+                    full_scan=bool(args.full_scan),
                 )
-                cmd = [
-                    *cmd_prefix,
-                    "--config",
-                    str(config_path),
-                    "--output-dir",
-                    str(output_dir),
-                    "--checkpoint-file",
-                    str(checkpoint_path),
-                ]
-                if args.full_scan:
-                    cmd.append("--full-scan")
-                scan = subprocess.run(cmd, check=False)
-                if scan.returncode != 0:
-                    print(f"LEDGER_SCAN_FAILED: build_ledger.py exited {scan.returncode}", file=sys.stderr)
-                    return scan.returncode or 2
             manifest = _compile_from_paths(
                 args,
                 input_json=output_dir / "projects.json",
@@ -634,16 +687,20 @@ def main(argv: list[str] | None = None) -> int:
                 project_referents=args.project_referents,
                 dry_run=bool(args.dry_run),
                 ingest=bool(args.ingest),
+                push=bool(args.push),
+                prune_shadow_sources=args.prune_shadow_sources,
                 gbrain_bin=str(args.gbrain_bin),
             )
             if args.json:
                 _print_json(payload)
             else:
                 mode_tag = " (dry-run)" if payload["dry_run"] else ""
+                shadow_cnt = (payload.get("shadow_prune") or {}).get("pruned_count", 0)
+                shadow_suffix = f" shadow_pruned={shadow_cnt}" if shadow_cnt else ""
                 print(
                     f"sync-gbrain{mode_tag}: targets={payload['target_project_count']} "
                     f"created={payload['created_count']} updated={payload['updated_count']} "
-                    f"unchanged={payload['unchanged_count']} ingest={payload['ingest']['status']}"
+                    f"unchanged={payload['unchanged_count']} ingest={payload['ingest']['status']}{shadow_suffix}"
                 )
             return 0
 
@@ -703,6 +760,57 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "mcp":
             return run_mcp_from_args(args)
 
+        if args.command == "portfolio":
+            payload = portfolio_payload(
+                Path(args.state_dir),
+                urgent_only=bool(args.urgent),
+                dirty_only=bool(args.dirty),
+                behind_only=bool(args.behind),
+                remote_ahead_only=bool(args.remote_ahead),
+                cycles_only=bool(args.cycles),
+                lifecycle=args.lifecycle,
+                depends_on=args.depends_on,
+                depended_on_by=args.depended_on_by,
+                limit=args.limit,
+            )
+            status = payload.get("status", "ok")
+            if args.json:
+                _print_json(payload)
+            elif status == "ok":
+                summ = payload["summary"]
+                fleet = payload.get("fleet") or {}
+                print(
+                    f"portfolio: projects={summ['project_count']} matched={payload['matched_project_count']} "
+                    f"urgent={summ['urgent_count']} dirty={summ['dirty_count']} "
+                    f"behind={summ['behind_count']} cycles={summ['cycle_project_count']} "
+                    f"edges={summ['ecosystem_edge_count']}"
+                )
+                print(
+                    f"fleet ({fleet.get('state')}): "
+                    f"dispatchable={','.join(fleet.get('dispatchable_nodes') or []) or 'none'} "
+                    f"gaming={','.join(fleet.get('gaming_nodes') or []) or 'none'}"
+                )
+                for item in payload["projects"]:
+                    pos = item["posture"]
+                    eco = item["ecosystem"]
+                    sh = item["structural_health"]
+                    print(
+                        f"  [u={pos['attention_urgency']}] {item['project_key']}\t"
+                        f"{pos['lifecycle_posture']}\t"
+                        f"deps={eco['depends_on_count']}\trdeps={eco['depended_on_by_count']}\t"
+                        f"cycles={sh['cycle_count']}\t{item['preferred_location']['location'] or 'unavailable'}"
+                    )
+            elif status == "ambiguous":
+                print(f"ambiguous {payload['referent']!r}: {payload['candidate_count']} candidates")
+                for candidate in payload["candidates"]:
+                    print(
+                        f"  {candidate['canonical_project_id']}\t{candidate['project_key']}\t"
+                        f"{candidate['display_name']}"
+                    )
+            else:
+                print(f"unresolved {payload.get('referent')!r}")
+            return {"ok": 0, "ambiguous": 3, "unresolved": 4}.get(status, 2)
+
         manifest = load_manifest(Path(args.state_dir))
         if args.command == "orient":
             payload = orient_payload(manifest)
@@ -719,6 +827,8 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"canonical projects: {payload['counts']['canonical_projects']}")
                 if payload["counts"].get("project_capsules") is not None:
                     print(f"project capsules: {payload['counts']['project_capsules']}")
+                if payload["counts"].get("ecosystem_edges") is not None:
+                    print(f"ecosystem edges: {payload['counts']['ecosystem_edges']}")
                 if payload["counts"].get("review_items") is not None:
                     print(f"identity review: {payload['counts']['review_items']}")
                 if payload["counts"].get("change_events") is not None:

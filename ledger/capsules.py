@@ -1552,15 +1552,21 @@ def load_project_capsule(state_dir: Path, canonical_project_id: str) -> dict:
 
 def show_payload(state_dir: Path, referent: str) -> dict:
     """Resolve ``referent`` and return the project capsule (or ambiguity/unresolved)."""
+    from .portfolio import load_project_ecosystem_slice
+
     resolution = resolve_payload(state_dir, referent)
     if resolution["status"] != "resolved":
         return resolution
-    capsule = load_project_capsule(state_dir, resolution["canonical_project_id"])
+    pid = resolution["canonical_project_id"]
+    capsule = load_project_capsule(state_dir, pid)
     result = dict(capsule)
     result["status"] = "resolved"
     result["referent"] = resolution["referent"]
     result["matched_by"] = resolution["matched_by"]
     result["posture"] = infer_capsule_posture(capsule)
+    eco = load_project_ecosystem_slice(state_dir, pid)
+    if eco is not None:
+        result["ecosystem"] = eco
     return result
 
 

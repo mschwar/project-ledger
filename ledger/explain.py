@@ -253,7 +253,11 @@ def explain_payload(
         else:
             continuity_note = " Machina continuity initialized."
 
-    return {
+    from .portfolio import load_project_ecosystem_slice
+    from .rules import infer_capsule_posture
+
+    eco = load_project_ecosystem_slice(state_dir, pid)
+    payload = {
         "status": "resolved",
         "subject_kind": "canonical_project",
         "referent": query,
@@ -284,6 +288,7 @@ def explain_payload(
         "preferred_location": pref,
         "git_facts": capsule.get("git_facts"),
         "current_state": current_state,
+        "posture": infer_capsule_posture(capsule),
         "warnings": list(capsule.get("warnings") or []),
         "locations": capsule.get("observations", []),
         "decisions": applied_decisions,
@@ -298,3 +303,6 @@ def explain_payload(
             f"{continuity_note}"
         ),
     }
+    if eco is not None:
+        payload["ecosystem"] = eco
+    return payload

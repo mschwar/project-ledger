@@ -244,6 +244,14 @@ Gate D exit (satisfied):
 
 ---
 
+# Waves 6–8 — Reality-Seam Closure, Estate Portfolio Triage, & Tailnet MCP (Complete — 2026-11-14)
+
+- **Wave 6 — Reality-Seam Closure & Drift Elimination:** Runs `scan_with_markdown_mirror()` in-process during `ledger refresh` (zero child Python subprocesses), prunes poisoned foreign-source GBrain shadow rows (`--prune-shadow-source`), pushes `/home/prime/brain` commits (`--push`), audits `ledger lineage --check` on every watchdog pass, and installs `ops/merge_gate.py`.
+- **Wave 7 — Estate Portfolio Triage Index, Cross-Repo Blast Radius, & Passive Fleet Overlay:** Materializes `state/portfolio-index.json` (`v1.0.0`, `schemas/portfolio-index.schema.json`, `ledger portfolio`) during `compile_state()` (`manifest v1.3.0`), compiles pure-Python cross-repository dependency and reverse blast-radius edges (`ledger/ecosystem.py`, `depends_on`, `depended_on_by`), and attaches a passive `INV-FLEET-GAME-01`-compliant fleet occupancy overlay (`ledger/fleet.py`).
+- **Wave 8 — Multi-Host Tailnet Streamable HTTP MCP Server:** Adds `ledger_portfolio` (10th read-only Model Context Protocol (MCP) tool), `ledger://portfolio`, and stdlib `ThreadingHTTPServer` Streamable `HTTP` `JSON-RPC` 2.0 transport (`ledger mcp --transport http`, `ops/project-ledger-mcp-tailnet.sh`) so remote fleet nodes query live estate state without local `/central` mounts.
+
+---
+
 # Cross-cutting programmes
 
 ## Programme A — Contracts and invariants

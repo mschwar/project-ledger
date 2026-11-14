@@ -355,3 +355,69 @@ def infer_capsule_posture(
         "attention_urgency": urgency,
         "urgency_confidence": urg_conf,
     }
+
+
+def infer_capsule_posture_reasons(
+    capsule: dict[str, Any],
+    *,
+    reference_now: dt.datetime | None = None,
+) -> dict[str, list[str]]:
+    """Return deterministic reason codes explaining lifecycle posture and urgency."""
+    lc_state = capsule_to_lifecycle_state(capsule, reference_now=reference_now)
+    urg_state = capsule_to_urgency_state(capsule)
+
+    lc_reasons: list[str] = []
+    total_files = lc_state.get("total_files")
+    days_num = lc_state.get("days_since_last_commit")
+    classes = set(lc_state.get("source_classes") or [])
+    if lc_state.get("dirty_worktree"):
+        lc_reasons.append("DIRTY_WORKTREE")
+    if int(lc_state.get("ahead_count") or 0) > 0:
+        lc_reasons.append("AHEAD_OF_UPSTREAM")
+    if lc_state.get("has_machina_handoff"):
+        lc_reasons.append("ACTIVE_MACHINA_CONTINUITY")
+    if days_num is not None and days_num <= 14:
+        lc_reasons.append("RECENT_COMMIT_ACTIVITY")
+    elif days_num is not None and days_num >= 120:
+        lc_reasons.append("STALE_COMMIT_AGE")
+    if classes and classes <= {"backup", "inventory", "mirror"}:
+        lc_reasons.append("NON_LIVE_MANIFESTATIONS_ONLY")
+    if lc_state.get("has_governance_docs"):
+        lc_reasons.append("GOVERNANCE_DOCS_PRESENT")
+    if int(lc_state.get("operational_surface_count") or 0) > 0:
+        lc_reasons.append("OPERATIONAL_SURFACES_PRESENT")
+    if total_files is not None and total_files <= 5:
+        lc_reasons.append("SMALL_FILE_FOOTPRINT")
+    elif total_files is not None and total_files >= 8:
+        lc_reasons.append("ESTABLISHED_CODEBASE")
+    if not lc_reasons:
+        lc_reasons.append("DEFAULT_DORMANT_FALLBACK")
+
+    urg_reasons: list[str] = []
+    if urg_state.get("diverged"):
+        urg_reasons.append("DIVERGED_CHECKOUT")
+    dirty_cnt = int(urg_state.get("dirty_checkout_count") or 0)
+    if dirty_cnt >= 2:
+        urg_reasons.append("MULTIPLE_DIRTY_CHECKOUTS")
+    elif dirty_cnt == 1:
+        urg_reasons.append("DIRTY_WORKTREE")
+    if int(urg_state.get("high_severity_review_count") or 0) >= 1:
+        urg_reasons.append("HIGH_SEVERITY_REVIEW")
+    elif int(urg_state.get("open_review_count") or 0) >= 1:
+        urg_reasons.append("OPEN_IDENTITY_REVIEW")
+    if int(urg_state.get("ahead_total") or 0) >= 1:
+        urg_reasons.append("UNPUSHED_COMMITS")
+    if int(urg_state.get("behind_total") or 0) >= 1:
+        urg_reasons.append("BEHIND_UPSTREAM")
+    for code in urg_state.get("git_drift_codes") or []:
+        if code in {"GIT_REMOTE_AHEAD", "GIT_MAIN_BEHIND_ORIGIN", "GIT_DETACHED_HEAD"}:
+            urg_reasons.append(code)
+    if str(urg_state.get("source_health_state") or "healthy") != "healthy":
+        urg_reasons.append("PREFERRED_SOURCE_DEGRADED")
+    if not urg_reasons:
+        urg_reasons.append("CLEAN_HEALTHY_STATE")
+
+    return {
+        "lifecycle_reasons": lc_reasons,
+        "urgency_reasons": urg_reasons,
+    }

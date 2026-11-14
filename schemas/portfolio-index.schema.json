@@ -1,0 +1,365 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/portfolio-index.schema.json",
+  "title": "Project Ledger Estate Portfolio & Blast-Radius Index (v1.0.0)",
+  "description": "Compiled estate-wide portfolio triage, cross-repository ecosystem graph, and passive fleet occupancy overlay (state/portfolio-index.json).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler_version",
+    "run_id",
+    "compiled_at",
+    "as_of",
+    "summary",
+    "fleet",
+    "ecosystem_edges",
+    "projects"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "compiler_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^run_[0-9a-f]{24}$"
+    },
+    "compiled_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "as_of": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "project_count",
+        "resolved_count",
+        "urgent_count",
+        "dirty_count",
+        "ahead_count",
+        "behind_count",
+        "remote_ahead_count",
+        "cycle_project_count",
+        "machina_active_count",
+        "ecosystem_edge_count",
+        "by_lifecycle_posture",
+        "by_urgency"
+      ],
+      "properties": {
+        "project_count": { "type": "integer", "minimum": 0 },
+        "resolved_count": { "type": "integer", "minimum": 0 },
+        "urgent_count": { "type": "integer", "minimum": 0 },
+        "dirty_count": { "type": "integer", "minimum": 0 },
+        "ahead_count": { "type": "integer", "minimum": 0 },
+        "behind_count": { "type": "integer", "minimum": 0 },
+        "remote_ahead_count": { "type": "integer", "minimum": 0 },
+        "cycle_project_count": { "type": "integer", "minimum": 0 },
+        "machina_active_count": { "type": "integer", "minimum": 0 },
+        "ecosystem_edge_count": { "type": "integer", "minimum": 0 },
+        "by_lifecycle_posture": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "by_urgency": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "fleet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "reason_code",
+        "pulse_path",
+        "generated_at",
+        "node_count",
+        "dispatchable_nodes",
+        "gaming_nodes",
+        "nodes"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["available", "stale", "unavailable"]
+        },
+        "reason_code": { "type": "string", "minLength": 1 },
+        "pulse_path": { "type": "string", "minLength": 1 },
+        "generated_at": { "type": ["string", "null"] },
+        "node_count": { "type": "integer", "minimum": 0 },
+        "dispatchable_nodes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "gaming_nodes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "nodes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fleet_node" }
+        }
+      }
+    },
+    "ecosystem_edges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ecosystem_edge" }
+    },
+    "projects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/portfolio_project" }
+    }
+  },
+  "$defs": {
+    "fleet_node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "os_family",
+        "online",
+        "dispatchable",
+        "occupancy_state",
+        "gaming_active",
+        "active_leases",
+        "gpu_inference_online",
+        "free_ram_gib",
+        "free_disk_gib"
+      ],
+      "properties": {
+        "node": { "type": "string", "minLength": 1 },
+        "os_family": { "type": "string", "minLength": 1 },
+        "online": { "type": "boolean" },
+        "dispatchable": { "type": "boolean" },
+        "occupancy_state": { "type": "string", "minLength": 1 },
+        "gaming_active": { "type": "boolean" },
+        "active_leases": { "type": "integer", "minimum": 0 },
+        "gpu_inference_online": { "type": "boolean" },
+        "free_ram_gib": { "type": "number", "minimum": 0 },
+        "free_disk_gib": { "type": "number", "minimum": 0 }
+      }
+    },
+    "ecosystem_edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_project_id",
+        "source_project_key",
+        "target_project_id",
+        "target_project_key",
+        "relation_kind",
+        "evidence_path",
+        "matched_token"
+      ],
+      "properties": {
+        "source_project_id": { "type": "string", "pattern": "^prj_[0-9a-f]{24}$" },
+        "source_project_key": { "type": "string", "minLength": 1 },
+        "target_project_id": { "type": "string", "pattern": "^prj_[0-9a-f]{24}$" },
+        "target_project_key": { "type": "string", "minLength": 1 },
+        "relation_kind": {
+          "type": "string",
+          "enum": [
+            "git_submodule",
+            "package_dependency",
+            "estate_path_reference",
+            "github_repo_reference",
+            "cli_or_mcp_binding"
+          ]
+        },
+        "evidence_path": { "type": "string", "minLength": 1 },
+        "matched_token": { "type": "string", "minLength": 1 }
+      }
+    },
+    "ecosystem_neighbor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_project_id",
+        "project_key",
+        "relation_kinds",
+        "evidence_path"
+      ],
+      "properties": {
+        "canonical_project_id": { "type": "string", "pattern": "^prj_[0-9a-f]{24}$" },
+        "project_key": { "type": "string", "minLength": 1 },
+        "relation_kinds": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evidence_path": { "type": "string", "minLength": 1 }
+      }
+    },
+    "portfolio_project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_project_id",
+        "project_key",
+        "display_name",
+        "canonical_url",
+        "gbrain_page_key",
+        "observation_count",
+        "preferred_location",
+        "git_state",
+        "posture",
+        "machina",
+        "structural_health",
+        "ecosystem"
+      ],
+      "properties": {
+        "canonical_project_id": { "type": "string", "pattern": "^prj_[0-9a-f]{24}$" },
+        "project_key": { "type": "string", "minLength": 1 },
+        "display_name": { "type": "string", "minLength": 1 },
+        "canonical_url": { "type": ["string", "null"] },
+        "gbrain_page_key": { "type": ["string", "null"] },
+        "observation_count": { "type": "integer", "minimum": 0 },
+        "preferred_location": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "location",
+            "source_id",
+            "source_class",
+            "machine_name",
+            "confidence",
+            "warning_codes"
+          ],
+          "properties": {
+            "state": { "type": "string", "enum": ["resolved", "inventory_only", "unavailable"] },
+            "location": { "type": ["string", "null"] },
+            "source_id": { "type": ["string", "null"] },
+            "source_class": { "type": ["string", "null"] },
+            "machine_name": { "type": ["string", "null"] },
+            "confidence": { "type": "string", "enum": ["high", "medium", "low", "none"] },
+            "warning_codes": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "git_state": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "head_branch",
+            "head_commit",
+            "drift_state",
+            "dirty",
+            "ahead_count",
+            "behind_count",
+            "remote_ahead"
+          ],
+          "properties": {
+            "state": { "type": "string", "enum": ["known", "unknown", "not_applicable"] },
+            "head_branch": { "type": ["string", "null"] },
+            "head_commit": { "type": ["string", "null"] },
+            "drift_state": { "type": "string", "minLength": 1 },
+            "dirty": { "type": ["boolean", "null"] },
+            "ahead_count": { "type": ["integer", "null"] },
+            "behind_count": { "type": ["integer", "null"] },
+            "remote_ahead": { "type": "boolean" }
+          }
+        },
+        "posture": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "declared_lifecycle_state",
+            "lifecycle_posture",
+            "lifecycle_confidence",
+            "lifecycle_reasons",
+            "attention_urgency",
+            "urgency_confidence",
+            "urgency_reasons"
+          ],
+          "properties": {
+            "declared_lifecycle_state": { "type": "string", "minLength": 1 },
+            "lifecycle_posture": {
+              "type": "string",
+              "enum": [
+                "active_development",
+                "maintained_stable",
+                "dormant_archive",
+                "ephemeral_experiment"
+              ]
+            },
+            "lifecycle_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+            "lifecycle_reasons": { "type": "array", "items": { "type": "string" } },
+            "attention_urgency": { "type": "integer", "minimum": 0, "maximum": 3 },
+            "urgency_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+            "urgency_reasons": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "machina": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "active_unit_id",
+            "last_completed_unit_id",
+            "has_checkpoint",
+            "has_frontier"
+          ],
+          "properties": {
+            "state": { "type": "string", "enum": ["available", "not_present"] },
+            "active_unit_id": { "type": ["string", "null"] },
+            "last_completed_unit_id": { "type": ["string", "null"] },
+            "has_checkpoint": { "type": "boolean" },
+            "has_frontier": { "type": "boolean" }
+          }
+        },
+        "structural_health": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ctx_state",
+            "total_files",
+            "subsystem_count",
+            "operational_surface_count",
+            "internal_edge_count",
+            "cycle_count"
+          ],
+          "properties": {
+            "ctx_state": { "type": "string", "minLength": 1 },
+            "total_files": { "type": ["integer", "null"] },
+            "subsystem_count": { "type": "integer", "minimum": 0 },
+            "operational_surface_count": { "type": "integer", "minimum": 0 },
+            "internal_edge_count": { "type": "integer", "minimum": 0 },
+            "cycle_count": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "ecosystem": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "depends_on_count",
+            "depended_on_by_count",
+            "depends_on",
+            "depended_on_by"
+          ],
+          "properties": {
+            "depends_on_count": { "type": "integer", "minimum": 0 },
+            "depended_on_by_count": { "type": "integer", "minimum": 0 },
+            "depends_on": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ecosystem_neighbor" }
+            },
+            "depended_on_by": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ecosystem_neighbor" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
