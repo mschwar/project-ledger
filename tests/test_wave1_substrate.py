@@ -126,7 +126,7 @@ class Wave1SubstrateTests(unittest.TestCase):
                 state_dir=state_dir,
                 generated_at="2026-09-14T06:10:00Z",
             )
-            self.assertEqual(manifest["schema_version"], "1.2.0")
+            self.assertEqual(manifest["schema_version"], "1.3.0")
             self.assertEqual(manifest["health"]["state"], "degraded")
             self.assertEqual(manifest["counts"]["observations"], 1)
             self.assertEqual(manifest["counts"]["canonical_projects"], 1)
@@ -284,7 +284,8 @@ class Wave1SubstrateTests(unittest.TestCase):
 
             def fake_scan(*_args, **_kwargs):
                 output_dir.mkdir(parents=True, exist_ok=True)
-                (output_dir / "projects.json").write_text(
+                json_path = output_dir / "projects.json"
+                json_path.write_text(
                     json.dumps(
                         {
                             "generated_at": "2026-09-14T06:00:00Z",
@@ -300,9 +301,14 @@ class Wave1SubstrateTests(unittest.TestCase):
                     ),
                     encoding="utf-8",
                 )
-                return mock.Mock(returncode=0)
+                return {
+                    "csv_path": output_dir / "projects.csv",
+                    "json_path": json_path,
+                    "md_path": output_dir / "projects.md",
+                    "mirror_path": root / "docs" / "ledgers" / "projects-ledger.md",
+                }
 
-            with mock.patch.object(cli.subprocess, "run", side_effect=fake_scan) as run_scan:
+            with mock.patch("ledger.compat.scan_with_markdown_mirror", side_effect=fake_scan) as run_scan:
                 result = cli.main(
                     [
                         "refresh",

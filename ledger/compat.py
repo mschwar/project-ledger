@@ -54,3 +54,28 @@ def scan_without_markdown_mirror(
         "json": json_path,
         "markdown": md_path,
     }
+
+
+def scan_with_markdown_mirror(
+    *,
+    config_path: Path,
+    output_dir: Path,
+    mirror_path: Path | None = None,
+    checkpoint_path: Path | None = None,
+    full_scan: bool = False,
+) -> dict[str, Path]:
+    """Run the compatibility scanner in-process and update the repository markdown mirror."""
+    outputs = scan_without_markdown_mirror(
+        config_path=config_path,
+        output_dir=output_dir,
+        checkpoint_path=checkpoint_path,
+        full_scan=full_scan,
+    )
+    resolved_mirror = (
+        mirror_path.resolve()
+        if mirror_path is not None
+        else Path(_REPO_ROOT, "docs", "ledgers", "projects-ledger.md").resolve()
+    )
+    build_ledger.write_markdown_mirror(outputs["markdown"], resolved_mirror)
+    outputs["mirror"] = resolved_mirror
+    return outputs
