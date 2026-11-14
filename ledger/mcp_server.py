@@ -1,14 +1,17 @@
-"""Stdlib read-only Model Context Protocol (MCP) server over stdio (`U5`).
+"""Stdlib read-only Model Context Protocol (MCP) server over stdio and HTTP (`U5`, Wave 8).
 
 Exposes Project Ledger's compiled Reality Provider read plane (`orient`, `sources`,
-`resolve`, `show`, `locate`, `explain`, `changes`, `review`, `lineage`) and
-materialized `ledger://` resources/templates over JSON-RPC 2.0 stdio with zero
-third-party dependencies.
+`portfolio`, `resolve`, `show`, `locate`, `explain`, `changes`, `review`, `lineage`)
+and materialized `ledger://` resources/templates over JSON-RPC 2.0 stdio or
+Streamable HTTP (`POST /mcp`, `GET /health`) with zero third-party dependencies.
 
 Transport compatibility:
-  - Auto-detects both newline-delimited JSON-RPC 2.0 (MCP `2024-11-05` /
+  - Stdio: auto-detects both newline-delimited JSON-RPC 2.0 (MCP `2024-11-05` /
     `2025-03-26` / `2025-06-18` stdio spec) and `Content-Length:` header framing,
     replying in the exact framing sent by the client.
+  - HTTP (`--transport http --host <ip> --port 3132`): serves stateless MCP
+    Streamable HTTP (`POST /mcp` -> `200 application/json` or `202 Accepted` on
+    notifications, `GET /mcp` -> `405`, `DELETE /mcp` -> `204`) plus `GET /health`.
   - Strictly read-only: never invokes `refresh`, `compile`, `--approve-candidates`,
     `--sync`, or `sync-gbrain --ingest`.
 """
@@ -16,11 +19,12 @@ Transport compatibility:
 from __future__ import annotations
 
 import argparse
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import sys
 from pathlib import Path
 from typing import Any, BinaryIO
-from urllib.parse import unquote
+from urllib.parse import unquote, urlsplit
 
 from . import COMPILER_VERSION
 from .capsules import locate_payload, show_payload
@@ -30,6 +34,7 @@ from .config import LedgerConfigError, default_workspace_path
 from .explain import explain_payload
 from .identity import resolve_payload
 from .lineage import lineage_status_payload
+from .portfolio import portfolio_payload
 from .triage import review_payload
 
 SUPPORTED_MCP_PROTOCOL_VERSIONS = (
@@ -77,6 +82,59 @@ _TOOLS: tuple[dict[str, Any], ...] = (
             "type": "object",
             "additionalProperties": False,
             "properties": {},
+        },
+        "annotations": _READ_ONLY_ANNOTATIONS,
+    },
+    {
+        "name": "ledger_portfolio",
+        "description": (
+            "Query Project Ledger's estate-wide portfolio triage index, cross-repository "
+            "blast-radius dependency graph, structural cycle counts, and passive INV-FLEET-GAME-01 "
+            "fleet occupancy overlay in a single O(1) read."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "urgent_only": {
+                    "type": "boolean",
+                    "description": "Return only projects with attention_urgency >= 1.",
+                },
+                "dirty_only": {
+                    "type": "boolean",
+                    "description": "Return only projects with uncommitted worktree changes.",
+                },
+                "behind_only": {
+                    "type": "boolean",
+                    "description": "Return only projects behind their tracked upstream branch.",
+                },
+                "remote_ahead_only": {
+                    "type": "boolean",
+                    "description": "Return only projects with unfetched upstream commits (GIT_REMOTE_AHEAD).",
+                },
+                "cycles_only": {
+                    "type": "boolean",
+                    "description": "Return only projects with internal subsystem dependency cycles.",
+                },
+                "lifecycle": {
+                    "type": "string",
+                    "description": "Optional lifecycle filter (e.g. active_development, maintained_stable, dormant_archive, ephemeral_experiment).",
+                },
+                "depends_on": {
+                    "type": "string",
+                    "description": "Optional project referent: return reverse blast-radius consumers that depend on this project.",
+                },
+                "depended_on_by": {
+                    "type": "string",
+                    "description": "Optional project referent: return upstream projects depended on by this project.",
+                },
+                "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 500,
+                    "description": "Optional maximum number of matched projects to return.",
+                },
+            },
         },
         "annotations": _READ_ONLY_ANNOTATIONS,
     },
@@ -241,6 +299,12 @@ _STATIC_RESOURCES: tuple[dict[str, str], ...] = (
         "mimeType": "text/markdown",
     },
     {
+        "uri": "ledger://portfolio",
+        "name": "Estate Portfolio & Blast-Radius Index",
+        "description": "Estate-wide triage, cross-repo dependency graph, and passive fleet overlay (state/portfolio-index.json).",
+        "mimeType": "application/json",
+    },
+    {
         "uri": "ledger://changes",
         "name": "Semantic Estate Change Feed",
         "description": "Zero-churn semantic change feed across runs (state/changes.json).",
@@ -326,6 +390,44 @@ def _optional_str(arguments: dict[str, Any], key: str) -> str | None:
         )
     stripped = val.strip()
     return stripped or None
+
+
+def _optional_bool(arguments: dict[str, Any], key: str) -> bool:
+    val = arguments.get(key)
+    if val is None:
+        return False
+    if not isinstance(val, bool):
+        raise _JsonRpcError(
+            JSONRPC_INVALID_PARAMS,
+            f"Argument {key!r} must be a boolean when provided.",
+        )
+    return val
+
+
+def _optional_int(
+    arguments: dict[str, Any],
+    key: str,
+    *,
+    minimum: int = 1,
+    maximum: int = 500,
+) -> int | None:
+    val = arguments.get(key)
+    if val is None:
+        return None
+    if isinstance(val, bool) or not isinstance(val, int):
+        raise _JsonRpcError(
+            JSONRPC_INVALID_PARAMS,
+            f"Argument {key!r} must be an integer when provided.",
+        )
+    if val < minimum or val > maximum:
+        raise _JsonRpcError(
+            JSONRPC_INVALID_PARAMS,
+            f"Argument {key!r} must be between {minimum} and {maximum}.",
+        )
+    return val
+
+
+MAX_HTTP_BODY_BYTES = 1_048_576
 
 
 class LedgerMcpServer:
@@ -416,10 +518,11 @@ class LedgerMcpServer:
                 },
                 "instructions": (
                     "Read-only Reality Provider MCP surface for Project Ledger. "
-                    "Use ledger_orient for estate health/counts, ledger_resolve or ledger_locate "
-                    "for authoritative checkout paths and git drift warnings, ledger_show for "
-                    "bounded <= 16 KiB project capsules (including structural ctx and Machina "
-                    "continuity), ledger_explain for provenance, and ledger_changes for semantic deltas."
+                    "Use ledger_orient for estate health/counts, ledger_portfolio for O(1) "
+                    "estate-wide triage, cross-repo blast radius, and INV-FLEET-GAME-01 fleet "
+                    "dispatchability, ledger_resolve or ledger_locate for authoritative checkout "
+                    "paths and git drift warnings, ledger_show for bounded <= 16 KiB project "
+                    "capsules, ledger_explain for provenance, and ledger_changes for semantic deltas."
                 ),
             }
 
@@ -476,6 +579,21 @@ class LedgerMcpServer:
                 manifest = load_manifest(self.state_dir)
                 sources = manifest.get("sources", [])
                 return _tool_result({"source_count": len(sources), "sources": sources})
+
+            if name == "ledger_portfolio":
+                payload = portfolio_payload(
+                    self.state_dir,
+                    urgent_only=_optional_bool(arguments, "urgent_only"),
+                    dirty_only=_optional_bool(arguments, "dirty_only"),
+                    behind_only=_optional_bool(arguments, "behind_only"),
+                    remote_ahead_only=_optional_bool(arguments, "remote_ahead_only"),
+                    cycles_only=_optional_bool(arguments, "cycles_only"),
+                    lifecycle=_optional_str(arguments, "lifecycle"),
+                    depends_on=_optional_str(arguments, "depends_on"),
+                    depended_on_by=_optional_str(arguments, "depended_on_by"),
+                    limit=_optional_int(arguments, "limit", minimum=1, maximum=500),
+                )
+                return _tool_result(payload, is_error=(payload.get("status") != "ok"))
 
             if name == "ledger_resolve":
                 referent = _require_nonempty_str(arguments, "referent")
@@ -594,6 +712,18 @@ class LedgerMcpServer:
                 ]
             }
 
+        if uri == "ledger://portfolio":
+            payload = portfolio_payload(self.state_dir)
+            return {
+                "contents": [
+                    {
+                        "uri": uri,
+                        "mimeType": "application/json",
+                        "text": json.dumps(payload, indent=2, sort_keys=True),
+                    }
+                ]
+            }
+
         if uri == "ledger://changes":
             payload = changes_payload(self.state_dir)
             return {
@@ -696,6 +826,179 @@ class LedgerMcpServer:
             if response is not None:
                 _write_stdio_frame(writer, response, framing=framing)
 
+    def health_payload(self) -> tuple[int, dict[str, Any]]:
+        """Build read-only HTTP health probe payload and HTTP status code."""
+        try:
+            manifest = load_manifest(self.state_dir)
+        except (LedgerConfigError, OSError, ValueError) as exc:
+            return 503, {
+                "ok": False,
+                "service": "project-ledger-mcp",
+                "version": COMPILER_VERSION,
+                "error": str(exc),
+            }
+        counts = manifest.get("counts") or {}
+        return 200, {
+            "ok": True,
+            "service": "project-ledger-mcp",
+            "version": COMPILER_VERSION,
+            "schema_version": manifest.get("schema_version"),
+            "run_id": manifest.get("run_id"),
+            "compiled_at": manifest.get("compiled_at"),
+            "health_state": (manifest.get("health") or {}).get("state"),
+            "canonical_projects": counts.get("canonical_projects", 0),
+            "ecosystem_edges": counts.get("ecosystem_edges", 0),
+            "tool_count": len(_TOOLS),
+        }
+
+    def create_http_server(self, host: str = "127.0.0.1", port: int = 3132) -> ThreadingHTTPServer:
+        """Create a stdlib ThreadingHTTPServer exposing MCP Streamable HTTP (`POST /mcp`) and `GET /health`."""
+        mcp_server = self
+
+        class _ReuseThreadingHTTPServer(ThreadingHTTPServer):
+            allow_reuse_address = True
+            daemon_threads = True
+
+        class _McpHttpHandler(BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+
+            def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
+                return
+
+            def _send_bytes(
+                self,
+                status: int,
+                body: bytes,
+                *,
+                content_type: str = "application/json; charset=utf-8",
+                extra_headers: dict[str, str] | None = None,
+            ) -> None:
+                self.send_response(status)
+                if body:
+                    self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                for hk, hv in (extra_headers or {}).items():
+                    self.send_header(hk, hv)
+                self.end_headers()
+                if body:
+                    self.wfile.write(body)
+
+            def _send_json(
+                self,
+                status: int,
+                payload: dict[str, Any] | list[dict[str, Any]],
+                *,
+                extra_headers: dict[str, str] | None = None,
+            ) -> None:
+                encoded = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+                self._send_bytes(status, encoded, extra_headers=extra_headers)
+
+            def do_OPTIONS(self) -> None:  # noqa: N802
+                route = urlsplit(self.path).path
+                if route in ("/mcp", "/"):
+                    self._send_bytes(204, b"", extra_headers={"Allow": "POST, DELETE, OPTIONS"})
+                elif route in ("/health", "/healthz"):
+                    self._send_bytes(204, b"", extra_headers={"Allow": "GET, OPTIONS"})
+                else:
+                    self._send_json(404, {"ok": False, "error": "Not found"})
+
+            def do_GET(self) -> None:  # noqa: N802
+                route = urlsplit(self.path).path
+                if route in ("/health", "/healthz"):
+                    code, payload = mcp_server.health_payload()
+                    self._send_json(code, payload)
+                    return
+                if route == "/mcp":
+                    # MCP Streamable HTTP stateless servers without server-initiated SSE return 405 on GET /mcp.
+                    self._send_json(
+                        405,
+                        {"ok": False, "error": "SSE stream not offered; send JSON-RPC 2.0 via POST /mcp."},
+                        extra_headers={"Allow": "POST, DELETE, OPTIONS"},
+                    )
+                    return
+                self._send_json(404, {"ok": False, "error": "Not found"})
+
+            def do_DELETE(self) -> None:  # noqa: N802
+                route = urlsplit(self.path).path
+                if route in ("/mcp", "/"):
+                    self._send_bytes(204, b"")
+                    return
+                self._send_json(404, {"ok": False, "error": "Not found"})
+
+            def do_POST(self) -> None:  # noqa: N802
+                route = urlsplit(self.path).path
+                if route not in ("/mcp", "/"):
+                    self._send_json(404, {"ok": False, "error": "Not found"})
+                    return
+                raw_len = self.headers.get("Content-Length")
+                if raw_len is None:
+                    self._send_json(
+                        400,
+                        _jsonrpc_error(None, JSONRPC_INVALID_REQUEST, "Missing Content-Length header."),
+                    )
+                    return
+                try:
+                    content_len = int(raw_len.strip())
+                    if content_len < 0:
+                        raise ValueError("negative Content-Length")
+                except ValueError:
+                    self._send_json(
+                        400,
+                        _jsonrpc_error(None, JSONRPC_INVALID_REQUEST, "Invalid Content-Length header."),
+                    )
+                    return
+                if content_len > MAX_HTTP_BODY_BYTES:
+                    self._send_json(
+                        413,
+                        _jsonrpc_error(
+                            None,
+                            JSONRPC_INVALID_REQUEST,
+                            f"Request body exceeds {MAX_HTTP_BODY_BYTES} byte limit.",
+                        ),
+                    )
+                    return
+                raw_body = self.rfile.read(content_len) if content_len > 0 else b""
+                try:
+                    decoded = json.loads(raw_body.decode("utf-8"))
+                except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    self._send_json(
+                        400,
+                        _jsonrpc_error(None, JSONRPC_PARSE_ERROR, f"Parse error: {exc}"),
+                    )
+                    return
+                try:
+                    response = mcp_server.handle_message(decoded)
+                except Exception as exc:
+                    if isinstance(decoded, dict) and "id" in decoded:
+                        response = _jsonrpc_error(decoded.get("id"), JSONRPC_INTERNAL_ERROR, str(exc))
+                    else:
+                        response = None
+                if response is None:
+                    self._send_bytes(202, b"")
+                else:
+                    self._send_json(200, response)
+
+        return _ReuseThreadingHTTPServer((host, port), _McpHttpHandler)
+
+    def serve_http(self, *, host: str = "127.0.0.1", port: int = 3132) -> int:
+        """Serve MCP Streamable HTTP until interrupted."""
+        httpd = self.create_http_server(host=host, port=port)
+        bound_host, bound_port = httpd.server_address[:2]
+        print(
+            f"project-ledger-mcp listening on http://{bound_host}:{bound_port}/mcp "
+            f"(health: http://{bound_host}:{bound_port}/health)",
+            file=sys.stderr,
+            flush=True,
+        )
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            httpd.server_close()
+        return 0
+
 
 def _read_stdio_frame(in_stream: BinaryIO) -> tuple[str, bytes, str | None] | None:
     """Read one JSON-RPC message frame from ``in_stream``.
@@ -776,6 +1079,23 @@ def add_mcp_args(parser: argparse.ArgumentParser) -> None:
         default=default_workspace_path("registry/weak-overlap-triage-candidates.json"),
         help="Path to frontier weak-overlap triage candidates registry.",
     )
+    parser.add_argument(
+        "--transport",
+        choices=("stdio", "http"),
+        default="stdio",
+        help="MCP transport mode: stdio (default) or Streamable HTTP (http).",
+    )
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Bind host/IP for --transport http (default: 127.0.0.1; use tailscale IP for tailnet).",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=3132,
+        help="Bind TCP port for --transport http (default: 3132).",
+    )
 
 
 def run_mcp_from_args(args: argparse.Namespace) -> int:
@@ -785,13 +1105,15 @@ def run_mcp_from_args(args: argparse.Namespace) -> int:
         project_lineage_path=Path(args.project_lineage),
         candidates_path=Path(args.candidates),
     )
+    if getattr(args, "transport", "stdio") == "http":
+        return server.serve_http(host=str(args.host), port=int(args.port))
     return server.serve_stdio()
 
 
 def _mcp_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="ledger-mcp",
-        description="Read-only Model Context Protocol (MCP) stdio server for Project Ledger.",
+        description="Read-only Model Context Protocol (MCP) stdio/HTTP server for Project Ledger.",
     )
     add_mcp_args(parser)
     return parser
