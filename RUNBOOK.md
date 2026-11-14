@@ -14,6 +14,7 @@ python -m ledger refresh --no-markdown-mirror [--full-scan] [--check-remote]
 python -m ledger compile [--check-remote]
 python -m ledger orient
 python -m ledger sources
+python -m ledger portfolio [--urgent] [--dirty] [--behind] [--remote-ahead] [--cycles] [--lifecycle STATE] [--depends-on PROJECT] [--depended-on-by PROJECT] [--limit N] [--json]
 python -m ledger resolve <referent>
 python -m ledger show <project>
 python -m ledger locate <project>
@@ -21,15 +22,15 @@ python -m ledger explain <referent>
 python -m ledger review [--approve-candidates] [--decision-id ID]
 python -m ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
 python -m ledger lineage [--check | --sync] [--merge-from PATH] [--json]
-python -m ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
-python -m ledger mcp
+python -m ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--push] [--prune-shadow-source ID] [--dry-run] [--json]
+python -m ledger mcp [--transport {stdio,http}] [--host 127.0.0.1] [--port 3132]
 /usr/bin/python3 -m unittest tests/test_doc_hygiene.py -v
 python -m unittest discover -s tests
 ```
 
 The compatibility scanner remains directly available as `python build_ledger.py`.
 
-Implemented today: `validate`, `sync-github`, `refresh`, `compile`, `orient`, `sources`, `resolve`, `show`, `locate`, `explain`, `review`, `changes`, `lineage`, `sync-gbrain`, and `mcp` (`ledger-mcp`).
+Implemented today: `validate`, `sync-github`, `refresh`, `compile`, `orient`, `sources`, `portfolio`, `resolve`, `show`, `locate`, `explain`, `review`, `changes`, `lineage`, `sync-gbrain`, and `mcp` (`ledger-mcp`, plus `ops/project-ledger-mcp-tailnet.sh` for tailnet-only Streamable `HTTP` service).
 
 Session/attempt receipts are owned by `machina` (Project Ledger does not expose a competing `record-session` store). The manifest capability map is the executable source of truth.
 

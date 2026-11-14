@@ -26,7 +26,7 @@ The optimization target is simple: **a cold agent should be able to understand w
 
 ## Current executable boundary
 
-Waves 0–5 and the Reality Provider seam (`machina`, `homelab`, `gbrain`) are implemented on `main` while preserving the frozen v0 compatibility scanner contract.
+Waves 0–8 and the Reality Provider seam (`machina`, `homelab`, `gbrain`) are implemented on `main` while preserving the frozen v0 compatibility scanner contract.
 
 ### Preferred refresh
 
@@ -54,6 +54,7 @@ state/github-sync.json
 state/observations.json
 state/canonical-projects.json
 state/canonical-projects.md
+state/portfolio-index.json
 state/identity-evidence.json
 state/review-queue.json
 state/changes.json
@@ -81,6 +82,7 @@ ledger refresh --no-markdown-mirror [--full-scan] [--check-remote]
 ledger compile [--check-remote] [--remote-timeout 3.0]
 ledger orient
 ledger sources
+ledger portfolio [--urgent] [--dirty] [--behind] [--remote-ahead] [--cycles] [--lifecycle STATE] [--depends-on REF] [--depended-on-by REF] [--limit N] [--json]
 ledger resolve <referent>
 ledger show <project>
 ledger locate <project>
@@ -88,12 +90,12 @@ ledger explain <referent>
 ledger review [--approve-candidates] [--decision-id ID]
 ledger changes [--since RUN_ID] [--project REFERENT] [--entity-kind KIND] [--change-type CODE]
 ledger lineage [--check | --sync] [--json]
-ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--dry-run] [--json]
-ledger mcp
-ledger-mcp
+ledger sync-gbrain [--brain-dir /home/prime/brain] [--project REFERENT] [--ingest] [--push] [--prune-shadow-source ID] [--dry-run] [--json]
+ledger mcp [--transport {stdio,http}] [--host 127.0.0.1] [--port 3132]
+ledger-mcp [--transport {stdio,http}] [--host 127.0.0.1] [--port 3132]
 ```
 
-Use `--json` on the CLI commands when machine-readable output is preferred. Connect a Model Context Protocol (MCP) client over stdio to `ledger-mcp` (`python -m ledger mcp`) for zero-subprocess read-only Reality Provider tools (`ledger_orient`, `ledger_sources`, `ledger_resolve`, `ledger_show`, `ledger_locate`, `ledger_explain`, `ledger_changes`, `ledger_review`, `ledger_lineage`) and `ledger://` resources.
+Use `--json` on the CLI commands when machine-readable output is preferred. Connect a Model Context Protocol (MCP) client over stdio (`ledger-mcp`) or tailnet Streamable HTTP (`ops/project-ledger-mcp-tailnet.sh` on `:3132/mcp`) for all 10 read-only Reality Provider tools (`ledger_orient`, `ledger_sources`, `ledger_portfolio`, `ledger_resolve`, `ledger_show`, `ledger_locate`, `ledger_explain`, `ledger_changes`, `ledger_review`, `ledger_lineage`) and `ledger://` resources.
 
 `orient` is the cheapest current entrypoint after a compile. It reports run/as-of information, source and observation counts, estate health, and the capability boundary so agents do not mistake planned features for implemented ones.
 
@@ -126,10 +128,11 @@ registered sources
  -> compatibility observations
  -> typed observations
  -> exact-remote identity evidence + explicit identity decisions + durable immutable project-lineage registry (registry/project-lineage.json, U3) + frontier zero-shot triage
- -> canonical projects + identity review + GBrain cross-links + idempotent GBrain reality-block projector (ledger sync-gbrain, U1)
- -> bounded project capsules (with read-only structural ctx synthesis across 166/172 capsules, U2, and Machina continuity, U1) + preferred-location resolution + human canonical view
+ -> canonical projects + identity review + GBrain cross-links + idempotent GBrain reality-block projector (ledger sync-gbrain --push --prune-shadow-source, U1 + Wave 6)
+ -> bounded project capsules (with read-only structural ctx synthesis across 100% of live git repos, U2, and Machina continuity, U1) + preferred-location resolution + human canonical view
+ -> estate-wide portfolio triage index, cross-repo dependency blast radius, and passive INV-FLEET-GAME-01 fleet overlay (state/portfolio-index.json, Wave 7)
  -> header-indexed semantic run history + semantic change feed (state/changes.json, U4)
- -> system manifest / orient / sources / resolve / show / locate / explain / review / changes / lineage / sync-gbrain / stdlib MCP server (ledger-mcp, U5)
+ -> system manifest / orient / sources / portfolio / resolve / show / locate / explain / review / changes / lineage / sync-gbrain / stdlib stdio + HTTP MCP server (ledger-mcp, U5 + Wave 8)
 ```
 
 Automatic identity is intentionally conservative:

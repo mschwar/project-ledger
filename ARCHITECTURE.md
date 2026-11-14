@@ -36,8 +36,9 @@ compatibility observations + single-pass scandir source/candidate/compile checkp
  -> header-indexed semantic run snapshots (state/runs/) + semantic change feed (state/changes.json)
  -> deterministic pure-Python lifecycle posture & attention-urgency rules (`ledger/rules.py`) + opt-in `--check-remote` un-fetched origin drift sensing (`ledger/sources/git.py`)
  -> GitHub remote inventory discovery, SSH checkout sync, and 1:1 git parity audit (`ledger/github_sync.py`, `state/github-sync.json`, `ops/project-ledger-discovery-watchdog.sh`)
- -> system manifest
- -> ledger CLI + stdlib read-only MCP stdio server (ledger-mcp / ledger mcp): sync-github / orient / sources / resolve / show / locate / explain / review / changes / lineage / sync-gbrain / mcp
+ -> single-read estate portfolio triage index (`state/portfolio-index.json`, `ledger/portfolio.py`), cross-repo dependency & reverse blast-radius graph (`ledger/ecosystem.py`), and passive `INV-FLEET-GAME-01` fleet occupancy overlay (`ledger/fleet.py`)
+ -> system manifest (`v1.3.0`)
+ -> ledger CLI + stdlib read-only MCP stdio and tailnet Streamable HTTP server (ledger-mcp / ledger mcp): sync-github / orient / sources / portfolio / resolve / show / locate / explain / review / changes / lineage / sync-gbrain / mcp
 ```
 
 The identity layer is intentionally conservative. Exact normalized repository remote is the only automatic merge rule. Names/project-key hints are referents, not identity authority. Explicit committed decisions can merge/split/reject/alias, assign a canonical human key, and supersede a prior decision.

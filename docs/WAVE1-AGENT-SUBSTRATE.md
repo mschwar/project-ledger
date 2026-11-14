@@ -1,6 +1,6 @@
 # Wave 1 Agent Substrate — Executable Contract
 
-This document describes the first executable Wave 1 contract currently implemented by the `ledger` package. It is intentionally narrower than the full target model in `SYSTEM.md` and `SCHEMA.md`.
+This document records the foundational Wave 1 source, snapshot, and observation contract in the `ledger` package. For the full current Wave 1–8 substrate (`manifest v1.3.0`, canonical identity, capsules, portfolio index, ecosystem graph, and `MCP` read plane), see [CURRENT.md](../CURRENT.md) and [SCHEMA.md](../SCHEMA.md).
 
 ## Purpose
 
@@ -193,13 +193,7 @@ Implemented capabilities are reported `available`:
 - typed observations
 - source health
 
-The Wave 1 document originally ended before canonical identity. The current compiler now extends this substrate with a conservative R2 identity slice:
-
-- canonical projects — available;
-- identity review queue — available;
-- exact `ledger resolve` — available;
-- project capsules — still unavailable (`WAVE3_NOT_IMPLEMENTED`);
-- semantic change feed — still unavailable (`WAVE4_NOT_IMPLEMENTED`).
+The Wave 1 document originally ended before canonical identity. In the current `v1.3.0` compiler, all Wave 1–8 capabilities (`canonical_projects`, `review_queue`, `project_capsules`, `change_feed`, `source_checkpoints`, `gbrain_page_sync`, `portfolio_triage`, `ecosystem_graph`, and `fleet_overlay`) are implemented and reported `available`.
 
 Automatic identity is limited to exact normalized repository remote plus explicit durable decisions; this document remains the source/snapshot/observation contract, while `SCHEMA.md §1.7` defines the identity extension.
 
