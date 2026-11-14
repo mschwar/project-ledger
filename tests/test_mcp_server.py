@@ -444,6 +444,47 @@ class StdlibMcpServerAndGlobalCliTests(unittest.TestCase):
                 "github.com/example/alpha",
             )
 
+    def test_non_editable_site_packages_install_resolves_canonical_workspace(self) -> None:
+        from unittest import mock
+        import ledger.config as ledger_config
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            paths = self._build_workspace(base)
+            fake_site_packages = base / "uv-tools" / "lib" / "python3.13" / "site-packages"
+            fake_site_packages.mkdir(parents=True)
+            foreign_cwd = base / "foreign-repo"
+            (foreign_cwd / "state").mkdir(parents=True)
+            (foreign_cwd / "state" / "app.db").write_text("not-ledger", encoding="utf-8")
+
+            with mock.patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("PROJECT_LEDGER_HOME", None)
+                with (
+                    mock.patch.object(ledger_config, "PACKAGE_REPO_ROOT", fake_site_packages),
+                    mock.patch.object(
+                        ledger_config,
+                        "_CANONICAL_WORKSPACE_CANDIDATES",
+                        (paths["ws"],),
+                    ),
+                ):
+                    self.assertEqual(
+                        ledger_config.default_workspace_root(foreign_cwd),
+                        paths["ws"].resolve(),
+                    )
+                    self.assertEqual(
+                        ledger_config.default_workspace_path("state", foreign_cwd),
+                        str(paths["ws"].resolve() / "state"),
+                    )
+
+                with (
+                    mock.patch.object(ledger_config, "PACKAGE_REPO_ROOT", fake_site_packages),
+                    mock.patch.object(ledger_config, "_CANONICAL_WORKSPACE_CANDIDATES", ()),
+                ):
+                    self.assertEqual(
+                        ledger_config.default_workspace_root(foreign_cwd),
+                        foreign_cwd.resolve(),
+                    )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -10,6 +10,9 @@ from .ids import digest_json, normalize_locator, path_digest, source_id_for
 from .sources.common import safe_path_exists, safe_path_is_file
 
 PACKAGE_REPO_ROOT = Path(__file__).resolve().parents[1]
+_CANONICAL_WORKSPACE_CANDIDATES = (
+    Path("/central/repos/active/project-ledger"),
+)
 _LEDGER_STATE_MARKERS = (
     "system-manifest.json",
     "canonical-projects.json",
@@ -19,25 +22,33 @@ _LEDGER_STATE_MARKERS = (
 )
 
 
+def _is_ledger_workspace(path: Path) -> bool:
+    return safe_path_is_file(path / "ledger_config.json") or any(
+        safe_path_is_file(path / "state" / marker) for marker in _LEDGER_STATE_MARKERS
+    )
+
+
 def default_workspace_root(cwd: Path | None = None) -> Path:
     """Resolve the active Project Ledger workspace root for zero-config CLI/MCP calls.
 
     Precedence:
       1. ``PROJECT_LEDGER_HOME`` environment variable when non-empty.
       2. ``cwd`` when ``cwd/ledger_config.json`` or any compiled ``cwd/state/<marker>`` exists.
-      3. ``PACKAGE_REPO_ROOT`` when ``PACKAGE_REPO_ROOT/ledger_config.json`` exists.
-      4. ``cwd`` fallback.
+      3. ``PACKAGE_REPO_ROOT`` when ``PACKAGE_REPO_ROOT`` is a ledger workspace (editable/source checkout).
+      4. Canonical estate checkout ``/central/repos/active/project-ledger`` when installed into ``site-packages`` (e.g. ``uv tool install``).
+      5. ``cwd`` fallback.
     """
     env_home = os.environ.get("PROJECT_LEDGER_HOME", "").strip()
     if env_home:
         return Path(env_home).expanduser().resolve()
     active_cwd = (cwd or Path.cwd()).resolve()
-    if safe_path_is_file(active_cwd / "ledger_config.json") or any(
-        safe_path_is_file(active_cwd / "state" / marker) for marker in _LEDGER_STATE_MARKERS
-    ):
+    if _is_ledger_workspace(active_cwd):
         return active_cwd
-    if safe_path_is_file(PACKAGE_REPO_ROOT / "ledger_config.json"):
+    if _is_ledger_workspace(PACKAGE_REPO_ROOT):
         return PACKAGE_REPO_ROOT
+    for candidate in _CANONICAL_WORKSPACE_CANDIDATES:
+        if _is_ledger_workspace(candidate):
+            return candidate.resolve()
     return active_cwd
 
 
