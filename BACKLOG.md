@@ -442,6 +442,16 @@ All external/host items surfaced during the 2026-10-31 repository audit have bee
 
 ---
 
+# Proposed Cross-Repo Portfolio Sweeps (Pending Operator Gate)
+
+- **`WQ-7` — Education & Learning Portfolio Structure (`18 -> 11` Live Repositories + `2` Shared Modules)** *(Status: **Proposed — 2026-11-19**, awaiting operator sign-off; full specification: [docs/work/PROPOSAL-education-portfolio-structure-20261119.md](docs/work/PROPOSAL-education-portfolio-structure-20261119.md))*:
+  - Proposes a Four-Lane Federated Spine keeping boundary-distinct repositories standalone (`LPES-CS`, `two-track-education`, `chreod`, `lighthouse`, and upstream `learning-substrate-programme`), sharing cross-lane logic via `unslop` (`ares`) and `praxis-kit` (`pk`), and retiring `7` redundant or dormant checkouts across three gated passes:
+    1. **Pass 1 (Zero-Risk Duplicate & Zombie Retirement, `-2` repos):** Finish moving `/central/repos/active/init-mockup` to `/central/archive/lpes-retired-ui-prototypes-2026-11-12/` (`supersede` -> `LPES-CS`), and bundle/archive `ai-onboarding-for-friends` (`100%` byte-identical copy already inside `ai-onboard/ai-onboarding-for-friends/`, `supersede` -> `ai-onboard`).
+    2. **Pass 2 (Content Fold-Ins & Dormant Precursor Retirement, `-5` repos):** Fold `ai-class` and `lee-ai-learning` into `ai-onboard` (`tracks/`), fold `edifice` Open Educational Resources (OER) source catalogs and `baha` chemistry-mastery seeds into `lighthouse`, fold `pitch-perfect` quiz notes into `toned/docs/`, then bundle and archive all `5` source repositories.
+    3. **Pass 3 (Shared Module Seam Cleanup):** Decouple `chreod/Makefile` from its hardcoded `two-track-education` path via standalone `pyproject.toml` (`chreod.braid`), promote shared `PDF/UA-2` + RFC-6901 verification helpers into `unslop`, and standardize `lighthouse/PEDAGOGY_CARDS/` on `praxis-kit` kernels.
+
+---
+
 # Explicitly deferred / anti-backlog
 
 Do **not** prioritize these:
