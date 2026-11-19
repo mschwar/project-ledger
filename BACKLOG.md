@@ -433,12 +433,12 @@ All external/host items surfaced during the 2026-10-31 repository audit have bee
 
 ---
 
-# Cross-Repo / Host Work Queue (2026-11-19)
+# Cross-Repo / Host Work Queue (Drained — 2026-11-19)
 
 - **`WQ-5` — Passive fleet-peer unpushed-repo census ingestion (`repo-census` -> `inventory_policy`)** *(Status: **Closed — 2026-11-19**, owner: `repo-census` + `homelab` + `project-ledger`)*:
-  - Delivered `export_peer_census.py` in `mschwar/repo-census`, `homelab.fleet.peer_repo_census` (`homelab fleet repo-census` + 30-minute `homelab-peer-repo-census.timer` strictly honoring `INV-FLEET-GAME-01`), and four optional `inventory_policy` (`inventory_kind: "peer_census"`) roots in `ledger_config.json` (`iz`, `thing1`, `matty-pc`, `mac`) so unpushed peer `git init` repos surface in capsules and `state/github-sync.json` (`local_without_remote`) with zero SSH probes during `ledger refresh`.
-- **`WQ-6` — Short-TTL token caching in root-owned `/usr/local/bin/gh` wrapper on `ai-server`** *(Status: **Staged for operator `infra/**` merge gate — 2026-11-19**, owner: `homelab` WorkSpec `01a1f23f-5cec-74dc-a5a7-fe174836a60c`)*:
-  - Codified `infra/access/gh-shim` (`/usr/local/bin/gh`) and `infra/access/homelab-gh-token` (`/usr/local/sbin/homelab-gh-token` -> `0700` `/run/homelab-gh-token`, `0600` `token`, 600s TTL, `flock` stampede lock, pre-write `tmpfs` boundary check) in `mschwar/homelab`, ready for second-factor `infra/**` denylist merge authorization and `sudo bash infra/access/apply-access.sh`.
+  - Delivered `export_peer_census.py` in `mschwar/repo-census` (`PR #1` -> `ac3a149`), `homelab.fleet.peer_repo_census` (`homelab fleet repo-census` + 30-minute `homelab-peer-repo-census.timer` strictly honoring `INV-FLEET-GAME-01`, `PR #612` -> `2a8d70ca`, WorkSpec `01a1f234-d0c1-767c-b8cb-9f3899137fa6`), and four optional `inventory_policy` (`inventory_kind: "peer_census"`) roots in `ledger_config.json` (`iz`, `thing1`, `matty-pc`, `mac`, `PR #54` -> `4d88be5`) so unpushed peer `git init` repos surface in capsules and `state/github-sync.json` (`local_without_remote`) with zero SSH probes during `ledger refresh`.
+- **`WQ-6` — Short-TTL token caching in root-owned `/usr/local/bin/gh` wrapper on `ai-server`** *(Status: **Closed — 2026-11-19**, owner: `homelab` `PR #613` -> `6f77df58`, WorkSpec `01a1f23f-5cec-74dc-a5a7-fe174836a60c`)*:
+  - Codified and deployed `infra/access/gh-shim` (`/usr/local/bin/gh`, preserving caller UID) and `infra/access/homelab-gh-token` (`/usr/local/sbin/homelab-gh-token` -> `0700` `/run/homelab-gh-token`, `0600` `token` on `tmpfs`, 600s TTL, `flock` stampede lock with fd `9` closed before `homelab-op` exec, pre-write `tmpfs` boundary check) via `sudo bash infra/access/apply-access.sh`, verified live (`overall: PASS` on `agent_preflight --local`).
 
 ---
 
