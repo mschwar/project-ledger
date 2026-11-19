@@ -19,6 +19,7 @@ from ..models import (
     coerce_bool,
     isoformat_from_ts,
     markdown_link,
+    normalize_remote_url,
     normalize_tags,
     parse_iso_datetime,
     sha256_hex,
@@ -42,6 +43,12 @@ def build_google_drive_url(remote_name: str, inventory_path: str) -> str:
     remote = str(remote_name).strip().rstrip(":") or "googledrive"
     normalized = "/".join(part for part in str(inventory_path).split("/") if part)
     return f"gdrive://{remote}/{quote(normalized, safe='/-_.()')}"
+
+
+def build_peer_census_url(host: str, inventory_path: str) -> str:
+    clean_host = str(host).strip().rstrip(":") or "peer"
+    normalized = "/".join(part for part in str(inventory_path).split("/") if part)
+    return f"peer://{clean_host}/{quote(normalized, safe='/-_.()')}"
 
 
 def inventory_candidate_summary(records: list[dict]) -> dict:
@@ -227,39 +234,66 @@ def build_inventory_entry(
         except OSError:
             readme_sha256 = ""
 
+    inventory_kind = str(root_cfg.get("inventory_kind", "google_drive")).strip() or "google_drive"
+    is_peer_census = inventory_kind == "peer_census"
+    peer_host = (
+        str(policy_root.get("peer_host") or "").strip()
+        or str(sidecar.get("machine_name", "")).strip()
+        or str(root_cfg.get("machine_name", "")).strip()
+        or remote_name
+    )
+    raw_remote_url = git_meta["remote_url"] or (
+        str(policy_root.get("remote_url") or "").strip() if is_peer_census else ""
+    )
+    norm_remote_url = git_meta["normalized_remote_url"] or (
+        normalize_remote_url(raw_remote_url) if raw_remote_url else ""
+    )
+
     canonical_url = (
         str(sidecar.get("canonical_url", "")).strip()
-        or build_google_drive_url(remote_name, candidate["inventory_path"])
+        or (
+            build_peer_census_url(peer_host, candidate["inventory_path"])
+            if is_peer_census
+            else build_google_drive_url(remote_name, candidate["inventory_path"])
+        )
     )
     storage_scope = (
         str(sidecar.get("storage_scope", "")).strip()
         or str(root_cfg.get("storage_scope", "")).strip()
-        or "shared"
+        or ("local" if is_peer_census else "shared")
     )
     shared = coerce_bool(sidecar.get("shared"))
     if shared is None:
-        shared = True
+        shared = False if is_peer_census else True
 
     display_name = (
         str(sidecar.get("display_name", "")).strip()
+        or (str(policy_root.get("display_name") or "").strip() if is_peer_census else "")
         or title
+        or (str(policy_root.get("repo_name") or "").strip() if is_peer_census else "")
         or filesystem_path.name
         or candidate["inventory_path"].split("/")[-1]
     )
     description = (
         str(sidecar.get("description", "")).strip()
         or readme_description
+        or (str(policy_root.get("description") or "").strip() if is_peer_census else "")
         or str(policy_root.get("rationale", "")).strip()
     )
     repo_name = (
         str(sidecar.get("repo_name", "")).strip()
         or git_meta["repo_name"]
+        or (str(policy_root.get("repo_name") or "").strip() if is_peer_census else "")
         or filesystem_path.name
     )
     project_key = (
         str(sidecar.get("project_key", "")).strip()
-        or git_meta["normalized_remote_url"]
-        or f"google-drive:{candidate['inventory_path'].lower()}"
+        or norm_remote_url
+        or (
+            f"peer:{peer_host.lower()}:{candidate['inventory_path'].lower()}"
+            if is_peer_census
+            else f"google-drive:{candidate['inventory_path'].lower()}"
+        )
     )
     project_hash = sha256_hex(project_key)
 
@@ -278,22 +312,29 @@ def build_inventory_entry(
     project_type = classify_project_type(git_enabled, obsidian_enabled, markdown_count)
     machine_name = (
         str(sidecar.get("machine_name", "")).strip()
+        or (peer_host if is_peer_census else "")
         or str(root_cfg.get("machine_name", "")).strip()
         or platform.node()
         or os.environ.get("COMPUTERNAME", "")
     )
 
-    base_source_label = str(root_cfg.get("label", "google-drive")).strip() or "google-drive"
+    default_label = peer_host if is_peer_census else "google-drive"
+    base_source_label = str(root_cfg.get("label", default_label)).strip() or default_label
     root_label = str(candidate["root_label"]).strip()
     source_label = f"{base_source_label}:{root_label}" if root_label else base_source_label
 
     inventory_path = str(candidate["inventory_path"]).strip()
-    path_value = f"{remote_name}:{inventory_path}"
+    peer_path_raw = str(policy_root.get("peer_path") or "").strip() if is_peer_census else ""
+    path_value = (
+        f"{peer_host}:{peer_path_raw}"
+        if (is_peer_census and peer_path_raw)
+        else f"{remote_name}:{inventory_path}"
+    )
     if safe_path_exists(filesystem_path):
         try:
             path_value = str(filesystem_path.resolve())
         except OSError:
-            path_value = f"{remote_name}:{inventory_path}"
+            pass
 
     include_reasons = list(summary["reasons"])
     include_reasons.extend(
@@ -303,13 +344,30 @@ def build_inventory_entry(
             f"candidate-kind:{candidate['candidate_kind']}",
         ]
     )
+    if is_peer_census:
+        include_reasons.append("inventory-kind:peer_census")
+        pol_lang = str(policy_root.get("primary_language") or "").strip()
+        if pol_lang:
+            include_reasons.append(f"inventory-language:{pol_lang}")
     if sidecar.get("_sidecar_error"):
         include_reasons.append("sidecar-error")
     if sidecar.get("_stale_sidecar"):
         include_reasons.append("stale_sidecar")
 
     tags = normalize_tags(sidecar.get("tags"))
-    tags = normalize_tags(tags + ["google-drive", root_label, str(policy_root.get("root_class", ""))])
+    tag_prefix = ["peer-census", peer_host] if is_peer_census else ["google-drive"]
+    tags = normalize_tags(tags + tag_prefix + [root_label, str(policy_root.get("root_class", ""))])
+
+    head_branch = git_meta["head_branch"] or (
+        str(policy_root.get("head_branch") or "").strip() if is_peer_census else ""
+    )
+    head_commit = git_meta["head_commit"] or (
+        str(policy_root.get("head_commit") or "").strip() if is_peer_census else ""
+    )
+    head_commit_at = git_meta["head_commit_at"] or (
+        str(policy_root.get("head_commit_at") or "").strip() if is_peer_census else ""
+    )
+    last_touch = isoformat_from_ts(summary["latest_ts"]) or head_commit_at
 
     return {
         "project_hash": project_hash,
@@ -323,17 +381,17 @@ def build_inventory_entry(
         "git": git_enabled,
         "obsidian": obsidian_enabled,
         "repo_name": repo_name,
-        "remote_url": git_meta["remote_url"],
+        "remote_url": raw_remote_url,
         "canonical_url": canonical_url,
         "path": path_value,
         "path_from_root": inventory_path,
         "readme_path": str(readme_path.resolve()) if readme_path else "",
         "readme_link_md": markdown_link(readme_path, output_dir, "README") if readme_path else "",
         "path_link_md": "",
-        "last_touch_at": isoformat_from_ts(summary["latest_ts"]),
-        "head_branch": git_meta["head_branch"],
-        "head_commit": git_meta["head_commit"],
-        "head_commit_at": git_meta["head_commit_at"],
+        "last_touch_at": last_touch,
+        "head_branch": head_branch,
+        "head_commit": head_commit,
+        "head_commit_at": head_commit_at,
         "last_remote_ref_at": git_meta["last_remote_ref_at"],
         "last_push_at": str(sidecar.get("last_push_at", "")).strip(),
         "markdown_file_count": markdown_count,

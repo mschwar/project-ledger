@@ -101,6 +101,74 @@
       "label": "backup-20260416-repos",
       "discovery": "git_repos",
       "max_depth": 6
+    },
+    {
+      "source_id": "peer-census-iz",
+      "path": "/central/registry/reports/repo-census",
+      "label": "peer-census-iz",
+      "discovery": "inventory_policy",
+      "inventory_kind": "peer_census",
+      "optional": true,
+      "inventory_jsonl": "/central/registry/reports/repo-census/iz.jsonl",
+      "policy_path": "/central/registry/reports/repo-census/iz.policy.json",
+      "policy_crawl_treatments": [
+        "project_discovery"
+      ],
+      "require_project_ledger_candidate": true,
+      "remote_name": "iz",
+      "machine_name": "iz",
+      "storage_scope": "local"
+    },
+    {
+      "source_id": "peer-census-thing1",
+      "path": "/central/registry/reports/repo-census",
+      "label": "peer-census-thing1",
+      "discovery": "inventory_policy",
+      "inventory_kind": "peer_census",
+      "optional": true,
+      "inventory_jsonl": "/central/registry/reports/repo-census/thing1.jsonl",
+      "policy_path": "/central/registry/reports/repo-census/thing1.policy.json",
+      "policy_crawl_treatments": [
+        "project_discovery"
+      ],
+      "require_project_ledger_candidate": true,
+      "remote_name": "thing1",
+      "machine_name": "thing1",
+      "storage_scope": "local"
+    },
+    {
+      "source_id": "peer-census-matty-pc",
+      "path": "/central/registry/reports/repo-census",
+      "label": "peer-census-matty-pc",
+      "discovery": "inventory_policy",
+      "inventory_kind": "peer_census",
+      "optional": true,
+      "inventory_jsonl": "/central/registry/reports/repo-census/matty-pc.jsonl",
+      "policy_path": "/central/registry/reports/repo-census/matty-pc.policy.json",
+      "policy_crawl_treatments": [
+        "project_discovery"
+      ],
+      "require_project_ledger_candidate": true,
+      "remote_name": "matty-pc",
+      "machine_name": "matty-pc",
+      "storage_scope": "local"
+    },
+    {
+      "source_id": "peer-census-mac",
+      "path": "/central/registry/reports/repo-census",
+      "label": "peer-census-mac",
+      "discovery": "inventory_policy",
+      "inventory_kind": "peer_census",
+      "optional": true,
+      "inventory_jsonl": "/central/registry/reports/repo-census/mac.jsonl",
+      "policy_path": "/central/registry/reports/repo-census/mac.policy.json",
+      "policy_crawl_treatments": [
+        "project_discovery"
+      ],
+      "require_project_ledger_candidate": true,
+      "remote_name": "mac",
+      "machine_name": "mac",
+      "storage_scope": "local"
     }
   ]
 }

@@ -1497,7 +1497,26 @@ def sync_github_estate(
                     }
                 )
 
-    # Reverse 1:1 check: inspect local live git checkouts & compiled canonical projects.
+    # Reverse 1:1 check: inspect local live git checkouts & passive peer-census unpushed repos.
+    cid_by_key_or_loc: dict[str, str] = {}
+    if safe_path_is_file(state_dir / "canonical-projects.json"):
+        try:
+            cp_for_map = load_canonical_projects(state_dir)
+            for proj in cp_for_map.get("projects", []):
+                cid = str(proj.get("canonical_project_id") or "").strip()
+                if not cid:
+                    continue
+                pkey = str(proj.get("project_key") or "").strip().lower()
+                if pkey:
+                    cid_by_key_or_loc.setdefault(f"key:{pkey}", cid)
+                for ref in proj.get("referents", []):
+                    if isinstance(ref, dict) and ref.get("kind") == "path":
+                        rval = str(ref.get("value") or "").strip()
+                        if rval:
+                            cid_by_key_or_loc.setdefault(f"loc:{rval}", cid)
+        except (OSError, ValueError):
+            pass
+
     local_without_remote: list[dict[str, Any]] = []
     seen_no_remote_paths: set[str] = set()
     for chk in local_checkouts:
@@ -1507,13 +1526,64 @@ def sync_github_estate(
             p_str = str(chk["path"])
             if p_str not in seen_no_remote_paths:
                 seen_no_remote_paths.add(p_str)
+                pkey = chk["path"].name.lower()
                 local_without_remote.append(
                     {
-                        "canonical_project_id": None,
-                        "project_key": chk["path"].name.lower(),
+                        "canonical_project_id": cid_by_key_or_loc.get(f"loc:{p_str}")
+                        or cid_by_key_or_loc.get(f"key:{pkey}"),
+                        "project_key": pkey,
                         "preferred_path": p_str,
                     }
                 )
+
+    defaults = config.get("defaults", {}) if isinstance(config.get("defaults"), dict) else {}
+    inv_adapter = get_adapter("inventory_policy")
+    for raw_root in config.get("roots", []):
+        if not isinstance(raw_root, dict):
+            continue
+        if str(raw_root.get("discovery", "")).strip() != "inventory_policy":
+            continue
+        if str(raw_root.get("inventory_kind", "")).strip() != "peer_census":
+            continue
+        inv_raw = str(raw_root.get("inventory_jsonl", "")).strip()
+        pol_raw = str(raw_root.get("policy_path", "")).strip()
+        root_raw = str(raw_root.get("path", "")).strip()
+        if not (inv_raw and pol_raw and root_raw):
+            continue
+        inv_path = resolve_config_path(inv_raw, config_path.parent)
+        pol_path = resolve_config_path(pol_raw, config_path.parent)
+        if not (safe_path_is_file(inv_path) and safe_path_is_file(pol_path)):
+            continue
+        rcfg = dict(raw_root)
+        rcfg["_resolved_path"] = resolve_config_path(root_raw, config_path.parent)
+        rcfg["_inventory_jsonl_path"] = inv_path
+        rcfg["_policy_path"] = pol_path
+        try:
+            excl = merge_exclude_names(rcfg, defaults)
+            cands = inv_adapter.discover_candidates(rcfg, defaults, excl)
+            for cand in cands:
+                entry = inv_adapter.build(cand, rcfg, defaults, state_dir)
+                if not entry or not entry.get("git"):
+                    continue
+                rem = _normalize_sync_remote(
+                    str(entry.get("remote_url") or ""), allow_file_remotes=allow_file_remotes
+                )
+                if rem:
+                    continue
+                p_str = str(entry.get("path") or "").strip()
+                pkey = str(entry.get("project_key") or "").strip()
+                if p_str and pkey and p_str not in seen_no_remote_paths:
+                    seen_no_remote_paths.add(p_str)
+                    local_without_remote.append(
+                        {
+                            "canonical_project_id": cid_by_key_or_loc.get(f"loc:{p_str}")
+                            or cid_by_key_or_loc.get(f"key:{pkey.lower()}"),
+                            "project_key": pkey,
+                            "preferred_path": p_str,
+                        }
+                    )
+        except (OSError, ValueError):
+            continue
 
     non_git_canonical_projects = 0
     if safe_path_is_file(state_dir / "canonical-projects.json") and safe_path_is_file(
