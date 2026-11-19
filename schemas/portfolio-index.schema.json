@@ -206,11 +206,17 @@
         "canonical_project_id",
         "project_key",
         "display_name",
+        "description",
+        "goal",
+        "what_it_does",
+        "primary_language",
+        "tags",
         "canonical_url",
         "gbrain_page_key",
         "observation_count",
         "preferred_location",
         "git_state",
+        "last_commit",
         "posture",
         "machina",
         "structural_health",
@@ -220,6 +226,14 @@
         "canonical_project_id": { "type": "string", "pattern": "^prj_[0-9a-f]{24}$" },
         "project_key": { "type": "string", "minLength": 1 },
         "display_name": { "type": "string", "minLength": 1 },
+        "description": { "type": ["string", "null"] },
+        "goal": { "type": ["string", "null"] },
+        "what_it_does": { "type": ["string", "null"] },
+        "primary_language": { "type": ["string", "null"] },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "canonical_url": { "type": ["string", "null"] },
         "gbrain_page_key": { "type": ["string", "null"] },
         "observation_count": { "type": "integer", "minimum": 0 },
@@ -262,11 +276,35 @@
             "state": { "type": "string", "enum": ["known", "unknown", "not_applicable"] },
             "head_branch": { "type": ["string", "null"] },
             "head_commit": { "type": ["string", "null"] },
+            "head_commit_at": { "type": ["string", "null"] },
+            "head_commit_subject": { "type": ["string", "null"] },
             "drift_state": { "type": "string", "minLength": 1 },
             "dirty": { "type": ["boolean", "null"] },
             "ahead_count": { "type": ["integer", "null"] },
             "behind_count": { "type": ["integer", "null"] },
             "remote_ahead": { "type": "boolean" }
+          }
+        },
+        "last_commit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "sha",
+            "short_sha",
+            "committed_at",
+            "subject",
+            "author",
+            "branch"
+          ],
+          "properties": {
+            "state": { "type": "string", "enum": ["known", "unknown", "not_applicable"] },
+            "sha": { "type": ["string", "null"] },
+            "short_sha": { "type": ["string", "null"] },
+            "committed_at": { "type": ["string", "null"] },
+            "subject": { "type": ["string", "null"] },
+            "author": { "type": ["string", "null"] },
+            "branch": { "type": ["string", "null"] }
           }
         },
         "posture": {

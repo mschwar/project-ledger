@@ -31,6 +31,15 @@ from pathlib import Path
 from typing import Any
 
 from . import COMPILER_VERSION, PROJECT_CAPSULE_SCHEMA_VERSION
+from .catalog import (
+    DESCRIPTION_MAX_CHARS,
+    GOAL_MAX_CHARS,
+    WHAT_IT_DOES_MAX_CHARS,
+    extract_repo_doc_profile,
+    infer_primary_language,
+    is_noisy_summary_text,
+    lookup_catalog_entry,
+)
 from .gbrain import resolve_gbrain_link
 from .human_view import write_canonical_markdown
 from .identity import observation_facts, resolve_payload
@@ -896,6 +905,9 @@ def rank_project_observations(
                 "state": "not_applicable",
                 "head_branch": None,
                 "head_commit": None,
+                "head_commit_at": None,
+                "head_commit_author": None,
+                "head_commit_subject": None,
                 "upstream_ref": None,
                 "ahead_count": None,
                 "behind_count": None,
@@ -1003,12 +1015,22 @@ def _project_git_facts(ranked_observations: list[dict], observations_by_id: dict
             continue
         obs = observations_by_id.get(item["observation_id"]) or {}
         compat = obs.get("compat_entry") if isinstance(obs.get("compat_entry"), dict) else {}
-        head_commit = str(compat.get("head_commit") or "").strip() or None
-        head_branch = str(compat.get("head_branch") or "").strip() or None
-        head_commit_at = str(compat.get("head_commit_at") or "").strip() or None
+        git_drift = item.get("git_drift") or {}
+        head_commit = str(git_drift.get("head_commit") or compat.get("head_commit") or "").strip() or None
+        head_branch = str(git_drift.get("head_branch") or compat.get("head_branch") or "").strip() or None
+        head_commit_at = (
+            str(git_drift.get("head_commit_at") or compat.get("head_commit_at") or "").strip() or None
+        )
+        head_commit_author = (
+            str(git_drift.get("head_commit_author") or compat.get("head_commit_author") or "").strip()
+            or None
+        )
+        head_commit_subject = (
+            str(git_drift.get("head_commit_subject") or compat.get("head_commit_subject") or "").strip()
+            or None
+        )
         last_remote_ref_at = str(compat.get("last_remote_ref_at") or "").strip() or None
         remote_url = str(compat.get("remote_url") or compat.get("canonical_url") or "").strip() or None
-        git_drift = item.get("git_drift") or {}
         state = "known" if (head_commit or head_branch or remote_url) else "unknown"
         facts = {
             "state": state,
@@ -1016,6 +1038,8 @@ def _project_git_facts(ranked_observations: list[dict], observations_by_id: dict
             "head_branch": head_branch,
             "head_commit": head_commit,
             "head_commit_at": head_commit_at,
+            "head_commit_author": head_commit_author,
+            "head_commit_subject": head_commit_subject,
             "last_remote_ref_at": last_remote_ref_at,
             "remote_url": remote_url,
             "upstream_ref": git_drift.get("upstream_ref"),
@@ -1036,6 +1060,8 @@ def _project_git_facts(ranked_observations: list[dict], observations_by_id: dict
         "head_branch": None,
         "head_commit": None,
         "head_commit_at": None,
+        "head_commit_author": None,
+        "head_commit_subject": None,
         "last_remote_ref_at": None,
         "remote_url": None,
         "upstream_ref": None,
@@ -1047,6 +1073,279 @@ def _project_git_facts(ranked_observations: list[dict], observations_by_id: dict
         "warning_codes": [],
         "warnings": [],
     }
+
+
+def _build_last_commit_summary(git_facts: dict[str, Any]) -> dict[str, Any]:
+    raw_state = str(git_facts.get("state") or "not_applicable")
+    sha = str(git_facts.get("head_commit") or "").strip() or None
+    if raw_state == "not_applicable":
+        state = "not_applicable"
+    elif sha:
+        state = "known"
+    else:
+        state = "unknown"
+    return {
+        "state": state,
+        "sha": sha,
+        "short_sha": sha[:12] if sha else None,
+        "committed_at": str(git_facts.get("head_commit_at") or "").strip() or None,
+        "subject": str(git_facts.get("head_commit_subject") or "").strip() or None,
+        "author": str(git_facts.get("head_commit_author") or "").strip() or None,
+        "branch": str(git_facts.get("head_branch") or "").strip() or None,
+    }
+
+
+def _resolve_capsule_profile(
+    *,
+    project: dict[str, Any],
+    ranked_observations: list[dict[str, Any]],
+    observations_by_id: dict[str, dict[str, Any]],
+    ctx_block: dict[str, Any],
+    catalog_by_id: dict[str, dict[str, Any]] | None = None,
+    github_metadata_by_remote: dict[str, dict[str, Any]] | None = None,
+) -> tuple[str | None, str | None, str | None, str | None, dict[str, dict[str, Any]], list[str]]:
+    """Resolve bounded ``(description, goal, what_it_does, primary_language, provenance_map, extra_tags)``."""
+    cat_entry = lookup_catalog_entry(catalog_by_id or {}, project)
+    gh_meta_map = github_metadata_by_remote or {}
+    gh_meta: dict[str, Any] = {}
+    for rem in project.get("normalized_remotes", []):
+        norm_r = str(rem or "").strip().lower()
+        if norm_r in gh_meta_map and isinstance(gh_meta_map[norm_r], dict):
+            gh_meta = gh_meta_map[norm_r]
+            break
+
+    top_accessible_dir: Path | None = None
+    for item in ranked_observations:
+        if item.get("score_components", {}).get("accessible_worktree"):
+            loc = str(item.get("location") or "").strip()
+            if loc.startswith("/"):
+                cand_dir = Path(loc)
+                if safe_path_is_dir(cand_dir):
+                    top_accessible_dir = cand_dir
+                    break
+
+    sc_goal: tuple[str, str] | None = None
+    sc_what: tuple[str, str] | None = None
+    sc_enriched_desc: tuple[str, str] | None = None
+    sc_legacy_desc: tuple[str, str] | None = None
+    sc_notes: tuple[str, str] | None = None
+    sc_lang: tuple[str, str] | None = None
+    compat_desc: tuple[str, str] | None = None
+    compat_noisy_desc: tuple[str, str] | None = None
+
+    for item in ranked_observations:
+        oid = str(item["observation_id"])
+        obs = observations_by_id.get(oid) or {}
+        sc = obs.get("sidecar") if isinstance(obs.get("sidecar"), dict) else {}
+        decl = sc.get("declarations") if isinstance(sc.get("declarations"), dict) else {}
+        has_enriched = bool(decl.get("goal") or decl.get("what_it_does"))
+        if sc_goal is None and str(decl.get("goal") or "").strip():
+            sc_goal = (str(decl["goal"]).strip()[:GOAL_MAX_CHARS], oid)
+        if sc_what is None and str(decl.get("what_it_does") or "").strip():
+            sc_what = (str(decl["what_it_does"]).strip()[:WHAT_IT_DOES_MAX_CHARS], oid)
+        raw_sc_desc = str(decl.get("description") or decl.get("purpose") or "").strip()
+        if raw_sc_desc:
+            if has_enriched and sc_enriched_desc is None:
+                sc_enriched_desc = (raw_sc_desc[:DESCRIPTION_MAX_CHARS], oid)
+            elif sc_legacy_desc is None:
+                sc_legacy_desc = (raw_sc_desc[:DESCRIPTION_MAX_CHARS], oid)
+        if sc_notes is None and str(decl.get("notes") or "").strip():
+            sc_notes = (str(decl["notes"]).strip()[:DESCRIPTION_MAX_CHARS], oid)
+        if sc_lang is None and str(decl.get("primary_language") or "").strip():
+            sc_lang = (str(decl["primary_language"]).strip()[:60], oid)
+
+        compat = obs.get("compat_entry") if isinstance(obs.get("compat_entry"), dict) else {}
+        raw_c_desc = str(compat.get("description") or "").strip()
+        if raw_c_desc:
+            if not is_noisy_summary_text(raw_c_desc):
+                if compat_desc is None:
+                    compat_desc = (raw_c_desc[:DESCRIPTION_MAX_CHARS], oid)
+            elif compat_noisy_desc is None:
+                compat_noisy_desc = (raw_c_desc[:DESCRIPTION_MAX_CHARS], oid)
+
+    need_doc_fallback = (
+        cat_entry is None
+        or (sc_goal is None and not cat_entry.get("goal"))
+        or (sc_what is None and not cat_entry.get("what_it_does"))
+        or (sc_enriched_desc is None and not cat_entry.get("description"))
+    )
+    doc_fallback = (
+        extract_repo_doc_profile(top_accessible_dir, ctx_block)
+        if need_doc_fallback
+        else {
+            "description": (None, None),
+            "goal": (None, None),
+            "what_it_does": (None, None),
+            "primary_language": infer_primary_language(ctx_block),
+        }
+    )
+
+    prov_fields: dict[str, dict[str, Any]] = {}
+
+    # 1. Resolve description
+    description: str | None = None
+    if sc_enriched_desc is not None:
+        description = sc_enriched_desc[0]
+        prov_fields["description"] = {
+            "value": description,
+            "provenance": [{"kind": "declared", "observation_id": sc_enriched_desc[1], "reason_code": "SIDECAR_DECLARATION"}],
+        }
+    elif cat_entry and cat_entry.get("description"):
+        description = str(cat_entry["description"])[:DESCRIPTION_MAX_CHARS]
+        prov_fields["description"] = {
+            "value": description,
+            "provenance": [{"kind": "declared", "reason_code": "PROJECT_CATALOG_DECLARATION", "value": "registry/project-catalog.json"}],
+        }
+    elif sc_legacy_desc is not None:
+        description = sc_legacy_desc[0]
+        prov_fields["description"] = {
+            "value": description,
+            "provenance": [{"kind": "declared", "observation_id": sc_legacy_desc[1], "reason_code": "SIDECAR_DECLARATION"}],
+        }
+    elif str(gh_meta.get("description") or "").strip() and not is_noisy_summary_text(str(gh_meta.get("description"))):
+        description = str(gh_meta["description"]).strip()[:DESCRIPTION_MAX_CHARS]
+        prov_fields["description"] = {
+            "value": description,
+            "provenance": [{"kind": "observed", "reason_code": "GITHUB_REPO_METADATA", "value": str(gh_meta.get("full_name") or "")}],
+        }
+    elif doc_fallback["description"][0] and doc_fallback["description"][1] == "PACKAGE_MANIFEST_DESCRIPTION":
+        description = str(doc_fallback["description"][0])[:DESCRIPTION_MAX_CHARS]
+        prov_fields["description"] = {
+            "value": description,
+            "provenance": [{"kind": "observed", "reason_code": "PACKAGE_MANIFEST_DESCRIPTION"}],
+        }
+    elif compat_desc is not None:
+        description = compat_desc[0]
+        prov_fields["description"] = {
+            "value": description,
+            "provenance": [{"kind": "observed", "observation_id": compat_desc[1], "reason_code": "COMPAT_DESCRIPTION"}],
+        }
+    elif doc_fallback["description"][0]:
+        description = str(doc_fallback["description"][0])[:DESCRIPTION_MAX_CHARS]
+        prov_fields["description"] = {
+            "value": description,
+            "provenance": [{"kind": "observed", "reason_code": str(doc_fallback["description"][1] or "README_LEAD_SUMMARY")}],
+        }
+    elif sc_notes is not None:
+        description = sc_notes[0]
+        prov_fields["description"] = {
+            "value": description,
+            "provenance": [{"kind": "declared", "observation_id": sc_notes[1], "reason_code": "SIDECAR_NOTES_FALLBACK"}],
+        }
+    else:
+        if ctx_block.get("state") == "available":
+            for bdoc in ctx_block.get("authority_boundaries", []):
+                bsummary = str(bdoc.get("summary") or "").strip()
+                if bsummary and not is_noisy_summary_text(bsummary):
+                    description = bsummary[:DESCRIPTION_MAX_CHARS]
+                    prov_fields["description"] = {
+                        "value": description,
+                        "provenance": [{"kind": "observed", "reason_code": "CTX_BOUNDARY_SUMMARY", "value": str(bdoc.get("path") or "")}],
+                    }
+                    break
+        if description is None and top_accessible_dir is not None:
+            t1_summary = _extract_tier1_overview_summary(top_accessible_dir / "CONTEXT.md")
+            if t1_summary:
+                description = t1_summary[:DESCRIPTION_MAX_CHARS]
+                prov_fields["description"] = {
+                    "value": description,
+                    "provenance": [{"kind": "observed", "reason_code": "CONTEXT_MD_SUMMARY"}],
+                }
+        if description is None and compat_noisy_desc is not None:
+            description = compat_noisy_desc[0]
+            prov_fields["description"] = {
+                "value": description,
+                "provenance": [{"kind": "observed", "observation_id": compat_noisy_desc[1], "reason_code": "COMPAT_DESCRIPTION"}],
+            }
+
+    # 2. Resolve goal (why it exists)
+    goal: str | None = None
+    if sc_goal is not None:
+        goal = sc_goal[0]
+        prov_fields["goal"] = {
+            "value": goal,
+            "provenance": [{"kind": "declared", "observation_id": sc_goal[1], "reason_code": "SIDECAR_DECLARATION"}],
+        }
+    elif cat_entry and cat_entry.get("goal"):
+        goal = str(cat_entry["goal"])[:GOAL_MAX_CHARS]
+        prov_fields["goal"] = {
+            "value": goal,
+            "provenance": [{"kind": "declared", "reason_code": "PROJECT_CATALOG_DECLARATION", "value": "registry/project-catalog.json"}],
+        }
+    elif doc_fallback["goal"][0]:
+        goal = str(doc_fallback["goal"][0])[:GOAL_MAX_CHARS]
+        prov_fields["goal"] = {
+            "value": goal,
+            "provenance": [{"kind": "observed", "reason_code": str(doc_fallback["goal"][1] or "README_GOAL_SECTION")}],
+        }
+    elif description:
+        goal = description[:GOAL_MAX_CHARS]
+        prov_fields["goal"] = {
+            "value": goal,
+            "provenance": [{"kind": "derived", "reason_code": "DERIVED_FROM_DESCRIPTION"}],
+        }
+
+    # 3. Resolve what_it_does
+    what_it_does: str | None = None
+    if sc_what is not None:
+        what_it_does = sc_what[0]
+        prov_fields["what_it_does"] = {
+            "value": what_it_does,
+            "provenance": [{"kind": "declared", "observation_id": sc_what[1], "reason_code": "SIDECAR_DECLARATION"}],
+        }
+    elif cat_entry and cat_entry.get("what_it_does"):
+        what_it_does = str(cat_entry["what_it_does"])[:WHAT_IT_DOES_MAX_CHARS]
+        prov_fields["what_it_does"] = {
+            "value": what_it_does,
+            "provenance": [{"kind": "declared", "reason_code": "PROJECT_CATALOG_DECLARATION", "value": "registry/project-catalog.json"}],
+        }
+    elif doc_fallback["what_it_does"][0]:
+        what_it_does = str(doc_fallback["what_it_does"][0])[:WHAT_IT_DOES_MAX_CHARS]
+        prov_fields["what_it_does"] = {
+            "value": what_it_does,
+            "provenance": [{"kind": "observed", "reason_code": str(doc_fallback["what_it_does"][1] or "COMPILED_STRUCTURAL_CTX")}],
+        }
+    elif description:
+        what_it_does = description[:WHAT_IT_DOES_MAX_CHARS]
+        prov_fields["what_it_does"] = {
+            "value": what_it_does,
+            "provenance": [{"kind": "derived", "reason_code": "DERIVED_FROM_DESCRIPTION"}],
+        }
+
+    # 4. Resolve primary_language
+    primary_language: str | None = None
+    if sc_lang is not None:
+        primary_language = sc_lang[0]
+        prov_fields["primary_language"] = {
+            "value": primary_language,
+            "provenance": [{"kind": "declared", "observation_id": sc_lang[1], "reason_code": "SIDECAR_DECLARATION"}],
+        }
+    elif cat_entry and cat_entry.get("primary_language"):
+        primary_language = str(cat_entry["primary_language"])[:60]
+        prov_fields["primary_language"] = {
+            "value": primary_language,
+            "provenance": [{"kind": "declared", "reason_code": "PROJECT_CATALOG_DECLARATION", "value": "registry/project-catalog.json"}],
+        }
+    elif doc_fallback["primary_language"][0]:
+        primary_language = str(doc_fallback["primary_language"][0])[:60]
+        prov_fields["primary_language"] = {
+            "value": primary_language,
+            "provenance": [{"kind": "derived", "reason_code": str(doc_fallback["primary_language"][1] or "CTX_PRIMARY_CODE_LANGUAGE")}],
+        }
+    elif str(gh_meta.get("language") or "").strip():
+        primary_language = str(gh_meta["language"]).strip()[:60]
+        prov_fields["primary_language"] = {
+            "value": primary_language,
+            "provenance": [{"kind": "observed", "reason_code": "GITHUB_REPO_METADATA"}],
+        }
+
+    extra_tags: list[str] = []
+    if cat_entry and isinstance(cat_entry.get("tags"), list):
+        extra_tags.extend(str(t).strip() for t in cat_entry["tags"] if str(t).strip())
+    if isinstance(gh_meta.get("topics"), list):
+        extra_tags.extend(str(t).strip() for t in gh_meta["topics"] if str(t).strip())
+
+    return description, goal, what_it_does, primary_language, prov_fields, extra_tags
 
 
 def _read_machina_continuity(location: str | None) -> dict[str, Any] | None:
@@ -1252,6 +1551,8 @@ def build_project_capsule(
     max_observation_summaries: int = CAPSULE_MAX_OBSERVATION_SUMMARIES,
     git_drift_resolver: Callable[[dict, dict], dict] | None = None,
     ctx_resolver: Callable[[dict, Path], dict[str, Any] | None] | None = None,
+    catalog_by_id: dict[str, dict[str, Any]] | None = None,
+    github_metadata_by_remote: dict[str, dict[str, Any]] | None = None,
 ) -> dict:
     """Build one bounded, deterministic project capsule for ``project``."""
     state_dir = state_dir.resolve()
@@ -1273,37 +1574,32 @@ def build_project_capsule(
         ctx_resolver=ctx_resolver,
     )
 
-    # Resolve bounded purpose and canonical_url from ranked observations (with ctx boundary fallback).
-    purpose: str | None = None
     canonical_url: str | None = None
     if project.get("normalized_remotes"):
         canonical_url = f"https://{project['normalized_remotes'][0]}"
     for item in ranked_observations:
         obs = observations_by_id.get(item["observation_id"]) or {}
         compat = obs.get("compat_entry") if isinstance(obs.get("compat_entry"), dict) else {}
-        desc = str(compat.get("description") or "").strip()
-        if purpose is None and desc:
-            purpose = desc[:CAPSULE_PURPOSE_MAX_CHARS]
         raw_url = str(compat.get("canonical_url") or compat.get("remote_url") or "").strip()
         if canonical_url is None and raw_url:
             canonical_url = raw_url
 
-    if purpose is None and ctx_block.get("state") == "available":
-        for bdoc in ctx_block.get("authority_boundaries", []):
-            bsummary = str(bdoc.get("summary") or "").strip()
-            if bsummary:
-                purpose = bsummary[:CAPSULE_PURPOSE_MAX_CHARS]
-                break
-    if purpose is None:
-        for item in ranked_observations:
-            if not item.get("score_components", {}).get("accessible_worktree"):
-                continue
-            loc = str(item.get("location") or "").strip()
-            if loc and loc.startswith("/"):
-                t1_summary = _extract_tier1_overview_summary(Path(loc) / "CONTEXT.md")
-                if t1_summary:
-                    purpose = t1_summary[:CAPSULE_PURPOSE_MAX_CHARS]
-                    break
+    (
+        description,
+        goal,
+        what_it_does,
+        primary_language,
+        profile_resolved_fields,
+        extra_tags,
+    ) = _resolve_capsule_profile(
+        project=project,
+        ranked_observations=ranked_observations,
+        observations_by_id=observations_by_id,
+        ctx_block=ctx_block,
+        catalog_by_id=catalog_by_id,
+        github_metadata_by_remote=github_metadata_by_remote,
+    )
+    purpose = description
 
     aliases: set[str] = set()
     for hint in project.get("project_key_hints", []):
@@ -1335,7 +1631,13 @@ def build_project_capsule(
 
     freshness = _project_freshness(ranked_observations, observations_by_id, input_observed_at)
     git_facts = _project_git_facts(ranked_observations, observations_by_id)
+    last_commit = _build_last_commit_summary(git_facts)
     current_state = _project_current_state(ranked_observations, observations_by_id)
+    if extra_tags:
+        merged_tags = sorted(set(current_state.get("tags") or []) | set(extra_tags))
+        current_state = dict(current_state)
+        current_state["tags"] = merged_tags
+
     gbrain_link = (
         dict(project["gbrain"])
         if isinstance(project.get("gbrain"), dict)
@@ -1347,8 +1649,12 @@ def build_project_capsule(
     shown_count = min(len(ranked_observations), max_observation_summaries)
     observations_truncated = shown_count < len(ranked_observations)
 
+    merged_resolved_map = dict(project.get("resolved_fields") or {})
+    for field_name, field_info in profile_resolved_fields.items():
+        merged_resolved_map[field_name] = field_info
+
     bounded_resolved_fields: dict[str, dict] = {}
-    for field_name, field_info in (project.get("resolved_fields") or {}).items():
+    for field_name, field_info in merged_resolved_map.items():
         if not isinstance(field_info, dict):
             continue
         prov = list(field_info.get("provenance") or [])
@@ -1375,6 +1681,10 @@ def build_project_capsule(
             "project_key": project["project_key"],
             "display_name": project["display_name"],
             "aliases": sorted(aliases, key=str.casefold),
+            "description": description,
+            "goal": goal,
+            "what_it_does": what_it_does,
+            "primary_language": primary_language,
             "purpose": purpose,
             "canonical_url": canonical_url,
             "normalized_remotes": list(project.get("normalized_remotes", [])),
@@ -1387,6 +1697,7 @@ def build_project_capsule(
             "preferred_location": preferred_location,
             "warnings": capsule_warnings,
             "git_facts": git_facts,
+            "last_commit": last_commit,
             "current_state": current_state,
             "observation_count": len(ranked_observations),
             "observations": ranked_observations[:limit],
@@ -1457,6 +1768,10 @@ def build_project_capsule(
             ctx_block = dict(ctx_block)
             ctx_block["operational_surfaces"] = []
             capsule = _assemble(shown_count, observations_truncated, ctx_block)
+        elif len(ctx_block.get("authority_boundaries") or []) > 0:
+            ctx_block = dict(ctx_block)
+            ctx_block["authority_boundaries"] = list(ctx_block["authority_boundaries"][:-1])
+            capsule = _assemble(shown_count, observations_truncated, ctx_block)
         else:
             break
 
@@ -1477,6 +1792,8 @@ def materialize_capsules(
     input_observed_at: str,
     git_drift_resolver: Callable[[dict, dict], dict] | None = None,
     ctx_resolver: Callable[[dict, Path], dict[str, Any] | None] | None = None,
+    catalog_by_id: dict[str, dict[str, Any]] | None = None,
+    github_metadata_by_remote: dict[str, dict[str, Any]] | None = None,
 ) -> dict:
     """Materialize ``state/projects/<canonical_project_id>.json`` for every project."""
     state_dir = state_dir.resolve()
@@ -1501,6 +1818,8 @@ def materialize_capsules(
             input_observed_at=input_observed_at,
             git_drift_resolver=git_drift_resolver,
             ctx_resolver=ctx_resolver,
+            catalog_by_id=catalog_by_id,
+            github_metadata_by_remote=github_metadata_by_remote,
         )
         filename = f"{project['canonical_project_id']}.json"
         active_filenames.add(filename)

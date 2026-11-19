@@ -15,6 +15,10 @@
     "project_key",
     "display_name",
     "aliases",
+    "description",
+    "goal",
+    "what_it_does",
+    "primary_language",
     "purpose",
     "canonical_url",
     "normalized_remotes",
@@ -27,6 +31,7 @@
     "preferred_location",
     "warnings",
     "git_facts",
+    "last_commit",
     "current_state",
     "observation_count",
     "observations",
@@ -72,6 +77,30 @@
       "items": {
         "type": "string"
       }
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "goal": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "what_it_does": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "primary_language": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "purpose": {
       "type": [
@@ -263,6 +292,18 @@
             "null"
           ]
         },
+        "head_commit_author": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_commit_subject": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "last_remote_ref_at": {
           "type": [
             "string",
@@ -339,6 +380,9 @@
           }
         }
       }
+    },
+    "last_commit": {
+      "$ref": "#/$defs/last_commit_summary"
     },
     "current_state": {
       "type": "object",
@@ -695,6 +739,65 @@
     }
   },
   "$defs": {
+    "last_commit_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "sha",
+        "short_sha",
+        "committed_at",
+        "subject",
+        "author",
+        "branch"
+      ],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "known",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "short_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "committed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subject": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "author": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "gbrain_link": {
       "type": "object",
       "additionalProperties": false,
@@ -787,6 +890,24 @@
           ]
         },
         "head_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_commit_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_commit_author": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_commit_subject": {
           "type": [
             "string",
             "null"

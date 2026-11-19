@@ -166,11 +166,13 @@ def compile_state(
     state_dir: Path,
     identity_decisions_path: Path | None = None,
     lineage_path: Path | None = None,
+    catalog_path: Path | None = None,
     generated_at: str | None = None,
     use_checkpoint_compile_cache: bool = False,
     check_remote: bool = False,
     remote_timeout: float = 3.0,
 ) -> dict:
+    from .catalog import resolve_catalog_path
     from .lineage import resolve_lineage_path
 
     config_path = config_path.resolve()
@@ -195,6 +197,10 @@ def compile_state(
         decisions_path=identity_decisions_path,
         lineage_path=lineage_path,
     )
+    effective_catalog_path, _ = resolve_catalog_path(
+        decisions_path=identity_decisions_path,
+        catalog_path=catalog_path,
+    )
     run_id_parts: list[object] = [
         compiled_at,
         config_digest,
@@ -204,6 +210,8 @@ def compile_state(
     ]
     if effective_lineage_path is not None and effective_lineage_path.is_file():
         run_id_parts.append(path_digest(effective_lineage_path))
+    if effective_catalog_path is not None and effective_catalog_path.is_file():
+        run_id_parts.append(path_digest(effective_catalog_path))
     run_id = stable_id("run", *run_id_parts)
     previous_snapshot = capture_pre_compile_baseline(state_dir, current_run_id=run_id)
 
@@ -420,6 +428,7 @@ def compile_state(
             and cand_fp
             and cand.get("compile_cache_fingerprint") == cand_fp
             and isinstance(cand.get("git_drift"), dict)
+            and "head_commit_subject" in cand["git_drift"]
             and not has_explicit_drift
         ):
             return dict(cand["git_drift"])
@@ -465,6 +474,7 @@ def compile_state(
         observations=observations,
         decisions_path=identity_decisions_path,
         lineage_path=lineage_path,
+        catalog_path=catalog_path,
         state_dir=state_dir,
         run_id=run_id,
         compiled_at=compiled_at,

@@ -433,6 +433,7 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
 
     def test_project_lineage_registry_conforms_to_published_json_schema(self) -> None:
         lineage_schema = self._load_schema("project-lineage.schema.json")
+        catalog_schema = self._load_schema("project-catalog.schema.json")
         decisions_schema = self._load_schema("identity-decisions.schema.json")
         triage_schema = self._load_schema("weak-overlap-triage-candidates.schema.json")
         sidecar_schema = self._load_schema("project-ledger-sidecar.schema.json")
@@ -442,6 +443,12 @@ class StateSchemasAndPackagingTests(unittest.TestCase):
         lineage_doc = json.loads(lineage_path.read_text(encoding="utf-8"))
         self.assertEqual(validate_json_schema(lineage_doc, lineage_schema), [])
         self.assertGreaterEqual(len(lineage_doc["projects"]), 170)
+
+        catalog_path = REPO_ROOT / "registry" / "project-catalog.json"
+        self.assertTrue(catalog_path.is_file(), f"Missing project catalog: {catalog_path}")
+        catalog_doc = json.loads(catalog_path.read_text(encoding="utf-8"))
+        self.assertEqual(validate_json_schema(catalog_doc, catalog_schema), [])
+        self.assertGreaterEqual(len(catalog_doc["projects"]), 100)
 
         decisions_path = REPO_ROOT / "registry" / "identity-decisions.json"
         self.assertTrue(decisions_path.is_file(), f"Missing decisions registry: {decisions_path}")

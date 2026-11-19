@@ -88,7 +88,8 @@ _TOOLS: tuple[dict[str, Any], ...] = (
     {
         "name": "ledger_portfolio",
         "description": (
-            "Query Project Ledger's estate-wide portfolio triage index, cross-repository "
+            "Query Project Ledger's estate-wide portfolio triage index (including per-repo "
+            "description, goal, what_it_does, primary_language, and last_commit), cross-repository "
             "blast-radius dependency graph, structural cycle counts, and passive INV-FLEET-GAME-01 "
             "fleet occupancy overlay in a single O(1) read."
         ),
@@ -163,7 +164,8 @@ _TOOLS: tuple[dict[str, Any], ...] = (
         "name": "ledger_show",
         "description": (
             "Load the bounded (<= 16 KiB) canonical project capsule for a project referent, "
-            "including structural ctx architecture/entrypoints/subsystems, git_facts, "
+            "including description, goal (why it exists), what_it_does, primary_language, "
+            "last_commit, structural ctx architecture/entrypoints/subsystems, git_facts, "
             "Machina continuity, preferred_location, GBrain page key, warnings, and ranked observations."
         ),
         "inputSchema": {

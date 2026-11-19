@@ -411,6 +411,9 @@ def inspect_git_worktree_state(
             "state": "not_applicable",
             "head_branch": None,
             "head_commit": None,
+            "head_commit_at": None,
+            "head_commit_author": None,
+            "head_commit_subject": None,
             "upstream_ref": None,
             "ahead_count": None,
             "behind_count": None,
@@ -422,6 +425,18 @@ def inspect_git_worktree_state(
 
     head_branch = git_output(directory, "rev-parse", "--abbrev-ref", "HEAD") or None
     head_commit = git_output(directory, "rev-parse", "HEAD") or None
+    head_commit_at: str | None = None
+    head_commit_author: str | None = None
+    head_commit_subject: str | None = None
+    if head_commit:
+        log_raw = git_output(directory, "log", "-1", "--format=%cI%x1f%an%x1f%s", "HEAD")
+        if log_raw:
+            parts = log_raw.split("\x1f", 2)
+            if len(parts) == 3:
+                head_commit_at = parts[0].strip() or None
+                head_commit_author = parts[1].strip()[:80] or None
+                subj = re.sub(r"\s+", " ", parts[2].replace("\x00", "")).strip()
+                head_commit_subject = subj[:160] or None
 
     upstream_ref = git_output(
         directory, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"
@@ -501,6 +516,9 @@ def inspect_git_worktree_state(
         "state": state,
         "head_branch": head_branch,
         "head_commit": head_commit,
+        "head_commit_at": head_commit_at,
+        "head_commit_author": head_commit_author,
+        "head_commit_subject": head_commit_subject,
         "upstream_ref": upstream_ref,
         "ahead_count": ahead_count,
         "behind_count": behind_count,
@@ -528,6 +546,9 @@ def resolve_observation_git_drift(
             "state": "not_applicable",
             "head_branch": None,
             "head_commit": None,
+            "head_commit_at": None,
+            "head_commit_author": None,
+            "head_commit_subject": None,
             "upstream_ref": None,
             "ahead_count": None,
             "behind_count": None,
@@ -540,6 +561,9 @@ def resolve_observation_git_drift(
     location = str(observation.get("location") or compat.get("path") or "").strip() or None
     head_branch = str(compat.get("head_branch") or "").strip() or None
     head_commit = str(compat.get("head_commit") or "").strip() or None
+    compat_commit_at = str(compat.get("head_commit_at") or "").strip() or None
+    compat_commit_author = str(compat.get("head_commit_author") or "").strip() or None
+    compat_commit_subject = str(compat.get("head_commit_subject") or "").strip() or None
 
     # Allow deterministic unit-test fixtures to supply explicit drift fields in compat_entry.
     has_explicit_drift = any(
@@ -568,6 +592,9 @@ def resolve_observation_git_drift(
             "state": state,
             "head_branch": head_branch,
             "head_commit": head_commit,
+            "head_commit_at": compat_commit_at,
+            "head_commit_author": compat_commit_author,
+            "head_commit_subject": compat_commit_subject,
             "upstream_ref": upstream_ref,
             "ahead_count": ahead,
             "behind_count": behind,
@@ -592,6 +619,9 @@ def resolve_observation_git_drift(
         "state": "unknown",
         "head_branch": head_branch,
         "head_commit": head_commit,
+        "head_commit_at": compat_commit_at,
+        "head_commit_author": compat_commit_author,
+        "head_commit_subject": compat_commit_subject,
         "upstream_ref": None,
         "ahead_count": None,
         "behind_count": None,

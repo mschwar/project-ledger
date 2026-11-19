@@ -1192,9 +1192,16 @@ def materialize_identity(
     git_drift_resolver: Callable[[dict, dict], dict] | None = None,
     ctx_resolver: Callable[[dict, Path], dict | None] | None = None,
     lineage_path: Path | None = None,
+    catalog_path: Path | None = None,
     out_artifacts: dict | None = None,
 ) -> tuple[dict, dict]:
     from .capsules import materialize_capsules
+    from .catalog import (
+        index_project_catalog,
+        load_project_catalog,
+        lookup_catalog_entry,
+        resolve_catalog_path,
+    )
     from .evidence import build_identity_evidence
     from .lineage import load_project_lineage, resolve_lineage_path
 
@@ -1206,8 +1213,63 @@ def materialize_identity(
         lineage_path=lineage_path,
     )
     lineage_payload = load_project_lineage(effective_lineage_path, required=lineage_required)
+    effective_catalog_path, catalog_required = resolve_catalog_path(
+        decisions_path=decisions_path,
+        catalog_path=catalog_path,
+    )
+    catalog_payload = load_project_catalog(effective_catalog_path, required=catalog_required)
+    catalog_by_id = index_project_catalog(catalog_payload)
+
     canonical, reviews = compile_identity(observations, decisions, lineage_payload=lineage_payload)
     _enrich_historical_project_ids_from_state(canonical, state_dir)
+
+    if catalog_by_id:
+        obs_by_id = {str(o.get("observation_id")): o for o in observations}
+        for proj in canonical.get("projects", []):
+            cat_rec = lookup_catalog_entry(catalog_by_id, proj)
+            if not cat_rec or not cat_rec.get("display_name"):
+                continue
+            has_enriched_sidecar_name = False
+            for oid in proj.get("observation_ids", []):
+                sc_decl = ((obs_by_id.get(oid) or {}).get("sidecar") or {}).get("declarations") or {}
+                if (sc_decl.get("goal") or sc_decl.get("what_it_does")) and sc_decl.get("display_name"):
+                    has_enriched_sidecar_name = True
+                    break
+            if has_enriched_sidecar_name:
+                continue
+            curated_name = str(cat_rec["display_name"]).strip()
+            if curated_name:
+                proj["display_name"] = curated_name
+                proj.setdefault("resolved_fields", {})["display_name"] = {
+                    "value": curated_name,
+                    "provenance": [
+                        {
+                            "kind": "declared",
+                            "reason_code": "PROJECT_CATALOG_DECLARATION",
+                            "value": "registry/project-catalog.json",
+                        }
+                    ],
+                }
+                existing_ref_keys = {
+                    (str(r.get("kind")), str(r.get("value", "")).casefold())
+                    for r in proj.get("referents", [])
+                    if isinstance(r, dict)
+                }
+                if ("display_name", curated_name.casefold()) not in existing_ref_keys:
+                    proj.setdefault("referents", []).append(
+                        {"kind": "display_name", "value": curated_name}
+                    )
+
+    github_metadata_by_remote: dict[str, dict] = {}
+    gh_sync_file = state_dir / "github-sync.json"
+    if gh_sync_file.is_file():
+        try:
+            gh_doc = json.loads(gh_sync_file.read_text(encoding="utf-8"))
+            if isinstance(gh_doc, dict) and isinstance(gh_doc.get("remote_metadata"), dict):
+                github_metadata_by_remote = dict(gh_doc["remote_metadata"])
+        except (OSError, json.JSONDecodeError):
+            github_metadata_by_remote = {}
+
     canonical.update({"run_id": run_id, "compiled_at": compiled_at})
     reviews.update({"run_id": run_id, "compiled_at": compiled_at})
 
@@ -1237,6 +1299,8 @@ def materialize_identity(
         input_observed_at=observed_at,
         git_drift_resolver=git_drift_resolver,
         ctx_resolver=ctx_resolver,
+        catalog_by_id=catalog_by_id,
+        github_metadata_by_remote=github_metadata_by_remote,
     )
     if isinstance(out_artifacts, dict):
         out_artifacts["identity_evidence"] = identity_evidence

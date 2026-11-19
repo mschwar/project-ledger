@@ -193,9 +193,11 @@ and continues to provide filesystem/git/Obsidian/README extraction, project-loca
 
 The new `ledger/` package compiles around this stable output rather than rewriting the monolith before the contracts are proven.
 
-## Sidecars
+## Sidecars & profile catalog
 
-`.project-ledger.json` is a static repository identity declaration (`project_key`, `display_name`, `description`, `status`, `tags`, `canonical_url`, `repo_name`, `gbrain_source_slug`, `shared`, `storage_scope`). Mutable per-commit/session fields (`commit`, `head_commit`, `next_step`) are ignored during validation so static sidecars never go stale after `git commit`.
+`.project-ledger.json` is a static repository declaration (`project_key`, `display_name`, `description`, `goal`, `what_it_does`, `primary_language`, `status`, `tags`, `canonical_url`, `repo_name`, `gbrain_source_slug`, `shared`, `storage_scope`). Mutable per-commit fields (`commit`, `head_commit`, `next_step`) are ignored during validation so static sidecars stay fresh across commits.
+
+`registry/project-catalog.json` provides read-only curated `display_name`, `description`, `goal` (why a repo exists), `what_it_does`, and `primary_language` across all canonical repositories without mutating target checkouts. Every compiled capsule, portfolio row, Markdown ledger, and GBrain Reality block also includes live `last_commit` metadata (`sha`, `committed_at`, `subject`, `author`, `branch`).
 
 See [templates/project-ledger.sidecar.example.json](templates/project-ledger.sidecar.example.json) and [prompts/session_end_prompt.md](prompts/session_end_prompt.md).
 

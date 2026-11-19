@@ -1,0 +1,986 @@
+{
+  "schema_version": "1.0.0",
+  "projects": [
+    {
+      "canonical_project_id": "prj_02566df07aa8fe9096960e71",
+      "project_key_hint": "github.com/mschwar/brain-dump",
+      "display_name": "Brain Dump Knowledge Vault",
+      "description": "Three-layer Obsidian Markdown knowledge vault compiling raw technical sources into synthesized wiki notes and a 2026 AI architecture trends compendium.",
+      "goal": "Compound technical research across sessions using a Karpathy-style raw-to-wiki-to-output memory structure built for multi-agent ingestion and synthesis.",
+      "what_it_does": "Enforces a YAML-frontmatter raw, wiki, and output convention in SCHEMA.md, logs ingestion runs in log.md, and organizes synthesized notes on agentic coding, thin-harness skills, resolvers, GBrain, Hermes, and Paperclip adapters.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_053ec738563ca7cf36b8f413",
+      "project_key_hint": "github.com/mschwar/janus",
+      "display_name": "Janus — Pronunciation Learning Lab",
+      "description": "Private local-first Python and browser pronunciation training lab focused on contemporary Glaswegian Scottish English using acoustic comparison and adaptive practice.",
+      "goal": "Build natural, consistent dialect pronunciation through repeatable listen-record-compare sessions anchored to real consenting reference speakers rather than opaque AI similarity scores.",
+      "what_it_does": "Runs a loopback Python HTTP server (proxied privately via Tailscale Serve on ai-server) with SQLite storage, FFmpeg audio processing, timing and pitch analysis against Glasgow reference clips, and an offline adaptive scheduler.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_07fafe7e94e17381f3f34b2b",
+      "project_key_hint": "github.com/mschwar/3813-patio",
+      "display_name": "3813 Patio",
+      "description": "Canonical landscape architecture, spatial measurement ledger, and Python SVG plan-generation repository for the 3813 Monroe front courtyard.",
+      "goal": "Reconcile field dimensions, site photos, material specs, and pondless-stream and shade engineering plans into an audited spatial record before physical construction.",
+      "what_it_does": "Compiles measured coordinates and tolerances from plans/measurement-ledger.json via Python scripts into base-map.svg, hardscape-plan.svg, and geometry check reports, while indexing Google Drive site photos into Swift-built contact sheets.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_087e35c78057018a92c6a0ac",
+      "project_key_hint": "github.com/mschwar/slopvault",
+      "display_name": "SlopVault",
+      "description": "Next.js and Supabase web application for capturing, cleaning, indexing, and sharing multi-provider AI chat artifacts with preserved provenance.",
+      "goal": "Consolidate prompts, model outputs, transcripts, and media scattered across separate AI chat tools into a single searchable vault that tracks lineage across revisions and remixes.",
+      "what_it_does": "Accepts raw chat pastes, provider JSON exports, and file uploads at /dump, strips interface clutter, fingerprints and stores immutable originals plus clean Markdown in Supabase, and serves private and public views at /vault and /feed.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_0b7be842df3dba19eb7c8dc6",
+      "project_key_hint": "github.com/mschwar/monroe-empire",
+      "display_name": "Monroe Empire (Archived Mac Vault Reclaim)",
+      "description": "Read-only historical archive reclaimed from a macOS workspace preserving sanitized subsidiary ledgers, family-office legal and tax snapshots, and Etsy storefront copy.",
+      "goal": "Retain sanitized financial, corporate-governance, and storefront drafts recovered during the September 2026 macOS disk reclaim without exposing credentials or raw bank exports.",
+      "what_it_does": "Archives three static trees—elemental-solutions/ CSV payout ledgers, monroe-family-office/ trust/holdco YAML configs, organizational minutes, and AGI formulas, plus monroehaus-etsy/ listing copy—checked by test_doc_hygiene.py.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_11f65b8529863e861250665b",
+      "project_key_hint": "github.com/mschwar/central-catalog",
+      "display_name": "Central Catalog",
+      "description": "Read-only Python provenance and byte-identity observation layer for auditing files, duplicates, run deltas, and GBrain overlap across /central on ai-server.",
+      "goal": "Establish verifiable SHA-256 byte coverage, run-to-run change deltas, and exact-duplicate evidence across /central storage slices before downstream systems make retention, deduplication, or ingestion decisions.",
+      "what_it_does": "Runs bounded read-only filesystem scans via scripts/observe-slice.py, builds disposable SQLite indexes and false-proxy duplicate analyses via scripts/catalog_index.py, verifies 100% hash coverage, and compares source overlap against GBrain.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_128f44ab22da036f0342ce72",
+      "project_key_hint": "github.com/mschwar/elemental-inc",
+      "display_name": "Elemental Operating System",
+      "description": "Company operating repository and agent control plane for Elemental Deodorant, tracking verified storefront state, marketing analytics, finance records, and staged Shopify themes.",
+      "goal": "Consolidate founder context, commerce operations, analytics, and compliance checks for Elemental Deodorant into one auditable repository with explicit human release gates.",
+      "what_it_does": "Ingests Shopify, marketing, and finance data alongside TASKS.md queues, runs Python analytics and access checks, and produces verified current-state snapshots, audit reports, and unpublished Shopify theme drafts.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_13ab338e5352ba942ca5a257",
+      "project_key_hint": "github.com/mschwar/prompts",
+      "display_name": "Specialist Prompt Library",
+      "description": "Curated Markdown library of 17 specialist role prompts and structured audit templates for engineering, strategy, and research workflows.",
+      "goal": "Standardize LLM behavior and deliverable formats across recurring high-rigor tasks such as codebase audits, burn-rate estimation, UI/UX reviews, business strategy, and journal peer review.",
+      "what_it_does": "Provides reusable Markdown prompt contracts, multi-phase checklists, and the Crucible repository-audit prompt with explicit evidence rules, grading rubrics, and output schemas for direct use in chat or agent IDEs.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_1553282b36e1c283e69cb9d1",
+      "project_key_hint": "github.com/mschwar/bahai-9yr-plan-kb",
+      "display_name": "Baha'i Nine Year Plan Knowledge Base",
+      "description": "Python CLI and content-addressed Markdown concept ledger modeling institutional guidance and conceptual dependencies for the Baha'i Nine Year Plan (2022-2031).",
+      "goal": "Trace how foundational Universal House of Justice and institutional concepts from 1996 onward build upon one another while keeping verbatim authoritative text separated from machine annotations.",
+      "what_it_does": "Normalizes and SHA-256-hashes exact institutional quotations via the kb Python CLI, writes YAML-frontmatter concept manifests and packages/registry.yaml, checks acyclic graph integrity with NetworkX, and exports JSON, GEXF, and DOT graphs.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_182b38232cfb3a804eabef03",
+      "project_key_hint": "github.com/mschwar/mattdump",
+      "display_name": "Mattdump — First-Principles Diagnosis Prompt & Specimens",
+      "description": "Archive of a reusable five-stage engineering diagnosis prompt and three preserved GPT session transcripts analyzing Matt's repository portfolio and usability milestones.",
+      "goal": "Preserve primary prompt and transcript specimens that translate rough design notes and Git commit histories into established systems patterns and concrete operator usability gates.",
+      "what_it_does": "Stores mattdump-verbose-prompt-v1.md alongside three unmodified portfolio-diagnosis transcripts under dump/ (covering 92 repos, positive-control analysis, and U1–U5 usability gates) verified by a stdlib Python doc-hygiene test.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_214d08cd6c711f38f177d182",
+      "project_key_hint": "github.com/mschwar/major-finder",
+      "display_name": "Major Finder",
+      "description": "Pre-implementation product seed and ontology repository for a browser tool helping students explore college majors through revealed curiosity and work-sampling experiments.",
+      "goal": "Help students investigate, compare, and test academic paths through concrete disciplinary tasks and course reality checks rather than opaque personality-quiz major predictions.",
+      "what_it_does": "Packages canonical PRDs, an Interest-to-Major evidence ontology, seed content for five exploration interfaces (Curiosity Mapper, Work Sampler, Major Showdown, Rabbit Hole, Course Reality), and Node.js doc checks.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_2252e2c5948b6c262fbb43fb",
+      "project_key_hint": "github.com/mschwar/learning-substrate-programme",
+      "display_name": "Learning Substrate Programme",
+      "description": "Empirical and formal Python research repository testing minimal mathematical models of human memory, spaced practice, and dyadic learning beneath mschwar/lighthouse.",
+      "goal": "Determine the minimal empirically supported model of human learning needed to derive Lighthouse's educational mechanics without assuming courses, grades, or fixed mastery states are fundamental.",
+      "what_it_does": "Maintains competing-model ledgers (MODEL_LEDGER.md), dry-lab identifiability proofs, and NumPy/SciPy statistical pipelines testing Spearman disattenuation, multi-timescale vs ACT-R retention, and dyadic residual effects.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_23f2c73f38355d03120c024d",
+      "project_key_hint": "github.com/mschwar/lighthouse",
+      "display_name": "Lighthouse",
+      "description": "Mastery-gated learning system and institutional governance research workspace running a live N=1 single-variable calculus dogfood loop alongside anti-Goodhart charters.",
+      "goal": "Enable a learner to state a capability goal, execute the smallest justified next step from observed evidence, and scale that mastery model into an institution protected from metric gaming.",
+      "what_it_does": "Tracks Matt's MIT 18.01SC calculus capability map, baseline packets, and run state in portable Markdown alongside pedagogy cards, mastery models, and a tri-chamber institutional capital and governance blueprint.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_2851200eee73abf499fe81f3",
+      "project_key_hint": "github.com/mschwar/joy",
+      "display_name": "Abiding Sense of Joy — Class Resources",
+      "description": "Static HTML study-class resource page bundling two 2025 sacred-text study PDF handouts and a Zoom meeting launch link.",
+      "goal": "Give study-class participants a single clean web page to download assigned 2025 Baha'i study compilations and join the group's recurring Zoom session.",
+      "what_it_does": "Serves a self-contained index.html page linking directly to two bundled PDF documents (2025 Characterized by an Abiding Sense of Joy and 2025 Tools for Study) alongside a styled Zoom join button.",
+      "primary_language": "HTML"
+    },
+    {
+      "canonical_project_id": "prj_34594ae7792e7fa67f6db052",
+      "project_key_hint": "github.com/lbibylb-glitch/agentic-workbench",
+      "display_name": "Agentic Workbench",
+      "description": "Workstation bootstrap repository containing PowerShell scripts, WSL shell scripts, runbooks, and repo templates for standardizing a Windows and WSL coding machine.",
+      "goal": "Turn a Windows and WSL machine-setup blueprint into a repeatable, non-destructive phased rollout that keeps active repositories out of OneDrive and standardizes coding-agent workflows.",
+      "what_it_does": "Provides host inspection and install scripts in scripts/windows/, Linux environment setup scripts in scripts/wsl/, package manifests, phased rollout checklists, reusable greenfield repo templates, and prompt and evaluation scaffolding.",
+      "primary_language": "PowerShell"
+    },
+    {
+      "canonical_project_id": "prj_357956dfaad4d930c5a471ef",
+      "project_key_hint": "github.com/mschwar/warcraft-infra",
+      "display_name": "Warcraft Infra",
+      "description": "Custom Lua addon, JSON registries, and PowerShell sync tooling for a 41-addon World of Warcraft: Forever suite across family gaming PCs.",
+      "goal": "Keep addons, zero-taint combat macros, Gladiator keybinds, Auction House pricing helpers, and reference guides synchronized across three family Windows PCs and a second-screen Mac.",
+      "what_it_does": "Maintains the FamilyTrioQoL Lua addon for client 16001, structured JSON macro and addon registries, PowerShell deployment and SavedVariables backup scripts, printable playbooks, and Python documentation audits.",
+      "primary_language": "Lua"
+    },
+    {
+      "canonical_project_id": "prj_36613bd3157503a136a05d0a",
+      "project_key_hint": "github.com/mschwar/edifice",
+      "display_name": "Edifice",
+      "description": "Obsidian personal curriculum vault linking a multi-discipline textbook library to inquiry threads, Feynman-style study notes, and cross-domain concept connections.",
+      "goal": "Turn a static academic PDF library into an active study system that clarifies what to learn next, tests understanding in plain words, and connects ideas across disciplines.",
+      "what_it_does": "Organizes subject directories in physics, chemistry, math, computer science, machine learning, probability, biology, and pedagogy under six Obsidian inquiry threads, a Map of Content dashboard, and Python link-harvesting scripts.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_3988fba6a0c8cf990a577bb8",
+      "project_key_hint": "homelab",
+      "display_name": "Homelab Agent Platform",
+      "description": "Declarative control-plane repository and Python CLI governing the ai-server Ubuntu hub, Tailscale compute fleet, Docker stacks, and encrypted backups.",
+      "goal": "Operate a multi-machine homelab and autonomous agent substrate with immutable WorkSpec scheduling, gaming-aware fleet compute dispatch, local GPU routing, and verified disaster recovery.",
+      "what_it_does": "Provides the homelab CLI, UUIDv7 WorkSpec scheduler, leased git worktrees, merge gates, agent-substrate policy sync, fleet occupancy guards, LiteLLM/Ollama and Docker Compose configs, sentinel monitoring, and Restic backup units.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_3c8ff97f5ace96cb9cfd8240",
+      "project_key_hint": "github.com/mschwar/crawler",
+      "display_name": "Archive Crawler and Deduplication Tools",
+      "description": "Python toolkit combining a directory metadata crawler, a reversible SQLite file deduplication CLI, and a SHA-256 personal archive conversion pipeline.",
+      "goal": "Audit, deduplicate, and index messy personal document folders safely using hash-verified quarantine moves and undo logs rather than permanent file deletion.",
+      "what_it_does": "Walks local folders with audit_project.py to emit Markdown file trees, indexes file sizes and BLAKE3 or BLAKE2b hashes in SQLite via the cleaner CLI to quarantine exact and name-variant duplicates, and converts documents to Markdown with JSON link maps.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_404460afdad6c32784b31d9a",
+      "project_key_hint": "github.com/mschwar/gemforge",
+      "display_name": "GemForge",
+      "description": "Staged 24-node Python LangGraph pipeline and CLI that turns plain-text app ideas into human-approved product specs, scaffolded multi-platform code, tests, and release logs.",
+      "goal": "Automate end-to-end application prototyping from an initial text concept while enforcing an explicit human vision-approval gate, SQLite state checkpointing, and isolated output directories.",
+      "what_it_does": "Accepts an app prompt and optional context folder via gemforge new, drafts product, UI/UX, architecture, and business specs with Anthropic models, pauses for approval, scaffolds platform templates, runs tests, and tracks run state.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_41dee96fa29a0a0aaa0ed735",
+      "project_key_hint": "github.com/mschwar/cpr",
+      "display_name": "CPR (Context Project Runtime)",
+      "description": "Local-first Python event-sourced runtime and Hermes Agent plugin that rebuilds typed project ledgers and bounded boot contexts from append-only event logs.",
+      "goal": "Allow multi-day coding and research sessions in Hermes Agent to resume cleanly after context resets, compactions, restarts, or model swaps without pasting stale rolling summaries.",
+      "what_it_does": "Captures Hermes session and tool lifecycle hooks into append-only .cpr/ event streams via the cpr CLI, maintains provenance-backed decision, assumption, and artifact ledgers, validates log integrity with cpr doctor, and renders prioritized boot briefs.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_439cfaaf47b412df19c603b5",
+      "project_key_hint": "github.com/mschwar/praxis-kit",
+      "display_name": "Praxis Kit",
+      "description": "Physical-first facilitation and pedagogy practice library with a deterministic Python session packager.",
+      "goal": "Turn scattered facilitation, interviewing, pedagogy, and group-process methods into source-grounded kernels that assemble into printable room kits without losing provenance.",
+      "what_it_does": "Organizes raw practice notes through quarry, corpus, and kernel Markdown stages, then runs scripts/pk.py on TOML package manifests to emit printable FIELD-KIT.md run sheets, PROVENANCE.md lineage files, and SHA-256 MANIFEST.toml receipts.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_43dff85110e8a0dac44047ed",
+      "project_key_hint": "github.com/mschwar/gamma-steamdb",
+      "display_name": "Gamma SteamDB",
+      "description": "Auditable Steam game discovery index and standalone browser app ranking well-reviewed titles by statistical confidence bounds and review-volume tiers.",
+      "goal": "Surface standout Steam games across review-population tiers—from 500-review hidden gems to 50,000-review heavyweights—using reproducible statistical evidence rather than raw star averages.",
+      "what_it_does": "Fetches append-only Steam review observations into a Git-LFS SQLite database via the gamma-steamdb Python CLI, computes Wilson 95% lower confidence bounds and multi-constraint queries, and builds self-contained HTML reports.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_4a2531d95ac63af942b0b23f",
+      "project_key_hint": "github.com/mschwar/idea-forge",
+      "display_name": "IdeaForge",
+      "description": "Git-backed Obsidian idea-triage vault and assistant prompt workflow that standardizes raw inbox captures into frontmatter-checked, cross-linked Markdown notes.",
+      "goal": "Turn unstructured notes, chat dumps, and Google Keep exports into an organized, reviewable idea backlog with preserved draft history and human-gated status promotions.",
+      "what_it_does": "Ingests raw captures from vault/0-Inbox/, applies four-stage assistant prompts (ingest, standardize, enrich, review), scaffolds weekly review notes via Bash, updates vault/Dashboard.md, and stages Phase 2 Python agent stubs.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_4a37645c8c32b3116e380734",
+      "project_key_hint": "substrate",
+      "display_name": "Substrate",
+      "description": "Local-first Markdown vault engine with strict YAML frontmatter validation, Python CLI, local HTTP API, quarantine recovery, and JSONL audit logs.",
+      "goal": "Keep plain Markdown files on disk as canonical truth while enforcing strict schema validation, ULID identifiers, safe status transitions, and rebuildable views for notes and tasks.",
+      "what_it_does": "Initializes structured vault directories via python -m substrate, validates frontmatter against schema/v0.1.json, quarantines malformed notes with restore metadata, logs append-only ops.jsonl events, and serves FastAPI endpoints plus a Tauri UI scaffold.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_4bda36895c4e722e54743856",
+      "project_key_hint": "github.com/mschwar/brain",
+      "display_name": "GBrain Markdown Mirror (ai-server)",
+      "description": "Automated Git-backed Markdown mirror of the canonical GBrain knowledge base running on ai-server, synced and pushed every 15 minutes.",
+      "goal": "Maintain a human-readable, version-controlled backup and inspection tree of every people, project, decision, ops, and concept page stored in the fleet's canonical GBrain database.",
+      "what_it_does": "Receives write-through Markdown page renders from the ai-server gbrain MCP service and Project Ledger reality syncs across structured topic folders, then commits and pushes snapshots via gbrain-brain-sync.timer.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_4be5f6cdda690b7124cba6d9",
+      "project_key_hint": "github.com/LearningCircuit/local-deep-research",
+      "display_name": "Local Deep Research",
+      "description": "Mirrored MacBook checkout of LearningCircuit's open-source Python agentic research assistant for multi-engine web, academic, and private-document synthesis.",
+      "goal": "Keep a local reference mirror of an encrypted, zero-telemetry deep-research platform that pairs local or cloud language models with SearXNG, arXiv, PubMed, and Semantic Scholar.",
+      "what_it_does": "Runs iterative LangChain and LangGraph search strategies via the ldr CLI, Flask web UI, REST API, and MCP server, indexing downloaded papers and web pages into per-user AES-256 SQLCipher databases to produce cited Markdown and PDF reports.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_4c8d9d91f1eda83001191dee",
+      "project_key_hint": "github.com/mschwar/chreod",
+      "display_name": "Chreod: Signal, Institutional Capture, and Canalization",
+      "description": "Preregistered Python econometrics and policy-design repository separating school developmental learning signals from institutional grant and certification capture.",
+      "goal": "Identify high-growth, high-poverty schools overlooked by prestige certifications and competitive grants, and design anti-Goodhart resource-braiding formulas across local, state, national, and Brazilian education systems.",
+      "what_it_does": "Ingests public school registries (SEDA, New Mexico report cards, Brazilian IDEB) via the chreod CLI, runs confirmatory C1-C8 econometric models against SHA-256-locked prediction registries, and compiles feeder-cluster braid portfolios and policy briefs.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_5026a5d89e372f8c56ab9202",
+      "project_key_hint": "github.com/mschwar/money-schema",
+      "display_name": "Money Schema — Household Cashflow System",
+      "description": "Bilingual Spanish/English HTML household cashflow design and operational runbook implementing a single-pool income buffer with a 40/40/20 overflow split.",
+      "goal": "Reconcile full joint household financial transparency with autonomous personal spending for Matt's father and stepmother through one shared reserve threshold and automatic overflow routing.",
+      "what_it_does": "Preserves the original whiteboard sketch and Grok working notes alongside printable one-page Spanish and English HTML guides (como-se-mueve-el-dinero.html, how-the-money-moves.html), academic analogues, and a formal RUNBOOK.html spec.",
+      "primary_language": "HTML"
+    },
+    {
+      "canonical_project_id": "prj_550d6f7e1c4b149cd7cc10cd",
+      "project_key_hint": "github.com/mschwar/federation",
+      "display_name": "Federation",
+      "description": "Failure-independent entry manual and ownership registry mapping subsystems, authoritative state locations, and work-routing contracts across Matt's networked computing house.",
+      "goal": "Allow any cold-starting human or AI agent to identify which subsystem owns a request, find authoritative state without duplicating canon, and leave recoverable continuity receipts.",
+      "what_it_does": "Maintains SYSTEMS.yaml, ROUTING.md, CONTRACTS.md, RECOVERY.md, and dated federation receipts that direct incoming work to Homelab, GBrain, Project Ledger, Machina, or domain repositories.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_569e7ae9edb5cc643a801997",
+      "project_key_hint": "github.com/mschwar/dedupe-engine-repo",
+      "display_name": "Dedupe Engine",
+      "description": "Zero-dependency Python CLI that indexes directories in SQLite, confirms exact and filename-variant duplicates by cryptographic hash, and moves redundant copies into reversible quarantine.",
+      "goal": "Reclaim storage and clean consolidated personal archives without risking permanent data loss by logging every hash-verified file move for one-command rollback.",
+      "what_it_does": "Scans target directories into an incremental SQLite database, runs size, 64-KB head-and-tail, and full-file BLAKE3 or BLAKE2b checks in src/dedupe_engine.py, moves duplicates into hash-bucketed quarantine folders, and exports Markdown run summaries.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_585923c92066730f7a7c6f24",
+      "project_key_hint": "github.com/mschwar/SDLC",
+      "display_name": "Agentic SDLC Framework",
+      "description": "Agent-first Software Development Lifecycle playbook vault, repo bootstrap kit, reference implementations, and Python verification CLI.",
+      "goal": "Enforce consistent engineering principles, scoped pull requests, commit hooks, and independent verification across multi-agent repositories without inventing ad-hoc process rules per project.",
+      "what_it_does": "Combines 15 engineering principle sheets, starter kits, Python example services, sdlc-bootstrap-kit/bootstrap-sdlc.sh for Husky and commitlint setup, and sdlc-cli.py for loading playbooks and checking repository compliance.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_5a62ef1e9f26f477aad6812e",
+      "project_key_hint": "plots",
+      "display_name": "Exponential Progress Atlas",
+      "description": "Manifest-driven Python chart generator and static HTML dashboard visualizing long-run scaling across compute, energy, coordination, and technology adoption.",
+      "goal": "Publish auditable, offline-safe timelines of civilizational and AI scaling that explicitly separate measured historical records from proxy estimates and speculative forecasts.",
+      "what_it_does": "Reads per-topic CSV datasets, provenance meta.json files, and plots_manifest.json in Python to render nine high-resolution PNG and SVG charts, interactive HTML timelines, a cross-plot dashboard, and repo validation checks.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_5ddce3a8f60a242dd87503a7",
+      "project_key_hint": "github.com/mschwar/pz-observer",
+      "display_name": "PZ Observer",
+      "description": "Asymmetric AI co-play CLI and Lua telemetry bridge for solo Project Zomboid Build 42 survival campaigns.",
+      "goal": "Pair a solo Project Zomboid player with policy-bounded AI dispatch, world chronicling, base-building logistics, and an embodied canine companion without spoiling unsearched containers.",
+      "what_it_does": "Reads SQLite save databases in read-only mode alongside PZObserver.lua telemetry snapshots via pz.py to produce morning supply briefings, SHA-256 save backups, construction blueprints, live screen captures, and K-9 companion commands.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_5f20551f04ceecc0cb3288a9",
+      "project_key_hint": "github.com/mschwar/ai-onboard",
+      "display_name": "AI Onboard Staging Vault",
+      "description": "Obsidian staging workspace combining a macOS developer install manifest, a Hermes Agent instructional manual, model brainstorm archives, and a vendored copy of AI Onboarding for Friends.",
+      "goal": "Assemble installation recipes, persistent-agent operating guides, and beginner curriculum drafts in one workspace for bootstrapping macOS machines and personal AI workflows.",
+      "what_it_does": "Bundles a Homebrew, uv, fnm, and editor Install Blitz Manifest, a multi-profile Hermes Agent setup guide covering SOUL.md, memory, and skills, archived prompt dumps, and the vendored ai-onboarding-for-friends course tree.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_5fbade4e289d229893c07658",
+      "project_key_hint": "github.com/mschwar/repo-census",
+      "display_name": "Repo Census",
+      "description": "Read-only four-stage Python pipeline for Windows filesystem repository discovery, git reconnaissance, and unpushed-commit detection.",
+      "goal": "Identify every project directory, git checkout, dirty worktree, and local-only commit across a Windows workstation before retiring or consolidating local checkouts.",
+      "what_it_does": "Chains scan_repos.py, git_recon.py, git_unique.py, and gen_html.py to classify directories across configured roots, inspect git remotes and stashes without mutating state, detect unpushed commits, and render a filterable HTML report.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_60e0dcf06fbb09be7594475f",
+      "project_key_hint": "github.com/mschwar/machina",
+      "display_name": "Machina",
+      "description": "Agent-native Python production, control, learning, and lifecycle runtime that lets cold-starting workers execute bounded work units and recover state by reconciliation.",
+      "goal": "Give repositories a reusable execution, Work Unit/Attempt/Receipt kernel, QA gate, and Act-Learn distillation substrate so domain projects do not each reinvent cold-start and governance machinery.",
+      "what_it_does": "Provides the stdlib Python machina CLI for activating work units, checkpointing slices, deriving programme state (NEXT.md), reconciling .machina/ continuity across estate repos, and benchmarking local decision heads.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_61469b2729823a17bfb0b3e8",
+      "project_key_hint": "github.com/mschwar/intone",
+      "display_name": "Intone",
+      "description": "Next.js 14 and Firebase web application for uploading, normalizing, and discovering original Baha'i-inspired musical recordings organized around sacred scripture passages.",
+      "goal": "Provide a community music repository indexed by master sacred texts with consistent audio loudness, waveform previews, upload rate limits, and moderated community feedback.",
+      "what_it_does": "Pairs a TypeScript Next.js App Router frontend with Firebase Auth, Firestore, Storage, and Cloud Functions v2 running streaming FFmpeg silence removal, loudness normalization, and 150-peak waveform extraction.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_628f79ae56c02781f3290fb2",
+      "project_key_hint": "vibecoding",
+      "display_name": "VibeCoding",
+      "description": "Agent-assisted software development framework combining Python project-scaffolding tools with reusable role specs, context templates, and phase checklists.",
+      "goal": "Standardize multi-phase AI-assisted software delivery from requirements through release using shared agent personas, coding protocols, and bundled context files.",
+      "what_it_does": "Runs tools/vibe_init.py to scaffold project directories and compile COMBINED_CONTEXT.md from 18 agent role specs, 19 context graph templates, 9 workflow checklists, and 8 engineering protocols, alongside Ecolens and Entropy CLI projects.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_671db4a12c3a1050f4b2be75",
+      "project_key_hint": "github.com/mschwar/ai-onboarding-for-friends",
+      "display_name": "AI Onboarding for Friends",
+      "description": "Beginner-friendly five-session macOS curriculum teaching non-programmers practical workflows across Markdown, Obsidian, Terminal, GitHub, Python, APIs, RAG, and agents.",
+      "goal": "Help complete beginners on macOS move from casual chat prompting to owning local Markdown notes, versioned Git repositories, verified Python scripts, and safe AI-assisted projects.",
+      "what_it_does": "Organizes step-by-step macOS setup guides, a five-session learner and instructor curriculum, beginner-to-advanced project exercises, credential safety checklists, and a Python repository structure validator.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_69e8e83c9627049ecd884833",
+      "project_key_hint": "github.com/mschwar/aunt-natalia-daily-study-tool",
+      "display_name": "Aunt Natalia Daily Study Tool",
+      "description": "Clean-room React 19, TypeScript, and Vite single-page application rebuilding Natalia's Baha'i daily sacred-writings study, reflection journal, and Badi calendar tool.",
+      "goal": "Preserve and stabilize Natalia's structured daily devotional experience after the original AI Studio source was lost, with zero runtime AI, zero backend, and local-only journal storage.",
+      "what_it_does": "Selects three daily Baha'i passages aligned to weekday, Baha'i month, and day-of-month themes from validated static corpora, paired with a browser localStorage journal, Holy Days and Badi calendar explorer, 19-chapter Book browser, and timer.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_6b6a8f138fcebb2ed5f5ca52",
+      "project_key_hint": "bahai-consultation-guide",
+      "display_name": "Practical Guide to Baha'i Consultation",
+      "description": "Curated Markdown study vault pairing verbatim Baha'i writings on group decision-making with practical meeting and preparation checklists.",
+      "goal": "Give individuals, families, study circles, committees, and Local Spiritual Assemblies a citation-verified reference for practicing consultative truth-seeking and unified decision-making.",
+      "what_it_does": "Provides a one-page seven-step meeting checklist and a thematic compilation of verbatim passages from Baha'u'llah, 'Abdu'l-Baha, Shoghi Effendi, and the Universal House of Justice, configured as an Obsidian vault with Python doc-hygiene checks.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_6d61ba855ae905d6f8395a6b",
+      "project_key_hint": "context-project",
+      "display_name": "ctx (Context Project)",
+      "description": "Deterministic zero-LLM static AST, import-graph, and blast-radius structural compiler (ctx-tool) for coding agents across 13 programming languages.",
+      "goal": "Give coding agents accurate architecture orientation, operational surface discovery, and reverse-dependency blast-radius verification plans at zero token generation cost without per-directory LLM sidecar clutter.",
+      "what_it_does": "Parses polyglot syntax trees, workspace manifests, and git diffs in Python via the ctx CLI and MCP server to emit gitignored .ctx/ tiered Markdown maps, capsule.json summaries, and coupled test verification targets.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_735628dc451d54e41cee4df8",
+      "project_key_hint": "github.com/mschwar/lee-grapple-hook",
+      "display_name": "TetherGrip Pursuit Lock — Product Scaffold",
+      "description": "Gated multi-stream documentation workspace for TetherGrip Pursuit Lock, a proposed patrol-vehicle-mounted tethering device for controlled law-enforcement pursuit stops.",
+      "goal": "Close the gap between an early mechanical pursuit-stop concept and disciplined engineering, legal, sourcing, safety, and commercial specifications without making unverified hardware or safety claims.",
+      "what_it_does": "Coordinates disjoint Markdown workstreams across docs/00_program/ through docs/07_marketing/—including product briefs, BOM tables, design requirements, regulatory checklists, and financial models—governed by state.md and doc-hygiene tests.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_7480df99900051d41829b988",
+      "project_key_hint": "github.com/mschwar/init-mockup",
+      "display_name": "LPES Coordinator Workbench (Retired Prototype)",
+      "description": "Retired standalone TypeScript and React 19 prototype of the bilingual Los Padillas Community School Coordinator Workbench, consolidated into mschwar/LPES-CS on 2026-11-12.",
+      "goal": "Prototype a local-first, privacy-scrubbed English/Spanish operations dashboard and CLI for managing school schedules, program tiers, and family notices before merging into LPES-CS.",
+      "what_it_does": "Parses and scrubs school CSV registries into lpesSnapshot.json, enforces atomic revision-locked state in Express and TypeScript CLI surfaces, and serves a bilingual React 19 Tailwind dashboard with SHA-256 verified backups.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_78dcd800bcd29d3ff1af77ca",
+      "project_key_hint": "bridgeai",
+      "display_name": "BridgeAI (AI Companion)",
+      "description": "React Native and Firebase Cloud Functions mobile app guiding professionals through structured AI workflows, a contextual chat assistant, and an offline reference library.",
+      "goal": "Help non-technical professionals adopt practical AI habits by turning goals, messy notes, meeting prep, and travel details into structured plans and checklists without prompt guesswork.",
+      "what_it_does": "Validates form inputs from React Native screens against ACTION_TEMPLATES_SEED.json, calls OpenAI or xAI through the POST /generateAction Firebase Cloud Function, returns schema-checked JSON outputs for four workflows, and seeds Firestore reference packs.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_7e350b6f91e982d4155f8378",
+      "project_key_hint": "github.com/mschwar/hermes-fleet-profile",
+      "display_name": "Hermes Fleet Profile",
+      "description": "Shared Hermes profile distribution and runtime substrate plugin propagating fleet identity, defaults, and GBrain MCP wiring from ai-server to child workstations.",
+      "goal": "Give every fleet machine an identical shared constitution, default configuration, and GBrain connection while preserving each host's local sessions, credentials, and model selection.",
+      "what_it_does": "Ships SOUL.md, config.yaml, mcp.json, Bash parent/child rollout scripts, and the Python hermes-fleet-substrate plugin and probe that activate and verify shared profile settings inside each host's active Hermes runtime.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_82d7832d857fc310134fca35",
+      "project_key_hint": "google-drive:repos-other/claude-overhaul",
+      "display_name": "Claude Code Global Configuration Overhaul",
+      "description": "Versioned global configuration bundle deploying safety hooks, slash commands, subagents, language rules, and memory templates into ~/.claude/.",
+      "goal": "Ensure every Claude Code session starts with destructive-command guardrails, reusable review and git workflows, and shared user context instead of an unconfigured default profile.",
+      "what_it_does": "Runs scripts/deploy.sh to install settings.json, PreToolUse deny hooks, six slash commands, three review and security subagents, TypeScript and Python rules, and memory files into ~/.claude/, verified by scripts/verify.sh.",
+      "primary_language": "Shell"
+    },
+    {
+      "canonical_project_id": "prj_831e14026242eed2dff3d61a",
+      "project_key_hint": "github.com/mschwar/gym-bros",
+      "display_name": "Gym Bros",
+      "description": "Turborepo TypeScript monorepo scaffold for a competitive mobile fitness battler game that converts verified physical exercise reps into digital strategy-game armies.",
+      "goal": "Build a multiplayer strategy game controlled by real-world workouts while keeping rep verification, unit inventory awards, anti-cheat deduplication, and battle calculation strictly server-authoritative.",
+      "what_it_does": "Defines shared Zod rep-telemetry and unit-award contracts in packages/shared, an Express, tRPC, and PostgreSQL Prisma API schema in apps/api, and an Expo React Native mobile client scaffold in apps/mobile.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_8322d1cc9be020099bd0d337",
+      "project_key_hint": "github.com/mschwar/sentinel",
+      "display_name": "Sentinel (Retired Prototype)",
+      "description": "Retired greenfield bootstrap repository for the Raspberry Pi 3B homelab witness node, superseded by mschwar/homelab under infra/sentinel.",
+      "goal": "Design an independent, out-of-band Raspberry Pi witness and recovery foothold capable of monitoring ai-server reachability and recording local status history during control-plane outages.",
+      "what_it_does": "Preserves the initial 2026-09-11 architecture notes, zero-assumption operator runbook, bootstrap execution ZIP archive, and SHA-256 governed retirement receipt (.machina/retirement.json) pointing to homelab.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_83662fe949f68414543ccf38",
+      "project_key_hint": "github.com/mschwar/LPES-CS",
+      "display_name": "LPES-CS — Community School Operating System",
+      "description": "Local-first Python operational memory, privacy router, and bilingual React workbench for the Los Padillas Elementary Community School Coordinator in Albuquerque Public Schools.",
+      "goal": "Convert daily school encounters, council meetings, recordings, and registries into provenance-backed briefings, bilingual family deliverables, and auditable program tracking while enforcing FERPA privacy boundaries.",
+      "what_it_does": "Runs ./bin/lpes Python pipelines across immutable evidence registries, append-only operational ledgers, BOD/EOD workday cycles, multi-engine transcript reconciliation, Mac-local APS Chrome controls, and a bilingual Coordinator Workbench.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_8431ac5883e2878f9bd2f856",
+      "project_key_hint": "github.com/mschwar/pitch-perfect",
+      "display_name": "Pitch Perfect — Web Ear Trainer",
+      "description": "Mobile-first React 19 and TypeScript web ear-training application that synthesizes musical tones in the browser to drill natural and chromatic note recognition.",
+      "goal": "Give music students, vocalists, and hobbyists an immediate, zero-setup ear-training loop for practicing and quizzing pitch identification across beginner and chromatic note sets.",
+      "what_it_does": "Synthesizes blended sine-and-triangle note frequencies via the native Web Audio API in a Vite, React 19, Tailwind CSS, and Motion single-page interface offering 7-note Beginner quizzes, 12-note Advanced quizzes, streak tracking, and free Practice mode.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_86224e652991b312fac7d6fb",
+      "project_key_hint": "github.com/mschwar/miscellania",
+      "display_name": "Agentic Workbench (Miscellania)",
+      "description": "Workstation bootstrap and workflow standardization repository containing phased PowerShell and WSL setup scripts, repository starter templates, and reusable agent prompt packs.",
+      "goal": "Turn a Windows plus WSL development machine upgrade blueprint into repeatable, non-destructive setup scripts, starter repo conventions, and handoff prompts outside OneDrive.",
+      "what_it_does": "Provides Windows PowerShell and WSL Bash audit/bootstrap scripts, package manifests, canonical rollout checklists, greenfield and legacy-takeover prompt packs, starter repo templates, and eval scaffolding.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_876f6a1815caf736ec354aef",
+      "project_key_hint": "github.com/mschwar/reality-ledger2",
+      "display_name": "Vibe Runtime (reality-ledger2)",
+      "description": "Python agent runtime CLI captured from MATTY-PC that executes VibeCoding specifications with local-first LM Studio routing and cloud escalation.",
+      "goal": "Run Markdown-defined coding and analysis agents locally at zero API cost by default while escalating high-complexity or long-context tasks to frontier cloud providers.",
+      "what_it_does": "Loads AgentSpec definitions via the Typer vibe CLI, classifies prompt complexity, routes requests to local LM Studio or Anthropic and Google APIs, executes built-in filesystem and calculator tools, and logs token usage and traces.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_889a79ccc6fee4136d80f368",
+      "project_key_hint": "github.com/mschwar/ai-field-briefing",
+      "display_name": "AI Field Briefing",
+      "description": "Python CLI pipeline that ingests technical AI, ML, and agent sources to generate daily and weekly briefings focused on architectural primitives, tradeoffs, and builder discourse.",
+      "goal": "Surface what experienced AI builders are shipping, debating, and converging on across code, papers, and changelogs before those patterns turn into generic consensus summaries.",
+      "what_it_does": "Fetches items from GitHub, Hugging Face, arXiv, OpenReview, Hacker News, PyPI, Stack Overflow, and RSS into Pydantic Artifact models, scores architectural primitives and value tradeoffs, and writes linked Markdown, JSON, and HTML wiki reports.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_8d14c04e0a62ad084fccf416",
+      "project_key_hint": "white-rabbit",
+      "display_name": "White Rabbit",
+      "description": "Internal B2B lead research platform pairing a Next.js operator console with a FastAPI and PostgreSQL evidence-scoring backend.",
+      "goal": "Deliver verified, persona-matched B2B organization and contact leads for internal operator evaluation with explicit source evidence and blocker states rather than unverified bulk lists.",
+      "what_it_does": "Takes natural-language B2B target queries through authenticated Next.js proxy routes to a FastAPI and packages/core Python engine that plans queries, validates web sources via Tavily and OpenAI with SSRF guards, scores leads in Postgres, and exports CSVs.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_90343f4cdd302fb752adf350",
+      "project_key_hint": "evoauto",
+      "display_name": "EvoAuto",
+      "description": "Pre-implementation greenfield specification workspace for simulating adaptive life-history strategies under explicit energy, maintenance, damage, and reproduction constraints.",
+      "goal": "Test how persistence, foraging, repair, and parental investment strategies emerge from strict thermodynamic and energetic budgets before introducing reinforcement learning.",
+      "what_it_does": "Defines product requirements, target simulation architecture, state and metric schemas, phased roadmaps, and source thesis notes in Markdown alongside placeholder directories for future Python world and organism packages.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_9103784e2fb587e71dd5e403",
+      "project_key_hint": "github.com/mschwar/ai-class",
+      "display_name": "AI Class Documentation Workspace",
+      "description": "Course planning, pricing, anecdote bank, and instructor deck workspace for the in-person 0-to-1 Agent Lab workshop for non-technical professionals.",
+      "goal": "Design a hands-on implementation workshop where non-technical ChatGPT or Claude users leave with a supervised local agent workspace, reusable Markdown instructions, and a repeatable operating loop.",
+      "what_it_does": "Curates the master 0->1.md workshop agenda, offer pricing memos, source-checked LLM case-study anecdotes, legacy two-level course drafts, and editable PowerPoint and PDF instructor slide decks.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_91a2b0b89e74b0a24c578ad8",
+      "project_key_hint": "github.com/mschwar/AGENT05",
+      "display_name": "AGENT05",
+      "description": "Experimental Python and JSON control-plane kernel for keeping coding and operations work durable and resumable across disposable agent sessions.",
+      "goal": "Ensure that when an agent session ends mid-flight, a fresh actor can recover task state, evaluate falsifiable reality assertions, and execute the next valid move without chat transcripts.",
+      "what_it_does": "Processes plain-file JSON Work Objects, standing assertions, and decision records through Python CLI tools in tools/ to compile cold-start context briefs, run shell reality checks, and record immutable run receipts.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_921414eb93b859e13a5e4de1",
+      "project_key_hint": "github.com/mschwar/project-eidos",
+      "display_name": "Project Eidos",
+      "description": "Room-scoped augmented reality memory avatar prototype with a Next.js web simulator, WebSocket sync, and Fastify API.",
+      "goal": "Prototype a shared, source-cited memory interface over a single physical room where users capture observations, talk with a room companion, and query timestamped session history.",
+      "what_it_does": "Runs a pnpm Turborepo stack with a Next.js webcam AR simulator, shared WebSocket avatar anchors, Fastify session routes, mock or OpenAI vision and chat providers, Postgres pgvector migrations, and a local Unity AR Foundation spike.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_931cc4892b1682cc29c1d0dc",
+      "project_key_hint": "github.com/mschwar/xport",
+      "display_name": "Xport Twitter Bookmark Exporter",
+      "description": "Cookie-authenticated Node.js and Puppeteer scraper for incrementally exporting X/Twitter bookmarks to checkpointed JSON files.",
+      "goal": "Archive personal X/Twitter bookmarks locally into /central/imports/xport-bookmarks without paid API keys or full re-scrapes on subsequent runs.",
+      "what_it_does": "Launches Chrome via Puppeteer using exported browser cookies, auto-scrolls x.com/i/bookmarks with checkpoint saves and incremental resume into bookmarks.json, and includes a batch agent-note ingestion script.",
+      "primary_language": "JavaScript"
+    },
+    {
+      "canonical_project_id": "prj_944f2e20398dd96821a51e81",
+      "project_key_hint": "bible-homepage",
+      "display_name": "Biblical Daily Verse Homepage",
+      "description": "Static client-side browser homepage that deterministically displays one short King James Version Bible verse per calendar day.",
+      "goal": "Provide a quiet, zero-tracking daily scripture start page where every visitor on the same local calendar date sees the same concise Bible passage.",
+      "what_it_does": "Uses an offline Python parser to extract 24,271 King James Version verses of 75 words or fewer from Project Gutenberg text into data/quotes_bible.json, then renders today's verse, citation, Yesterday toggle, clipboard copy, and theme in vanilla JavaScript.",
+      "primary_language": "JavaScript"
+    },
+    {
+      "canonical_project_id": "prj_981bd44f515a9c435684919c",
+      "project_key_hint": "reality-ledger",
+      "display_name": "Reality Ledger",
+      "description": "Provenance-first Python document and email ingestion pipeline with character-span claim extraction and reversible entity resolution.",
+      "goal": "Convert raw mailboxes and personal document dumps into auditable structured claims and entity graphs where every assertion and merge decision points back to exact source character offsets.",
+      "what_it_does": "Ingests EML, MBOX, PDF, DOCX, Markdown, and text files across modular pfm_* Python packages, hashes bytes in vault.sqlite, chunks and BM25-indexes canonical text, extracts cited claims, and logs undoable entity merges in SQLite.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_9a03356ec9b2d4a17ec0723a",
+      "project_key_hint": "github.com/modelcontextprotocol/servers",
+      "display_name": "Model Context Protocol Servers",
+      "description": "Shared upstream checkout of official Model Context Protocol reference servers in TypeScript and Python demonstrating tool, resource, and prompt integrations.",
+      "goal": "Provide local reference implementations and runnable standard servers (Filesystem, Fetch, Git, Memory, Time, Sequential Thinking, Everything) for connecting language models to local tools and files.",
+      "what_it_does": "Packages multi-workspace TypeScript npm packages and uv-managed Python MCP servers under src/ that expose controlled filesystem access, Git inspection, web fetching, knowledge-graph memory, and timezone conversion over MCP.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_9c559233b0d688be67eba30d",
+      "project_key_hint": "github.com/mschwar/two-track-education",
+      "display_name": "Two-Track Education Research Program",
+      "description": "Pre-specified empirical research program and manuscript pipeline on school ratings, inequality, and grade transitions in APS, New Mexico, and the US.",
+      "goal": "Test six pre-analysis propositions separating school proficiency status from student learning growth, small-school accountability noise, and grade-transition effects for Leadership Council review.",
+      "what_it_does": "Builds longitudinal panels from APS, NM Vistas, STARS, and SEDA datasets in Python, binds 1,423 statistical outputs from program_results.json into three papers and a Los Padillas governance brief, and enforces FERPA and ARES gates.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_9dc0900b6d17b1ea6af01583",
+      "project_key_hint": "github.com/mschwar/seed-bank",
+      "display_name": "Seed Bank",
+      "description": "Git-versioned package intake and cultivation store on ai-server for untrusted archives, session dumps, and pre-project seeds.",
+      "goal": "Safely quarantine, inspect, reconcile, and cultivate raw ZIP packets, transcripts, and architectural drafts before deciding whether any material earns promotion into active repositories.",
+      "what_it_does": "Validates inbound ZIP archives in memory via scripts/ingest.py against path-traversal, symlink, and zip-bomb hazards, records intake receipts, and versions cultivated Markdown notes, heads, and provenance ledgers.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_9ddf139ace1b8d00797b2baf",
+      "project_key_hint": "github.com/mschwar/initiate",
+      "display_name": "Initiate",
+      "description": "Capture-first Python corpus substrate and CLI that preserves raw encounters, resolves primary sources, separates claims from evidence, and compiles memorable knowledge kernels.",
+      "goal": "Let an operator record fleeting interesting encounters with zero upfront friction and progressively source, verify, compress, and resurface them without conflating raw notes with proven claims.",
+      "what_it_does": "Admits raw text dumps and encounters via the initiate Python CLI, tracks recovery traces, source extensions, and append-only adjudications, validates structured YAML/JSON claims and evidence, and builds consolidated kernels.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_9e900165aff4dc3a687476eb",
+      "project_key_hint": "github.com/mschwar/ledger-2",
+      "display_name": "Ledger — Personal Evidence & Application Generator",
+      "description": "Matt's personal career evidence ledger, CV/resume/application renderer, and job-portal screening pipeline built over schema-validated professional records.",
+      "goal": "Maintain a single verified store of professional, scientific, and founder facts to render tailored CVs, bios, and job applications without unverified extrapolation (archive/docdumps/ is unverified draft scratch).",
+      "what_it_does": "Validates canonical JSON facts in entries/ against Draft 2020-12 schemas, builds O(1) lookup indexes, verifies primary KPI CSV/JSONL inputs, crawls and screens employer portals, and renders verified Markdown application materials.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_9f01e4965f5e56c8df041914",
+      "project_key_hint": "github.com/mschwar/prompt-refinery",
+      "display_name": "Prompt Refinery",
+      "description": "Typer CLI pipeline and specialist prompt library for evaluating, upgrading, and archiving Markdown prompts from an Obsidian vault.",
+      "goal": "Automate prompt iteration as versioned code while maintaining structured role prompts for codebase audits, product planning, business strategy, and manuscript review.",
+      "what_it_does": "Reads draft Markdown prompts from a configured Obsidian directory via src/cli.py, sends them through a meta-optimizer template on OpenAI or Anthropic APIs, archives timestamped originals, and writes upgraded prompts back to disk.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_a12c14dcf290f4bff7df4743",
+      "project_key_hint": "github.com/mschwar/homelab-traces",
+      "display_name": "Homelab Traces",
+      "description": "Zero-dependency Python repository-health probe that inspects local Homelab fleet Git checkouts and emits daily drift and CI failure triage reports.",
+      "goal": "Detect dirty working trees, upstream branch lag, runner billing blocks, and test regressions across the local 11-repository Homelab fleet without mutating target checkouts.",
+      "what_it_does": "Runs read-only git status, rev-list, and optional GitHub check-run probes via scripts/daily_fleet_triage.py to classify failure states and write structured JSON and Markdown alerts to data/daily_triage/ for Homelab supervisors.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_a27b07c9245ae4f47600c0c4",
+      "project_key_hint": "github.com/mschwar/baha",
+      "display_name": "BAHA Chemistry Mastery System",
+      "description": "Ledger-driven curriculum workspace and Python validation suite for designing chemistry-first mastery modules, pedagogy specs, and curated knowledge nodes.",
+      "goal": "Transform raw chemistry and pedagogy notes into provenance-backed knowledge nodes that compile cleanly into learner modules, facilitator workflows, and agent behavior specifications.",
+      "what_it_does": "Routes material from corpus/raw/ and corpus/normalized/ into YAML-validated ledger/ nodes and rendered products/, enforced by Python scripts for schema minimums, node-gap reporting, module-brief linting, and seed-module rendering.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_a831a640f6fbf6a29454034a",
+      "project_key_hint": "github.com/mschwar/proxy-lead",
+      "display_name": "White Rabbit (Legacy proxy-lead Checkout)",
+      "description": "Historical Streamlit prototype of the White Rabbit B2B telecom lead-generation tool, superseded by the canonical white-rabbit repository.",
+      "goal": "Preserve the original Scotty Demo Sprint prototype that surfaced IT directors and network managers at K-12 school districts and local governments for telecom sales teams before the v2 rebuild.",
+      "what_it_does": "Runs a Streamlit Intelligence Console app combining Tavily live web search, OpenAI extraction, deterministic email pattern mapping, SQLite search history, and HubSpot-compatible CSV or webhook CRM exports.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_a87e50380aeefd2271d1d46f",
+      "project_key_hint": "github.com/mschwar/homelab-reboot",
+      "display_name": "Homelab Control-Plane Rebaseline (Retired)",
+      "description": "Retired, read-only historical recovery workspace that executed the forensic audit, clean-slate reset, and re-kerneling of the Homelab control plane, now superseded by mschwar/homelab.",
+      "goal": "Preserve immutable provenance of the staged Research, Architecture, Clean, Rekernel, and Verify programme that rebuilt Homelab's control plane outside the legacy machinery being audited.",
+      "what_it_does": "Archives stage definitions, bounded agent packets, human gate verdicts, failure-archaeology ledgers, and Python concurrency and fence-isolation test artifacts sealed under tag retired-2026-09-20.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_aab0473bc570ce50d3b46f2d",
+      "project_key_hint": "github.com/mschwar/hermes-skills",
+      "display_name": "Hermes Skills Corpus",
+      "description": "Canonical fleet-authored Hermes skill library and parent-driven 15-minute three-way SSH sync and candidate-review engine managed from ai-server.",
+      "goal": "Maintain one versioned source of truth for custom homelab, operator, and workflow skills across ai-server, macOS, and Windows nodes without placing Git push credentials on child machines.",
+      "what_it_does": "Stores categorized SKILL.md runbooks at depth three and runs Python content-hash three-way reconciliation, candidate validation, conflict preservation, and operator review commands (skills_sync.py and skill_review.py) over SSH.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_adbcc8f2d1749b3ca7082aa4",
+      "project_key_hint": "github.com/mschwar/flow",
+      "display_name": "Flow — Agentic Software Delivery Manual",
+      "description": "Fourteen-part Markdown operating manual standardizing repository layout, Git worktree workflows, pull-request review, testing gates, and multi-agent coordination.",
+      "goal": "Remove unspoken engineering process assumptions so worker agents, lead orchestrators, and human maintainers can collaborate safely in a repository cold without inventing ad-hoc rules.",
+      "what_it_does": "Provides numbered Markdown guides and role-specific reading paths covering durable versus generated files, branch naming, worktree isolation, issue lifecycles, findings-first diff review, CI gates, and closeout logs.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_addb267c6583b22fb06a21d1",
+      "project_key_hint": "github.com/mschwar/putdirectory-here",
+      "display_name": "GEM Survival-Nevi Analysis",
+      "description": "Reproducible Python clinical and survival analysis pipeline evaluating melanoma outcomes across nevus-association categories in GEM.",
+      "goal": "Test clinical, histopathologic, and melanoma-specific survival differences by nevus association using auditable cohort QC, multiple-testing correction, and multivariable survival models.",
+      "what_it_does": "Ingests case-level CSV or Excel melanoma datasets in analysis_pipeline.py, standardizes column synonyms, runs contingency, logistic, Kaplan-Meier, and Cox proportional-hazards models, and outputs Parquet data, tables, figures, and Markdown reports.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_aed481b934613a3e4f78a93b",
+      "project_key_hint": "github.com/mschwar/bahai-quote-ledger",
+      "display_name": "Baha'i Quote Ledger",
+      "description": "Provenance-tracked Obsidian vault and Python extraction pipeline cataloging direct Baha'i scripture quotations across Ruhi Institute and Junior Youth texts.",
+      "goal": "Maintain an occurrence-addressed, citation-verified personal study ledger of quotations in Baha'i educational materials while preventing public redistribution of copyrighted study compilations.",
+      "what_it_does": "Extracts, validates, and resolves citations from gitignored source PDFs via Python scripts into 1,180 atomic Quotes/*.md notes and Ledger/ledger.jsonl, generating a local review dashboard, bahai-homepage exports, and a provenance-only Pages site.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_b141f109ee25d04634befd88",
+      "project_key_hint": "2026-tsle-team_internal-ms",
+      "display_name": "Albuquerque 2026 Two-Stage Local Election Operations",
+      "description": "Private operational workspace coordinating the 2026 Two-Stage Local Election across Albuquerque's nine Baha'i electoral units.",
+      "goal": "Keep electoral unit boundary updates, teller appointments, postal deadlines, and voter communications aligned so Albuquerque elects 19 unit delegates on April 12 and the nine-member Local Spiritual Assembly on April 20-21, 2026.",
+      "what_it_does": "Organizes revised Local Electoral Unit boundary maps, national guidance PDFs, and past templates into Markdown action plans, a 48-task tracker, a 27-teller unit tracker, and a 16-message postal and email communications playbook.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_b689428d9272899907f2e313",
+      "project_key_hint": "github.com/mschwar/scratchpad",
+      "display_name": "Scratchpad",
+      "description": "Append-only, git-versioned Markdown inbox on ai-server for zero-friction capture and cultivation of raw ideas, notes, and dumps.",
+      "goal": "Capture fleeting ideas, tasks, agendas, and machine drops faster than thought decays while preserving original wording before mature seeds are promoted into seed-bank or standalone repositories.",
+      "what_it_does": "Stores dated Markdown entries under seeds/, network file drops under inbound/, pre-formalization notes in _history/, and a generated reverse-chronological INDEX.md versioned continuously by the homelab watchdog.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_bad14215b2f36c446fa0bfc9",
+      "project_key_hint": "github.com/mschwar/watershed-land-os",
+      "display_name": "Watershed Land OS",
+      "description": "Evidence-driven Python CLI for screening, scoring, and documenting buildable rural land parcels under $100,000 with legal water near major metros.",
+      "goal": "Identify climate-resilient rural parcels within 60 minutes of major US metros while preventing false water claims, fatal title or flood defects, and unapproved seller outreach.",
+      "what_it_does": "Ingests normalized listing JSON and Shapely parcel geometries via the landos CLI, evaluates 14 hard pass-or-fail gates, records SHA-256-hashed claims in SQLite, enforces red-team and outreach policies, and exports Obsidian dossiers.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_bd13aaefa726453fcd54fde4",
+      "project_key_hint": "common-project",
+      "display_name": "Common Project: One Concept a Day",
+      "description": "Static daily-learning site and Python build pipeline explaining 50 graduate-level science and math concepts in plain everyday language.",
+      "goal": "Make foundational PhD-level scientific and mathematical ideas intuitive to general readers through one concise, jargon-free daily card with interactive visual simulations.",
+      "what_it_does": "Validates Markdown concept drafts in entries/ and progress metadata in tracking.json with Python scripts, compiles master indexes and JSON card payloads, and serves mobile-responsive daily cards and JavaScript simulations from docs/ on GitHub Pages.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_bdc7857ae5b023de41620956",
+      "project_key_hint": "github.com/mschwar/a-standalone-zero-dependency-python-cli-tool-that-audits-dir",
+      "display_name": "Project Nucleus Auditor (GemForge Prototype)",
+      "description": "Unfinished GemForge-bootstrapped prototype for a local directory audit tool containing Markdown specs, HTML landing pages, SwiftUI view stubs, and an empty Python entrypoint.",
+      "goal": "Explore automated multi-agent scaffolding in GemForge for a local codebase auditor intended to detect project types and generate an AUDIT.md engineering health report.",
+      "what_it_does": "Stores generated product, architecture, and director-review Markdown documents alongside static HTML landing pages and 10 SwiftUI desktop interface stubs in Sources/, while leaving main.py unimplemented at zero bytes.",
+      "primary_language": "Swift"
+    },
+    {
+      "canonical_project_id": "prj_be82384b29fd727d08f00987",
+      "project_key_hint": "github.com/mschwar/gbrain-ops",
+      "display_name": "GBrain Ops",
+      "description": "Operational deployment repository owning systemd units, sync timers, backup scripts, database maintenance, and runbooks for the shared GBrain service on ai-server.",
+      "goal": "Version and verify host-level operational configuration, PostgreSQL pgvector maintenance, and recovery procedures for the fleet-wide GBrain service without storing secrets or raw brain content.",
+      "what_it_does": "Provides systemd unit and timer definitions, Bash wrapper scripts for tailnet serving, source sync, link/atom extraction, read-only live drift verification (scripts/verify.sh), Python/SQL dedupe audits, and operational receipts.",
+      "primary_language": "Shell"
+    },
+    {
+      "canonical_project_id": "prj_c291dd5c8f0a4bc38763714b",
+      "project_key_hint": "song-clean",
+      "display_name": "Song Clean",
+      "description": "Local-first Python CLI for musical onset and beat detection, audio trimming, lyrics transcription, and music-element extraction.",
+      "goal": "Provide audio engineers, producers, and MIR workflows with scriptable timestamp detection and cleaned song exports that run offline with optional local or cloud lyrics refinement.",
+      "what_it_does": "Runs onset_detection.py on single files or batch folders using madmom, PyTorch, Silero VAD, Demucs, Whisper, and ffmpeg to export onset and beat CSVs, trimmed MP3s, music-element JSON, and ChromaDB-assisted or OpenAI-corrected lyrics.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_c5ce3cea6b8ad6fef38d131e",
+      "project_key_hint": "github.com/mschwar/toned",
+      "display_name": "EarScaffold",
+      "description": "Minimalist SwiftUI and AVFoundation iOS ear-training application teaching foundational pitch-direction perception with procedural audio.",
+      "goal": "Help beginners train pitch-direction recognition (higher, same, or lower) through a low-friction touch interface with zero staff notation or external audio sample clutter.",
+      "what_it_does": "Synthesizes two-note intervals in real time via AVAudioEngine and AVAudioPlayerNode in Swift, scores user pitch-direction choices with immediate visual and haptic feedback, and includes XcodeGen specs plus a web prototype.",
+      "primary_language": "Swift"
+    },
+    {
+      "canonical_project_id": "prj_cc3776115cbd7897cd2ab77d",
+      "project_key_hint": "github.com/mschwar/airstream",
+      "display_name": "Airstream Abuelo Restoration Workspace",
+      "description": "Spanish-language planning, inspection, and budget documentation repository for restoring a 1962 19-foot Airstream Globe Trotter travel trailer.",
+      "goal": "Sequence structural, chassis, subfloor, mechanical, and shell-on versus shell-off repair decisions from field evidence before committing major parts or interior finish spending.",
+      "what_it_does": "Tracks field photos, serial-plate records, chassis measurements, floor moisture maps, part quotes, phased budgets, restoration roadmaps, and dated decision logs across Spanish Markdown guides gated by Python doc-hygiene checks.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_d008ee93a15abe0d6e55fa53",
+      "project_key_hint": "github.com/paperclipai/paperclip",
+      "display_name": "Paperclip",
+      "description": "Local fork of the open-source Paperclip Node.js server, React dashboard, and CLI control plane for orchestrating multi-agent companies.",
+      "goal": "Coordinate multi-provider coding and operations agents under explicit org charts, task boards, budgets, and governance rules from a single local web control plane, including bundled CLI install fixes.",
+      "what_it_does": "Runs a pnpm TypeScript monorepo with an Express REST API, Drizzle PostgreSQL and PGlite database layer, React and Vite board UI, bundled paperclipai CLI, and pluggable agent runtime adapters.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_d40be3cce67adf7453bd8bc8",
+      "project_key_hint": "github.com/mschwar/lodestone-productions",
+      "display_name": "Lodestone Productions",
+      "description": "Pre-implementation product specification and greenfield architecture bootstrap for an ad-free devotional mobile listening app featuring Baha'i writings set to music.",
+      "goal": "Turn an initial concept dump for AI-assisted and musician-recorded Baha'i devotional audio into clear product, schema, and content-pipeline contracts before writing application code.",
+      "what_it_does": "Defines PRD.md, ARCHITECTURE.md, SCHEMA.md, ROADMAP.md, BACKLOG.md, RUNBOOK.md, preserved founding notes, and initial app/, content-pipeline/, and supabase/ directory scaffolds for future implementation.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_d4b8c68598423a6a28225de6",
+      "project_key_hint": "github.com/mschwar/kapital-redux",
+      "display_name": "Kapital Redux",
+      "description": "Structured Markdown philosophy workspace developing a personal framework on capacity, capital, agency, enterprise, service, and generative stewardship.",
+      "goal": "Distill exploratory Fireside dialogues into source-checked concepts and pressure-tested writing experiments while keeping human commitments strictly separated from provisional agent proposals.",
+      "what_it_does": "Preserves raw dialogue transcripts, distills numbered Fireside session notes, verifies factual assertions in research/claims-ledger.md, tracks conceptual diffs in process/revision-queue.md, and maintains philosophy/current-synthesis.md.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_dd857f0f3c3103d05906d2d4",
+      "project_key_hint": "bahai-homepage",
+      "display_name": "Baha'i Daily Homepage",
+      "description": "Static client-side daily verse homepage and lock-screen wallpaper serving one short Baha'i sacred passage per calendar day with a sunset-aware Badi date.",
+      "goal": "Make encountering sacred text a quiet, zero-distraction part of opening a browser or phone without feeds, user accounts, backend servers, or runtime language model calls.",
+      "what_it_does": "Reads static JSON scripture collections (Hidden Words, Garden of Wisdom preview, Words of the Spirit) in vanilla JavaScript to deterministically pick one passage of 75 words or fewer by day of year, alongside Badi dates, Yesterday recall, and iOS widget code.",
+      "primary_language": "JavaScript"
+    },
+    {
+      "canonical_project_id": "prj_df71fe0a1dbda091ea1a237b",
+      "project_key_hint": "github.com/mschwar/the-garden",
+      "display_name": "The Garden",
+      "description": "Versioned workspace configuration, persona templates, and quota-aware model routing rules for OpenClaw and Hermes assistant sessions.",
+      "goal": "Provide consistent session startup context, single-user memory privacy boundaries, and rate-limit-aware model tier selection across OpenClaw and Hermes agent runs.",
+      "what_it_does": "Stores startup Markdown contracts (AGENTS.md, SOUL.md, USER.md, IDENTITY.md, TOOLS.md, HEARTBEAT.md), a Tier 0-2 Hermes model-routing policy, and Python documentation hygiene checks.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_e2eb3c0599de122c2603f101",
+      "project_key_hint": "github.com/mschwar/civstrate",
+      "display_name": "Civilizational Substrate Project (CivStrate)",
+      "description": "Source-cited historical technology corpus and Python dataset compiler mapping invention, commercialization, diffusion, and dependencies of post-1800 U.S. infrastructure.",
+      "goal": "Measure how foundational energy, transport, communication, and public-health substrates diffuse across decades and depend on prior enabling technologies to reshape economic and physical capacity.",
+      "what_it_does": "Validates YAML metadata, numbered historical citations, diffusion milestones, and prerequisite DAG ordering across 24 Markdown technology profiles via scripts/compile_profiles.py and scripts/validate_repo.py to build data/processed/substrates_master.csv.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_e6d9a71ac17f98273ebdd71a",
+      "project_key_hint": "scrollytelling",
+      "display_name": "AI Compute Phase Shift Scrollytelling",
+      "description": "Interactive Svelte and D3 scroll-driven visualization comparing frontier AI training compute growth against a Moore's Law hardware baseline.",
+      "goal": "Make 26 orders of magnitude in AI training FLOPs legible and auditable for readers by separating historical, estimated, and speculative milestones across a five-act narrative.",
+      "what_it_does": "Validates curated milestone records and source links in src/data/compute_history.json via Node scripts, syncs URL query state, and builds a static Vite, Svelte 5, Scrollama, and D3 bundle with logarithmic and linear scale toggles.",
+      "primary_language": "Svelte"
+    },
+    {
+      "canonical_project_id": "prj_e91e3cf5cd89c06e0b2aaa6d",
+      "project_key_hint": "gbrain",
+      "display_name": "GBrain",
+      "description": "Bun and TypeScript knowledge-graph memory engine and Model Context Protocol server powering the fleet's canonical shared brain on ai-server.",
+      "goal": "Eliminate cross-session agent amnesia across machines and harnesses by storing Markdown entity, project, and decision pages in a synthesized, graph-indexed institutional memory.",
+      "what_it_does": "Indexes Markdown pages in PostgreSQL with pgvector or PGlite, extracts zero-LLM typed entity edges, and serves hybrid keyword-vector-graph search, synthesis, gap analysis, and write-through Git sync via the gbrain CLI and MCP server.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_ed786cb27058a18fed2b5cdc",
+      "project_key_hint": "github.com/mschwar/orgatlas",
+      "display_name": "OrgAtlas — Diarized Meeting Vault",
+      "description": "Obsidian meeting archive storing recorded .m4a sessions, speaker voice enrollment clips, and speaker-resolved diarized JSON and Markdown transcripts.",
+      "goal": "Preserve multi-speaker recorded working sessions alongside named speaker attributions, full timestamped transcripts, meeting minutes, and executive summaries in a navigable Obsidian vault.",
+      "what_it_does": "Stores full-session .m4a recordings, WAV speaker reference clips (Lee Biby, Matt Schwartz, Thomas Gentry), five-minute audio chunks, anonymous and speaker-named diarized JSON segments, and Markdown summaries under output/transcribe/.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_f07b53d92d07b50328ad46c8",
+      "project_key_hint": "github.com/mschwar/project-ledger",
+      "display_name": "Project Ledger",
+      "description": "Read-only project-reality compiler and MCP control substrate for repositories distributed across machines and storage roots.",
+      "goal": "Give cold-start agents and operators fast, provenance-preserving resolution of canonical project identity, preferred working paths, git drift, and structural capabilities without filesystem archaeology.",
+      "what_it_does": "Scans configured git roots, sidecars, and GitHub remotes in Python, reconciles canonical lineage and identity decisions, and compiles JSON manifests, 16 KiB project capsules, change feeds, GBrain pages, and a 10-tool MCP server.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_f1f194e61f4ac4e2fa5ca700",
+      "project_key_hint": "github.com/mschwar/monroehaus",
+      "display_name": "MonroeHaus — Digital Study Printables",
+      "description": "Complete Etsy digital-printables shop repository and HTML/CSS-to-PDF Puppeteer render pipeline producing pastel study planners, trackers, and wall art.",
+      "goal": "Generate and operate an instant-download Etsy stationery shop for high-school and college students from editable source templates with zero physical inventory or shipping.",
+      "what_it_does": "Renders 18 US Letter and A4 PDF printables, 3 bundle ZIPs, 2000x2000 listing mockups, brand graphics, and Pinterest pins from HTML/CSS templates via Node.js and Puppeteer-driven Chrome alongside paste-ready Etsy copy.",
+      "primary_language": "HTML"
+    },
+    {
+      "canonical_project_id": "prj_f24fc6d3f997e4c8f43f88ba",
+      "project_key_hint": "github.com/mschwar/lodestone-writings-repository",
+      "display_name": "Lodestone Writings Repository",
+      "description": "Canonical Markdown corpus and Python ingestion/validation pipeline for published Universal House of Justice and US National Spiritual Assembly letters.",
+      "goal": "Maintain an immutable, hash-verified Markdown collection of authoritative Baha'i institutional messages with deterministic metadata indexes for downstream research and devotional products.",
+      "what_it_does": "Scrapes official bahai.org, bahai.us, and approved public archive sources via Python scripts, enforces audience-scope and YAML frontmatter rules, verifies SHA-256 parity, and builds index.json, ledger.csv, and letters.db.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_f29daac767707d7d303cd268",
+      "project_key_hint": "github.com/NousResearch/hermes-paperclip-adapter",
+      "display_name": "Paperclip Adapter for Hermes Agent",
+      "description": "Mirror fork of the TypeScript adapter that runs Nous Research's Hermes Agent as a managed worker inside the Paperclip orchestration platform.",
+      "goal": "Connect Hermes Agent's multi-provider CLI, persistent memory, and local skills library into Paperclip company org charts, issue comments, and heartbeat execution loops.",
+      "what_it_does": "Implements @paperclipai/adapter-utils server, UI, and CLI modules that spawn hermes chat subprocesses, sync ~/.hermes/skills, parse stdout into typed TranscriptEntry cards, and validate environment and model settings.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_f52b15ab00a89de5e4fc8473",
+      "project_key_hint": "counterweight-tim",
+      "display_name": "Counterweight (Dealership Companion)",
+      "description": "Next.js 14, Clerk, and Prisma Turborepo web prototype for matching car buyers with experienced dealership companions.",
+      "goal": "Prototype a two-sided marketplace where car shoppers book vetted automotive companions to assist with vehicle inspection and dealership negotiation.",
+      "what_it_does": "Combines a pnpm Turborepo workspace, Prisma 5 SQLite models (User, CompanionProfile, Booking, Review, Message), Clerk v5 authentication middleware, shared React UI primitives, and Next.js App Router buyer and companion dashboard views.",
+      "primary_language": "TypeScript"
+    },
+    {
+      "canonical_project_id": "prj_f52b53507c462fb54c4ca56e",
+      "project_key_hint": "garden-of-wisdom",
+      "display_name": "Garden of Wisdom",
+      "description": "Curated multi-tradition quote corpus, static GitHub Pages quote browser, and checksum-verified Baha'i preview exporter.",
+      "goal": "Maintain a provenance-checked personal collection of memorable passages across 27 religious, philosophical, and oral traditions for reflection, memorization, and downstream homepage export.",
+      "what_it_does": "Stores 324 quotes and 32 source records in UTF-8 CSV files, validates links and schemas in Python, stages a zero-backend JavaScript filter and search browser for GitHub Pages, and exports SHA-256-verified JSON subsets for bahai-homepage.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_f54a9b27f794c37cb498fdf1",
+      "project_key_hint": "github.com/mschwar/song-book",
+      "display_name": "Song Book",
+      "description": "Deterministic YAML-to-Typst-to-PDF compiler for devotional song sheets, chord charts, and curated physical ring-binder editions.",
+      "goal": "Maintain an attested repertoire of devotional lyrics and chord placements without guessed musical facts while compiling print-ready single-song sheets and multi-song ring binders.",
+      "what_it_does": "Validates songs/*/song.yaml records across reminder, lyrics, lead, and binder eligibility gates in Python, resolves sacred-text and composer attributions, and compiles Typst layouts into single-song and edition PDFs via Poppler checks.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_fb706cc19b11ab82a76c1ddb",
+      "project_key_hint": "github.com/mschwar/agent-os",
+      "display_name": "agent-os (Retired Slop Cannon Tombstone)",
+      "description": "Retired tombstone repository for the former Slop Cannon Python agent-workflow scaffold, superseded by AEC-1 in mschwar/homelab and archived notes in mschwar/seed-bank.",
+      "goal": "Originally built to standardize repo-local Prompt A/B/C feature buildout and verification loops for coding agents; now retained as a tombstone redirecting contributors to canonical fleet contracts.",
+      "what_it_does": "Previously shipped the slop_init.py template installer, JSON assignment lock resolver, and pull-request verification templates; now holds Markdown tombstone pointers to mschwar/homelab (AEC-1), mschwar/seed-bank, and ops/merge-policy.json.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_fbf0613f0983511dfc3d2283",
+      "project_key_hint": "data-visualization",
+      "display_name": "Tsimane Oral Health Heatmap",
+      "description": "Jekyll static site and Python rasterization pipeline publishing a 32,000-observation dental health heatmap across 1,176 Tsimane adults in Bolivia.",
+      "goal": "Present tooth-level clinical condition patterns by age, sex, and dental arch from the Tsimane Health and Life History Project in a single inspectable public figure.",
+      "what_it_does": "Rasterizes the committed vector figure (Figure2-Teeth_v4.1.pdf) into a 200 DPI PNG via Python scripts, validates repository links and rendered HTML structure, and publishes narrative methods and heatmap views through GitHub Pages Jekyll.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_fc138625c0e3a3cb4219cc6e",
+      "project_key_hint": "claw-code",
+      "display_name": "Claw Code",
+      "description": "Public upstream Rust implementation of the Claude-Code-style claw CLI coding agent harness with a companion Python parity workspace.",
+      "goal": "Preserve an inspectable, build-from-source Rust CLI agent harness and parity testbed for studying interactive coding-agent loops, tool permissions, session compaction, and provider routing.",
+      "what_it_does": "Compiles an 11-crate Cargo workspace in rust/ into the claw CLI binary supporting interactive coding sessions, prompt execution, MCP servers, and health diagnostics, paired with Python reference snapshots and gate verification maps in src/ and docs/.",
+      "primary_language": "Rust"
+    },
+    {
+      "canonical_project_id": "prj_fdd8ba8fba60590c694407b1",
+      "project_key_hint": "github.com/mschwar/lee-ai-learning",
+      "display_name": "Lee AI Learning Guide",
+      "description": "Hands-on, plain-English agentic AI training manual and runnable Python voicemail-triage demo bench built for an outcome-focused business learner.",
+      "goal": "Help Lee move quickly from AI buzzwords to practical judgment—distinguishing chat from tool-using agents, running multi-step office workflows, and evaluating build-versus-buy vendor claims.",
+      "what_it_does": "Organizes 12 progressive Markdown modules, 5-minute quick-win exercises, local Mac mini and inbound voice-agent guides, plus runnable Python scripts that extract intake fields, route priority, and draft replies from sample voicemails.",
+      "primary_language": "Markdown"
+    },
+    {
+      "canonical_project_id": "prj_fde1224c0558e821b4bece78",
+      "project_key_hint": "letters",
+      "display_name": "LetterOps",
+      "description": "Local-first document archive and FastAPI/Next.js search platform for ingesting, deduplicating, and indexing Baha'i letters and archival texts.",
+      "goal": "Preserve immutable archival letter originals while making corpus metadata, citations, full-text queries, and low-confidence review queues searchable locally.",
+      "what_it_does": "Ingests PDF, DOCX, Markdown, and text files or scraped UHJ messages via Python workers, deduplicates by SHA-256 into data/archive/, indexes metadata and FTS5 tables in SQLite with optional ChromaDB vectors, and serves FastAPI and Next.js views.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_fe6820646d4b45c68f341f4d",
+      "project_key_hint": "github.com/mschwar/unslop",
+      "display_name": "UNSLOP",
+      "description": "Evidence-binding and quality-gate CLI suite verifying that prose, SVG figures, software releases, and research claims match on-disk sources.",
+      "goal": "Catch broken source citations, unbound numbers, AI filler, undefined acronyms, accessibility contrast failures, and unverified research or software claims before publication.",
+      "what_it_does": "Provides six Python CLIs (unslop, slopcanon, swcs, sgcs, ases, ares) that validate JSON Schema contracts, bind Markdown metrics to CSV and JSON files, audit HTML5, PDF, and SVG WCAG 2.2 AA compliance, and enforce independent review receipts.",
+      "primary_language": "Python"
+    },
+    {
+      "canonical_project_id": "prj_feafc66421c51148dc734c0c",
+      "project_key_hint": "github.com/mschwar/WR-v3",
+      "display_name": "WR-v3 Lead Generation Notes",
+      "description": "Archival repository of six handwritten B2B lead-generation brainstorm photos and structured Markdown transcriptions defining early contact-search specs.",
+      "goal": "Preserve the original handwritten request grammar and source-scoring model that decomposed free-form B2B contact prompts into individual, business, and geographic targeting slots.",
+      "what_it_does": "Pairs six HEIC notebook photos with verbatim Markdown transcriptions, structured targeting schemas, five-tier public data source rankings, export field contracts, and a Python documentation hygiene test.",
+      "primary_language": "Markdown"
+    }
+  ]
+}

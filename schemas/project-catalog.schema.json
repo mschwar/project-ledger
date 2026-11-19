@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://project-ledger.local/schemas/project-catalog.schema.json",
+  "title": "Project Ledger Curated Repository Profile Catalog (v1.0.0)",
+  "description": "Durable compiler-input catalog declaring curated display_name, description, goal (why it exists), what_it_does, and primary_language per canonical_project_id without mutating target repositories (Architectural Law 10).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "projects"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "canonical_project_id",
+          "project_key_hint",
+          "display_name",
+          "description",
+          "goal",
+          "what_it_does",
+          "primary_language"
+        ],
+        "properties": {
+          "canonical_project_id": {
+            "type": "string",
+            "pattern": "^prj_[0-9a-f]{24}$"
+          },
+          "project_key_hint": {
+            "type": "string",
+            "minLength": 1
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "goal": {
+            "type": "string",
+            "minLength": 1
+          },
+          "what_it_does": {
+            "type": "string",
+            "minLength": 1
+          },
+          "primary_language": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

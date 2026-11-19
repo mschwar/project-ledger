@@ -245,20 +245,45 @@ def write_markdown(entries: list[dict], output_path: Path, root_summaries: list[
             lines.append("")
 
     lines.extend([
-        "| Name | Type | Scope | Git | Obsidian | Last Touch | README | Location | Repo | Last Push |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| Name | Type | Scope | Git | Obsidian | Description | Last Commit | Last Touch | README | Location | Repo | Last Push |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ])
+
+    catalog_by_key: dict[str, dict] = {}
+    default_catalog = Path(__file__).resolve().parent / "registry" / "project-catalog.json"
+    if safe_path_exists(default_catalog):
+        try:
+            cat_doc = json.loads(default_catalog.read_text(encoding="utf-8"))
+            for item in cat_doc.get("projects", []) if isinstance(cat_doc, dict) else []:
+                if isinstance(item, dict) and item.get("project_key_hint"):
+                    catalog_by_key[str(item["project_key_hint"]).strip().casefold()] = item
+        except (OSError, json.JSONDecodeError):
+            catalog_by_key = {}
 
     for entry in entries:
         location_cell = render_location_cell(entry, output_path)
         last_push = render_last_push(entry)
         readme_cell = entry["readme_link_md"] or ""
+        short_sha = str(entry.get("head_commit") or "").strip()[:12]
+        commit_at = str(entry.get("head_commit_at") or "").strip()[:10]
+        last_commit_cell = (
+            f"`{escape_md_cell(short_sha)}`" + (f" ({escape_md_cell(commit_at)})" if commit_at else "")
+            if short_sha
+            else ""
+        )
+        pkey_fold = str(entry.get("project_key") or "").strip().casefold()
+        rem_fold = normalize_remote_url(str(entry.get("remote_url") or "")).strip().casefold()
+        cat_rec = catalog_by_key.get(pkey_fold) or (catalog_by_key.get(rem_fold) if rem_fold else None)
+        shown_name = str(cat_rec["display_name"]) if (cat_rec and cat_rec.get("display_name")) else str(entry["name"])
+        shown_desc = str(cat_rec["description"]) if (cat_rec and cat_rec.get("description")) else str(entry.get("description") or "")
         row = [
-            escape_md_cell(entry["name"]),
+            escape_md_cell(shown_name),
             escape_md_cell(entry["project_type"]),
             escape_md_cell(entry["storage_scope"]),
             "yes" if entry["git"] else "",
             "yes" if entry["obsidian"] else "",
+            escape_md_cell(shown_desc),
+            last_commit_cell,
             escape_md_cell(entry["last_touch_at"]),
             readme_cell,
             location_cell,

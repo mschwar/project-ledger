@@ -122,6 +122,16 @@ def _normalize_repo_record(raw: dict[str, Any]) -> dict[str, Any] | None:
     ssh_url = str(raw.get("ssh_url") or "").strip() or f"git@github.com:{full_name}.git"
     default_branch = str(raw.get("default_branch") or "main").strip() or "main"
     pushed_at = str(raw.get("pushed_at") or "").strip() or None
+    raw_desc = raw.get("description")
+    description = str(raw_desc).replace("\r", " ").replace("\n", " ").strip()[:240] or None if isinstance(raw_desc, str) else None
+    raw_lang = raw.get("language")
+    language = str(raw_lang).strip() or None if isinstance(raw_lang, str) else None
+    raw_topics = raw.get("topics")
+    topics = (
+        sorted({str(t).strip() for t in raw_topics if isinstance(t, str) and str(t).strip()})
+        if isinstance(raw_topics, list)
+        else []
+    )
     return {
         "name": name,
         "full_name": full_name,
@@ -132,6 +142,9 @@ def _normalize_repo_record(raw: dict[str, Any]) -> dict[str, Any] | None:
         "default_branch": default_branch,
         "pushed_at": pushed_at,
         "ssh_url": ssh_url,
+        "description": description,
+        "language": language,
+        "topics": topics,
     }
 
 
@@ -232,7 +245,7 @@ def _fetch_via_ssh_gh_fallback(
     remote_script = (
         'export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$PATH"; '
         f'gh api "user/repos?per_page=100&affiliation={affiliation}" --paginate '
-        "--jq '.[] | {name, full_name, private, fork, archived, default_branch, pushed_at, ssh_url}'"
+        "--jq '.[] | {name, full_name, private, fork, archived, default_branch, pushed_at, ssh_url, description, language, topics}'"
     )
     ssh_cmd.extend([ssh_target, remote_script])
     try:
@@ -512,20 +525,30 @@ def _has_active_git_operation(repo_dir: Path) -> bool:
     return False
 
 
-def _load_prior_remote_cache(sync_state_path: Path | None) -> dict[str, str]:
+def _load_prior_remote_cache(sync_state_path: Path | None) -> tuple[dict[str, str], dict[str, dict[str, Any]]]:
     if sync_state_path is None or not safe_path_is_file(sync_state_path):
-        return {}
+        return {}, {}
     try:
         doc = json.loads(sync_state_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return {}
-    if not isinstance(doc, dict) or not isinstance(doc.get("remote_pushed_at"), dict):
-        return {}
-    return {
-        str(k): str(v)
-        for k, v in doc["remote_pushed_at"].items()
-        if isinstance(k, str) and isinstance(v, str) and v
-    }
+        return {}, {}
+    if not isinstance(doc, dict):
+        return {}, {}
+    pushed = (
+        {
+            str(k): str(v)
+            for k, v in doc["remote_pushed_at"].items()
+            if isinstance(k, str) and isinstance(v, str) and v
+        }
+        if isinstance(doc.get("remote_pushed_at"), dict)
+        else {}
+    )
+    meta: dict[str, dict[str, Any]] = {}
+    if isinstance(doc.get("remote_metadata"), dict):
+        for k, v in doc["remote_metadata"].items():
+            if isinstance(k, str) and isinstance(v, dict):
+                meta[str(k)] = dict(v)
+    return pushed, meta
 
 
 def _aliased_remotes_from_state(state_dir: Path | None) -> set[str]:
@@ -697,7 +720,7 @@ def sync_github_estate(
 
     eff_clone_root = (clone_root or Path(DEFAULT_CLONE_ROOT)).expanduser().resolve()
     sync_state_path = state_dir / GITHUB_SYNC_FILENAME
-    prior_pushed_cache = _load_prior_remote_cache(sync_state_path)
+    prior_pushed_cache, prior_remote_meta = _load_prior_remote_cache(sync_state_path)
     synced_at = _now_utc()
 
     remote_repos, inventory_source, inventory_error = fetch_github_repo_inventory(
@@ -738,6 +761,7 @@ def sync_github_estate(
     skipped_dirty_or_non_default = 0
     errors: list[dict[str, str]] = []
     next_pushed_cache: dict[str, str] = dict(prior_pushed_cache)
+    next_remote_meta: dict[str, dict[str, Any]] = dict(prior_remote_meta)
 
     remote_active_count = 0
     remote_archived_count = 0
@@ -748,6 +772,17 @@ def sync_github_estate(
         norm_remote = normalize_remote_identity(f"github.com/{full_name}")
         if not norm_remote:
             continue
+        next_remote_meta[norm_remote] = {
+            "full_name": full_name,
+            "description": repo.get("description"),
+            "language": repo.get("language"),
+            "archived": bool(repo.get("archived")),
+            "fork": bool(repo.get("fork")),
+            "private": bool(repo.get("private")),
+            "default_branch": str(repo.get("default_branch") or "main"),
+            "pushed_at": repo.get("pushed_at"),
+            "topics": list(repo.get("topics") or []),
+        }
         alt_norm_remote = _normalize_sync_remote(
             str(repo.get("ssh_url") or ""),
             allow_file_remotes=allow_file_remotes,
@@ -1067,6 +1102,7 @@ def sync_github_estate(
         "local_without_remote": local_without_remote,
         "errors": errors,
         "remote_pushed_at": dict(sorted(next_pushed_cache.items())),
+        "remote_metadata": dict(sorted(next_remote_meta.items())),
     }
 
     if persist_state and do_mutate:
