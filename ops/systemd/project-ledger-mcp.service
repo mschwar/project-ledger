@@ -1,0 +1,17 @@
+[Unit]
+Description=Project Ledger Read-Only Tailnet Streamable HTTP MCP Server (Wave 8)
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/central/repos/active/project-ledger
+Environment="PATH=/home/prime/.bun/bin:/home/prime/.local/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PROJECT_LEDGER_HOME=/central/repos/active/project-ledger"
+Environment="PROJECT_LEDGER_MCP_PORT=3132"
+ExecStart=/home/prime/.local/bin/project-ledger-mcp-tailnet.sh
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

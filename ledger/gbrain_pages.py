@@ -26,7 +26,8 @@ from pathlib import Path
 from typing import Any
 
 from .capsules import load_project_capsule
-from .identity import load_canonical_projects, resolve_payload
+from .identity import load_canonical_projects, normalize_remote_identity, resolve_payload
+from .sources.git import list_git_remotes
 
 REALITY_BEGIN_MARKER = "<!-- BEGIN PROJECT-LEDGER REALITY -->"
 REALITY_END_MARKER = "<!-- END PROJECT-LEDGER REALITY -->"
@@ -52,7 +53,63 @@ def _yaml_quote(value: str) -> str:
     return "'" + cleaned.replace("'", "''") + "'"
 
 
-def render_reality_block(project: dict[str, Any], capsule: dict[str, Any]) -> str:
+def _detect_brain_repo_remotes(brain_dir: Path) -> set[str]:
+    """Return normalized git remote identities configured on ``brain_dir`` when it is a git repo."""
+    if not (brain_dir / ".git").exists():
+        return set()
+    norms: set[str] = set()
+    for raw_url in list_git_remotes(brain_dir).values():
+        norm = normalize_remote_identity(raw_url)
+        if norm:
+            norms.add(norm)
+    return norms
+
+
+def _is_self_referential_brain_project(
+    project: dict[str, Any],
+    capsule: dict[str, Any],
+    *,
+    brain_dir: Path,
+    brain_remotes: set[str],
+) -> bool:
+    """Return True when ``project`` represents the target ``brain_dir`` repository itself."""
+    proj_remotes: set[str] = set()
+    for source in (project.get("normalized_remotes"), capsule.get("normalized_remotes")):
+        if isinstance(source, list):
+            for val in source:
+                norm = normalize_remote_identity(str(val or ""))
+                if norm:
+                    proj_remotes.add(norm)
+    for ref in project.get("referents") or []:
+        if isinstance(ref, dict) and ref.get("kind") == "normalized_remote":
+            norm = normalize_remote_identity(str(ref.get("value") or ""))
+            if norm:
+                proj_remotes.add(norm)
+    canon_norm = normalize_remote_identity(str(capsule.get("canonical_url") or ""))
+    if canon_norm:
+        proj_remotes.add(canon_norm)
+    if brain_remotes and (proj_remotes & brain_remotes):
+        return True
+
+    for obs in capsule.get("observations") or []:
+        if not isinstance(obs, dict):
+            continue
+        loc = str(obs.get("location") or "").strip()
+        if loc.startswith("/"):
+            try:
+                if Path(loc).resolve() == brain_dir:
+                    return True
+            except OSError:
+                continue
+    return False
+
+
+def render_reality_block(
+    project: dict[str, Any],
+    capsule: dict[str, Any],
+    *,
+    omit_volatile_git_commit: bool = False,
+) -> str:
     """Render the deterministic, timestamp-free Reality Provider fenced block."""
     canonical_id = str(project.get("canonical_project_id") or capsule.get("canonical_project_id") or "")
     project_key = str(project.get("project_key") or capsule.get("project_key") or canonical_id)
@@ -111,21 +168,22 @@ def render_reality_block(project: dict[str, Any], capsule: dict[str, Any]) -> st
         commit = str(git_state.get("head_commit") or "")[:12]
         drift_block = git_state.get("drift") if isinstance(git_state.get("drift"), dict) else {}
         drift = str(git_state.get("drift_state") or drift_block.get("state") or "unknown")
-        commit_part = f" @ `{commit}`" if commit else ""
+        commit_part = "" if omit_volatile_git_commit else (f" @ `{commit}`" if commit else "")
         lines.append(f"- **Git State:** `{branch}`{commit_part} (`{drift}`)")
-        last_commit_blk = capsule.get("last_commit") if isinstance(capsule.get("last_commit"), dict) else {}
-        lc_at = _sanitize_text(last_commit_blk.get("committed_at") or git_state.get("head_commit_at") or "").strip()
-        lc_subj = _sanitize_text(last_commit_blk.get("subject") or git_state.get("head_commit_subject") or "").replace("\r", " ").replace("\n", " ").strip()
-        lc_author = _sanitize_text(last_commit_blk.get("author") or git_state.get("head_commit_author") or "").replace("\r", " ").replace("\n", " ").strip()
-        if lc_at or lc_subj:
-            lc_parts: list[str] = []
-            if lc_at:
-                lc_parts.append(f"`{lc_at}`")
-            if lc_subj:
-                lc_parts.append(f"— {lc_subj}")
-            if lc_author:
-                lc_parts.append(f"(`{lc_author}`)")
-            lines.append("- **Last Commit:** " + " ".join(lc_parts))
+        if not omit_volatile_git_commit:
+            last_commit_blk = capsule.get("last_commit") if isinstance(capsule.get("last_commit"), dict) else {}
+            lc_at = _sanitize_text(last_commit_blk.get("committed_at") or git_state.get("head_commit_at") or "").strip()
+            lc_subj = _sanitize_text(last_commit_blk.get("subject") or git_state.get("head_commit_subject") or "").replace("\r", " ").replace("\n", " ").strip()
+            lc_author = _sanitize_text(last_commit_blk.get("author") or git_state.get("head_commit_author") or "").replace("\r", " ").replace("\n", " ").strip()
+            if lc_at or lc_subj:
+                lc_parts: list[str] = []
+                if lc_at:
+                    lc_parts.append(f"`{lc_at}`")
+                if lc_subj:
+                    lc_parts.append(f"— {lc_subj}")
+                if lc_author:
+                    lc_parts.append(f"(`{lc_author}`)")
+                lines.append("- **Last Commit:** " + " ".join(lc_parts))
 
     warning_codes: list[str] = []
     for raw_code in list(pref.get("warning_codes") or []) + list(git_state.get("warning_codes") or []):
@@ -708,6 +766,7 @@ def sync_gbrain_pages(
     projects_dir = brain_dir / "projects"
     if not dry_run:
         projects_dir.mkdir(parents=True, exist_ok=True)
+    brain_remotes = _detect_brain_repo_remotes(brain_dir)
 
     created_pages: list[str] = []
     updated_pages: list[str] = []
@@ -730,7 +789,17 @@ def sync_gbrain_pages(
 
         rel_md = f"{page_key}.md"
         page_path = brain_dir / rel_md
-        reality_block = render_reality_block(project, capsule)
+        is_self_brain = _is_self_referential_brain_project(
+            project,
+            capsule,
+            brain_dir=brain_dir,
+            brain_remotes=brain_remotes,
+        )
+        reality_block = render_reality_block(
+            project,
+            capsule,
+            omit_volatile_git_commit=is_self_brain,
+        )
 
         if page_path.is_file():
             existing = page_path.read_text(encoding="utf-8")

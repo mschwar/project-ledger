@@ -46,11 +46,23 @@ from .sources.git import is_autosnapshot_git_repo, list_git_remotes
 GITHUB_SYNC_FILENAME = "github-sync.json"
 DEFAULT_CLONE_ROOT = "/central/repos/active"
 DEFAULT_TOKEN_CACHE_TTL_SECONDS = 21600
+DEFAULT_UNMATCHED_FETCH_INTERVAL_SECONDS = 86400
 DEFAULT_FLEET_PULSE_PATH = Path("/run/user/1000/homelab/fleet-pulse.json")
 
 
 def _now_utc() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+
+
+def _parse_iso_epoch(raw: str | None) -> float | None:
+    text = str(raw or "").strip()
+    if not text:
+        return None
+    try:
+        normalized = text[:-1] + "+00:00" if text.endswith("Z") else text
+        return datetime.fromisoformat(normalized).timestamp()
+    except ValueError:
+        return None
 
 
 def _default_token_cache_path() -> Path:
@@ -184,13 +196,34 @@ def _fetch_via_github_api(
     return repos
 
 
+def _extract_remote_host(raw_url: str) -> str | None:
+    text = str(raw_url or "").strip()
+    if not text or text.startswith("/"):
+        return None
+    lower = text.lower()
+    if lower.startswith(("https://", "http://", "ssh://", "git://")):
+        parsed = urllib.parse.urlsplit(text)
+        return (parsed.hostname or "").strip().lower() or None
+    if lower.startswith("file://"):
+        return None
+    if ":" in text:
+        colon_idx = text.find(":")
+        slash_idx = text.find("/")
+        if slash_idx == -1 or colon_idx < slash_idx:
+            host_part = text[:colon_idx].split("@", 1)[-1].strip().lower()
+            return host_part or None
+    return None
+
+
 def _check_fleet_pulse_allows_ssh(
     target: str,
     *,
     pulse_path: Path = DEFAULT_FLEET_PULSE_PATH,
 ) -> tuple[bool, str | None]:
-    """Enforce INV-FLEET-GAME-01 before dispatching any SSH fallback command."""
+    """Enforce INV-FLEET-GAME-01 before dispatching any SSH or peer-network command."""
     host_part = target.split("@", 1)[-1].strip().lower()
+    if ":" in host_part and not host_part.startswith("["):
+        host_part = host_part.split(":", 1)[0].strip()
     if not host_part:
         return False, "empty_ssh_fallback_target"
     if not safe_path_is_file(pulse_path):
@@ -203,13 +236,25 @@ def _check_fleet_pulse_allows_ssh(
     if not isinstance(nodes, dict):
         return True, None
 
+    base_host = host_part.split(".", 1)[0] if ".tail" in host_part or host_part.endswith(".ts.net") else host_part
+    base_host = base_host.removesuffix("-lan")
     host_aliases = {
         "100.82.59.43": "mac",
+        "matthews-macbook-air-2": "mac",
+        "mattymac": "mac",
+        "mac": "mac",
         "100.81.51.72": "iz",
+        "192.168.1.115": "iz",
+        "iz": "iz",
         "100.116.7.73": "thing1",
+        "192.168.1.70": "thing1",
+        "thing1": "thing1",
         "100.99.233.15": "matty-pc",
+        "192.168.1.36": "matty-pc",
+        "mattypc": "matty-pc",
+        "matty-pc": "matty-pc",
     }
-    node_key = host_aliases.get(host_part, host_part.removesuffix("-lan"))
+    node_key = host_aliases.get(host_part, host_aliases.get(base_host, base_host))
     node_info = nodes.get(node_key)
     if not isinstance(node_info, dict):
         return True, None
@@ -239,9 +284,15 @@ def _fetch_via_ssh_gh_fallback(
         "-o",
         "ConnectTimeout=6",
     ]
-    default_key = Path.home() / ".ssh" / "id_ed25519_github_ai_server"
-    if safe_path_is_file(default_key):
-        ssh_cmd.extend(["-i", str(default_key), "-o", "IdentitiesOnly=yes"])
+    candidate_keys = [
+        Path.home() / ".ssh" / "id_ed25519",
+        Path.home() / ".ssh" / "id_ed25519_github_ai_server",
+    ]
+    present_keys = [k for k in candidate_keys if safe_path_is_file(k)]
+    if present_keys:
+        for key_path in present_keys:
+            ssh_cmd.extend(["-i", str(key_path)])
+        ssh_cmd.extend(["-o", "IdentitiesOnly=yes"])
     remote_script = (
         'export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.local/bin:$PATH"; '
         f'gh api "user/repos?per_page=100&affiliation={affiliation}" --paginate '
@@ -378,11 +429,34 @@ def _git_ssh_env(timeout_sec: int = 10) -> dict[str, str]:
     env = dict(os.environ)
     env["GIT_TERMINAL_PROMPT"] = "0"
     env["GCM_INTERACTIVE"] = "never"
+    env["GIT_ASKPASS"] = "/bin/false"
+    env["SSH_ASKPASS"] = "/bin/false"
     env.setdefault(
         "GIT_SSH_COMMAND",
         f"ssh -o BatchMode=yes -o ConnectTimeout={max(2, int(timeout_sec))}",
     )
     return env
+
+
+def _credential_clear_args(raw_url: str | None = None) -> list[str]:
+    """Build git `-c` flags that clear generic and URL-scoped credential helpers."""
+    flags = [
+        "-c",
+        "credential.helper=",
+        "-c",
+        "credential.https://github.com.helper=",
+        "-c",
+        "credential.https://gist.github.com.helper=",
+    ]
+    text = str(raw_url or "").strip()
+    if text.lower().startswith(("https://", "http://")):
+        parsed = urllib.parse.urlsplit(text)
+        if parsed.scheme and parsed.netloc:
+            origin_key = f"{parsed.scheme.lower()}://{parsed.netloc}"
+            candidate = f"credential.{origin_key}.helper="
+            if candidate not in flags:
+                flags.extend(["-c", candidate])
+    return flags
 
 
 def _run_git(
@@ -391,10 +465,14 @@ def _run_git(
     cwd: Path | None = None,
     timeout: float = 60.0,
     use_ssh_insteadof: bool = False,
+    disable_credential_helper: bool = False,
+    credential_url: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     cmd = ["git", "--no-optional-locks"]
     if use_ssh_insteadof:
         cmd.extend(["-c", "url.git@github.com:.insteadOf=https://github.com/"])
+    if disable_credential_helper:
+        cmd.extend(_credential_clear_args(credential_url))
     if cwd is not None:
         cmd.extend(["-C", str(cwd)])
     cmd.extend(args)
@@ -406,6 +484,59 @@ def _run_git(
         timeout=timeout,
         env=_git_ssh_env(),
     )
+
+
+def _fetch_remote_with_fallback(
+    repo_dir: Path,
+    remote_name: str,
+    raw_url: str,
+    *,
+    timeout: float,
+) -> subprocess.CompletedProcess[str]:
+    """Fetch ``remote_name`` over SSH first for GitHub URLs, with anonymous HTTP(S) and zero credential helpers."""
+    use_ssh = _is_github_remote_url(raw_url)
+    is_http = raw_url.strip().lower().startswith(("https://", "http://"))
+    proc = _run_git(
+        ["fetch", "--prune", "--quiet", remote_name],
+        cwd=repo_dir,
+        timeout=timeout,
+        use_ssh_insteadof=use_ssh,
+        disable_credential_helper=(is_http and not use_ssh),
+        credential_url=raw_url if is_http else None,
+    )
+    if (
+        proc.returncode != 0
+        and use_ssh
+        and raw_url.strip().lower().startswith("https://github.com/")
+    ):
+        fallback_proc = _run_git(
+            ["fetch", "--prune", "--quiet", remote_name],
+            cwd=repo_dir,
+            timeout=timeout,
+            use_ssh_insteadof=False,
+            disable_credential_helper=True,
+            credential_url=raw_url,
+        )
+        if fallback_proc.returncode == 0:
+            return fallback_proc
+    return proc
+
+
+def _is_network_remote_url(raw_url: str, *, allow_file_remotes: bool = False) -> bool:
+    text = str(raw_url or "").strip()
+    if not text:
+        return False
+    lower = text.lower()
+    if lower.startswith(("https://", "http://", "ssh://", "git://")):
+        return True
+    if allow_file_remotes and lower.startswith("file://"):
+        return True
+    if not text.startswith("/") and ":" in text:
+        colon_idx = text.find(":")
+        slash_idx = text.find("/")
+        if slash_idx == -1 or colon_idx < slash_idx:
+            return True
+    return False
 
 
 def _normalize_sync_remote(raw: str, *, allow_file_remotes: bool = False) -> str | None:
@@ -525,15 +656,17 @@ def _has_active_git_operation(repo_dir: Path) -> bool:
     return False
 
 
-def _load_prior_remote_cache(sync_state_path: Path | None) -> tuple[dict[str, str], dict[str, dict[str, Any]]]:
+def _load_prior_remote_cache(
+    sync_state_path: Path | None,
+) -> tuple[dict[str, str], dict[str, str], dict[str, dict[str, Any]]]:
     if sync_state_path is None or not safe_path_is_file(sync_state_path):
-        return {}, {}
+        return {}, {}, {}
     try:
         doc = json.loads(sync_state_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return {}, {}
+        return {}, {}, {}
     if not isinstance(doc, dict):
-        return {}, {}
+        return {}, {}, {}
     pushed = (
         {
             str(k): str(v)
@@ -543,12 +676,21 @@ def _load_prior_remote_cache(sync_state_path: Path | None) -> tuple[dict[str, st
         if isinstance(doc.get("remote_pushed_at"), dict)
         else {}
     )
+    fetched = (
+        {
+            str(k): str(v)
+            for k, v in doc["remote_fetched_at"].items()
+            if isinstance(k, str) and isinstance(v, str) and v
+        }
+        if isinstance(doc.get("remote_fetched_at"), dict)
+        else {}
+    )
     meta: dict[str, dict[str, Any]] = {}
     if isinstance(doc.get("remote_metadata"), dict):
         for k, v in doc["remote_metadata"].items():
             if isinstance(k, str) and isinstance(v, dict):
                 meta[str(k)] = dict(v)
-    return pushed, meta
+    return pushed, fetched, meta
 
 
 def _aliased_remotes_from_state(state_dir: Path | None) -> set[str]:
@@ -600,6 +742,45 @@ def _git_stdout(repo_dir: Path, *args: str) -> str:
     return (proc.stdout or "").strip()
 
 
+def _configured_upstream_ref(repo_dir: Path, branch: str | None) -> str | None:
+    if not branch or branch == "HEAD":
+        return None
+    up = _git_stdout(
+        repo_dir,
+        "rev-parse",
+        "--abbrev-ref",
+        "--symbolic-full-name",
+        f"{branch}@{{u}}",
+    )
+    return up or None
+
+
+def _detect_origin_default_branch(repo_dir: Path) -> str:
+    sym = _git_stdout(repo_dir, "symbolic-ref", "-q", "--short", "refs/remotes/origin/HEAD")
+    if sym.startswith("origin/"):
+        branch = sym.split("/", 1)[1].strip()
+        if branch:
+            return branch
+    for cand in ("main", "master"):
+        if _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", f"refs/remotes/origin/{cand}"):
+            return cand
+    hb = _git_stdout(repo_dir, "rev-parse", "--abbrev-ref", "HEAD") or _git_stdout(
+        repo_dir, "symbolic-ref", "--short", "-q", "HEAD"
+    )
+    if hb and hb != "HEAD":
+        if _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", f"refs/remotes/origin/{hb}"):
+            return hb
+    refs_out = _git_stdout(repo_dir, "for-each-ref", "--format=%(refname:short)", "refs/remotes/origin")
+    remote_branches = [
+        line.split("/", 1)[1].strip()
+        for line in refs_out.splitlines()
+        if line.startswith("origin/") and line.strip() != "origin/HEAD"
+    ]
+    if len(remote_branches) == 1 and remote_branches[0]:
+        return remote_branches[0]
+    return hb if (hb and hb != "HEAD") else "main"
+
+
 def _needs_fetch_or_ff(
     checkouts: list[tuple[Path, str]],
     *,
@@ -611,14 +792,21 @@ def _needs_fetch_or_ff(
     if force_fetch or not remote_pushed_at or remote_pushed_at != cached_pushed_at:
         return True
     for repo_dir, rname in checkouts:
-        remote_ref = f"refs/remotes/{rname}/{default_branch}"
-        remote_sha = _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", remote_ref)
-        if not remote_sha:
-            return True
         if rname == "origin":
+            remote_ref = f"refs/remotes/origin/{default_branch}"
+            remote_sha = _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", remote_ref)
+            if not remote_sha:
+                return True
+            head_sha = _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", "HEAD")
+            if not head_sha:
+                has_local_branches = bool(
+                    _git_stdout(repo_dir, "for-each-ref", "--count=1", "--format=%(refname)", "refs/heads")
+                )
+                if not has_local_branches and not _git_stdout(repo_dir, "status", "--porcelain"):
+                    return True
+                continue
             head_branch = _git_stdout(repo_dir, "rev-parse", "--abbrev-ref", "HEAD")
-            head_sha = _git_stdout(repo_dir, "rev-parse", "HEAD")
-            if head_branch == default_branch and head_sha and head_sha != remote_sha:
+            if head_branch == default_branch and head_sha != remote_sha:
                 is_anc = _run_git(
                     ["merge-base", "--is-ancestor", head_sha, remote_ref],
                     cwd=repo_dir,
@@ -626,6 +814,25 @@ def _needs_fetch_or_ff(
                 )
                 if is_anc.returncode == 0 and not _git_stdout(repo_dir, "status", "--porcelain"):
                     return True
+        else:
+            head_sha = _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", "HEAD")
+            head_branch = _git_stdout(repo_dir, "rev-parse", "--abbrev-ref", "HEAD") if head_sha else ""
+
+        if head_sha and head_branch and head_branch != "HEAD":
+            up_ref = _configured_upstream_ref(repo_dir, head_branch)
+            if up_ref == f"{rname}/{head_branch}":
+                tracked_ref = f"refs/remotes/{rname}/{head_branch}"
+                tracked_sha = _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", tracked_ref)
+                if not tracked_sha:
+                    return True
+                if head_sha != tracked_sha:
+                    is_anc = _run_git(
+                        ["merge-base", "--is-ancestor", head_sha, tracked_ref],
+                        cwd=repo_dir,
+                        timeout=5.0,
+                    )
+                    if is_anc.returncode == 0 and not _git_stdout(repo_dir, "status", "--porcelain"):
+                        return True
     return False
 
 
@@ -638,23 +845,136 @@ def _inspect_and_maybe_ff(
     do_mutate: bool,
 ) -> tuple[str, str | None, str | None, str | None]:
     """Return `(outcome, head_branch, old_commit, new_or_remote_commit)`."""
-    head_branch = _git_stdout(repo_dir, "rev-parse", "--abbrev-ref", "HEAD") or None
-    old_sha = _git_stdout(repo_dir, "rev-parse", "HEAD") or None
+    old_sha = _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", "HEAD") or None
+    if old_sha:
+        head_branch = _git_stdout(repo_dir, "rev-parse", "--abbrev-ref", "HEAD") or None
+    else:
+        head_branch = _git_stdout(repo_dir, "symbolic-ref", "--short", "-q", "HEAD") or None
+
     if remote_name != "origin":
+        up_ref = _configured_upstream_ref(repo_dir, head_branch)
+        if old_sha and head_branch and up_ref == f"{remote_name}/{head_branch}":
+            tracked_ref = f"refs/remotes/{remote_name}/{head_branch}"
+            tracked_sha = _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", tracked_ref) or None
+            if tracked_sha and old_sha != tracked_sha:
+                if _has_active_git_operation(repo_dir):
+                    return "active_git_operation", head_branch, old_sha, tracked_sha
+                if _git_stdout(repo_dir, "status", "--porcelain"):
+                    return "dirty_worktree", head_branch, old_sha, tracked_sha
+                anc = _run_git(
+                    ["merge-base", "--is-ancestor", old_sha, tracked_ref],
+                    cwd=repo_dir,
+                    timeout=5.0,
+                )
+                if anc.returncode == 0:
+                    if not allow_ff:
+                        return "ff_disabled", head_branch, old_sha, tracked_sha
+                    if not do_mutate:
+                        return "would_fast_forward", head_branch, old_sha, tracked_sha
+                    ff_proc = _run_git(
+                        ["merge", "--ff-only", "--quiet", tracked_ref],
+                        cwd=repo_dir,
+                        timeout=30.0,
+                    )
+                    if ff_proc.returncode != 0:
+                        return "ff_merge_failed", head_branch, old_sha, tracked_sha
+                    new_sha = _git_stdout(repo_dir, "rev-parse", "HEAD") or tracked_sha
+                    return "fast_forwarded", head_branch, old_sha, new_sha
         return "secondary_remote_only", head_branch, old_sha, None
 
     remote_ref = f"refs/remotes/origin/{default_branch}"
     remote_sha = _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", remote_ref) or None
-    if not remote_sha:
-        return "missing_remote_tracking_ref", head_branch, old_sha, None
+
+    if not old_sha:
+        if not remote_sha:
+            return "missing_remote_tracking_ref", head_branch, None, None
+        has_local_branches = bool(
+            _git_stdout(repo_dir, "for-each-ref", "--count=1", "--format=%(refname)", "refs/heads")
+        )
+        if has_local_branches:
+            return "non_default_branch", head_branch, None, remote_sha
+        if _has_active_git_operation(repo_dir):
+            return "active_git_operation", head_branch, None, remote_sha
+        if _git_stdout(repo_dir, "status", "--porcelain"):
+            return "dirty_worktree", head_branch, None, remote_sha
+        if not allow_ff:
+            return "ff_disabled", head_branch or default_branch, None, remote_sha
+        if not do_mutate:
+            return "would_fast_forward", head_branch or default_branch, None, remote_sha
+        co_proc = _run_git(
+            ["checkout", "-q", "-b", default_branch, "--track", f"origin/{default_branch}"],
+            cwd=repo_dir,
+            timeout=30.0,
+        )
+        if co_proc.returncode != 0:
+            return "ff_merge_failed", head_branch, None, remote_sha
+        new_sha = _git_stdout(repo_dir, "rev-parse", "HEAD") or remote_sha
+        return "fast_forwarded", default_branch, "", new_sha
 
     if head_branch != default_branch:
         local_def_sha = _git_stdout(
             repo_dir, "rev-parse", "--verify", "--quiet", f"refs/heads/{default_branch}"
         )
-        if local_def_sha and local_def_sha == remote_sha:
+        was_def_up_to_date = bool(local_def_sha and remote_sha and local_def_sha == remote_sha)
+        if (
+            local_def_sha
+            and remote_sha
+            and local_def_sha != remote_sha
+            and allow_ff
+            and do_mutate
+            and not _has_active_git_operation(repo_dir)
+        ):
+            def_anc = _run_git(
+                ["merge-base", "--is-ancestor", local_def_sha, remote_ref],
+                cwd=repo_dir,
+                timeout=5.0,
+            )
+            if def_anc.returncode == 0:
+                _run_git(
+                    ["fetch", "--quiet", ".", f"{remote_ref}:refs/heads/{default_branch}"],
+                    cwd=repo_dir,
+                    timeout=15.0,
+                )
+
+        up_ref = _configured_upstream_ref(repo_dir, head_branch)
+        if head_branch and up_ref == f"origin/{head_branch}":
+            branch_remote_ref = f"refs/remotes/origin/{head_branch}"
+            branch_remote_sha = (
+                _git_stdout(repo_dir, "rev-parse", "--verify", "--quiet", branch_remote_ref) or None
+            )
+            if branch_remote_sha and old_sha != branch_remote_sha:
+                if _has_active_git_operation(repo_dir):
+                    return "active_git_operation", head_branch, old_sha, branch_remote_sha
+                if _git_stdout(repo_dir, "status", "--porcelain"):
+                    return "dirty_worktree", head_branch, old_sha, branch_remote_sha
+                b_anc = _run_git(
+                    ["merge-base", "--is-ancestor", old_sha, branch_remote_ref],
+                    cwd=repo_dir,
+                    timeout=5.0,
+                )
+                if b_anc.returncode == 0:
+                    if not allow_ff:
+                        return "ff_disabled", head_branch, old_sha, branch_remote_sha
+                    if not do_mutate:
+                        return "would_fast_forward", head_branch, old_sha, branch_remote_sha
+                    ff_proc = _run_git(
+                        ["merge", "--ff-only", "--quiet", branch_remote_ref],
+                        cwd=repo_dir,
+                        timeout=30.0,
+                    )
+                    if ff_proc.returncode != 0:
+                        return "ff_merge_failed", head_branch, old_sha, branch_remote_sha
+                    new_sha = _git_stdout(repo_dir, "rev-parse", "HEAD") or branch_remote_sha
+                    return "fast_forwarded", head_branch, old_sha, new_sha
+
+        if not remote_sha:
+            return "missing_remote_tracking_ref", head_branch, old_sha, None
+        if was_def_up_to_date:
             return "up_to_date_non_default_branch", head_branch, old_sha, remote_sha
         return "non_default_branch", head_branch, old_sha, remote_sha
+
+    if not remote_sha:
+        return "missing_remote_tracking_ref", head_branch, old_sha, None
 
     if old_sha == remote_sha:
         return "up_to_date", head_branch, old_sha, remote_sha
@@ -664,9 +984,6 @@ def _inspect_and_maybe_ff(
 
     if _git_stdout(repo_dir, "status", "--porcelain"):
         return "dirty_worktree", head_branch, old_sha, remote_sha
-
-    if not old_sha:
-        return "unborn_head", head_branch, old_sha, remote_sha
 
     anc = _run_git(["merge-base", "--is-ancestor", old_sha, remote_ref], cwd=repo_dir, timeout=5.0)
     if anc.returncode != 0:
@@ -700,6 +1017,8 @@ def sync_github_estate(
     ff_clean: bool = True,
     normalize_ssh_remotes: bool = True,
     force_fetch: bool = False,
+    sync_all_local_remotes: bool = True,
+    unmatched_fetch_interval_seconds: int = DEFAULT_UNMATCHED_FETCH_INTERVAL_SECONDS,
     inventory_file: Path | None = None,
     ssh_fallback_host: str | None = None,
     token_cache_path: Path | None = None,
@@ -720,8 +1039,9 @@ def sync_github_estate(
 
     eff_clone_root = (clone_root or Path(DEFAULT_CLONE_ROOT)).expanduser().resolve()
     sync_state_path = state_dir / GITHUB_SYNC_FILENAME
-    prior_pushed_cache, prior_remote_meta = _load_prior_remote_cache(sync_state_path)
+    prior_pushed_cache, prior_fetched_cache, prior_remote_meta = _load_prior_remote_cache(sync_state_path)
     synced_at = _now_utc()
+    now_epoch = _parse_iso_epoch(synced_at) or time.time()
 
     remote_repos, inventory_source, inventory_error = fetch_github_repo_inventory(
         inventory_file=inventory_file,
@@ -761,7 +1081,9 @@ def sync_github_estate(
     skipped_dirty_or_non_default = 0
     errors: list[dict[str, str]] = []
     next_pushed_cache: dict[str, str] = dict(prior_pushed_cache)
+    next_fetched_cache: dict[str, str] = dict(prior_fetched_cache)
     next_remote_meta: dict[str, dict[str, Any]] = dict(prior_remote_meta)
+    handled_checkout_remotes: set[tuple[Path, str]] = set()
 
     remote_active_count = 0
     remote_archived_count = 0
@@ -870,7 +1192,7 @@ def sync_github_estate(
                 )
                 continue
 
-            head_sha = _git_stdout(target_dir, "rev-parse", "HEAD") or None
+            head_sha = _git_stdout(target_dir, "rev-parse", "--verify", "--quiet", "HEAD") or None
             cloned.append(
                 {
                     "full_name": full_name,
@@ -881,7 +1203,9 @@ def sync_github_estate(
                 }
             )
             matched_local_count += 1
-            if isinstance(pushed_at, str) and pushed_at:
+            handled_checkout_remotes.add((target_dir, "origin"))
+            next_fetched_cache[norm_remote] = synced_at
+            if head_sha and isinstance(pushed_at, str) and pushed_at:
                 next_pushed_cache[norm_remote] = pushed_at
             local_checkouts.append(
                 {
@@ -897,6 +1221,7 @@ def sync_github_estate(
         checkout_pairs: list[tuple[Path, str]] = []
         for chk_path, rname, raw_url in live_matches:
             checkout_pairs.append((chk_path, rname))
+            handled_checkout_remotes.add((chk_path, rname))
             if (
                 normalize_ssh_remotes
                 and do_mutate
@@ -927,16 +1252,16 @@ def sync_github_estate(
             continue
 
         repo_fetch_failed = False
+        unborn_origin_remaining = False
         for chk_path, rname in checkout_pairs:
             if do_mutate:
                 raw_u = list_git_remotes(chk_path).get(rname, "")
-                use_ssh = _is_github_remote_url(raw_u)
                 try:
-                    f_proc = _run_git(
-                        ["fetch", "--prune", "--quiet", rname],
-                        cwd=chk_path,
+                    f_proc = _fetch_remote_with_fallback(
+                        chk_path,
+                        rname,
+                        raw_u,
                         timeout=remote_timeout,
-                        use_ssh_insteadof=use_ssh,
                     )
                 except subprocess.TimeoutExpired:
                     repo_fetch_failed = True
@@ -960,6 +1285,7 @@ def sync_github_estate(
                     )
                     continue
                 fetched_count += 1
+                next_fetched_cache[norm_remote] = synced_at
 
             outcome, head_branch, old_sha, target_sha = _inspect_and_maybe_ff(
                 chk_path,
@@ -968,6 +1294,8 @@ def sync_github_estate(
                 allow_ff=ff_clean,
                 do_mutate=do_mutate,
             )
+            if rname == "origin" and outcome == "missing_remote_tracking_ref" and old_sha is None:
+                unborn_origin_remaining = True
             if outcome == "fast_forwarded":
                 fast_forwarded.append(
                     {
@@ -1008,8 +1336,166 @@ def sync_github_estate(
                     }
                 )
 
-        if not repo_fetch_failed and isinstance(pushed_at, str) and pushed_at and do_mutate:
+        if (
+            not repo_fetch_failed
+            and not unborn_origin_remaining
+            and isinstance(pushed_at, str)
+            and pushed_at
+            and do_mutate
+        ):
             next_pushed_cache[norm_remote] = pushed_at
+
+    # Universal pass: regularly fetch and fast-forward all remaining live local `origin`
+    # checkouts (third-party upstream clones, fork `origin` remotes, archived local
+    # checkouts, and non-GitHub network remotes) on a configurable TTL or `--force-fetch`.
+    # Law 11: when GitHub inventory is unavailable (WAN outage), skip universal network
+    # probing even under `--force-fetch` so full-scan timers never stall across 100+ repos.
+    if sync_all_local_remotes and fetch_existing and inventory_source != "unavailable":
+        for chk in local_checkouts:
+            if chk["source_class"] != "live":
+                continue
+            chk_path = chk["path"]
+            if (chk_path, "origin") in handled_checkout_remotes:
+                continue
+            raw_origin = str(chk["raw_remotes"].get("origin") or "").strip()
+            norm_origin = chk["norm_remotes"].get("origin")
+            if not raw_origin or not norm_origin:
+                continue
+            if not _is_network_remote_url(raw_origin, allow_file_remotes=allow_file_remotes):
+                continue
+            handled_checkout_remotes.add((chk_path, "origin"))
+
+            meta_entry = next_remote_meta.get(norm_origin) or {}
+            full_label = (
+                str(meta_entry.get("full_name") or "").strip()
+                or (
+                    norm_origin.removeprefix("github.com/")
+                    if norm_origin.startswith("github.com/")
+                    else norm_origin
+                )
+            )
+            def_branch = (
+                str(meta_entry.get("default_branch") or "").strip()
+                or _detect_origin_default_branch(chk_path)
+            )
+            remote_host = _extract_remote_host(raw_origin)
+            if remote_host and remote_host != "github.com":
+                peer_allowed, peer_reason = _check_fleet_pulse_allows_ssh(
+                    remote_host,
+                    pulse_path=pulse_path,
+                )
+                if not peer_allowed:
+                    cur_branch = _git_stdout(chk_path, "rev-parse", "--abbrev-ref", "HEAD") or None
+                    fetched_only.append(
+                        {
+                            "full_name": full_label,
+                            "path": str(chk_path),
+                            "reason": peer_reason or "fleet_peer_unavailable",
+                            "head_branch": cur_branch,
+                            "default_branch": def_branch,
+                        }
+                    )
+                    continue
+            last_fetched_epoch = _parse_iso_epoch(prior_fetched_cache.get(norm_origin))
+            ttl_expired = (
+                last_fetched_epoch is None
+                or unmatched_fetch_interval_seconds <= 0
+                or (now_epoch - last_fetched_epoch) >= unmatched_fetch_interval_seconds
+            )
+            needs_local_ff = _needs_fetch_or_ff(
+                [(chk_path, "origin")],
+                default_branch=def_branch,
+                remote_pushed_at="cached",
+                cached_pushed_at="cached",
+                force_fetch=False,
+            )
+            if not force_fetch and not ttl_expired and not needs_local_ff:
+                skipped_unchanged_count += 1
+                continue
+
+            if do_mutate and (
+                force_fetch
+                or ttl_expired
+                or not _git_stdout(
+                    chk_path, "rev-parse", "--verify", "--quiet", f"refs/remotes/origin/{def_branch}"
+                )
+            ):
+                try:
+                    u_proc = _fetch_remote_with_fallback(
+                        chk_path,
+                        "origin",
+                        raw_origin,
+                        timeout=remote_timeout,
+                    )
+                except subprocess.TimeoutExpired:
+                    errors.append(
+                        {
+                            "full_name": full_label,
+                            "stage": "fetch",
+                            "detail": f"git fetch timed out at {chk_path}",
+                        }
+                    )
+                    continue
+                if u_proc.returncode != 0:
+                    err_msg = ((u_proc.stderr or "").strip().splitlines() or ["git fetch failed"])[-1]
+                    errors.append(
+                        {
+                            "full_name": full_label,
+                            "stage": "fetch",
+                            "detail": f"{chk_path}: {err_msg}",
+                        }
+                    )
+                    continue
+                fetched_count += 1
+                next_fetched_cache[norm_origin] = synced_at
+                if not meta_entry.get("default_branch"):
+                    def_branch = _detect_origin_default_branch(chk_path)
+
+            outcome, head_branch, old_sha, target_sha = _inspect_and_maybe_ff(
+                chk_path,
+                remote_name="origin",
+                default_branch=def_branch,
+                allow_ff=ff_clean,
+                do_mutate=do_mutate,
+            )
+            if outcome == "fast_forwarded":
+                fast_forwarded.append(
+                    {
+                        "full_name": full_label,
+                        "path": str(chk_path),
+                        "branch": head_branch or def_branch,
+                        "old_commit": old_sha or "",
+                        "new_commit": target_sha or "",
+                    }
+                )
+            elif outcome in {
+                "dirty_worktree",
+                "non_default_branch",
+                "local_ahead",
+                "diverged",
+                "active_git_operation",
+                "would_fast_forward",
+                "ff_disabled",
+            }:
+                if outcome in {"dirty_worktree", "non_default_branch", "local_ahead", "diverged"}:
+                    skipped_dirty_or_non_default += 1
+                fetched_only.append(
+                    {
+                        "full_name": full_label,
+                        "path": str(chk_path),
+                        "reason": outcome,
+                        "head_branch": head_branch,
+                        "default_branch": def_branch,
+                    }
+                )
+            elif outcome == "ff_merge_failed":
+                errors.append(
+                    {
+                        "full_name": full_label,
+                        "stage": "fast_forward",
+                        "detail": f"git merge --ff-only failed at {chk_path}",
+                    }
+                )
 
     # Reverse 1:1 check: inspect local live git checkouts & compiled canonical projects.
     local_without_remote: list[dict[str, Any]] = []
@@ -1102,6 +1588,7 @@ def sync_github_estate(
         "local_without_remote": local_without_remote,
         "errors": errors,
         "remote_pushed_at": dict(sorted(next_pushed_cache.items())),
+        "remote_fetched_at": dict(sorted(next_fetched_cache.items())),
         "remote_metadata": dict(sorted(next_remote_meta.items())),
     }
 

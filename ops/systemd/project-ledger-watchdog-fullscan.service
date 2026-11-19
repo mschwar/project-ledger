@@ -1,0 +1,16 @@
+[Unit]
+Description=Project Ledger Reality Provider Daily All-Repo Force-Fetch and Uncached Full-Scan
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/central/repos/active/project-ledger
+Environment="PATH=/home/prime/.bun/bin:/home/prime/.local/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PROJECT_LEDGER_REPO=/central/repos/active/project-ledger"
+Environment="PROJECT_LEDGER_WATCHDOG_STATE_DIR=/central/registry/reports/project-ledger/watchdog"
+Environment="PROJECT_LEDGER_SYNC_REPO_STATE=1"
+Environment="PROJECT_LEDGER_GBRAIN_SYNC=auto"
+Environment="PROJECT_LEDGER_GH_SSH_FALLBACK=mschwar@100.82.59.43"
+ExecStart=/home/prime/.local/bin/project-ledger-discovery-watchdog.sh --full-scan
+TimeoutStartSec=600

@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily 03:30 UTC timer for Project Ledger all-repo force-fetch and uncached --full-scan
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 UTC
+Persistent=true
+RandomizedDelaySec=2m
+Unit=project-ledger-watchdog-fullscan.service
+
+[Install]
+WantedBy=timers.target

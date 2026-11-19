@@ -8,7 +8,8 @@ Operate and extend Project Ledger safely while preserving its role as a project-
 
 ```bash
 python -m ledger validate
-python -m ledger sync-github [--check | --dry-run] [--clone-root /central/repos/active] [--force-fetch] [--json]
+python -m ledger sync-github [--check | --dry-run] [--clone-root /central/repos/active] [--force-fetch] [--unmatched-fetch-interval 86400] [--json]
+./ops/install-systemd-units.sh [--check]
 python -m ledger refresh [--full-scan] [--check-remote]
 python -m ledger refresh --no-markdown-mirror [--full-scan] [--check-remote]
 python -m ledger compile [--check-remote]
@@ -215,6 +216,20 @@ On a node with intended source access:
 8. convert nontrivial anomalies into fixtures/backlog items rather than rediscovering them later.
 
 Do not claim the ledger is current because code changed. Data freshness is source/run-specific.
+
+## Autonomous discovery, clone, and pull schedule
+
+Install or verify the autonomous user `systemd` timers and `~/.local/bin` symlinks:
+
+```bash
+./ops/install-systemd-units.sh
+./ops/install-systemd-units.sh --check
+```
+
+Active timers on `ai-server`:
+
+1. `project-ledger-watchdog.timer` (every 15 minutes): discovers new non-archived GitHub repos, clones them over `SSH` into `/central/repos/active`, pulls changed GitHub repos (`pushed_at` cache), pulls unmatched local checkouts once every 24 hours (`remote_fetched_at`), refreshes `state/`, pins canonical IDs, and syncs GBrain Reality blocks.
+2. `project-ledger-watchdog-fullscan.timer` (daily at `03:30 UTC`): runs `--full-scan`, forcing `--force-fetch` across every local live checkout and running an uncached reconciliation pass across all sources.
 
 ---
 

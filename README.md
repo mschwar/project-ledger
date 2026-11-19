@@ -76,7 +76,8 @@ Both `ledger` and `ledger-mcp` resolve Project Ledger's workspace root automatic
 
 ```bash
 ledger validate
-ledger sync-github [--check | --dry-run] [--clone-root /central/repos/active] [--force-fetch] [--json]
+ledger sync-github [--check | --dry-run] [--clone-root /central/repos/active] [--force-fetch] [--unmatched-fetch-interval 86400] [--json]
+./ops/install-systemd-units.sh [--check]
 ledger refresh [--full-scan] [--check-remote] [--remote-timeout 3.0]
 ledger refresh --no-markdown-mirror [--full-scan] [--check-remote]
 ledger compile [--check-remote] [--remote-timeout 3.0]
