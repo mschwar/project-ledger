@@ -1,0 +1,12 @@
+[Unit]
+Description=15-minute timer for Project Ledger autonomous discovery, clone, pull, and incremental refresh
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=15min
+AccuracySec=1min
+Persistent=true
+Unit=project-ledger-watchdog.service
+
+[Install]
+WantedBy=timers.target

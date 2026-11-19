@@ -19,7 +19,11 @@ from .config import (
 )
 from .explain import explain_payload
 from .gbrain_pages import sync_gbrain_pages
-from .github_sync import DEFAULT_CLONE_ROOT, sync_github_estate
+from .github_sync import (
+    DEFAULT_CLONE_ROOT,
+    DEFAULT_UNMATCHED_FETCH_INTERVAL_SECONDS,
+    sync_github_estate,
+)
 from .identity import resolve_payload
 from .lineage import lineage_status_payload
 from .mcp_server import add_mcp_args, run_mcp_from_args
@@ -353,7 +357,21 @@ def _parser() -> argparse.ArgumentParser:
     sync_gh.add_argument(
         "--force-fetch",
         action="store_true",
-        help="Bypass pushed_at cache and fetch all matched live checkouts.",
+        help="Bypass pushed_at and TTL caches and fetch all live checkouts.",
+    )
+    sync_gh.add_argument(
+        "--no-unmatched-remotes",
+        action="store_true",
+        help="Skip fetching local live checkouts whose origin is outside GitHub /user/repos.",
+    )
+    sync_gh.add_argument(
+        "--unmatched-fetch-interval",
+        type=int,
+        default=DEFAULT_UNMATCHED_FETCH_INTERVAL_SECONDS,
+        help=(
+            "Interval in seconds between automatic fetches of unmatched local git checkouts "
+            f"(default: {DEFAULT_UNMATCHED_FETCH_INTERVAL_SECONDS} = 24h; 0 fetches every run)."
+        ),
     )
     sync_gh.add_argument(
         "--inventory-file",
@@ -757,6 +775,8 @@ def main(argv: list[str] | None = None) -> int:
                 ff_clean=not bool(args.no_ff),
                 normalize_ssh_remotes=not bool(args.no_ssh_rewrite),
                 force_fetch=bool(args.force_fetch),
+                sync_all_local_remotes=not bool(args.no_unmatched_remotes),
+                unmatched_fetch_interval_seconds=int(args.unmatched_fetch_interval),
                 inventory_file=Path(args.inventory_file) if args.inventory_file else None,
                 ssh_fallback_host=args.ssh_fallback_host,
                 remote_timeout=float(args.remote_timeout),

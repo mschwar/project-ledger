@@ -858,6 +858,465 @@ class Git1To1AndGitHubSyncTests(unittest.TestCase):
             self.assertTrue((brain_dir / "projects" / "alpha-svc.md").is_file())
             self.assertTrue((brain_dir / "projects" / "beta-cli.md").is_file())
 
+    def test_universal_all_repo_sync_fetches_and_ffs_third_party_unmatched_remotes_on_ttl_and_force_fetch(self) -> None:
+        from tests.test_state_schemas import validate_json_schema
+
+        schema = json.loads(
+            (Path(__file__).resolve().parents[1] / "schemas" / "github-sync.schema.json").read_text(encoding="utf-8")
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            remotes_dir = root / "remotes"
+            staging_dir = root / "staging"
+            active_dir = root / "active"
+            active_dir.mkdir(parents=True)
+
+            # Owned repo in inventory + third-party upstream repo NOT in inventory.
+            _init_bare_with_commit(remotes_dir / "mschwar" / "owned-app.git", staging_dir / "owned")
+            sha_tp_1 = _init_bare_with_commit(remotes_dir / "ultraworkers" / "claw-code.git", staging_dir / "claw")
+
+            subprocess.run(
+                ["git", "clone", "--quiet", f"file://{remotes_dir / 'mschwar' / 'owned-app.git'}", str(active_dir / "owned-app")],
+                check=True,
+            )
+            subprocess.run(
+                ["git", "clone", "--quiet", f"file://{remotes_dir / 'ultraworkers' / 'claw-code.git'}", str(active_dir / "claw-code")],
+                check=True,
+            )
+
+            # Advance third-party upstream remote (absent from /user/repos inventory!).
+            (staging_dir / "claw" / "UPSTREAM.md").write_text("v2\n", encoding="utf-8")
+            _git(staging_dir / "claw", "add", ".")
+            _git(staging_dir / "claw", "commit", "-m", "upstream v2")
+            _git(staging_dir / "claw", "push", "origin", "main")
+            sha_tp_2 = _git(staging_dir / "claw", "rev-parse", "HEAD")
+            self.assertNotEqual(sha_tp_1, sha_tp_2)
+
+            config_path = root / "ledger_config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "defaults": {"require_git": True},
+                        "roots": [{"source_id": "active", "label": "active", "path": str(active_dir), "discovery": "children"}],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inv_path = root / "inventory.json"
+            inv_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "name": "owned-app",
+                            "full_name": "mschwar/owned-app",
+                            "private": True,
+                            "fork": False,
+                            "archived": False,
+                            "default_branch": "main",
+                            "pushed_at": "2026-11-19T00:00:00Z",
+                            "ssh_url": f"file://{remotes_dir / 'mschwar' / 'owned-app.git'}",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            state_dir = root / "state"
+
+            # Run 1: unmatched third-party repo has no prior remote_fetched_at -> fetched & fast-forwarded!
+            res1 = sync_github_estate(
+                config_path=config_path,
+                state_dir=state_dir,
+                clone_root=active_dir,
+                inventory_file=inv_path,
+                unmatched_fetch_interval_seconds=86400,
+            )
+            self.assertEqual(validate_json_schema(res1, schema), [])
+            self.assertEqual(_git(active_dir / "claw-code", "rev-parse", "HEAD"), sha_tp_2)
+            self.assertIn(sha_tp_2, [item["new_commit"] for item in res1["fast_forwarded"]])
+            self.assertTrue(res1["remote_fetched_at"])
+
+            # Advance third-party upstream again; within 24h TTL window, incremental run skips network fetch.
+            (staging_dir / "claw" / "UPSTREAM.md").write_text("v3\n", encoding="utf-8")
+            _git(staging_dir / "claw", "add", ".")
+            _git(staging_dir / "claw", "commit", "-m", "upstream v3")
+            _git(staging_dir / "claw", "push", "origin", "main")
+            sha_tp_3 = _git(staging_dir / "claw", "rev-parse", "HEAD")
+
+            res2 = sync_github_estate(
+                config_path=config_path,
+                state_dir=state_dir,
+                clone_root=active_dir,
+                inventory_file=inv_path,
+                unmatched_fetch_interval_seconds=86400,
+            )
+            self.assertEqual(res2["counts"]["fetched"], 0)
+            self.assertEqual(_git(active_dir / "claw-code", "rev-parse", "HEAD"), sha_tp_2)
+
+            # Daily --force-fetch (or expired TTL) fetches and fast-forwards all unmatched repos!
+            res3 = sync_github_estate(
+                config_path=config_path,
+                state_dir=state_dir,
+                clone_root=active_dir,
+                inventory_file=inv_path,
+                force_fetch=True,
+            )
+            self.assertEqual(_git(active_dir / "claw-code", "rev-parse", "HEAD"), sha_tp_3)
+            self.assertEqual(res3["counts"]["fast_forwarded"], 1)
+
+    def test_unborn_head_materialization_tracked_non_default_branch_ff_and_background_main_ref_update(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            remotes_dir = root / "remotes"
+            staging_dir = root / "staging"
+            active_dir = root / "active"
+            active_dir.mkdir(parents=True)
+
+            # 1. Brand-new EMPTY bare remote (0 commits at creation time).
+            empty_bare = remotes_dir / "mschwar" / "empty-new.git"
+            empty_bare.parent.mkdir(parents=True, exist_ok=True)
+            subprocess.run(["git", "init", "--bare", "-b", "main", str(empty_bare)], check=True, capture_output=True)
+
+            # 2. Tracked WIP branch checkout where BOTH origin/main and origin/wip/feature advance.
+            _init_bare_with_commit(remotes_dir / "mschwar" / "tracked-wip.git", staging_dir / "twip")
+            _git(staging_dir / "twip", "checkout", "-b", "wip/feature")
+            (staging_dir / "twip" / "WIP.md").write_text("wip v1\n", encoding="utf-8")
+            _git(staging_dir / "twip", "add", ".")
+            _git(staging_dir / "twip", "commit", "-m", "wip v1")
+            _git(staging_dir / "twip", "push", "-u", "origin", "wip/feature")
+
+            subprocess.run(
+                ["git", "clone", "--quiet", f"file://{remotes_dir / 'mschwar' / 'tracked-wip.git'}", str(active_dir / "tracked-wip")],
+                check=True,
+            )
+            _git(active_dir / "tracked-wip", "checkout", "--track", "origin/wip/feature")
+
+            # Advance BOTH main and wip/feature on remote!
+            _git(staging_dir / "twip", "checkout", "main")
+            (staging_dir / "twip" / "MAIN_NEW.md").write_text("main v2\n", encoding="utf-8")
+            _git(staging_dir / "twip", "add", ".")
+            _git(staging_dir / "twip", "commit", "-m", "main v2")
+            _git(staging_dir / "twip", "push", "origin", "main")
+            sha_main_v2 = _git(staging_dir / "twip", "rev-parse", "HEAD")
+
+            _git(staging_dir / "twip", "checkout", "wip/feature")
+            (staging_dir / "twip" / "WIP.md").write_text("wip v2\n", encoding="utf-8")
+            _git(staging_dir / "twip", "add", ".")
+            _git(staging_dir / "twip", "commit", "-m", "wip v2")
+            _git(staging_dir / "twip", "push", "origin", "wip/feature")
+            sha_wip_v2 = _git(staging_dir / "twip", "rev-parse", "HEAD")
+
+            config_path = root / "ledger_config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "defaults": {"require_git": True},
+                        "roots": [{"source_id": "active", "label": "active", "path": str(active_dir), "discovery": "children"}],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inv_path = root / "inventory.json"
+            inv_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "name": "empty-new",
+                            "full_name": "mschwar/empty-new",
+                            "private": True,
+                            "fork": False,
+                            "archived": False,
+                            "default_branch": "main",
+                            "pushed_at": "2026-11-19T00:00:00Z",
+                            "ssh_url": f"file://{empty_bare}",
+                        },
+                        {
+                            "name": "tracked-wip",
+                            "full_name": "mschwar/tracked-wip",
+                            "private": True,
+                            "fork": False,
+                            "archived": False,
+                            "default_branch": "main",
+                            "pushed_at": "2026-11-19T00:05:00Z",
+                            "ssh_url": f"file://{remotes_dir / 'mschwar' / 'tracked-wip.git'}",
+                        },
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            state_dir = root / "state"
+
+            # Cycle 1: clones empty-new (unborn HEAD), fast-forwards tracked-wip HEAD + background main ref!
+            res1 = sync_github_estate(
+                config_path=config_path,
+                state_dir=state_dir,
+                clone_root=active_dir,
+                inventory_file=inv_path,
+            )
+            self.assertEqual(res1["counts"]["cloned"], 1)
+            self.assertIsNone(res1["cloned"][0]["head_commit"])
+            self.assertEqual(_git(active_dir / "tracked-wip", "rev-parse", "HEAD"), sha_wip_v2)
+            self.assertEqual(_git(active_dir / "tracked-wip", "rev-parse", "refs/heads/main"), sha_main_v2)
+
+            # Now push the first commit to empty-new and run Cycle 2 -> unborn HEAD materializes cleanly!
+            seed_work = staging_dir / "seed-empty"
+            seed_work.mkdir(parents=True)
+            _git(seed_work, "init", "-b", "main")
+            _git(seed_work, "config", "user.name", "Test")
+            _git(seed_work, "config", "user.email", "test@example.com")
+            (seed_work / "HELLO.md").write_text("# First Push\n", encoding="utf-8")
+            _git(seed_work, "add", ".")
+            _git(seed_work, "commit", "-m", "first push")
+            _git(seed_work, "remote", "add", "origin", f"file://{empty_bare}")
+            _git(seed_work, "push", "-u", "origin", "main")
+            sha_first = _git(seed_work, "rev-parse", "HEAD")
+
+            res2 = sync_github_estate(
+                config_path=config_path,
+                state_dir=state_dir,
+                clone_root=active_dir,
+                inventory_file=inv_path,
+            )
+            self.assertEqual(_git(active_dir / "empty-new", "rev-parse", "HEAD"), sha_first)
+            self.assertTrue((active_dir / "empty-new" / "HELLO.md").is_file())
+            self.assertEqual(res2["counts"]["fast_forwarded"], 1)
+
+    def test_install_systemd_units_script_symlinks_and_verifies_check_mode(self) -> None:
+        repo_root = Path(__file__).resolve().parents[1]
+        installer = repo_root / "ops" / "install-systemd-units.sh"
+        self.assertTrue(installer.is_file())
+        syntax_chk = subprocess.run(["bash", "-n", str(installer)], capture_output=True, text=True, check=False)
+        self.assertEqual(syntax_chk.returncode, 0, syntax_chk.stderr)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bin_dir = root / "bin"
+            systemd_dir = root / "systemd-user"
+
+            inst = subprocess.run(
+                [
+                    "bash",
+                    str(installer),
+                    "--no-systemd-reload",
+                    "--repo-dir",
+                    str(repo_root),
+                    "--bin-dir",
+                    str(bin_dir),
+                    "--systemd-user-dir",
+                    str(systemd_dir),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(inst.returncode, 0, inst.stderr)
+            self.assertTrue((bin_dir / "project-ledger-discovery-watchdog.sh").is_symlink())
+            self.assertTrue((systemd_dir / "project-ledger-watchdog.timer").is_file())
+            self.assertTrue((systemd_dir / "project-ledger-watchdog-fullscan.timer").is_file())
+
+            chk_ok = subprocess.run(
+                [
+                    "bash",
+                    str(installer),
+                    "--check",
+                    "--no-systemd-reload",
+                    "--repo-dir",
+                    str(repo_root),
+                    "--bin-dir",
+                    str(bin_dir),
+                    "--systemd-user-dir",
+                    str(systemd_dir),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(chk_ok.returncode, 0, chk_ok.stderr)
+
+            # Corrupting a unit file causes `--check` to detect drift (exit 1).
+            (systemd_dir / "project-ledger-watchdog.timer").write_text("# drifted\n", encoding="utf-8")
+            chk_drift = subprocess.run(
+                [
+                    "bash",
+                    str(installer),
+                    "--check",
+                    "--no-systemd-reload",
+                    "--repo-dir",
+                    str(repo_root),
+                    "--bin-dir",
+                    str(bin_dir),
+                    "--systemd-user-dir",
+                    str(systemd_dir),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(chk_drift.returncode, 1)
+
+    def test_review_hardening_credential_clear_orphan_guard_peer_pulse_and_worktree_refusal(self) -> None:
+        from ledger.github_sync import _credential_clear_args, _extract_remote_host, _git_ssh_env
+
+        # 1. URL-scoped credential.https://github.com.helper & custom host clearing + GIT_ASKPASS=/bin/false
+        env = _git_ssh_env()
+        self.assertEqual(env.get("GIT_ASKPASS"), "/bin/false")
+        self.assertEqual(env.get("SSH_ASKPASS"), "/bin/false")
+        clear_gh = _credential_clear_args("https://github.com/ultraworkers/claw-code.git")
+        self.assertIn("credential.https://github.com.helper=", clear_gh)
+        clear_gl = _credential_clear_args("https://gitlab.example.org/group/repo.git")
+        self.assertIn("credential.https://gitlab.example.org.helper=", clear_gl)
+
+        # Verify Git itself resolves empty helper even when URL-scoped helper is set.
+        urlmatch = subprocess.run(
+            [
+                "git",
+                "-c",
+                "credential.https://github.com.helper=!gh auth git-credential",
+                *clear_gh,
+                "config",
+                "--get-urlmatch",
+                "credential.helper",
+                "https://github.com/ultraworkers/claw-code.git",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(urlmatch.stdout.strip(), "")
+
+        # 2. Fleet peer host alias & gaming guard coverage for non-GitHub remotes + offline force_fetch containment
+        self.assertEqual(_extract_remote_host("git@matty-pc.tail951b2a.ts.net:matty/tool.git"), "matty-pc.tail951b2a.ts.net")
+        self.assertEqual(_extract_remote_host("ssh://mschwar@192.168.1.36:22/repo.git"), "192.168.1.36")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pulse_path = root / "pulse.json"
+            pulse_path.write_text(
+                json.dumps(
+                    {
+                        "nodes": {
+                            "matty-pc": {"occupancy_state": "GAMING", "gaming_active": True, "dispatchable": False},
+                            "iz": {"occupancy_state": "OFFLINE", "gaming_active": False, "dispatchable": False},
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+            ok_ts, r_ts = _check_fleet_pulse_allows_ssh("matty-pc.tail951b2a.ts.net", pulse_path=pulse_path)
+            self.assertFalse(ok_ts)
+            self.assertIn("blocked_by_gaming_guard:matty-pc", r_ts or "")
+            ok_lan, r_lan = _check_fleet_pulse_allows_ssh("192.168.1.115", pulse_path=pulse_path)
+            self.assertFalse(ok_lan)
+            self.assertIn("node_not_dispatchable:iz", r_lan or "")
+
+            active_dir = root / "active"
+            active_dir.mkdir()
+            peer_repo = active_dir / "peer-tool"
+            peer_repo.mkdir()
+            _git(peer_repo, "init", "-b", "main")
+            _git(peer_repo, "config", "user.name", "Test")
+            _git(peer_repo, "config", "user.email", "test@example.com")
+            _git(peer_repo, "remote", "add", "origin", "git@matty-pc.tail951b2a.ts.net:matty/peer-tool.git")
+            (peer_repo / "README.md").write_text("# Peer\n", encoding="utf-8")
+            _git(peer_repo, "add", ".")
+            _git(peer_repo, "commit", "-m", "init")
+
+            # 3. Orphan branch guard: unpushed commit on main must NEVER be reset when HEAD is on clean `--orphan` branch
+            remotes_dir = root / "remotes"
+            staging_dir = root / "staging"
+            _init_bare_with_commit(remotes_dir / "mschwar" / "orphan-test.git", staging_dir / "orphan")
+            subprocess.run(
+                ["git", "clone", "--quiet", f"file://{remotes_dir / 'mschwar' / 'orphan-test.git'}", str(active_dir / "orphan-test")],
+                check=True,
+            )
+            _git(active_dir / "orphan-test", "config", "user.name", "Test")
+            _git(active_dir / "orphan-test", "config", "user.email", "test@example.com")
+            (active_dir / "orphan-test" / "UNPUSHED.md").write_text("precious local commit\n", encoding="utf-8")
+            _git(active_dir / "orphan-test", "add", ".")
+            _git(active_dir / "orphan-test", "commit", "-m", "unpushed on main")
+            unpushed_main_sha = _git(active_dir / "orphan-test", "rev-parse", "refs/heads/main")
+            _git(active_dir / "orphan-test", "checkout", "--orphan", "gh-pages")
+            _git(active_dir / "orphan-test", "rm", "-rf", "--quiet", ".")
+
+            config_path = root / "ledger_config.json"
+            config_path.write_text(
+                json.dumps(
+                    {
+                        "defaults": {"require_git": True},
+                        "roots": [{"source_id": "active", "label": "active", "path": str(active_dir), "discovery": "children"}],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inv_path = root / "inventory.json"
+            inv_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "name": "orphan-test",
+                            "full_name": "mschwar/orphan-test",
+                            "private": True,
+                            "fork": False,
+                            "archived": False,
+                            "default_branch": "main",
+                            "pushed_at": "2026-11-19T01:00:00Z",
+                            "ssh_url": f"file://{remotes_dir / 'mschwar' / 'orphan-test.git'}",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            state_dir = root / "state"
+
+            # Offline WAN outage + force_fetch=True must skip universal network probing cleanly (0 fetches, 0 errors).
+            with mock.patch(
+                "ledger.github_sync.fetch_github_repo_inventory",
+                return_value=([], "unavailable", "wan_down"),
+            ):
+                offline_res = sync_github_estate(
+                    config_path=config_path,
+                    state_dir=state_dir,
+                    clone_root=active_dir,
+                    force_fetch=True,
+                    pulse_path=pulse_path,
+                )
+                self.assertEqual(offline_res["status"], "degraded")
+                self.assertEqual(offline_res["counts"]["fetched"], 0)
+                self.assertEqual(offline_res["counts"]["errors"], 0)
+
+            # Online sync: gaming peer remote skipped without error; orphan repo preserves unpushed main commit!
+            online_res = sync_github_estate(
+                config_path=config_path,
+                state_dir=state_dir,
+                clone_root=active_dir,
+                inventory_file=inv_path,
+                force_fetch=True,
+                pulse_path=pulse_path,
+            )
+            self.assertEqual(online_res["counts"]["errors"], 0)
+            self.assertEqual(_git(active_dir / "orphan-test", "rev-parse", "refs/heads/main"), unpushed_main_sha)
+            reasons_by_path = {item["path"]: item["reason"] for item in online_res["fetched_only"]}
+            self.assertIn("blocked_by_gaming_guard:matty-pc", reasons_by_path[str(peer_repo)])
+            self.assertEqual(reasons_by_path[str(active_dir / "orphan-test")], "non_default_branch")
+
+            # 4. Linked worktree refusal in install-systemd-units.sh when --repo-dir is omitted
+            fake_wt = root / "fake-worktree"
+            (fake_wt / "ops").mkdir(parents=True)
+            (fake_wt / ".git").write_text("gitdir: /tmp/somewhere/.git/worktrees/fake\n", encoding="utf-8")
+            wt_installer = fake_wt / "ops" / "install-systemd-units.sh"
+            wt_installer.write_text(
+                (Path(__file__).resolve().parents[1] / "ops" / "install-systemd-units.sh").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            wt_env = {k: v for k, v in os.environ.items() if k != "PROJECT_LEDGER_REPO"}
+            refuse = subprocess.run(
+                ["bash", str(wt_installer), "--no-systemd-reload", "--bin-dir", str(root / "b"), "--systemd-user-dir", str(root / "s")],
+                env=wt_env,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(refuse.returncode, 2)
+            self.assertIn("linked git worktree", refuse.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

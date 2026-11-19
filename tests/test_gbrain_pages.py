@@ -383,6 +383,144 @@ class GBrainPageProjectorTests(unittest.TestCase):
             self.assertTrue(authored_page.exists())
             self.assertTrue(res3["ingest"]["git_committed"])
 
+    def test_self_referential_brain_project_omits_volatile_commit_sha_and_halts_feedback_loop(self) -> None:
+        from ledger.gbrain_pages import sync_gbrain_pages
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            state_dir = root / "state"
+            (state_dir / "projects").mkdir(parents=True)
+            brain_dir = root / "brain"
+            (brain_dir / "projects").mkdir(parents=True)
+
+            subprocess.run(["git", "-C", str(brain_dir), "init", "-b", "main"], check=True, capture_output=True)
+            subprocess.run(["git", "-C", str(brain_dir), "config", "user.name", "Test"], check=True)
+            subprocess.run(["git", "-C", str(brain_dir), "config", "user.email", "test@example.com"], check=True)
+            subprocess.run(
+                ["git", "-C", str(brain_dir), "remote", "add", "origin", "git@github.com:mschwar/brain.git"],
+                check=True,
+            )
+
+            pid_brain = "prj_4bda36895c4e722e54743856"
+            pid_app = "prj_111111111111111111111111"
+            (state_dir / "canonical-projects.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0.0",
+                        "run_id": "run_1",
+                        "compiled_at": "2026-11-19T01:00:00Z",
+                        "projects": [
+                            {
+                                "canonical_project_id": pid_brain,
+                                "project_key": "github.com/mschwar/brain",
+                                "display_name": "GBrain Mirror",
+                                "normalized_remotes": ["github.com/mschwar/brain"],
+                                "gbrain": {"page_key": "projects/brain", "source_slug": "default"},
+                            },
+                            {
+                                "canonical_project_id": pid_app,
+                                "project_key": "github.com/mschwar/alpha",
+                                "display_name": "Alpha",
+                                "normalized_remotes": ["github.com/mschwar/alpha"],
+                                "gbrain": {"page_key": "projects/alpha", "source_slug": "active-repos"},
+                            },
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            def write_capsules(brain_sha: str, brain_at: str) -> None:
+                (state_dir / "projects" / f"{pid_brain}.json").write_text(
+                    json.dumps(
+                        {
+                            "canonical_project_id": pid_brain,
+                            "project_key": "github.com/mschwar/brain",
+                            "display_name": "GBrain Mirror",
+                            "canonical_url": "https://github.com/mschwar/brain",
+                            "normalized_remotes": ["github.com/mschwar/brain"],
+                            "gbrain": {"page_key": "projects/brain", "source_slug": "default"},
+                            "preferred_location": {
+                                "state": "resolved",
+                                "source_class": "live",
+                                "location": "/central/repos/agent-tooling/brain",
+                            },
+                            "git_facts": {
+                                "state": "known",
+                                "head_branch": "main",
+                                "head_commit": brain_sha,
+                                "drift_state": "clean",
+                            },
+                            "last_commit": {
+                                "committed_at": brain_at,
+                                "subject": "chore(project-ledger): sync 1 canonical project reality page(s)",
+                                "author": "prime",
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                (state_dir / "projects" / f"{pid_app}.json").write_text(
+                    json.dumps(
+                        {
+                            "canonical_project_id": pid_app,
+                            "project_key": "github.com/mschwar/alpha",
+                            "display_name": "Alpha",
+                            "canonical_url": "https://github.com/mschwar/alpha",
+                            "normalized_remotes": ["github.com/mschwar/alpha"],
+                            "gbrain": {"page_key": "projects/alpha", "source_slug": "active-repos"},
+                            "preferred_location": {
+                                "state": "resolved",
+                                "source_class": "live",
+                                "location": "/central/repos/active/alpha",
+                            },
+                            "git_facts": {
+                                "state": "known",
+                                "head_branch": "main",
+                                "head_commit": "aaaaaaaaaaaa1111111111111111111111111111",
+                                "drift_state": "clean",
+                            },
+                            "last_commit": {
+                                "committed_at": "2026-11-19T00:00:00Z",
+                                "subject": "feat: initial alpha",
+                                "author": "MS",
+                            },
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+            write_capsules("1111111111112222222222223333333333334444", "2026-11-19T00:15:00Z")
+            r1 = sync_gbrain_pages(
+                state_dir=state_dir,
+                brain_dir=brain_dir,
+                ingest=True,
+                gbrain_bin="/nonexistent/gbrain",
+            )
+            self.assertEqual(r1["created_count"], 2)
+            self.assertTrue(r1["ingest"]["git_committed"])
+
+            brain_page = (brain_dir / "projects" / "brain.md").read_text(encoding="utf-8")
+            alpha_page = (brain_dir / "projects" / "alpha.md").read_text(encoding="utf-8")
+            self.assertIn("- **Git State:** `main` (`clean`)", brain_page)
+            self.assertNotIn("111111111111", brain_page)
+            self.assertNotIn("- **Last Commit:**", brain_page)
+            self.assertIn("- **Git State:** `main` @ `aaaaaaaaaaaa` (`clean`)", alpha_page)
+            self.assertIn("- **Last Commit:**", alpha_page)
+
+            # Advance mschwar/brain's HEAD SHA and timestamp -> second sync MUST be a 0-commit no-op!
+            write_capsules("9999999999998888888888887777777777776666", "2026-11-19T00:30:00Z")
+            r2 = sync_gbrain_pages(
+                state_dir=state_dir,
+                brain_dir=brain_dir,
+                ingest=True,
+                gbrain_bin="/nonexistent/gbrain",
+            )
+            self.assertEqual(r2["updated_count"], 0)
+            self.assertEqual(r2["created_count"], 0)
+            self.assertFalse(r2["ingest"]["git_committed"])
+            self.assertEqual(r2["ingest"]["status"], "noop_unchanged")
+
 
 if __name__ == "__main__":
     unittest.main()

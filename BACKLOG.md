@@ -433,6 +433,17 @@ All external/host items surfaced during the 2026-10-31 repository audit have bee
 
 ---
 
+# Open Out-of-Scope Work Queue (2026-11-19)
+
+- **`WQ-5` — Passive fleet-peer unpushed-repo census ingestion (`repo-census` -> `inventory_policy`)** *(Status: **Queued**, owner: `homelab` + `repo-census`)*:
+  - **Gap:** `ledger sync-github` autonomously discovers and clones every repo pushed to GitHub within 15 minutes, but a brand-new `git init` repository created on `iz`, `thing1`, `matty-pc`, or `mac` that has never been pushed to GitHub remains invisible on `ai-server`.
+  - **Actionable next step:** Schedule a low-priority `INV-FLEET-GAME-01`-guarded `repo-census` export on idle fleet peers writing JSONL snapshots to `/central/registry/reports/repo-census/<host>.jsonl`, and register optional `inventory_policy` roots so unpushed peer repos surface as explicit `local_without_remote` candidates without interactive SSH probes during `ledger refresh`.
+- **`WQ-6` — Short-TTL token caching in root-owned `/usr/local/bin/gh` wrapper on `ai-server`** *(Status: **Queued**, owner: `homelab` `infra/access/`)*:
+  - **Gap:** `project-ledger` caches its own GitHub token (`0600`, 6h TTL) and uses SSH for git clones and fetches, but external callers invoking `/usr/local/bin/gh` directly still hit `homelab-op` per call and can hit 1Password Service Account rate limits during fleet bursts (`docs/incidents/01a1cb8b-2026-11-11.md` in `homelab`).
+  - **Actionable next step:** Add a root-managed `0600` tmpfs token cache (5–15m TTL) inside `homelab`'s `infra/access/` `gh` wrapper via an authorized operator WorkSpec.
+
+---
+
 # Explicitly deferred / anti-backlog
 
 Do **not** prioritize these:
