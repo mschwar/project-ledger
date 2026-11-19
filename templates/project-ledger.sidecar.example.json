@@ -3,6 +3,9 @@
   "project_key": "example-stable-slug",
   "display_name": "Example Project",
   "description": "One-line description of what this project actually is.",
+  "goal": "Why this project exists and the problem or outcome it serves.",
+  "what_it_does": "Concrete inputs, mechanism, and outputs produced by this repository.",
+  "primary_language": "Python",
   "status": "active",
   "tags": [
     "idea",

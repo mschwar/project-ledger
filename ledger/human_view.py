@@ -43,8 +43,8 @@ def render_canonical_markdown(
         "",
         "## Canonical Projects",
         "",
-        "| Canonical ID | Project Key | Display Name | Preferred Location | Source Class | GBrain Source | Observations | Warnings |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| Canonical ID | Project Key | Display Name | Language | Description | Last Commit | Preferred Location | Source Class | GBrain Source | Observations | Warnings |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
 
     sorted_capsules = sorted(
@@ -58,6 +58,22 @@ def render_canonical_markdown(
         warnings = cap.get("warnings") or []
         warning_cell = escape_md_cell("; ".join(warnings)) if warnings else ""
         loc = pref.get("location") or ""
+        lang = escape_md_cell(str(cap.get("primary_language") or ""))
+        desc = escape_md_cell(str(cap.get("description") or cap.get("purpose") or ""))
+        lc = cap.get("last_commit") if isinstance(cap.get("last_commit"), dict) else {}
+        gf = cap.get("git_facts") if isinstance(cap.get("git_facts"), dict) else {}
+        short_sha = str(lc.get("short_sha") or (gf.get("head_commit") or "")[:12]).strip()
+        commit_date = str(lc.get("committed_at") or gf.get("head_commit_at") or "")[:10]
+        commit_subj = str(lc.get("subject") or gf.get("head_commit_subject") or "").strip()
+        if short_sha:
+            commit_parts = [f"`{escape_md_cell(short_sha)}`"]
+            if commit_date:
+                commit_parts.append(f"({escape_md_cell(commit_date)})")
+            if commit_subj:
+                commit_parts.append(f"— {escape_md_cell(commit_subj[:80])}")
+            commit_cell = " ".join(commit_parts)
+        else:
+            commit_cell = ""
         lines.append(
             "| "
             + " | ".join(
@@ -65,6 +81,9 @@ def render_canonical_markdown(
                     f"`{cap['canonical_project_id']}`",
                     f"`{escape_md_cell(str(cap.get('project_key') or ''))}`",
                     escape_md_cell(str(cap.get("display_name") or "")),
+                    lang,
+                    desc,
+                    commit_cell,
                     f"`{escape_md_cell(str(loc))}`" if loc else "_unavailable_",
                     f"`{escape_md_cell(str(pref.get('source_class') or ''))}`",
                     gbrain_cell,
@@ -74,6 +93,48 @@ def render_canonical_markdown(
             )
             + " |"
         )
+
+    if sorted_capsules:
+        lines.extend(
+            [
+                "",
+                "## Repository Profiles",
+                "",
+            ]
+        )
+        for cap in sorted_capsules:
+            pid = cap["canonical_project_id"]
+            pkey = str(cap.get("project_key") or "")
+            dname = str(cap.get("display_name") or pkey)
+            lang = str(cap.get("primary_language") or "unknown")
+            desc = str(cap.get("description") or cap.get("purpose") or "").strip()
+            goal = str(cap.get("goal") or "").strip()
+            what = str(cap.get("what_it_does") or "").strip()
+            pref = cap.get("preferred_location") or {}
+            loc = str(pref.get("location") or "_unavailable_")
+            lc = cap.get("last_commit") if isinstance(cap.get("last_commit"), dict) else {}
+            gf = cap.get("git_facts") if isinstance(cap.get("git_facts"), dict) else {}
+            short_sha = str(lc.get("short_sha") or (gf.get("head_commit") or "")[:12]).strip()
+            branch = str(lc.get("branch") or gf.get("head_branch") or "").strip()
+            committed_at = str(lc.get("committed_at") or gf.get("head_commit_at") or "").strip()
+            subj = str(lc.get("subject") or gf.get("head_commit_subject") or "").strip()
+            author = str(lc.get("author") or gf.get("head_commit_author") or "").strip()
+
+            lines.append(f"### {escape_md_cell(dname)} (`{escape_md_cell(pkey)}`)")
+            lines.append("")
+            lines.append(f"- **Canonical ID**: `{pid}` | **Primary Language**: `{escape_md_cell(lang)}` | **Location**: `{escape_md_cell(loc)}`")
+            if desc:
+                lines.append(f"- **Description**: {desc}")
+            if goal:
+                lines.append(f"- **Goal (Why It Exists)**: {goal}")
+            if what:
+                lines.append(f"- **What It Does**: {what}")
+            if short_sha:
+                branch_part = f" on `{branch}`" if branch else ""
+                when_part = f" ({committed_at}" + (f" by {author})" if author else ")") if committed_at else ""
+                subj_part = f" — {subj}" if subj else ""
+                lines.append(f"- **Last Commit**: `{short_sha}`{branch_part}{when_part}{subj_part}")
+            lines.append("")
 
     if machina_caps:
         lines.extend(

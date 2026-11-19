@@ -148,12 +148,30 @@ def build_portfolio_index(
             },
         )
         gbrain_blk = capsule.get("gbrain") if isinstance(capsule.get("gbrain"), dict) else {}
+        last_commit_blk = (
+            dict(capsule["last_commit"])
+            if isinstance(capsule.get("last_commit"), dict)
+            else {
+                "state": "known" if git_facts.get("head_commit") else ("not_applicable" if git_facts.get("state") == "not_applicable" else "unknown"),
+                "sha": git_facts.get("head_commit"),
+                "short_sha": str(git_facts["head_commit"])[:12] if git_facts.get("head_commit") else None,
+                "committed_at": git_facts.get("head_commit_at"),
+                "subject": git_facts.get("head_commit_subject"),
+                "author": git_facts.get("head_commit_author"),
+                "branch": git_facts.get("head_branch"),
+            }
+        )
 
         projects.append(
             {
                 "canonical_project_id": pid,
                 "project_key": pkey,
                 "display_name": dname,
+                "description": capsule.get("description") or capsule.get("purpose"),
+                "goal": capsule.get("goal"),
+                "what_it_does": capsule.get("what_it_does"),
+                "primary_language": capsule.get("primary_language"),
+                "tags": list(cur_state.get("tags") or []),
                 "canonical_url": capsule.get("canonical_url"),
                 "gbrain_page_key": gbrain_blk.get("page_key"),
                 "observation_count": int(capsule.get("observation_count") or 0),
@@ -170,12 +188,15 @@ def build_portfolio_index(
                     "state": str(git_facts.get("state") or "not_applicable"),
                     "head_branch": git_facts.get("head_branch"),
                     "head_commit": git_facts.get("head_commit"),
+                    "head_commit_at": git_facts.get("head_commit_at"),
+                    "head_commit_subject": git_facts.get("head_commit_subject"),
                     "drift_state": str(git_facts.get("drift_state") or "not_applicable"),
                     "dirty": is_dirty if git_facts.get("state") == "known" else None,
                     "ahead_count": git_ahead if git_facts.get("state") == "known" else None,
                     "behind_count": git_behind if git_facts.get("state") == "known" else None,
                     "remote_ahead": remote_ahead,
                 },
+                "last_commit": last_commit_blk,
                 "posture": {
                     "declared_lifecycle_state": declared_lc,
                     "lifecycle_posture": lc_posture,

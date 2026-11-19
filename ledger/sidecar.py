@@ -64,6 +64,7 @@ STRING_SIDECAR_FIELDS: frozenset[str] = frozenset(
         "display_name",
         "gbrain_source",
         "gbrain_source_slug",
+        "goal",
         "kind",
         "last_push_at",
         "last_session_at",
@@ -82,6 +83,7 @@ STRING_SIDECAR_FIELDS: frozenset[str] = frozenset(
         "status",
         "storage_scope",
         "updated_at",
+        "what_it_does",
     }
 )
 

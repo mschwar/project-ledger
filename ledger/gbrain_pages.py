@@ -84,6 +84,19 @@ def render_reality_block(project: dict[str, Any], capsule: dict[str, Any]) -> st
         f"- **Canonical ID:** `{canonical_id}`",
         f"- **Project Key:** `{project_key}`",
     ]
+    desc = _sanitize_text(capsule.get("description") or capsule.get("purpose") or "").replace("\r", " ").replace("\n", " ").strip()
+    goal = _sanitize_text(capsule.get("goal") or "").replace("\r", " ").replace("\n", " ").strip()
+    what_it_does = _sanitize_text(capsule.get("what_it_does") or "").replace("\r", " ").replace("\n", " ").strip()
+    primary_lang = _sanitize_text(capsule.get("primary_language") or "").replace("\r", " ").replace("\n", " ").strip()
+    if desc:
+        lines.append(f"- **Description:** {desc}")
+    if goal:
+        lines.append(f"- **Goal:** {goal}")
+    if what_it_does:
+        lines.append(f"- **What It Does:** {what_it_does}")
+    if primary_lang:
+        lines.append(f"- **Primary Language:** `{primary_lang}`")
+
     if pref_loc:
         lines.append(f"- **Preferred Location:** `{pref_loc}` (`{pref_class}`, `{pref_state}`)")
     else:
@@ -100,6 +113,19 @@ def render_reality_block(project: dict[str, Any], capsule: dict[str, Any]) -> st
         drift = str(git_state.get("drift_state") or drift_block.get("state") or "unknown")
         commit_part = f" @ `{commit}`" if commit else ""
         lines.append(f"- **Git State:** `{branch}`{commit_part} (`{drift}`)")
+        last_commit_blk = capsule.get("last_commit") if isinstance(capsule.get("last_commit"), dict) else {}
+        lc_at = _sanitize_text(last_commit_blk.get("committed_at") or git_state.get("head_commit_at") or "").strip()
+        lc_subj = _sanitize_text(last_commit_blk.get("subject") or git_state.get("head_commit_subject") or "").replace("\r", " ").replace("\n", " ").strip()
+        lc_author = _sanitize_text(last_commit_blk.get("author") or git_state.get("head_commit_author") or "").replace("\r", " ").replace("\n", " ").strip()
+        if lc_at or lc_subj:
+            lc_parts: list[str] = []
+            if lc_at:
+                lc_parts.append(f"`{lc_at}`")
+            if lc_subj:
+                lc_parts.append(f"— {lc_subj}")
+            if lc_author:
+                lc_parts.append(f"(`{lc_author}`)")
+            lines.append("- **Last Commit:** " + " ".join(lc_parts))
 
     warning_codes: list[str] = []
     for raw_code in list(pref.get("warning_codes") or []) + list(git_state.get("warning_codes") or []):

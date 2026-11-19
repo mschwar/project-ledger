@@ -74,6 +74,12 @@
         "null"
       ]
     },
+    "goal": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "git": {
       "type": [
         "object",
@@ -244,6 +250,12 @@
       }
     },
     "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "what_it_does": {
       "type": [
         "string",
         "null"

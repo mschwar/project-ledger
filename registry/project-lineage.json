@@ -556,6 +556,20 @@
       "project_key_hint": "github.com/LearningCircuit/local-deep-research"
     },
     {
+      "canonical_project_id": "prj_4c8d9d91f1eda83001191dee",
+      "historical_canonical_ids": [
+        "prj_b7ebba0733515df4eae86bd1"
+      ],
+      "merge_decision_ids": [],
+      "normalized_remotes": [
+        "github.com/mschwar/chreod"
+      ],
+      "observation_ids": [
+        "obs_b0aae9da4ec8f5f118bb8877"
+      ],
+      "project_key_hint": "github.com/mschwar/chreod"
+    },
+    {
       "canonical_project_id": "prj_5026a5d89e372f8c56ab9202",
       "historical_canonical_ids": [
         "prj_ab8a15dcafc88c2260c0735a"

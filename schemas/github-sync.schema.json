@@ -216,6 +216,38 @@
     "remote_pushed_at": {
       "type": "object",
       "additionalProperties": { "type": "string" }
+    },
+    "remote_metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "full_name",
+          "description",
+          "language",
+          "archived",
+          "fork",
+          "private",
+          "default_branch",
+          "pushed_at",
+          "topics"
+        ],
+        "properties": {
+          "full_name": { "type": "string", "minLength": 1 },
+          "description": { "type": ["string", "null"] },
+          "language": { "type": ["string", "null"] },
+          "archived": { "type": "boolean" },
+          "fork": { "type": "boolean" },
+          "private": { "type": "boolean" },
+          "default_branch": { "type": "string", "minLength": 1 },
+          "pushed_at": { "type": ["string", "null"] },
+          "topics": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
     }
   }
 }

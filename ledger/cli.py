@@ -44,6 +44,11 @@ def _add_compile_args(parser: argparse.ArgumentParser) -> None:
         help="Optional durable project lineage registry (defaults to sibling project-lineage.json next to --identity-decisions when present).",
     )
     parser.add_argument(
+        "--project-catalog",
+        default=None,
+        help="Optional curated repository profile catalog (defaults to sibling project-catalog.json next to --identity-decisions when present).",
+    )
+    parser.add_argument(
         "--check-remote",
         action="store_true",
         help="Query origin via bounded `git ls-remote` to detect unfetched upstream commits (GIT_REMOTE_AHEAD).",
@@ -388,6 +393,7 @@ def _compile_from_paths(
         state_dir=Path(args.state_dir),
         identity_decisions_path=Path(args.identity_decisions),
         lineage_path=Path(args.project_lineage) if getattr(args, "project_lineage", None) else None,
+        catalog_path=Path(args.project_catalog) if getattr(args, "project_catalog", None) else None,
         use_checkpoint_compile_cache=use_checkpoint_compile_cache,
         check_remote=bool(getattr(args, "check_remote", False)),
         remote_timeout=float(getattr(args, "remote_timeout", 3.0)),
@@ -499,8 +505,22 @@ def main(argv: list[str] | None = None) -> int:
             elif payload["status"] == "resolved":
                 pref = payload["preferred_location"]
                 gbrain = payload.get("gbrain") or {}
+                lc = payload.get("last_commit") or {}
                 print(f"project: {payload['canonical_project_id']} ({payload['project_key']})")
                 print(f"display name: {payload['display_name']}")
+                if payload.get("primary_language"):
+                    print(f"primary language: {payload['primary_language']}")
+                if payload.get("description"):
+                    print(f"description: {payload['description']}")
+                if payload.get("goal"):
+                    print(f"goal: {payload['goal']}")
+                if payload.get("what_it_does"):
+                    print(f"what it does: {payload['what_it_does']}")
+                if lc.get("short_sha"):
+                    lc_branch = f" on {lc['branch']}" if lc.get("branch") else ""
+                    lc_at = f" ({lc['committed_at']})" if lc.get("committed_at") else ""
+                    lc_subj = f" — {lc['subject']}" if lc.get("subject") else ""
+                    print(f"last commit: {lc['short_sha']}{lc_branch}{lc_at}{lc_subj}")
                 print(f"schema: {payload['schema_version']}")
                 print(f"as-of: {payload['as_of']}")
                 print(
@@ -794,11 +814,20 @@ def main(argv: list[str] | None = None) -> int:
                     pos = item["posture"]
                     eco = item["ecosystem"]
                     sh = item["structural_health"]
+                    lc = item.get("last_commit") or {}
+                    lc_tag = (
+                        f"{lc['short_sha']}@{str(lc.get('committed_at') or '')[:10]}"
+                        if lc.get("short_sha")
+                        else "no-commit"
+                    )
+                    lang_tag = item.get("primary_language") or "unknown"
+                    desc_tag = str(item.get("description") or "").strip()[:72]
                     print(
                         f"  [u={pos['attention_urgency']}] {item['project_key']}\t"
-                        f"{pos['lifecycle_posture']}\t"
+                        f"{lang_tag}\t{pos['lifecycle_posture']}\t{lc_tag}\t"
                         f"deps={eco['depends_on_count']}\trdeps={eco['depended_on_by_count']}\t"
                         f"cycles={sh['cycle_count']}\t{item['preferred_location']['location'] or 'unavailable'}"
+                        + (f"\t— {desc_tag}" if desc_tag else "")
                     )
             elif status == "ambiguous":
                 print(f"ambiguous {payload['referent']!r}: {payload['candidate_count']} candidates")
