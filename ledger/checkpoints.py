@@ -217,6 +217,8 @@ def _source_config_digest(root_cfg: dict, defaults: dict, output_dir: Path, sour
         "require_project_ledger_candidate": bool(
             root_cfg.get("require_project_ledger_candidate", True)
         ),
+        "optional": bool(root_cfg.get("optional", False)),
+        "inventory_kind": str(root_cfg.get("inventory_kind", "google_drive")).strip() or "google_drive",
         "require_git": bool(root_cfg.get("require_git", defaults.get("require_git", False))),
         "exclude_autosnapshot_repos": bool(
             root_cfg.get(
@@ -697,17 +699,20 @@ def collect_entries_incremental(
 
             inventory_jsonl_path = resolve_path(inventory_jsonl_raw, config_dir)
             policy_path = resolve_path(policy_path_raw, config_dir)
-            if not safe_path_exists(inventory_jsonl_path):
-                raise ValueError(
-                    f"roots[{root_index}].inventory_jsonl does not exist: {inventory_jsonl_path}"
-                )
-            if not safe_path_exists(policy_path):
+            root_cfg["_inventory_jsonl_path"] = inventory_jsonl_path
+            root_cfg["_policy_path"] = policy_path
+            if safe_path_exists(inventory_jsonl_path) and safe_path_exists(policy_path):
+                source_available = True
+            elif bool(root_cfg.get("optional", False)):
+                source_available = False
+            else:
+                if not safe_path_exists(inventory_jsonl_path):
+                    raise ValueError(
+                        f"roots[{root_index}].inventory_jsonl does not exist: {inventory_jsonl_path}"
+                    )
                 raise ValueError(
                     f"roots[{root_index}].policy_path does not exist: {policy_path}"
                 )
-            root_cfg["_inventory_jsonl_path"] = inventory_jsonl_path
-            root_cfg["_policy_path"] = policy_path
-            source_available = True
         else:
             if "inventory_jsonl" in root_cfg:
                 root_cfg["_inventory_jsonl_path"] = resolve_path(

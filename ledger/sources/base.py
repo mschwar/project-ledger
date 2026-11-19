@@ -153,11 +153,13 @@ def collect_entries(config: dict, config_dir: Path, output_dir: Path) -> list[di
 
             inventory_jsonl_path = resolve_path(inventory_jsonl_raw, config_dir)
             policy_path = resolve_path(policy_path_raw, config_dir)
-            if not safe_path_exists(inventory_jsonl_path):
-                raise ValueError(
-                    f"roots[{root_index}].inventory_jsonl does not exist: {inventory_jsonl_path}"
-                )
-            if not safe_path_exists(policy_path):
+            if not safe_path_exists(inventory_jsonl_path) or not safe_path_exists(policy_path):
+                if bool(root_cfg.get("optional", False)):
+                    continue
+                if not safe_path_exists(inventory_jsonl_path):
+                    raise ValueError(
+                        f"roots[{root_index}].inventory_jsonl does not exist: {inventory_jsonl_path}"
+                    )
                 raise ValueError(
                     f"roots[{root_index}].policy_path does not exist: {policy_path}"
                 )

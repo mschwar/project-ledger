@@ -914,6 +914,16 @@
       "project_key_hint": "context-graph-engine"
     },
     {
+      "canonical_project_id": "prj_6fdc0d8335f71848f07173c3",
+      "historical_canonical_ids": [],
+      "merge_decision_ids": [],
+      "normalized_remotes": [],
+      "observation_ids": [
+        "obs_6c8850fe36fc27faa184afba"
+      ],
+      "project_key_hint": "peer:mac:jev-mario3"
+    },
+    {
       "canonical_project_id": "prj_70115ebe5d742ed7caa1666d",
       "historical_canonical_ids": [],
       "merge_decision_ids": [],

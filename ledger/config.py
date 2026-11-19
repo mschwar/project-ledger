@@ -148,11 +148,17 @@ def validate_config(config: dict, config_dir: Path, *, check_artifacts: bool = T
         ):
             if key in root and (not isinstance(root[key], int) or root[key] < 0):
                 raise LedgerConfigError("ROOT_INVALID_INTEGER", f"{where}.{key} must be a non-negative integer.")
-        for key in ("require_git", "exclude_autosnapshot_repos"):
+        for key in ("require_git", "exclude_autosnapshot_repos", "optional"):
             if key in root and not isinstance(root[key], bool):
                 raise LedgerConfigError("ROOT_INVALID_BOOLEAN", f"{where}.{key} must be boolean.")
 
         if discovery == "inventory_policy":
+            inv_kind = str(root.get("inventory_kind", "google_drive")).strip() or "google_drive"
+            if inv_kind not in {"google_drive", "peer_census"}:
+                raise LedgerConfigError(
+                    "INVENTORY_KIND_INVALID",
+                    f"{where}.inventory_kind={inv_kind!r} is unsupported; expected 'google_drive' or 'peer_census'.",
+                )
             inventory_raw = _require_nonempty_string(
                 root, "inventory_jsonl", code="INVENTORY_PATH_REQUIRED", where=where
             )
@@ -170,7 +176,7 @@ def validate_config(config: dict, config_dir: Path, *, check_artifacts: bool = T
                     "POLICY_CANDIDATE_FLAG_INVALID",
                     f"{where}.require_project_ledger_candidate must be boolean.",
                 )
-            if check_artifacts:
+            if check_artifacts and not bool(root.get("optional", False)):
                 for key, raw, code in (
                     ("inventory_jsonl", inventory_raw, "INVENTORY_ARTIFACT_MISSING"),
                     ("policy_path", policy_raw, "POLICY_ARTIFACT_MISSING"),
@@ -226,7 +232,15 @@ def describe_sources(config: dict, config_dir: Path) -> list[dict]:
                     }
                 )
             status = "available" if artifact_ok else "unavailable"
-            status_reason = "inventory_artifacts_available" if artifact_ok else "required_inventory_artifact_missing"
+            status_reason = (
+                "inventory_artifacts_available"
+                if artifact_ok
+                else (
+                    "optional_inventory_artifact_missing"
+                    if bool(root.get("optional", False))
+                    else "required_inventory_artifact_missing"
+                )
+            )
         else:
             accessible = path_exists and os.access(path, os.R_OK)
             status = "available" if accessible else "unavailable"

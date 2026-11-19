@@ -1338,6 +1338,32 @@ def _resolve_capsule_profile(
             "value": primary_language,
             "provenance": [{"kind": "observed", "reason_code": "GITHUB_REPO_METADATA"}],
         }
+    else:
+        for item in ranked_observations:
+            obs = observations_by_id.get(item["observation_id"]) or {}
+            compat = obs.get("compat_entry") if isinstance(obs.get("compat_entry"), dict) else {}
+            reasons_raw = str(compat.get("include_reason") or "")
+            inv_lang = next(
+                (
+                    part.split(":", 1)[1].strip()
+                    for part in (p.strip() for p in reasons_raw.split(","))
+                    if part.startswith("inventory-language:") and part.split(":", 1)[1].strip()
+                ),
+                "",
+            )
+            if inv_lang:
+                primary_language = inv_lang[:60]
+                prov_fields["primary_language"] = {
+                    "value": primary_language,
+                    "provenance": [
+                        {
+                            "kind": "observed",
+                            "observation_id": item["observation_id"],
+                            "reason_code": "INVENTORY_CENSUS_LANGUAGE",
+                        }
+                    ],
+                }
+                break
 
     extra_tags: list[str] = []
     if cat_entry and isinstance(cat_entry.get("tags"), list):
